@@ -6,6 +6,7 @@ Codex workspace for building and migrating the PeptidePilot funnel.
 
 ```bash
 corepack pnpm install
+cp .env.example .env
 corepack pnpm dev
 ```
 
@@ -22,6 +23,41 @@ corepack pnpm check
 corepack pnpm test
 corepack pnpm build
 ```
+
+## Environment
+
+Copy `.env.example` to `.env` for local work. Do not commit `.env`.
+
+Required for full admin persistence:
+
+- `DATABASE_URL`
+- `ADMIN_EMAILS`
+- `JWT_SECRET`
+- `OAUTH_SERVER_URL` and `VITE_APP_ID` when using the Manus OAuth flow
+
+Useful production values:
+
+- `SITE_URL`
+- `META_CAPI_TOKEN`
+- `WEBHOOK_TIER1_URL`
+- `WEBHOOK_TIER2_URL`
+- `WEBHOOK_TIER3_URL`
+
+## Database
+
+Generate migrations only when the Drizzle schema changes:
+
+```bash
+corepack pnpm db:generate
+```
+
+Apply existing migrations to the configured database:
+
+```bash
+corepack pnpm db:migrate
+```
+
+After migration, sign into `/admin/partners` and use **Seed Legacy Links** to move hard-coded vendor links into managed affiliate rows.
 
 Current status:
 

@@ -6,6 +6,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
+import { ENV } from "./env";
 import { serveStatic, setupVite } from "./vite";
 import { pseoSections } from "../../shared/pseo";
 
@@ -87,6 +88,26 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.get("/api/health", (_req, res) => {
+    res.json({
+      status: "ok",
+      env: process.env.NODE_ENV || "development",
+      configured: {
+        database: Boolean(ENV.databaseUrl),
+        adminEmails: ENV.adminEmails.length,
+        oauthServer: Boolean(ENV.oAuthServerUrl),
+        appId: Boolean(ENV.appId),
+        jwtSecret: Boolean(ENV.cookieSecret),
+        siteUrl: Boolean(process.env.SITE_URL || process.env.VITE_SITE_URL),
+        metaCapi: Boolean(process.env.META_CAPI_TOKEN),
+        tierWebhooks: {
+          tier1: Boolean(process.env.WEBHOOK_TIER1_URL),
+          tier2: Boolean(process.env.WEBHOOK_TIER2_URL),
+          tier3: Boolean(process.env.WEBHOOK_TIER3_URL),
+        },
+      },
+    });
+  });
   app.get("/sitemap.xml", (_req, res) => {
     res.type("application/xml").send(buildSitemapXml());
   });
