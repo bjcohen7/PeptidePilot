@@ -27,6 +27,7 @@ type LinkForm = {
 };
 
 type AssistantPreview = {
+  action: "create" | "update";
   partnerName: string;
   label: string;
   url: string;
@@ -116,7 +117,7 @@ export default function AffiliatePartnersAdmin() {
     onError: (error) => toast.error(error.message),
   });
   const previewAssistant = trpc.affiliates.previewAssistantCommand.useMutation({
-    onSuccess: (result) => setAssistantPreview(result),
+    onSuccess: (result) => setAssistantPreview(result as AssistantPreview),
     onError: (error) => toast.error(error.message),
   });
   const assistant = trpc.affiliates.runAssistantCommand.useMutation({
@@ -134,7 +135,11 @@ export default function AffiliatePartnersAdmin() {
   });
   const seedLegacyLinks = trpc.affiliates.seedLegacyLinks.useMutation({
     onSuccess: async (result) => {
-      toast.success(`Seeded ${result.createdLinks} legacy links.`);
+      toast.success(
+        result.createdLinks > 0
+          ? `Seeded ${result.createdLinks} links across ${result.createdPartners} partners.`
+          : "Legacy links were already seeded."
+      );
       await Promise.all([
         utils.affiliates.listPartners.invalidate(),
         utils.affiliates.listLinks.invalidate(),
@@ -146,6 +151,7 @@ export default function AffiliatePartnersAdmin() {
 
   const rows = partners.data?.length ? partners.data : affiliatePartnerSeeds;
   const linkRows = links.data ?? [];
+  const showSeedBanner = linkRows.length === 0;
   const numericPartners = useMemo(
     () => rows.filter((partner): partner is Extract<typeof partner, { id: number }> => typeof partner.id === "number"),
     [rows]
@@ -228,10 +234,19 @@ export default function AffiliatePartnersAdmin() {
             Add partners, manage tracked URLs, and test links before they go live in the quiz results flow.
           </p>
         </div>
-        <Button className="bg-brand-gradient text-white hover:opacity-90" onClick={() => setPartnerForm(emptyPartner)}>
-          <Plus className="w-4 h-4 mr-2" />
-          New Partner
-        </Button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            variant="outline"
+            onClick={() => seedLegacyLinks.mutate()}
+            disabled={seedLegacyLinks.isPending}
+          >
+            {seedLegacyLinks.isPending ? "Seeding..." : "Seed Legacy Links"}
+          </Button>
+          <Button className="bg-brand-gradient text-white hover:opacity-90" onClick={() => setPartnerForm(emptyPartner)}>
+            <Plus className="w-4 h-4 mr-2" />
+            New Partner
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -247,6 +262,22 @@ export default function AffiliatePartnersAdmin() {
         ))}
       </div>
 
+      {showSeedBanner && (
+        <div className="rounded-xl border border-accent/30 bg-secondary/40 p-5">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h2 className="font-semibold text-foreground">Bring legacy vendor links under admin control</h2>
+              <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+                The results page still falls back to hard-coded vendor links until we seed the managed link table. Run this once and the dashboard becomes the source of truth for ordering and updates.
+              </p>
+            </div>
+            <Button onClick={() => seedLegacyLinks.mutate()} disabled={seedLegacyLinks.isPending}>
+              {seedLegacyLinks.isPending ? "Seeding..." : "Seed Legacy Links Now"}
+            </Button>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={runAssistant} className="rounded-xl border border-accent/30 bg-white p-5 space-y-4">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
@@ -255,7 +286,7 @@ export default function AffiliatePartnersAdmin() {
           <div>
             <h2 className="font-semibold">AI Assistant</h2>
             <p className="text-sm text-muted-foreground">
-              Tell the assistant what affiliate change to make. It can add links, scope them to a peptide, set global placement, and assign priority.
+              Tell the assistant what affiliate change to make. It can add links, scope them to a peptide, set global placement, assign priority, and update matching records instead of duplicating them.
             </p>
           </div>
         </div>
@@ -280,6 +311,7 @@ export default function AffiliatePartnersAdmin() {
             <h3 className="font-semibold text-foreground mb-2">Confirm change</h3>
             <p className="text-sm text-muted-foreground mb-3">{assistantPreview.message}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mb-4">
+              <div>Action: {assistantPreview.action === "create" ? "Create new link" : "Update existing link"}</div>
               <div>Partner: {assistantPreview.partnerName}</div>
               <div>Label: {assistantPreview.label}</div>
               <div>Scope: {assistantPreview.isGlobal ? "Global" : assistantPreview.peptideId || "Unscoped"}</div>
@@ -330,7 +362,7 @@ export default function AffiliatePartnersAdmin() {
         <form onSubmit={saveLink} className="rounded-xl border border-border bg-white p-5 space-y-4">
           <div>
             <h2 className="font-semibold">{linkForm.id ? "Edit tracked link" : "Add tracked link"}</h2>
-            <p className="text-sm text-muted-foreground">Map partner URLs to result cards, PSEO pages, and future placements.</p>
+            <p className="text-sm text-muted-foreground">Map partner URLs to result cards, PSEO pages, and future placements. Managed links show first on the results page before legacy fallback links.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <select className={inputClass()} value={linkForm.partnerId} onChange={(e) => setLinkForm({ ...linkForm, partnerId: e.target.value })} required>
@@ -341,8 +373,11 @@ export default function AffiliatePartnersAdmin() {
             </select>
             <input className={inputClass()} placeholder="Button label" value={linkForm.label} onChange={(e) => setLinkForm({ ...linkForm, label: e.target.value })} required />
             <input className={inputClass()} placeholder="Tracked URL" value={linkForm.url} onChange={(e) => setLinkForm({ ...linkForm, url: e.target.value })} required />
-            <input className={inputClass()} placeholder="Placement" value={linkForm.placement} onChange={(e) => setLinkForm({ ...linkForm, placement: e.target.value })} required />
-            <input className={inputClass()} placeholder="Peptide ID, e.g. semaglutide" value={linkForm.peptideId} onChange={(e) => setLinkForm({ ...linkForm, peptideId: e.target.value })} />
+            <select className={inputClass()} value={linkForm.placement} onChange={(e) => setLinkForm({ ...linkForm, placement: e.target.value })} required>
+              <option value="results-card">results-card</option>
+              <option value="pseo-page">pseo-page</option>
+            </select>
+            <input className={inputClass()} placeholder={linkForm.isGlobal ? "Leave blank for global links" : "Peptide ID, e.g. semaglutide"} value={linkForm.peptideId} onChange={(e) => setLinkForm({ ...linkForm, peptideId: e.target.value })} disabled={linkForm.isGlobal} />
             <input className={inputClass()} placeholder="Sort order, e.g. 1" value={linkForm.sortOrder} onChange={(e) => setLinkForm({ ...linkForm, sortOrder: e.target.value })} />
             <select className={inputClass()} value={linkForm.status} onChange={(e) => setLinkForm({ ...linkForm, status: e.target.value as LinkForm["status"] })}>
               <option value="draft">Draft</option>
@@ -354,10 +389,13 @@ export default function AffiliatePartnersAdmin() {
             <input
               type="checkbox"
               checked={linkForm.isGlobal}
-              onChange={(event) => setLinkForm({ ...linkForm, isGlobal: event.target.checked })}
+              onChange={(event) => setLinkForm({ ...linkForm, isGlobal: event.target.checked, peptideId: event.target.checked ? "" : linkForm.peptideId })}
             />
             Make this link global across result cards
           </label>
+          <p className="text-xs text-muted-foreground">
+            Use a peptide ID for targeted links. Use global only when the same destination should appear for every result card in that placement.
+          </p>
           <div className="flex gap-2">
             <Button type="submit" disabled={createLink.isPending || updateLink.isPending}>
               <Save className="w-4 h-4 mr-2" />
@@ -376,7 +414,7 @@ export default function AffiliatePartnersAdmin() {
           <div>
             <h2 className="font-semibold">Partner directory</h2>
             <p className="text-sm text-muted-foreground">
-              Seed rows appear until the production database migration is applied.
+              Database-backed partners live here. Seed rows only appear when no production partner records have been created yet.
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={() => partners.refetch()}>
@@ -442,6 +480,9 @@ export default function AffiliatePartnersAdmin() {
                 <div>
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <h3 className="font-semibold text-foreground">{link.label}</h3>
+                    <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                      {link.partnerName}
+                    </span>
                     <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
                       #{link.sortOrder}
                     </span>
@@ -454,6 +495,7 @@ export default function AffiliatePartnersAdmin() {
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">
                     Placement: {link.placement}
+                    {typeof link.lastTestStatus === "number" ? ` · Last test ${link.lastTestStatus}` : ""}
                   </p>
                   <a href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline">
                     <ExternalLink className="w-4 h-4" />
@@ -480,11 +522,11 @@ export default function AffiliatePartnersAdmin() {
           <div>
             <h2 className="font-semibold">Migration tools</h2>
             <p className="text-sm text-muted-foreground">
-              Seed managed links from the legacy hard-coded vendor links.
+              One-time import tools for moving legacy result-card vendors into the managed affiliate system.
             </p>
           </div>
           <Button variant="outline" onClick={() => seedLegacyLinks.mutate()} disabled={seedLegacyLinks.isPending}>
-            Seed Legacy Links
+            {seedLegacyLinks.isPending ? "Seeding..." : "Seed Legacy Links"}
           </Button>
         </div>
       </div>

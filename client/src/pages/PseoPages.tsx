@@ -250,6 +250,22 @@ export function PseoDetailPage({
               </div>
             ))}
 
+            {content?.decisionChecklist?.length ? (
+              <div className="rounded-xl border border-border/60 bg-white p-6 md:p-8">
+                <h2 className="text-2xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                  Decision checklist
+                </h2>
+                <div className="space-y-3">
+                  {content.decisionChecklist.map((item) => (
+                    <div key={item} className="flex gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
+                      <p className="text-muted-foreground leading-relaxed">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             <div className="rounded-xl border border-border/60 bg-white p-6 md:p-8">
               <h2 className="text-2xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
                 Related peptide research
@@ -263,6 +279,22 @@ export function PseoDetailPage({
                 ))}
               </div>
             </div>
+
+            {content?.faqs?.length ? (
+              <div className="rounded-xl border border-border/60 bg-white p-6 md:p-8">
+                <h2 className="text-2xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                  Common questions
+                </h2>
+                <div className="space-y-5">
+                  {content.faqs.map((faq) => (
+                    <div key={faq.question}>
+                      <h3 className="font-semibold text-foreground mb-2">{faq.question}</h3>
+                      <p className="text-muted-foreground leading-relaxed">{faq.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
 
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-6">
               <div className="flex gap-3">

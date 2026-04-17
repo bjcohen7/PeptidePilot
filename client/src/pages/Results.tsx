@@ -263,6 +263,7 @@ function PeptideCard({
     { peptideId: peptide.id },
     { retry: false, refetchOnWindowFocus: false }
   );
+  const hasManagedLinks = Boolean(activeLinks.data?.length);
   const vendors = activeLinks.data?.length
     ? activeLinks.data.map((link) => ({ name: link.label, url: link.url }))
     : peptide.vendors;
@@ -337,6 +338,11 @@ function PeptideCard({
         </p>
 
         <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+          {hasManagedLinks && (
+            <div className="w-full text-xs font-medium text-muted-foreground mb-1">
+              Partner order managed in admin.
+            </div>
+          )}
           {vendors.map((vendor) => (
             <a
               key={vendor.name}

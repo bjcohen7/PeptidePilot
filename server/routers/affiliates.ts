@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, asc, eq, or } from "drizzle-orm";
+import { and, asc, eq, ne, or } from "drizzle-orm";
 import { affiliatePartnerSeeds } from "../../shared/affiliatePartners";
 import { affiliateAuditEvents, affiliateLinks, affiliatePartners } from "../../drizzle/schema";
 import { getDb } from "../db";
@@ -105,6 +105,18 @@ function parseAssistantCommand(command: string) {
   };
 }
 
+function matchesScope(
+  link: { placement: string; peptideId: string | null; isGlobal: boolean; url: string },
+  candidate: { placement: string; peptideId: string | null; isGlobal: boolean; url: string }
+) {
+  return (
+    link.placement === candidate.placement &&
+    (link.peptideId ?? null) === (candidate.peptideId ?? null) &&
+    link.isGlobal === candidate.isGlobal &&
+    link.url === candidate.url
+  );
+}
+
 async function logAffiliateAudit(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   ctx: TrpcContext,
@@ -152,6 +164,25 @@ async function findOrCreatePartner(
   return partnerId;
 }
 
+async function findDuplicateLink(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  input: {
+    placement: string;
+    peptideId: string | null;
+    isGlobal: boolean;
+    url: string;
+    excludeId?: number;
+  }
+) {
+  const rows = await db.select().from(affiliateLinks);
+  return (
+    rows.find((row) => {
+      if (input.excludeId && row.id === input.excludeId) return false;
+      return matchesScope(row, input);
+    }) ?? null
+  );
+}
+
 export const affiliatesRouter = router({
   activeLinksByPeptide: publicProcedure
     .input(z.object({ peptideId: z.string().min(1).max(64) }))
@@ -177,13 +208,23 @@ export const affiliatesRouter = router({
       return affiliatePartnerSeeds;
     }
 
-    return db.select().from(affiliatePartners);
+    return db.select().from(affiliatePartners).orderBy(asc(affiliatePartners.name));
   }),
 
   createPartner: adminProcedure.input(partnerInput).mutation(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) {
       throw new Error("Database is required to create affiliate partners.");
+    }
+
+    const existing = await db
+      .select()
+      .from(affiliatePartners)
+      .where(or(eq(affiliatePartners.name, input.name), eq(affiliatePartners.primaryUrl, input.primaryUrl)))
+      .limit(1);
+
+    if (existing.length > 0) {
+      throw new Error("That partner already exists. Edit the current record instead of creating a duplicate.");
     }
 
     const result = await db.insert(affiliatePartners).values(input);
@@ -207,6 +248,21 @@ export const affiliatesRouter = router({
       }
 
       const { id, ...values } = input;
+      const existing = await db
+        .select()
+        .from(affiliatePartners)
+        .where(
+          and(
+            or(eq(affiliatePartners.name, values.name), eq(affiliatePartners.primaryUrl, values.primaryUrl)),
+            ne(affiliatePartners.id, id)
+          )
+        )
+        .limit(1);
+
+      if (existing.length > 0) {
+        throw new Error("Another partner already uses that name or primary URL.");
+      }
+
       await db.update(affiliatePartners).set(values).where(eq(affiliatePartners.id, id));
       await logAffiliateAudit(db, ctx, {
         action: "update",
@@ -224,14 +280,29 @@ export const affiliatesRouter = router({
       throw new Error("Database is required to create affiliate links.");
     }
 
-    const result = await db.insert(affiliateLinks).values(input);
+    const duplicate = await findDuplicateLink(db, {
+      placement: input.placement,
+      peptideId: input.isGlobal ? null : input.peptideId ?? null,
+      isGlobal: input.isGlobal,
+      url: input.url,
+    });
+
+    if (duplicate) {
+      throw new Error("That tracked link already exists for this scope. Edit the current record instead.");
+    }
+
+    const normalizedInput = {
+      ...input,
+      peptideId: input.isGlobal ? null : input.peptideId ?? null,
+    };
+    const result = await db.insert(affiliateLinks).values(normalizedInput);
     const id = Number(result[0].insertId);
     await logAffiliateAudit(db, ctx, {
       action: "create",
       entityType: "affiliate_link",
       entityId: id,
       summary: `Created affiliate link ${input.label}.`,
-      metadata: input,
+      metadata: normalizedInput,
     });
     return { status: "created" as const };
   }),
@@ -245,13 +316,29 @@ export const affiliatesRouter = router({
       }
 
       const { id, ...values } = input;
-      await db.update(affiliateLinks).set(values).where(eq(affiliateLinks.id, id));
+      const normalizedValues = {
+        ...values,
+        peptideId: values.isGlobal ? null : values.peptideId ?? null,
+      };
+      const duplicate = await findDuplicateLink(db, {
+        placement: normalizedValues.placement,
+        peptideId: normalizedValues.peptideId,
+        isGlobal: normalizedValues.isGlobal,
+        url: normalizedValues.url,
+        excludeId: id,
+      });
+
+      if (duplicate) {
+        throw new Error("Another tracked link already uses this exact scope and URL.");
+      }
+
+      await db.update(affiliateLinks).set(normalizedValues).where(eq(affiliateLinks.id, id));
       await logAffiliateAudit(db, ctx, {
         action: "update",
         entityType: "affiliate_link",
         entityId: id,
-        summary: `Updated affiliate link ${values.label}.`,
-        metadata: values,
+        summary: `Updated affiliate link ${normalizedValues.label}.`,
+        metadata: normalizedValues,
       });
       return { status: "updated" as const };
     }),
@@ -260,9 +347,22 @@ export const affiliatesRouter = router({
     .input(z.object({ command: z.string().min(5).max(2000) }))
     .mutation(async ({ input }) => {
       const parsed = parseAssistantCommand(input.command);
+      const db = await getDb();
+      const existing =
+        db &&
+        (await findDuplicateLink(db, {
+          placement: parsed.placement,
+          peptideId: parsed.peptideId,
+          isGlobal: parsed.isGlobal,
+          url: parsed.url,
+        }));
+      const action = existing ? "update" : "create";
       return {
         ...parsed,
-        message: `Ready to add ${parsed.label} as ${parsed.isGlobal ? "a global" : parsed.peptideId ? `a ${parsed.peptideId}` : "an unscoped"} link at position #${parsed.sortOrder}.`,
+        action,
+        message: existing
+          ? `Ready to update the existing ${parsed.isGlobal ? "global" : parsed.peptideId ? parsed.peptideId : "unscoped"} link and keep it at position #${parsed.sortOrder}.`
+          : `Ready to add ${parsed.label} as ${parsed.isGlobal ? "a global" : parsed.peptideId ? `a ${parsed.peptideId}` : "an unscoped"} link at position #${parsed.sortOrder}.`,
       };
     }),
 
@@ -280,6 +380,41 @@ export const affiliatesRouter = router({
         url: parsed.url,
         notes: `Created by affiliate assistant from command: ${input.command}`,
       });
+      const existing = await findDuplicateLink(db, {
+        placement: parsed.placement,
+        peptideId: parsed.peptideId,
+        isGlobal: parsed.isGlobal,
+        url: parsed.url,
+      });
+
+      if (existing) {
+        await db
+          .update(affiliateLinks)
+          .set({
+            partnerId,
+            label: parsed.label,
+            sortOrder: parsed.sortOrder,
+            status: "active",
+          })
+          .where(eq(affiliateLinks.id, existing.id));
+
+        await logAffiliateAudit(db, ctx, {
+          action: "assistant_update",
+          entityType: "affiliate_link",
+          entityId: existing.id,
+          summary: `Assistant updated affiliate link ${parsed.label}.`,
+          metadata: { command: input.command, parsed },
+        });
+
+        return {
+          status: "updated" as const,
+          message: `Updated ${parsed.label} at position #${parsed.sortOrder}.`,
+          link: {
+            partnerId,
+            ...parsed,
+          },
+        };
+      }
 
       const result = await db.insert(affiliateLinks).values({
         partnerId,
@@ -322,11 +457,19 @@ export const affiliatesRouter = router({
     for (const profile of peptideProfiles) {
       for (let index = 0; index < profile.vendors.length; index += 1) {
         const vendor = profile.vendors[index];
+        const existingPartner = await db
+          .select()
+          .from(affiliatePartners)
+          .where(eq(affiliatePartners.name, vendor.name))
+          .limit(1);
         const partnerId = await findOrCreatePartner(db, {
           name: vendor.name,
           url: vendor.url,
           notes: "Seeded from legacy scoring vendor links.",
         });
+        if (existingPartner.length === 0) {
+          createdPartners += 1;
+        }
 
         const existing = await db
           .select()
@@ -384,7 +527,16 @@ export const affiliatesRouter = router({
     const db = await getDb();
     if (!db) return [];
 
-    return db.select().from(affiliateLinks);
+    const [links, partners] = await Promise.all([
+      db.select().from(affiliateLinks).orderBy(asc(affiliateLinks.sortOrder), asc(affiliateLinks.createdAt)),
+      db.select().from(affiliatePartners),
+    ]);
+    const partnerMap = new Map(partners.map((partner) => [partner.id, partner.name]));
+
+    return links.map((link) => ({
+      ...link,
+      partnerName: partnerMap.get(link.partnerId) ?? "Unknown partner",
+    }));
   }),
 
   listAuditEvents: adminProcedure.query(async () => {
