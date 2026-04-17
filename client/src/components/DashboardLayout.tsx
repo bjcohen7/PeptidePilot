@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { trpc } from "@/lib/trpc";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,13 +20,15 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { getLoginUrl } from "@/const";
+import { canUseOauthLogin, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
 import { Handshake, LayoutDashboard, LogOut, PanelLeft } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { toast } from "sonner";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/admin" },
@@ -47,6 +50,16 @@ export default function DashboardLayout({
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
   const { loading, user, logout } = useAuth();
+  const [adminEmail, setAdminEmail] = useState("");
+  const localAdminLogin = trpc.auth.localAdminLogin.useMutation({
+    onSuccess: () => {
+      toast.success("Signed in.");
+      window.location.reload();
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  const oauthLoginUrl = typeof window === "undefined" ? null : getLoginUrl();
+  const showOauthLogin = canUseOauthLogin() && Boolean(oauthLoginUrl);
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -65,18 +78,48 @@ export default function DashboardLayout({
               Sign in to continue
             </h1>
             <p className="text-sm text-muted-foreground text-center max-w-sm">
-              Access to this dashboard requires authentication. Continue to launch the login flow.
+              Access to this dashboard requires authentication. Use the available sign-in path for this deployment.
             </p>
           </div>
-          <Button
-            onClick={() => {
-              window.location.href = getLoginUrl();
-            }}
-            size="lg"
-            className="w-full shadow-lg hover:shadow-xl transition-all"
-          >
-            Sign in
-          </Button>
+          {showOauthLogin ? (
+            <Button
+              onClick={() => {
+                if (!oauthLoginUrl) return;
+                window.location.href = oauthLoginUrl;
+              }}
+              size="lg"
+              className="w-full shadow-lg hover:shadow-xl transition-all"
+            >
+              Sign in
+            </Button>
+          ) : (
+            <form
+              className="w-full space-y-3"
+              onSubmit={(event) => {
+                event.preventDefault();
+                localAdminLogin.mutate({ email: adminEmail });
+              }}
+            >
+              <Input
+                type="email"
+                value={adminEmail}
+                onChange={(event) => setAdminEmail(event.target.value)}
+                placeholder="Admin email"
+                autoComplete="email"
+              />
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full shadow-lg hover:shadow-xl transition-all"
+                disabled={localAdminLogin.isPending || !adminEmail.trim()}
+              >
+                {localAdminLogin.isPending ? "Signing in..." : "Continue with admin email"}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center">
+                This Railway deployment is using the admin allowlist until OAuth is wired back in.
+              </p>
+            </form>
+          )}
         </div>
       </div>
     );
