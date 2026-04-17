@@ -1,0 +1,159 @@
+import { z } from "zod";
+import { publicProcedure, router } from "../_core/trpc";
+import { getDb } from "../db";
+import { leads, affiliateClicks } from "../../drizzle/schema";
+import { calculateMatches, determineTier } from "../../shared/scoring";
+import { nanoid } from "nanoid";
+import { notifyOwner } from "../_core/notification";
+
+const TIER1_WEBHOOK = process.env.WEBHOOK_TIER1_URL;
+const TIER2_WEBHOOK = process.env.WEBHOOK_TIER2_URL;
+const TIER3_WEBHOOK = process.env.WEBHOOK_TIER3_URL;
+
+async function sendWebhook(url: string | undefined, payload: object) {
+  if (!url) return;
+  try {
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.error("[Webhook] Failed to send:", err);
+  }
+}
+
+export const quizRouter = router({
+  submitQuiz: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+        consentGiven: z.boolean(),
+        answers: z.array(z.number().int().min(0)).length(20),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { email, consentGiven, answers } = input;
+
+      if (!consentGiven) {
+        throw new Error("Consent is required to submit.");
+      }
+
+      // Run scoring algorithm
+      const matches = calculateMatches(answers);
+      const topMatches = matches.slice(0, 5).map((m) => m.peptide.id);
+      const topPeptideMatch = topMatches[0] ?? "unknown";
+
+      // Determine tier
+      const tier = determineTier(answers);
+
+      // Q6 (index 5): age range
+      const AGE_RANGES = ["18–25", "26–35", "36–45", "46–55", "56–65", "65+"];
+      const ageRange = AGE_RANGES[answers[5]] ?? "unknown";
+
+      // Q1 (index 0): primary goal
+      const PRIMARY_GOALS = [
+        "Build muscle and increase strength",
+        "Lose body fat and improve body composition",
+        "Boost daily energy and mental clarity",
+        "Slow aging and optimize longevity",
+        "Improve sleep quality and depth",
+        "Heal an injury or chronic pain",
+        "Enhance libido and sexual vitality",
+        "Speed up recovery and reduce soreness",
+      ];
+      const primaryGoal = PRIMARY_GOALS[answers[0]] ?? "unknown";
+
+      // Q18 (index 17): budget
+      const BUDGETS = [
+        "Under $50/month",
+        "$50–$100/month",
+        "$100–$200/month",
+        "$200–$500/month",
+        "$500+/month",
+      ];
+      const budget = BUDGETS[answers[17]] ?? "unknown";
+
+      // Get IP address
+      const ipAddress =
+        (ctx.req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+        (ctx.req.socket as { remoteAddress?: string })?.remoteAddress ||
+        "unknown";
+
+      const leadId = nanoid();
+      const consentTimestamp = new Date();
+
+      // Store lead in database
+      const db = await getDb();
+      if (db) {
+        await db.insert(leads).values({
+          id: leadId,
+          email,
+          ageRange,
+          primaryGoal,
+          budget,
+          topPeptideMatch,
+          tier,
+          consentGiven,
+          consentTimestamp,
+          ipAddress,
+          rawQuizData: answers,
+        });
+      }
+
+      // Build webhook payload
+      const webhookPayload = {
+        leadId,
+        email,
+        ageRange,
+        primaryGoal,
+        budget,
+        topPeptideMatch,
+        tier,
+        topMatches,
+        consentTimestamp: consentTimestamp.toISOString(),
+        ipAddress,
+      };
+
+      // Route to appropriate webhook based on tier
+      if (tier === 1) {
+        await sendWebhook(TIER1_WEBHOOK, webhookPayload);
+      } else if (tier === 2) {
+        await sendWebhook(TIER2_WEBHOOK, webhookPayload);
+      } else {
+        await sendWebhook(TIER3_WEBHOOK, webhookPayload);
+      }
+
+      // Notify owner of new lead
+      await notifyOwner({
+        title: `New PeptidePilot Lead — Tier ${tier}`,
+        content: `Email: ${email}\nTop Match: ${topPeptideMatch}\nBudget: ${budget}\nAge: ${ageRange}`,
+      });
+
+      return {
+        status: "success" as const,
+        leadId,
+        topMatches,
+      };
+    }),
+
+  trackAffiliateClick: publicProcedure
+    .input(
+      z.object({
+        leadId: z.string(),
+        peptideId: z.string(),
+        vendor: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (db) {
+        await db.insert(affiliateClicks).values({
+          leadId: input.leadId,
+          peptideId: input.peptideId,
+          vendor: input.vendor,
+        });
+      }
+      return { status: "ok" as const };
+    }),
+});
