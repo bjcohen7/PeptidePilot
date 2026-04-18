@@ -392,6 +392,11 @@ function pseoDetailDescription(
   return defaults[sectionKey];
 }
 
+function averageScore(scorecard?: { value: number }[]) {
+  if (!scorecard?.length) return 8;
+  return Math.round(scorecard.reduce((sum, item) => sum + item.value, 0) / scorecard.length);
+}
+
 function expandedCompoundName(profile?: (typeof peptideProfiles)[number]) {
   if (!profile) return "";
   if (profile.id === "tb_500") return "Thymosin Beta-4";
@@ -689,6 +694,8 @@ export function PseoDetailPage({
   const isStacks = sectionKey === 'stacks';
   const isPeptide = sectionKey === 'peptides';
   const isCompare = sectionKey === 'compare';
+  const isGuide = sectionKey === 'guides';
+  const isReview = sectionKey === 'reviews';
 
   const heroTags = isStacks
     ? peptides.slice(0, 3).map((profile) => profile.name)
@@ -730,6 +737,8 @@ export function PseoDetailPage({
       )
       .slice(0, 2) ?? [];
   const relatedStacks = stackSection?.entries.slice(0, 1) ?? [];
+  const reviewOverallScore = averageScore(content?.scorecard);
+  const reviewStars = Math.max(1, Math.min(5, Math.round(reviewOverallScore / 2)));
   const heroIntro = isPeptide
     ? `${(content?.summary ?? primaryProfile?.description.split('.').slice(0, 1).join('.')).trim()}.`
     : content?.summary ?? copy.detailIntro;
@@ -874,6 +883,19 @@ export function PseoDetailPage({
                 <div className="text-xs font-semibold uppercase tracking-[0.12em] text-cyan-200">{heroMetaPrimary}</div>
                 <p className="mt-2 text-white/85 leading-7">{verdictSummary}</p>
               </div>
+            ) : isReview ? (
+              <>
+                <p className="text-white/80 text-lg md:text-xl leading-relaxed max-w-4xl">{heroIntro}</p>
+                <div className="mt-6 inline-flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/60">Overall Rating</div>
+                  <div className="flex items-center gap-1 text-amber-300">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <Star key={index} className={cn("h-4 w-4", index < reviewStars ? "fill-amber-300 text-amber-300" : "text-white/35")} />
+                    ))}
+                  </div>
+                  <div className="text-lg font-semibold text-white">{reviewOverallScore}/10</div>
+                </div>
+              </>
             ) : (
               <>
                 <p className="text-white/80 text-lg md:text-xl leading-relaxed max-w-2xl">{heroIntro}</p>
@@ -888,7 +910,12 @@ export function PseoDetailPage({
       </section>
 
       <section className="pt-6 pb-4 md:py-10">
-        <div className="mx-auto grid w-full max-w-[1360px] grid-cols-1 gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:px-8">
+        <div className={cn(
+          "mx-auto grid w-full gap-8 px-4 sm:px-6 lg:px-8",
+          isGuide || isReview
+            ? "max-w-[1040px] grid-cols-1"
+            : "max-w-[1360px] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px]",
+        )}>
           <div className="self-start rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4">
             <div className="flex gap-3">
               <ShieldCheck className="w-5 h-5 text-amber-700 mt-0.5 flex-shrink-0" />
@@ -902,7 +929,7 @@ export function PseoDetailPage({
             </div>
           </div>
 
-          <aside className="hidden rounded-2xl bg-brand-gradient p-6 text-white lg:block">
+          <aside className={cn("hidden rounded-2xl bg-brand-gradient p-6 text-white lg:block", (isGuide || isReview) && "lg:hidden")}>
             <p className="text-xs font-semibold tracking-[0.14em] uppercase text-cyan-200">Free analysis</p>
             <h2 className="mt-3 text-2xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>
               {sidebarTitle}
@@ -916,8 +943,13 @@ export function PseoDetailPage({
       </section>
 
       <section className="pb-16 pt-2 md:pt-0">
-        <div className="mx-auto grid w-full max-w-[1360px] grid-cols-1 gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:px-8">
-          <article className="space-y-10">
+        <div className={cn(
+          "mx-auto grid w-full gap-8 px-4 sm:px-6 lg:px-8",
+          isGuide || isReview
+            ? "max-w-[1040px] grid-cols-1"
+            : "max-w-[1360px] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px]",
+        )}>
+          <article className={cn("space-y-10", (isGuide || isReview) && "max-w-4xl")}>
             {isPeptide ? (
               <>
                 <section>
@@ -1068,6 +1100,95 @@ export function PseoDetailPage({
                     </Link>
                   </div>
                 </div>
+              </>
+            ) : isReview ? (
+              <>
+                {content?.scorecard?.length ? (
+                  <section>
+                    <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Rating Breakdown</h2>
+                    <div className="rounded-2xl border border-border/70 bg-white p-5">
+                      <div className="space-y-4">
+                        {content.scorecard.map((item) => (
+                          <div key={item.label} className="grid grid-cols-[1fr_auto] gap-3">
+                            <div>
+                              <div className="mb-2 text-sm text-foreground">{item.label}</div>
+                              <div className="h-2 rounded-full bg-slate-100">
+                                <div className="h-2 rounded-full bg-primary" style={{ width: `${item.value * 10}%` }} />
+                              </div>
+                            </div>
+                            <div className="pt-6 text-sm font-semibold text-foreground">{item.value}/10</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-5 flex items-center justify-between border-t border-border/70 pt-4">
+                        <div className="text-base font-semibold text-foreground">Overall</div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1 text-amber-400">
+                            {Array.from({ length: 5 }).map((_, index) => (
+                              <Star key={index} className={cn("h-4 w-4", index < reviewStars ? "fill-amber-400 text-amber-400" : "text-slate-300")} />
+                            ))}
+                          </div>
+                          <div className="text-lg font-semibold text-foreground">{reviewOverallScore}/10</div>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                ) : null}
+
+                <section>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Pros &amp; Cons</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+                      <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>Pros</h3>
+                      <ul className="space-y-2 text-sm leading-7 text-muted-foreground">
+                        {content?.keyPoints?.map((item) => (
+                          <li key={item} className="flex gap-2"><span className="text-emerald-600">•</span><span>{item}</span></li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6">
+                      <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>Cons</h3>
+                      <ul className="space-y-2 text-sm leading-7 text-muted-foreground">
+                        {(content?.decisionChecklist ?? []).slice(0, 4).map((item) => (
+                          <li key={item} className="flex gap-2"><span className="text-rose-600">•</span><span>{item}</span></li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </section>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+                    <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>Who Should Consider</h3>
+                    <p className="text-sm leading-7 text-muted-foreground">{content?.blocks?.[2]?.body ?? whoItsFor}</p>
+                  </div>
+                  <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6">
+                    <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>Who Should Avoid</h3>
+                    <p className="text-sm leading-7 text-muted-foreground">{cautionAudience}</p>
+                  </div>
+                </div>
+
+                <section className="rounded-2xl border border-border/70 bg-slate-50 p-6">
+                  <h2 className="text-2xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>Our Verdict</h2>
+                  <p className="text-sm leading-7 text-muted-foreground">{content?.blocks?.[0]?.body ?? heroIntro}</p>
+                  <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1 text-amber-400">
+                        {Array.from({ length: 5 }).map((_, index) => (
+                          <Star key={index} className={cn("h-4 w-4", index < reviewStars ? "fill-amber-400 text-amber-400" : "text-slate-300")} />
+                        ))}
+                      </div>
+                      <div className="text-lg font-semibold text-foreground">{reviewOverallScore}/10</div>
+                    </div>
+                    {primaryProfile ? (
+                      <Link href={`/peptides/${primaryProfile.id.replace(/_/g, "-")}`}>
+                        <Button variant="outline" className="rounded-md border-border/80 bg-white text-foreground hover:bg-slate-50">
+                          Full {primaryProfile.name} Profile <ArrowRight className="ml-1 h-4 w-4" />
+                        </Button>
+                      </Link>
+                    ) : null}
+                  </div>
+                </section>
               </>
             ) : (
               <>
@@ -1251,7 +1372,7 @@ export function PseoDetailPage({
             </section>
           </article>
 
-          <aside className="space-y-5">
+          <aside className={cn("space-y-5", (isGuide || isReview) && "hidden")}>
             <div className="rounded-2xl border border-border/70 bg-white p-5">
               <h3 className="text-lg font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
                 {isStacks ? 'Stack Components' : isGoals ? 'Related Stacks' : isCompare ? 'Related Comparisons' : 'Commonly Stacked With'}
