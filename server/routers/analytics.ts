@@ -403,6 +403,21 @@ export const analyticsRouter = router({
     return { status: "ok" as const };
   }),
 
+  clearTestData: adminProcedure.mutation(async () => {
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database is not available.");
+    }
+
+    await db.delete(affiliateClicks);
+    await db.delete(clickEvents);
+    await db.delete(pageVisits);
+    await db.delete(visitorSessions);
+    await db.delete(leads);
+
+    return { status: "ok" as const };
+  }),
+
   summary: adminProcedure.query(async () => {
     const db = await getDb();
     if (!db) {
