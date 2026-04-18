@@ -8,6 +8,7 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 import { initLogRocket } from "./lib/logrocket";
+import { initMetaPixel } from "./lib/metaPixel";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const trpcClient = trpc.createClient({
 });
 
 void initLogRocket();
+initMetaPixel();
 
 createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>

@@ -19,6 +19,7 @@ import { trpc } from "@/lib/trpc";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { getVisitorSessionId } from "@/components/SessionTracker";
 import { identifyLogRocketUser } from "@/lib/logrocket";
+import { trackMetaEvent } from "@/lib/metaPixel";
 
 const AGE_RANGES = ["18–25", "26–35", "36–45", "46–55", "56–65", "65+"];
 const PRIMARY_GOALS = [
@@ -520,6 +521,20 @@ export default function Results() {
     onSuccess: (data) => {
       setLeadId(data.leadId);
       setRevealed(true);
+      trackMetaEvent("CompleteRegistration", {
+        content_name: "Peptide Quiz",
+        status: "completed",
+      });
+      trackMetaEvent("Lead", {
+        content_name: matches[0]?.peptide.name ?? "Peptide Results",
+        content_category: "quiz-results",
+        value: BUDGETS[state.answers[17] ?? -1] ?? undefined,
+      });
+      trackMetaEvent("ViewContent", {
+        content_name: matches[0]?.peptide.name ?? "Peptide Results",
+        content_category: "quiz-results",
+        content_ids: matches[0]?.peptide.id ? [matches[0].peptide.id] : undefined,
+      });
       if (submittedEmail) {
         void identifyLogRocketUser(submittedEmail, {
           email: submittedEmail,
