@@ -8,7 +8,7 @@ import { appRouter } from "../routers";
 import { ensureAffiliateWorkspaceSchema } from "../db";
 import { createContext } from "./context";
 import { ENV } from "./env";
-import { recordClickEvent, recordPageView } from "../routers/analytics";
+import { recordClickEvent, recordPageView, startVisitorSession } from "../routers/analytics";
 import { serveStatic, setupVite } from "./vite";
 import { blogPosts } from "../../shared/blog";
 import { pseoSections } from "../../shared/pseo";
@@ -98,6 +98,25 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.post("/api/analytics/session-start", express.json({ limit: "1mb" }), async (req, res) => {
+    try {
+      await startVisitorSession({
+        sessionId: String(req.body?.sessionId ?? ""),
+        landingPath: String(req.body?.landingPath ?? ""),
+        referrer: typeof req.body?.referrer === "string" ? req.body.referrer : null,
+        utmSource: typeof req.body?.utmSource === "string" ? req.body.utmSource : null,
+        utmMedium: typeof req.body?.utmMedium === "string" ? req.body.utmMedium : null,
+        utmCampaign: typeof req.body?.utmCampaign === "string" ? req.body.utmCampaign : null,
+        utmContent: typeof req.body?.utmContent === "string" ? req.body.utmContent : null,
+        utmTerm: typeof req.body?.utmTerm === "string" ? req.body.utmTerm : null,
+        userAgent: typeof req.body?.userAgent === "string" ? req.body.userAgent : null,
+      });
+      res.status(204).end();
+    } catch (error) {
+      console.error("[Analytics] Failed to start session:", error);
+      res.status(400).json({ error: "invalid_session_start" });
+    }
+  });
   app.post("/api/analytics/page-view", express.json({ limit: "1mb" }), async (req, res) => {
     try {
       await recordPageView({

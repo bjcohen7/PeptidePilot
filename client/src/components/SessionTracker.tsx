@@ -49,9 +49,40 @@ export function getVisitorSessionId() {
   return getOrCreateVisitorSessionId();
 }
 
+function sendSessionStart(payload: {
+  sessionId: string;
+  landingPath: string;
+  referrer: string | null;
+  utmSource: string | null;
+  utmMedium: string | null;
+  utmCampaign: string | null;
+  utmContent: string | null;
+  utmTerm: string | null;
+  userAgent: string;
+}) {
+  const body = JSON.stringify(payload);
+
+  if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+    navigator.sendBeacon(
+      "/api/analytics/session-start",
+      new Blob([body], { type: "application/json" })
+    );
+    return;
+  }
+
+  void fetch("/api/analytics/session-start", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body,
+    keepalive: true,
+    credentials: "same-origin",
+  }).catch((error) => {
+    console.error("[Analytics] Failed to start session:", error);
+  });
+}
+
 export default function SessionTracker() {
   const [location] = useLocation();
-  const startSession = trpc.analytics.startSession.useMutation();
   const trackPageView = trpc.analytics.trackPageView.useMutation();
   const sessionId = useMemo(() => getOrCreateVisitorSessionId(), []);
   const currentPathRef = useRef(normalizePath(location));
@@ -63,7 +94,7 @@ export default function SessionTracker() {
 
     if (!startedRef.current) {
       const params = new URLSearchParams(window.location.search);
-      startSession.mutate({
+      sendSessionStart({
         sessionId,
         landingPath: normalizePath(location),
         referrer: document.referrer || null,
@@ -100,7 +131,7 @@ export default function SessionTracker() {
     if (shouldTrackPath(nextPath)) {
       trackMetaPageView();
     }
-  }, [location, sessionId, startSession, trackPageView]);
+  }, [location, sessionId, trackPageView]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
