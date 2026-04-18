@@ -160,9 +160,14 @@ export default function InsightsOverview() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm">
-                      <span className={session.lead ? "text-emerald-700" : "text-muted-foreground"}>
-                        {session.lead ? "Ready" : "Tracking"}
-                      </span>
+                      {session.lead ? (
+                        <div className="space-y-1">
+                          <div className="text-emerald-700">{session.lead.topPeptideMatch}</div>
+                          <div className="text-xs text-muted-foreground">{session.lead.budget}</div>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">Tracking</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-foreground">{session.lead ? "20/20" : "—"}</td>
                     <td className="px-4 py-3 text-muted-foreground">{session.utmSource ?? formatReferrer(session.referrer)}</td>

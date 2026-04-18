@@ -210,17 +210,28 @@
     @apply w-full text-left px-4 py-4 sm:px-5 rounded-xl border-2 border-border bg-white transition-all duration-200 font-medium text-foreground cursor-pointer;
     min-height: 56px;
     box-shadow: 0 1px 3px oklch(0.25 0.075 255 / 0.05);
+    transform: translateY(0) scale(1);
+    animation: fadeInUp 0.5s ease-out forwards;
   }
   .answer-btn:hover:not(:disabled) {
     border-color: oklch(0.58 0.13 195 / 0.6);
     background-color: oklch(0.58 0.13 195 / 0.05);
-    box-shadow: 0 2px 8px oklch(0.58 0.13 195 / 0.12);
+    box-shadow: 0 10px 24px oklch(0.58 0.13 195 / 0.12);
+    transform: translateY(-1px) scale(1.01);
+  }
+  .answer-btn:active:not(:disabled) {
+    transform: scale(0.99);
   }
   .answer-btn.selected {
     border-color: oklch(0.58 0.13 195);
     background-color: oklch(0.58 0.13 195 / 0.08);
     color: oklch(0.35 0.10 195);
-    box-shadow: 0 2px 12px oklch(0.58 0.13 195 / 0.18);
+    box-shadow: 0 14px 32px oklch(0.58 0.13 195 / 0.18);
+    transform: translateY(-1px) scale(1.01);
+    animation: answerSelectPop 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .answer-btn.selected .answer-indicator {
+    box-shadow: 0 0 0 5px oklch(0.58 0.13 195 / 0.14);
   }
 
   /* Progress bar */
@@ -255,6 +266,11 @@
   }
   .animate-fade-in {
     animation: fadeIn 0.4s ease-out forwards;
+  }
+  @keyframes answerSelectPop {
+    0% { transform: scale(0.985); }
+    60% { transform: scale(1.015); }
+    100% { transform: scale(1.01); }
   }
   /* Quiz slide transition keyframes */
   @keyframes slideInFromRight {

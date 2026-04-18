@@ -123,14 +123,16 @@ export default function SessionDetail({ sessionId }: Props) {
             <div className="mt-2 text-sm font-medium text-foreground">{session.lead?.email ?? "Anonymous visitor"}</div>
           </div>
           <div>
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">Answers</div>
-            <div className="mt-2 text-sm font-medium text-foreground">
-              {session.lead?.decodedAnswers.length ? `${session.lead.decodedAnswers.length} questions` : "No quiz submitted"}
-            </div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Top Match</div>
+            <div className="mt-2 text-sm font-medium text-foreground">{session.lead?.topPeptideMatch ?? "—"}</div>
           </div>
           <div>
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">Top Score</div>
-            <div className="mt-2 text-sm font-medium text-foreground">{session.lead?.tier ? `Tier ${session.lead.tier}` : "—"}</div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Budget</div>
+            <div className="mt-2 text-sm font-medium text-foreground">{session.lead?.budget ?? "—"}</div>
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Age Range</div>
+            <div className="mt-2 text-sm font-medium text-foreground">{session.lead?.ageRange ?? "—"}</div>
           </div>
           <div>
             <div className="text-xs uppercase tracking-wide text-muted-foreground">Started</div>
@@ -140,12 +142,30 @@ export default function SessionDetail({ sessionId }: Props) {
             <div className="text-xs uppercase tracking-wide text-muted-foreground">Duration</div>
             <div className="mt-2 text-sm font-medium text-foreground">{formatDuration(session.totalDurationMs)}</div>
           </div>
-          <div>
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">Source</div>
-            <div className="mt-2 text-sm font-medium text-foreground">{session.utmSource ?? formatReferrer(session.referrer)}</div>
-          </div>
         </div>
       </div>
+
+      {session.lead ? (
+        <div className={cardClass()}>
+          <div className="flex items-center gap-2">
+            <Mail className="h-4 w-4 text-accent" />
+            <h2 className="text-lg font-semibold">Key Lead Info</h2>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {[
+              ["Email", session.lead.email],
+              ["Top Match", session.lead.topPeptideMatch],
+              ["Budget", session.lead.budget],
+              ["Age Range", session.lead.ageRange],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-lg border border-border px-4 py-3 text-sm">
+                <div className="text-muted-foreground">{label}</div>
+                <div className="mt-1 font-medium text-foreground">{value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(340px,0.8fr)]">
         <div className="space-y-6">
@@ -307,16 +327,14 @@ export default function SessionDetail({ sessionId }: Props) {
               <div className={cardClass()}>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-accent" />
-                  <h2 className="text-lg font-semibold">Lead Profile</h2>
+                  <h2 className="text-lg font-semibold">Lead Context</h2>
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   {[
-                    ["Email", session.lead.email],
-                    ["Age range", session.lead.ageRange],
-                    ["Budget", session.lead.budget],
                     ["Primary goal", session.lead.primaryGoal],
-                    ["Top match", session.lead.topPeptideMatch],
                     ["Tier", `Tier ${session.lead.tier}`],
+                    ["Consent", session.lead.consentGiven ? "Given" : "Missing"],
+                    ["Lead created", new Date(session.lead.createdAt).toLocaleString()],
                   ].map(([label, value]) => (
                     <div key={label} className="rounded-lg border border-border px-4 py-3 text-sm">
                       <div className="text-muted-foreground">{label}</div>

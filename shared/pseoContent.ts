@@ -229,6 +229,108 @@ export const pseoContentRecords: Record<string, PseoContentRecord> = {
       },
     ],
   },
+  "/stacks/recovery-stack": {
+    path: "/stacks/recovery-stack",
+    summary:
+      "The Recovery Stack usually refers to BPC-157 plus TB-500, a pairing that shows up constantly in tendon, ligament, joint, and post-injury conversations. The appeal is straightforward: BPC-157 is usually discussed for localized tissue support, while TB-500 is discussed more often for systemic recovery and inflammation modulation.",
+    keyPoints: [
+      "BPC-157 and TB-500 are often paired because people want both local tissue support and broader recovery signaling.",
+      "Most of the enthusiasm around this stack comes from preclinical logic and anecdotal reports, not large human trials.",
+      "The real risks are sourcing quality, sterile handling, unrealistic expectations, and using a stack when a clinician should be evaluating a structural injury.",
+    ],
+    scorecard: [
+      { label: "Recovery fit", value: 9, note: "Frequently researched for injuries and soft-tissue repair" },
+      { label: "Evidence", value: 4, note: "Strong interest, limited human clinical depth" },
+      { label: "Complexity", value: 8, note: "Stacking, sourcing, and injections add friction" },
+      { label: "Caution", value: 8, note: "Do not confuse online enthusiasm with proven medical certainty" },
+    ],
+    blocks: [
+      {
+        heading: "Why these peptides are stacked together",
+        body:
+          "People pair BPC-157 with TB-500 because the compounds are usually framed as complementary rather than redundant. BPC-157 is often discussed for tendon, ligament, joint, and gut-support contexts, while TB-500 is usually described as the more systemic recovery peptide in the pair.",
+      },
+      {
+        heading: "What a realistic protocol conversation looks like",
+        body:
+          "A serious provider or educational page should talk about injury type, whether the issue is acute or chronic, what supporting rehab is happening, and what outcome would count as progress. A stack should not be presented as a shortcut that replaces imaging, physical therapy, or orthopedic evaluation when those are needed.",
+      },
+      {
+        heading: "Where caution belongs",
+        body:
+          "The most common mistakes are stacking too quickly, assuming more compounds means faster healing, copying internet injection plans, or buying from weak gray-market sources. The stack can sound elegant on paper while still being poorly executed in real life.",
+      },
+    ],
+    decisionChecklist: [
+      "Clarify whether the goal is tendon recovery, joint irritation, post-surgical healing, or generalized recovery support.",
+      "Do not use stacking as a substitute for clinical evaluation of a serious injury.",
+      "Verify sterility, source quality, and handling practices before anyone thinks about injections.",
+      "Track progress against pain, function, range of motion, and training capacity rather than hype alone.",
+    ],
+    faqs: [
+      {
+        question: "Why do people combine BPC-157 and TB-500?",
+        answer:
+          "Usually because they want the perceived local-repair benefits of BPC-157 alongside the more systemic recovery narrative around TB-500.",
+      },
+      {
+        question: "Does stacking automatically mean better results?",
+        answer:
+          "No. More compounds do not guarantee a better outcome, and stacking can increase cost, complexity, and sourcing risk without solving the underlying problem.",
+      },
+    ],
+  },
+  "/reviews/bpc-157-review": {
+    path: "/reviews/bpc-157-review",
+    summary:
+      "A useful BPC-157 review should balance two truths at the same time: the preclinical story is unusually compelling for a recovery compound, and the human evidence still does not justify the certainty you see on many vendor pages. That tension is the whole review.",
+    keyPoints: [
+      "BPC-157 has broad preclinical momentum in tendon, ligament, muscle, and gut-related discussions.",
+      "The largest weakness is still the lack of robust, large-scale human clinical evidence.",
+      "A serious review should talk as much about sourcing and evidence limits as about upside.",
+    ],
+    scorecard: [
+      { label: "Evidence quality", value: 7, note: "Excellent preclinical depth, limited human proof" },
+      { label: "Safety profile", value: 8, note: "Anecdotally favorable, but human certainty remains incomplete" },
+      { label: "Value for money", value: 7, note: "Can be compelling if the recovery use case is well chosen" },
+      { label: "Ease of use", value: 6, note: "Handling, sourcing, and injection comfort matter" },
+    ],
+    blocks: [
+      {
+        heading: "What stands out",
+        body:
+          "BPC-157 has one of the most developed recovery narratives in the peptide world. That is not just marketing momentum; there is a real base of preclinical interest across tendon, ligament, soft tissue, and gut-related research themes.",
+      },
+      {
+        heading: "What keeps the review from going higher",
+        body:
+          "The biggest drag on any honest BPC-157 rating is the same thing every time: strong mechanistic and preclinical interest is not the same as mature human clinical proof. People should know that before they treat the compound like settled medicine.",
+      },
+      {
+        heading: "Who tends to research it",
+        body:
+          "BPC-157 usually attracts athletes with stubborn connective-tissue issues, people dealing with recurring joint irritation, and users interested in gut-support discussions. The fit question matters more than the hype question.",
+      },
+    ],
+    decisionChecklist: [
+      "Separate preclinical enthusiasm from proven clinical certainty.",
+      "Ask whether the source is trusted enough to justify the experiment at all.",
+      "Be skeptical of any review that never mentions evidence limits or sourcing quality.",
+      "Avoid using a review as permission to self-manage a serious injury without medical input.",
+    ],
+    faqs: [
+      {
+        question: "Is BPC-157 worth it for everyone with an injury?",
+        answer:
+          "No. The right question is whether the recovery context, evidence tolerance, and sourcing quality justify it for that person, not whether it sounds exciting in general.",
+      },
+      {
+        question: "Why do so many BPC-157 reviews sound overly certain?",
+        answer:
+          "Because the compound has strong anecdotal momentum and commercial interest, which often makes the human-evidence caveats feel quieter than they should be.",
+      },
+    ],
+  },
   "/reviews/semaglutide-review": {
     path: "/reviews/semaglutide-review",
     summary:

@@ -296,15 +296,17 @@ export default function QuizFlow() {
                   key={idx}
                   onClick={() => handleSelectAnswer(idx)}
                   disabled={selectedAnswer !== null || isTransitioning}
+                  aria-pressed={selectedAnswer === idx}
                   className={`answer-btn ${selectedAnswer === idx ? "selected" : ""} ${
                     selectedAnswer !== null && selectedAnswer !== idx
                       ? "opacity-40 cursor-default"
                       : ""
                   }`}
+                  style={{ animationDelay: `${idx * 35}ms` }}
                 >
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div
-                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${
+                      className={`answer-indicator w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${
                         selectedAnswer === idx
                           ? "border-accent bg-accent"
                           : "border-border"
@@ -314,7 +316,12 @@ export default function QuizFlow() {
                         <div className="w-2 h-2 rounded-full bg-white" />
                       )}
                     </div>
-                    <span className="text-sm sm:text-base leading-snug text-left">{option}</span>
+                    <span className="text-sm sm:text-base leading-snug text-left flex-1">{option}</span>
+                    {selectedAnswer === idx ? (
+                      <span className="text-xs font-semibold uppercase tracking-wide text-accent">
+                        Selected
+                      </span>
+                    ) : null}
                   </div>
                 </button>
               ))}

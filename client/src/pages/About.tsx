@@ -26,7 +26,7 @@ export default function About() {
             Built on Independence. Grounded in Science.
           </h1>
           <p className="text-white/75 text-lg leading-relaxed">
-            PeptideMatch exists because the peptide space needed a platform with no agenda — one that puts your biology first, not a brand's bottom line.
+            PeptidePilot exists because the peptide space needed a platform with no agenda — one that puts your biology first, not a brand's bottom line.
           </p>
         </div>
       </section>
@@ -41,7 +41,7 @@ export default function About() {
             The peptide industry is growing rapidly — and with that growth comes noise. Proprietary quiz funnels that recommend the same products regardless of your profile. Marketing dressed up as science. Affiliate-first recommendations masquerading as personalized advice.
           </p>
           <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-            PeptideMatch was built as a direct response to this. We are an independent analysis platform. We don't manufacture peptides. We don't have exclusive relationships with any vendor. We don't have a proprietary product line to push. Our only objective is to match your unique biological profile to the compounds most supported by current research.
+            PeptidePilot was built as a direct response to this. We are an independent analysis platform. We don't manufacture peptides. We don't have exclusive relationships with any vendor. We don't have a proprietary product line to push. Our only objective is to match your unique biological profile to the compounds most supported by current research.
           </p>
           <p className="text-muted-foreground text-lg leading-relaxed">
             When we recommend BPC-157 for joint recovery or Selank for anxiety, it's because the data supports it for your specific profile — not because we have inventory to move.
@@ -92,7 +92,7 @@ export default function About() {
             How We Sustain the Platform
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-            We believe in full transparency. PeptideMatch is free to use because we operate a sustainable business model built around two things:
+            We believe in full transparency. PeptidePilot is free to use because we operate a sustainable business model built around two things:
           </p>
           <div className="space-y-4 mb-8">
             {[
