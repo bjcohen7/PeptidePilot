@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -12,26 +13,42 @@ import SessionTracker from "./components/SessionTracker";
 import Seo from "./components/Seo";
 
 // Pages
-import Home from "./pages/Home";
-import QuizEntry from "./pages/QuizEntry";
-import QuizFlow from "./pages/QuizFlow";
-import Processing from "./pages/Processing";
-import Results from "./pages/Results";
-import About from "./pages/About";
-import Blog from "./pages/Blog";
-import { PrivacyPolicy, TermsOfService, MedicalDisclaimer } from "./pages/Legal";
-import BlogArticle from "./pages/BlogArticle";
-import { FAQPage, PseoHub, PseoSectionPage } from "./pages/PseoPages";
-import PeptideProfile from "./pages/pseo/PeptideProfile";
-import GoalPage from "./pages/pseo/GoalPage";
-import ComparisonPage from "./pages/pseo/ComparisonPage";
-import StackPage from "./pages/pseo/StackPage";
-import GuidePage from "./pages/pseo/GuidePage";
-import ForConditionPage from "./pages/pseo/ForConditionPage";
-import ReviewPage from "./pages/pseo/ReviewPage";
-import AffiliatePartnersAdmin from "./pages/admin/AffiliatePartners";
-import InsightsOverview from "./pages/admin/InsightsOverview";
-import SessionDetail from "./pages/admin/SessionDetail";
+const Home = lazy(() => import("./pages/Home"));
+const QuizEntry = lazy(() => import("./pages/QuizEntry"));
+const QuizFlow = lazy(() => import("./pages/QuizFlow"));
+const Processing = lazy(() => import("./pages/Processing"));
+const Results = lazy(() => import("./pages/Results"));
+const About = lazy(() => import("./pages/About"));
+const Blog = lazy(() => import("./pages/Blog"));
+const PrivacyPolicy = lazy(() =>
+  import("./pages/Legal").then((module) => ({ default: module.PrivacyPolicy })),
+);
+const TermsOfService = lazy(() =>
+  import("./pages/Legal").then((module) => ({ default: module.TermsOfService })),
+);
+const MedicalDisclaimer = lazy(() =>
+  import("./pages/Legal").then((module) => ({ default: module.MedicalDisclaimer })),
+);
+const BlogArticle = lazy(() => import("./pages/BlogArticle"));
+const PseoHub = lazy(() =>
+  import("./pages/PseoPages").then((module) => ({ default: module.PseoHub })),
+);
+const PseoSectionPage = lazy(() =>
+  import("./pages/PseoPages").then((module) => ({ default: module.PseoSectionPage })),
+);
+const FAQPage = lazy(() =>
+  import("./pages/PseoPages").then((module) => ({ default: module.FAQPage })),
+);
+const PeptideProfile = lazy(() => import("./pages/pseo/PeptideProfile"));
+const GoalPage = lazy(() => import("./pages/pseo/GoalPage"));
+const ComparisonPage = lazy(() => import("./pages/pseo/ComparisonPage"));
+const StackPage = lazy(() => import("./pages/pseo/StackPage"));
+const GuidePage = lazy(() => import("./pages/pseo/GuidePage"));
+const ForConditionPage = lazy(() => import("./pages/pseo/ForConditionPage"));
+const ReviewPage = lazy(() => import("./pages/pseo/ReviewPage"));
+const AffiliatePartnersAdmin = lazy(() => import("./pages/admin/AffiliatePartners"));
+const InsightsOverview = lazy(() => import("./pages/admin/InsightsOverview"));
+const SessionDetail = lazy(() => import("./pages/admin/SessionDetail"));
 
 // Pages that should NOT show the standard navbar/footer
 const BARE_ROUTES = ["/quiz/flow", "/processing"];
@@ -51,6 +68,14 @@ function PublicLayout({ children }: { children: React.ReactNode }) {
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />
+    </div>
+  );
+}
+
+function RouteFallback() {
+  return (
+    <div className="min-h-[40vh] flex items-center justify-center px-4">
+      <div className="text-sm text-muted-foreground">Loading…</div>
     </div>
   );
 }
@@ -112,196 +137,258 @@ function Router() {
       {/* Landing page */}
       <Route path="/">
         <PublicLayout>
-          <Home />
+          <Suspense fallback={<RouteFallback />}>
+            <Home />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       {/* Quiz entry — minimal header, no footer */}
       <Route path="/quiz">
-        <QuizEntry />
+        <Suspense fallback={<RouteFallback />}>
+          <QuizEntry />
+        </Suspense>
       </Route>
 
       {/* Quiz flow — fully self-contained */}
       <Route path="/quiz/flow">
-        <QuizFlow />
+        <Suspense fallback={<RouteFallback />}>
+          <QuizFlow />
+        </Suspense>
       </Route>
 
       {/* Processing screen — no nav */}
       <Route path="/processing">
-        <Processing />
+        <Suspense fallback={<RouteFallback />}>
+          <Processing />
+        </Suspense>
       </Route>
 
       {/* Results — manages its own header */}
       <Route path="/results">
-        <Results />
+        <Suspense fallback={<RouteFallback />}>
+          <Results />
+        </Suspense>
       </Route>
 
       {/* Supporting pages */}
       <Route path="/about">
         <PublicLayout>
-          <About />
+          <Suspense fallback={<RouteFallback />}>
+            <About />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/blog">
         <PublicLayout>
-          <Blog />
+          <Suspense fallback={<RouteFallback />}>
+            <Blog />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/blog/:slug">
         {(params) => (
           <PublicLayout>
-            <BlogArticle params={params} />
+            <Suspense fallback={<RouteFallback />}>
+              <BlogArticle params={params} />
+            </Suspense>
           </PublicLayout>
         )}
       </Route>
 
       <Route path="/learn">
         <PublicLayout>
-          <PseoHub />
+          <Suspense fallback={<RouteFallback />}>
+            <PseoHub />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/peptides">
         <PublicLayout>
-          <PseoSectionPage sectionKey="peptides" />
+          <Suspense fallback={<RouteFallback />}>
+            <PseoSectionPage sectionKey="peptides" />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/peptides/:slug">
         {(params) => (
           <PublicLayout>
-            <PeptideProfile params={params} />
+            <Suspense fallback={<RouteFallback />}>
+              <PeptideProfile params={params} />
+            </Suspense>
           </PublicLayout>
         )}
       </Route>
 
       <Route path="/goals">
         <PublicLayout>
-          <PseoSectionPage sectionKey="goals" />
+          <Suspense fallback={<RouteFallback />}>
+            <PseoSectionPage sectionKey="goals" />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/goals/:slug">
         {(params) => (
           <PublicLayout>
-            <GoalPage params={params} />
+            <Suspense fallback={<RouteFallback />}>
+              <GoalPage params={params} />
+            </Suspense>
           </PublicLayout>
         )}
       </Route>
 
       <Route path="/compare">
         <PublicLayout>
-          <PseoSectionPage sectionKey="compare" />
+          <Suspense fallback={<RouteFallback />}>
+            <PseoSectionPage sectionKey="compare" />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/compare/:slug">
         {(params) => (
           <PublicLayout>
-            <ComparisonPage params={params} />
+            <Suspense fallback={<RouteFallback />}>
+              <ComparisonPage params={params} />
+            </Suspense>
           </PublicLayout>
         )}
       </Route>
 
       <Route path="/stacks">
         <PublicLayout>
-          <PseoSectionPage sectionKey="stacks" />
+          <Suspense fallback={<RouteFallback />}>
+            <PseoSectionPage sectionKey="stacks" />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/stacks/:slug">
         {(params) => (
           <PublicLayout>
-            <StackPage params={params} />
+            <Suspense fallback={<RouteFallback />}>
+              <StackPage params={params} />
+            </Suspense>
           </PublicLayout>
         )}
       </Route>
 
       <Route path="/guides">
         <PublicLayout>
-          <PseoSectionPage sectionKey="guides" />
+          <Suspense fallback={<RouteFallback />}>
+            <PseoSectionPage sectionKey="guides" />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/guides/:slug">
         <PublicLayout>
-          <GuidePage />
+          <Suspense fallback={<RouteFallback />}>
+            <GuidePage />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/for">
         <PublicLayout>
-          <PseoSectionPage sectionKey="for" />
+          <Suspense fallback={<RouteFallback />}>
+            <PseoSectionPage sectionKey="for" />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/for/:slug">
         <PublicLayout>
-          <ForConditionPage />
+          <Suspense fallback={<RouteFallback />}>
+            <ForConditionPage />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/reviews">
         <PublicLayout>
-          <PseoSectionPage sectionKey="reviews" />
+          <Suspense fallback={<RouteFallback />}>
+            <PseoSectionPage sectionKey="reviews" />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/reviews/:slug">
         <PublicLayout>
-          <ReviewPage />
+          <Suspense fallback={<RouteFallback />}>
+            <ReviewPage />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/privacy">
         <PublicLayout>
-          <PrivacyPolicy />
+          <Suspense fallback={<RouteFallback />}>
+            <PrivacyPolicy />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/terms">
         <PublicLayout>
-          <TermsOfService />
+          <Suspense fallback={<RouteFallback />}>
+            <TermsOfService />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/disclaimer">
         <PublicLayout>
-          <MedicalDisclaimer />
+          <Suspense fallback={<RouteFallback />}>
+            <MedicalDisclaimer />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/faq">
         <PublicLayout>
-          <FAQPage />
+          <Suspense fallback={<RouteFallback />}>
+            <FAQPage />
+          </Suspense>
         </PublicLayout>
       </Route>
 
       <Route path="/admin/partners">
         <DashboardLayout>
-          <AffiliatePartnersAdmin />
+          <Suspense fallback={<RouteFallback />}>
+            <AffiliatePartnersAdmin />
+          </Suspense>
         </DashboardLayout>
       </Route>
 
       <Route path="/admin/sessions/:sessionId">
         {(params) => (
           <DashboardLayout>
-            <SessionDetail sessionId={params.sessionId} />
+            <Suspense fallback={<RouteFallback />}>
+              <SessionDetail sessionId={params.sessionId} />
+            </Suspense>
           </DashboardLayout>
         )}
       </Route>
 
       <Route path="/admin/sessions">
         <DashboardLayout>
-          <InsightsOverview />
+          <Suspense fallback={<RouteFallback />}>
+            <InsightsOverview />
+          </Suspense>
         </DashboardLayout>
       </Route>
 
       <Route path="/admin">
         <DashboardLayout>
-          <InsightsOverview />
+          <Suspense fallback={<RouteFallback />}>
+            <InsightsOverview />
+          </Suspense>
         </DashboardLayout>
       </Route>
 
