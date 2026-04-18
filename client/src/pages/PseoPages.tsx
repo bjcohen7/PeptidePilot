@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowRight, BookOpen, CheckCircle2, FlaskConical, ShieldCheck } from "lucide-react";
+import { ArrowRight, CheckCircle2, FlaskConical, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getPseoEntry, getPseoSection, pseoSections, type PseoSectionKey } from "@/data/pseo";
 import { getPseoContent } from "../../../shared/pseoContent";
@@ -62,6 +62,91 @@ const SECTION_ACCENTS: Record<PseoSectionKey, string[]> = {
   for: ["Research themes", "Related goals", "Clinical context"],
   reviews: ["Evidence summary", "Claim review", "Sourcing checks"],
 };
+
+const SECTION_COVER_STYLES: Record<
+  PseoSectionKey,
+  { panel: string; accent: string; eyebrow: string }
+> = {
+  peptides: {
+    panel: "from-teal-950 via-cyan-900 to-cyan-700",
+    accent: "bg-cyan-300/70",
+    eyebrow: "Compound profile",
+  },
+  goals: {
+    panel: "from-emerald-950 via-teal-900 to-sky-800",
+    accent: "bg-emerald-300/70",
+    eyebrow: "Goal research",
+  },
+  compare: {
+    panel: "from-slate-950 via-slate-800 to-blue-700",
+    accent: "bg-blue-300/70",
+    eyebrow: "Head-to-head",
+  },
+  stacks: {
+    panel: "from-zinc-950 via-slate-800 to-teal-700",
+    accent: "bg-teal-300/70",
+    eyebrow: "Protocol map",
+  },
+  guides: {
+    panel: "from-stone-950 via-slate-800 to-cyan-700",
+    accent: "bg-cyan-200/70",
+    eyebrow: "Practical guide",
+  },
+  for: {
+    panel: "from-slate-950 via-emerald-900 to-teal-700",
+    accent: "bg-emerald-200/70",
+    eyebrow: "Condition focus",
+  },
+  reviews: {
+    panel: "from-slate-950 via-cyan-900 to-sky-700",
+    accent: "bg-sky-300/70",
+    eyebrow: "Independent review",
+  },
+};
+
+function toCoverTitle(title: string) {
+  return title
+    .replace(/^Peptides for\s+/i, "")
+    .replace(/^How To Use\s+/i, "")
+    .replace(/\s+review$/i, "")
+    .trim();
+}
+
+function PseoCardCover({
+  sectionKey,
+  title,
+  meta,
+}: {
+  sectionKey: PseoSectionKey;
+  title: string;
+  meta: string;
+}) {
+  const style = SECTION_COVER_STYLES[sectionKey];
+  const coverTitle = toCoverTitle(title);
+
+  return (
+    <div className={`rounded-lg bg-gradient-to-br ${style.panel} p-4 text-white`}>
+      <div className="flex items-start justify-between gap-3 mb-8">
+        <div className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/70">
+          {style.eyebrow}
+        </div>
+        <div className={`h-2.5 w-2.5 rounded-full ${style.accent} shadow-[0_0_18px_rgba(255,255,255,0.24)]`} />
+      </div>
+      <div className="space-y-3">
+        <h3
+          className="max-w-[16ch] text-xl font-normal leading-tight"
+          style={{ fontFamily: "'DM Serif Display', serif" }}
+        >
+          {coverTitle}
+        </h3>
+        <div className="flex items-center gap-2">
+          <div className="h-px flex-1 bg-white/30" />
+          <div className="text-[11px] uppercase tracking-[0.08em] text-white/70">{meta}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function slugToSearchText(slug: string) {
   return slug
@@ -127,8 +212,8 @@ export function PseoHub() {
             {pseoSections.map((section) => (
               <Link key={section.key} href={section.path}>
                 <article className="group h-full bg-white border border-border/60 rounded-xl p-6 hover:border-accent/40 hover:shadow-md transition-all">
-                  <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center mb-5">
-                    <BookOpen className="w-5 h-5 text-accent" />
+                  <div className="mb-5">
+                    <PseoCardCover sectionKey={section.key} title={section.label} meta={`${section.entries.length} pages`} />
                   </div>
                   <h2 className="text-xl font-semibold text-foreground mb-2 group-hover:text-accent transition-colors">
                     {section.label}
@@ -183,6 +268,9 @@ export function PseoSectionPage({ sectionKey }: { sectionKey: PseoSectionKey }) 
             {section.entries.map((entry) => (
               <Link key={entry.path} href={entry.path}>
                 <article className="group h-full rounded-xl border border-border/60 bg-white p-5 hover:border-accent/40 hover:shadow-sm transition-all">
+                  <div className="mb-4">
+                    <PseoCardCover sectionKey={sectionKey} title={entry.title} meta={section.label} />
+                  </div>
                   <h3 className="font-semibold text-foreground mb-2 group-hover:text-accent transition-colors">
                     {entry.title}
                   </h3>
