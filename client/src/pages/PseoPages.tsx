@@ -844,8 +844,8 @@ export function PseoDetailPage({
       </section>
 
       <section className="bg-brand-gradient text-white py-14 md:py-16">
-        <div className="mx-auto w-full max-w-[1360px] px-4 sm:px-6 lg:px-8">
-          <div className="max-w-5xl">
+        <div className={cn("mx-auto w-full px-4 sm:px-6 lg:px-8", isPeptide ? "max-w-[1280px]" : "max-w-[1360px]")}>
+          <div className={cn(isPeptide ? "max-w-4xl" : "max-w-5xl")}>
             <div className="flex flex-wrap gap-2 mb-4">
               {heroTags.map((tag) => (
                 <span key={tag} className="rounded-full border border-white/20 bg-white/8 px-3 py-1 text-[11px] font-semibold tracking-wide text-white/85">
@@ -853,7 +853,7 @@ export function PseoDetailPage({
                 </span>
               ))}
             </div>
-            <h1 className="max-w-5xl text-4xl md:text-[3.35rem] font-normal mb-4 leading-[0.98]" style={{ fontFamily: "'DM Serif Display', serif" }}>
+            <h1 className={cn("text-4xl md:text-[3.35rem] font-normal mb-4 leading-[0.98]", isPeptide ? "max-w-4xl" : "max-w-5xl")} style={{ fontFamily: "'DM Serif Display', serif" }}>
               {isCompare ? `${entry.title}: Which Is Right for You?` : entry.title}
             </h1>
             {isPeptide && primaryProfile ? (
