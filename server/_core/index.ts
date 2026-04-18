@@ -8,7 +8,7 @@ import { appRouter } from "../routers";
 import { ensureAffiliateWorkspaceSchema } from "../db";
 import { createContext } from "./context";
 import { ENV } from "./env";
-import { recordPageView } from "../routers/analytics";
+import { recordClickEvent, recordPageView } from "../routers/analytics";
 import { serveStatic, setupVite } from "./vite";
 import { blogPosts } from "../../shared/blog";
 import { pseoSections } from "../../shared/pseo";
@@ -110,6 +110,21 @@ async function startServer() {
     } catch (error) {
       console.error("[Analytics] Failed to record page view:", error);
       res.status(400).json({ error: "invalid_page_view" });
+    }
+  });
+  app.post("/api/analytics/click", express.json({ limit: "1mb" }), async (req, res) => {
+    try {
+      await recordClickEvent({
+        sessionId: String(req.body?.sessionId ?? ""),
+        path: String(req.body?.path ?? ""),
+        label: String(req.body?.label ?? ""),
+        targetHref: typeof req.body?.targetHref === "string" ? req.body.targetHref : null,
+        eventType: String(req.body?.eventType ?? "click"),
+      });
+      res.status(204).end();
+    } catch (error) {
+      console.error("[Analytics] Failed to record click:", error);
+      res.status(400).json({ error: "invalid_click_event" });
     }
   });
   app.get("/api/health", (_req, res) => {

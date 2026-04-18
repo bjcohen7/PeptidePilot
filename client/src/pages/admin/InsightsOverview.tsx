@@ -65,6 +65,12 @@ export default function InsightsOverview() {
       icon: Timer,
       note: "Tracked public-site time",
     },
+    {
+      label: "Tracked Clicks",
+      value: summary.data?.totalClicks ?? 0,
+      icon: MousePointerClick,
+      note: "Internal, CTA, and outbound clicks",
+    },
   ];
 
   return (
@@ -77,7 +83,7 @@ export default function InsightsOverview() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {cards.map((card) => (
           <div key={card.label} className={cardClass()}>
             <div className="flex items-center justify-between gap-3">
@@ -246,11 +252,44 @@ export default function InsightsOverview() {
                 </div>
               </div>
 
+              <div>
+                <h3 className="text-base font-semibold mb-3">Click timeline</h3>
+                <div className="space-y-2">
+                  {selectedSession.clicks.map((click) => (
+                    <div key={click.id} className="flex items-center justify-between gap-4 rounded-lg border border-border px-4 py-3 text-sm">
+                      <div className="min-w-0">
+                        <div className="font-medium text-foreground">{click.label}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {click.eventType} · {click.path}
+                          {click.targetHref ? ` · ${click.targetHref}` : ""}
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground whitespace-nowrap">
+                        {new Date(click.createdAt).toLocaleString()}
+                      </div>
+                    </div>
+                  ))}
+                  {!selectedSession.clicks.length ? (
+                    <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+                      No click events recorded yet for this session.
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
               {selectedSession.lead ? (
                 <>
                   <div>
                     <h3 className="text-base font-semibold mb-3">Lead summary</h3>
                     <div className="grid gap-3 md:grid-cols-2">
+                      <div className="rounded-lg border border-border px-4 py-3 text-sm">
+                        <div className="text-muted-foreground">Email</div>
+                        <div className="mt-1 font-medium text-foreground">{selectedSession.lead.email}</div>
+                      </div>
+                      <div className="rounded-lg border border-border px-4 py-3 text-sm">
+                        <div className="text-muted-foreground">Age range</div>
+                        <div className="mt-1 font-medium text-foreground">{selectedSession.lead.ageRange}</div>
+                      </div>
                       <div className="rounded-lg border border-border px-4 py-3 text-sm">
                         <div className="text-muted-foreground">Primary goal</div>
                         <div className="mt-1 font-medium text-foreground">{selectedSession.lead.primaryGoal}</div>
@@ -282,6 +321,28 @@ export default function InsightsOverview() {
                           <div className="mt-2 text-sm text-muted-foreground">{item.answer}</div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-base font-semibold mb-3">Affiliate clicks</h3>
+                    <div className="space-y-2">
+                      {selectedSession.affiliateClicks.map((item, index) => (
+                        <div key={`${item.vendor}-${item.clickedAt}-${index}`} className="flex items-center justify-between gap-4 rounded-lg border border-border px-4 py-3 text-sm">
+                          <div className="min-w-0">
+                            <div className="font-medium text-foreground">{item.vendor}</div>
+                            <div className="text-xs text-muted-foreground">{item.peptideId}</div>
+                          </div>
+                          <div className="text-xs text-muted-foreground whitespace-nowrap">
+                            {new Date(item.clickedAt).toLocaleString()}
+                          </div>
+                        </div>
+                      ))}
+                      {!selectedSession.affiliateClicks.length ? (
+                        <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+                          No affiliate clicks yet for this lead.
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </>

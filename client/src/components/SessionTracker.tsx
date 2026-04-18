@@ -31,6 +31,19 @@ function shouldTrackPath(path: string) {
   return !path.startsWith("/admin");
 }
 
+function extractClickLabel(target: Element) {
+  const explicit = target.getAttribute("data-track-label");
+  if (explicit) return explicit;
+
+  const aria = target.getAttribute("aria-label");
+  if (aria) return aria.trim();
+
+  const text = target.textContent?.replace(/\s+/g, " ").trim();
+  if (text) return text.slice(0, 255);
+
+  return target.tagName.toLowerCase();
+}
+
 export function getVisitorSessionId() {
   return getOrCreateVisitorSessionId();
 }
@@ -106,6 +119,42 @@ export default function SessionTracker() {
 
     window.addEventListener("pagehide", sendFinalPageView);
     return () => window.removeEventListener("pagehide", sendFinalPageView);
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target instanceof Element ? event.target.closest("a, button, [data-track-click]") : null;
+      if (!target) return;
+
+      const path = currentPathRef.current;
+      if (!shouldTrackPath(path)) return;
+
+      const isAnchor = target instanceof HTMLAnchorElement;
+      const href = isAnchor ? target.href : null;
+      const label = extractClickLabel(target);
+
+      const payload = {
+        sessionId,
+        path,
+        label,
+        targetHref: href,
+        eventType: isAnchor
+          ? href && href.startsWith(window.location.origin)
+            ? "internal-link"
+            : "external-link"
+          : "button",
+      };
+
+      navigator.sendBeacon?.(
+        "/api/analytics/click",
+        new Blob([JSON.stringify(payload)], { type: "application/json" })
+      );
+    };
+
+    document.addEventListener("click", handleClick, true);
+    return () => document.removeEventListener("click", handleClick, true);
   }, [sessionId]);
 
   return null;

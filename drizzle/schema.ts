@@ -163,3 +163,17 @@ export const pageVisits = mysqlTable("page_visits", {
 
 export type PageVisit = typeof pageVisits.$inferSelect;
 export type InsertPageVisit = typeof pageVisits.$inferInsert;
+
+export const clickEvents = mysqlTable("click_events", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("sessionId", { length: 64 }).notNull(),
+  leadId: varchar("leadId", { length: 36 }),
+  path: varchar("path", { length: 512 }).notNull(),
+  label: varchar("label", { length: 255 }).notNull(),
+  targetHref: varchar("targetHref", { length: 1024 }),
+  eventType: varchar("eventType", { length: 64 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ClickEvent = typeof clickEvents.$inferSelect;
+export type InsertClickEvent = typeof clickEvents.$inferInsert;

@@ -29,4 +29,16 @@ CREATE TABLE `page_visits` (
 	CONSTRAINT `page_visits_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `click_events` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`sessionId` varchar(64) NOT NULL,
+	`leadId` varchar(36),
+	`path` varchar(512) NOT NULL,
+	`label` varchar(255) NOT NULL,
+	`targetHref` varchar(1024),
+	`eventType` varchar(64) NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `click_events_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
 ALTER TABLE `leads` ADD COLUMN `sessionId` varchar(64);

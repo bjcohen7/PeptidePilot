@@ -1,6 +1,6 @@
 import { desc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
-import { pageVisits, leads, visitorSessions } from "../../drizzle/schema";
+import { affiliateClicks, clickEvents, pageVisits, leads, visitorSessions } from "../../drizzle/schema";
 import { QUIZ_QUESTIONS } from "../../shared/scoring";
 import { getDb } from "../db";
 import { adminProcedure, publicProcedure, router } from "../_core/trpc";
@@ -10,6 +10,14 @@ const pageViewInput = z.object({
   path: z.string().min(1).max(512),
   durationMs: z.number().int().min(0).max(1000 * 60 * 60),
   referrer: z.string().max(1024).optional().nullable(),
+});
+
+const clickEventInput = z.object({
+  sessionId: z.string().min(8).max(64),
+  path: z.string().min(1).max(512),
+  label: z.string().min(1).max(255),
+  targetHref: z.string().max(1024).optional().nullable(),
+  eventType: z.string().min(1).max(64),
 });
 
 const sessionStartInput = z.object({
@@ -26,6 +34,7 @@ const sessionStartInput = z.object({
 
 type PageViewPayload = z.infer<typeof pageViewInput>;
 type SessionStartPayload = z.infer<typeof sessionStartInput>;
+type ClickEventPayload = z.infer<typeof clickEventInput>;
 
 function normalizeReferrer(referrer?: string | null) {
   if (!referrer) return null;
@@ -111,6 +120,44 @@ export async function recordPageView(input: PageViewPayload) {
     .where(eq(visitorSessions.id, input.sessionId));
 }
 
+export async function recordClickEvent(input: ClickEventPayload) {
+  const db = await getDb();
+  if (!db) return;
+
+  const existing = await db
+    .select()
+    .from(visitorSessions)
+    .where(eq(visitorSessions.id, input.sessionId))
+    .limit(1);
+
+  const leadId = existing[0]?.leadId ?? null;
+
+  if (!existing[0]) {
+    await db.insert(visitorSessions).values({
+      id: input.sessionId,
+      landingPath: normalizePath(input.path),
+      lastPath: normalizePath(input.path),
+    });
+  }
+
+  await db.insert(clickEvents).values({
+    sessionId: input.sessionId,
+    leadId,
+    path: normalizePath(input.path),
+    label: input.label,
+    targetHref: input.targetHref ?? null,
+    eventType: input.eventType,
+  });
+
+  await db
+    .update(visitorSessions)
+    .set({
+      lastSeenAt: new Date(),
+      lastPath: normalizePath(input.path),
+    })
+    .where(eq(visitorSessions.id, input.sessionId));
+}
+
 function decodeQuizAnswers(rawQuizData: unknown) {
   if (!Array.isArray(rawQuizData)) return [];
 
@@ -139,6 +186,11 @@ export const analyticsRouter = router({
     return { status: "ok" as const };
   }),
 
+  trackClick: publicProcedure.input(clickEventInput).mutation(async ({ input }) => {
+    await recordClickEvent(input);
+    return { status: "ok" as const };
+  }),
+
   summary: adminProcedure.query(async () => {
     const db = await getDb();
     if (!db) {
@@ -148,6 +200,7 @@ export const analyticsRouter = router({
         quizCompletionRate: 0,
         avgEngagementSeconds: 0,
         topReferrers: [],
+        totalClicks: 0,
       };
     }
 
@@ -164,6 +217,12 @@ export const analyticsRouter = router({
         totalLeads: sql<number>`count(*)`,
       })
       .from(leads);
+
+    const [clickStats] = await db
+      .select({
+        totalClicks: sql<number>`count(*)`,
+      })
+      .from(clickEvents);
 
     const referrerRows = await db
       .select({
@@ -184,6 +243,7 @@ export const analyticsRouter = router({
     return {
       totalSessions,
       totalLeads,
+      totalClicks: Number(clickStats?.totalClicks ?? 0),
       quizCompletionRate: totalSessions ? Math.round((completedSessions / totalSessions) * 100) : 0,
       avgEngagementSeconds: totalSessions ? Math.round(totalDurationMs / totalSessions / 1000) : 0,
       topReferrers: referrerRows.map((row) => ({
@@ -216,14 +276,40 @@ export const analyticsRouter = router({
           .where(inArray(pageVisits.sessionId, sessionIds))
           .orderBy(desc(pageVisits.createdAt))
       : [];
+    const clickRows = sessionIds.length
+      ? await db
+          .select()
+          .from(clickEvents)
+          .where(inArray(clickEvents.sessionId, sessionIds))
+          .orderBy(desc(clickEvents.createdAt))
+      : [];
+    const affiliateRows = leadIds.length
+      ? await db
+          .select()
+          .from(affiliateClicks)
+          .where(inArray(affiliateClicks.leadId, leadIds))
+          .orderBy(desc(affiliateClicks.clickedAt))
+      : [];
 
     const leadById = new Map(sessionLeadRows.map((lead) => [lead.id, lead]));
     const visitsBySession = new Map<string, typeof visitRows>();
+    const clicksBySession = new Map<string, typeof clickRows>();
+    const affiliateByLead = new Map<string, typeof affiliateRows>();
 
     visitRows.forEach((visit) => {
       const current = visitsBySession.get(visit.sessionId) ?? [];
       current.push(visit);
       visitsBySession.set(visit.sessionId, current);
+    });
+    clickRows.forEach((event) => {
+      const current = clicksBySession.get(event.sessionId) ?? [];
+      current.push(event);
+      clicksBySession.set(event.sessionId, current);
+    });
+    affiliateRows.forEach((event) => {
+      const current = affiliateByLead.get(event.leadId) ?? [];
+      current.push(event);
+      affiliateByLead.set(event.leadId, current);
     });
 
     return sessions.map((session) => {
@@ -238,6 +324,8 @@ export const analyticsRouter = router({
             }
           : null,
         visits: (visitsBySession.get(session.id) ?? []).slice(0, 10),
+        clicks: (clicksBySession.get(session.id) ?? []).slice(0, 20),
+        affiliateClicks: lead ? (affiliateByLead.get(lead.id) ?? []).slice(0, 20) : [],
       };
     });
   }),
