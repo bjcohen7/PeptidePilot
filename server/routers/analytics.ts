@@ -296,6 +296,36 @@ async function buildSessionPayloads(sessionRows: Array<typeof visitorSessions.$i
   });
 }
 
+async function buildBasicSessionPayloads(sessionRows: Array<typeof visitorSessions.$inferSelect>) {
+  const db = await getDb();
+  if (!db || !sessionRows.length) return [];
+
+  const leadIds = sessionRows
+    .map((session) => session.leadId)
+    .filter((value): value is string => Boolean(value));
+  const sessionLeadRows = leadIds.length
+    ? await db.select().from(leads).where(inArray(leads.id, leadIds))
+    : [];
+  const leadById = new Map(sessionLeadRows.map((lead) => [lead.id, lead]));
+
+  return sessionRows.map((session) => {
+    const lead = session.leadId ? leadById.get(session.leadId) ?? null : null;
+    return {
+      ...session,
+      lead: lead
+        ? {
+            ...lead,
+            decodedAnswers: decodeQuizAnswers(lead.rawQuizData),
+            dimensionScores: buildDimensionScores(lead.rawQuizData),
+          }
+        : null,
+      visits: [],
+      clicks: [],
+      affiliateClicks: [],
+    };
+  });
+}
+
 export const analyticsRouter = router({
   startSession: publicProcedure.input(sessionStartInput).mutation(async ({ input }) => {
     await startVisitorSession(input);
@@ -384,7 +414,13 @@ export const analyticsRouter = router({
       .orderBy(desc(visitorSessions.lastSeenAt))
       .limit(250);
 
-    const hydrated = await buildSessionPayloads(sessions);
+    let hydrated;
+    try {
+      hydrated = await buildSessionPayloads(sessions);
+    } catch (error) {
+      console.error("[Analytics] Failed to fully hydrate recent sessions, falling back to basic rows:", error);
+      hydrated = await buildBasicSessionPayloads(sessions);
+    }
     return hydrated.map((session) => ({
       ...session,
       visits: session.visits.slice(0, 10),
