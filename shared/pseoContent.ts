@@ -25,6 +25,57 @@ export type PseoContentRecord = {
 };
 
 export const pseoContentRecords: Record<string, PseoContentRecord> = {
+  "/compare/bpc-157-vs-tb-500": {
+    path: "/compare/bpc-157-vs-tb-500",
+    summary:
+      "BPC-157 excels at localized tendon, ligament, and gut healing. TB-500 is better for systemic muscle recovery and widespread inflammation.",
+    keyPoints: [
+      "BPC-157 is usually framed as the more localized compound in tendon, ligament, joint, and gut-repair conversations.",
+      "TB-500 is usually framed as the more systemic recovery peptide for muscle repair and broader inflammation support.",
+      "A useful comparison is not about hype or stacking by default. It is about whether the recovery need is local, systemic, or both.",
+    ],
+    scorecard: [
+      { label: "Evidence", value: 5, note: "Strong preclinical interest, limited human certainty" },
+      { label: "Goal fit", value: 8, note: "Very relevant for injury and recovery users" },
+      { label: "Complexity", value: 7, note: "Injection handling and sourcing still matter" },
+      { label: "Caution", value: 8, note: "Research-compound context should stay front and center" },
+    ],
+    blocks: [
+      {
+        heading: "BPC-157 Deep Dive",
+        body:
+          "BPC-157 is typically discussed as the more localized healing peptide in the pair. It shows up in tendon, ligament, joint, and gut-repair conversations because the research narrative centers on tissue repair, angiogenesis, and localized recovery support rather than broad systemic recovery alone.",
+      },
+      {
+        heading: "TB-500 Deep Dive",
+        body:
+          "TB-500 is usually positioned as the more systemic recovery peptide. In practical peptide conversations, it is often described as the better fit for widespread muscle recovery, movement-related inflammation, and broader tissue-repair support beyond one localized area.",
+      },
+      {
+        heading: "How to choose",
+        body:
+          "This comparison is most useful when someone is deciding between a local soft-tissue healing narrative and a more systemic recovery narrative. If the issue is specific and localized, BPC-157 usually gets more attention. If the issue is broader or more inflammation-heavy, TB-500 usually gets the nod.",
+      },
+    ],
+    decisionChecklist: [
+      "Clarify whether the problem is localized tendon, ligament, joint, or gut healing versus broader systemic recovery.",
+      "Do not assume stacking is better before deciding whether one compound already fits the use case.",
+      "Treat both compounds as research-context decisions, not settled clinical care.",
+      "Use clinician judgment for structural injuries, persistent pain, or complex recovery situations.",
+    ],
+    faqs: [
+      {
+        question: "Is BPC-157 better than TB-500?",
+        answer:
+          "Not across the board. BPC-157 is usually treated as the better localized option, while TB-500 is usually treated as the better systemic option.",
+      },
+      {
+        question: "Why do people compare BPC-157 and TB-500 so often?",
+        answer:
+          "Because they are often discussed together in injury-recovery circles, with BPC-157 framed as more localized and TB-500 framed as more systemic.",
+      },
+    ],
+  },
   "/compare/semaglutide-vs-tirzepatide": {
     path: "/compare/semaglutide-vs-tirzepatide",
     summary:
