@@ -885,7 +885,7 @@ export function PseoDetailPage({
 
       <section className="py-8 md:py-10">
         <div className="container max-w-6xl grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-8">
-          <div className="rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4">
+          <div className="self-start rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4">
             <div className="flex gap-3">
               <ShieldCheck className="w-5 h-5 text-amber-700 mt-0.5 flex-shrink-0" />
               <p className="text-sm leading-relaxed text-amber-900">
