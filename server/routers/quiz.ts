@@ -26,6 +26,28 @@ async function sendWebhook(url: string | undefined, payload: object) {
   }
 }
 
+async function insertLeadWithCompatibilityFallback(
+  values: typeof leads.$inferInsert
+) {
+  const db = await getDb();
+  if (!db) return false;
+
+  try {
+    await db.insert(leads).values(values);
+    return true;
+  } catch (error) {
+    if (!values.sessionId) {
+      throw error;
+    }
+
+    console.warn("[Quiz] Lead insert with sessionId failed, retrying without sessionId:", error);
+
+    const { sessionId: _sessionId, ...legacyValues } = values;
+    await db.insert(leads).values(legacyValues);
+    return true;
+  }
+}
+
 export const quizRouter = router({
   submitQuiz: publicProcedure
     .input(
@@ -101,7 +123,7 @@ export const quizRouter = router({
       // Store lead in database
       const db = await getDb();
       if (db) {
-        await db.insert(leads).values({
+        await insertLeadWithCompatibilityFallback({
           id: leadId,
           email,
           sessionId: sessionId ?? null,

@@ -215,9 +215,15 @@ async function buildSessionPayloads(sessionRows: Array<typeof visitorSessions.$i
   const sessionLeadRows = leadIds.length
     ? await db.select().from(leads).where(inArray(leads.id, leadIds))
     : [];
-  const fallbackLeadRows = sessionIds.length
-    ? await db.select().from(leads).where(inArray(leads.sessionId, sessionIds))
-    : [];
+  let fallbackLeadRows: Array<typeof leads.$inferSelect> = [];
+  if (sessionIds.length) {
+    try {
+      fallbackLeadRows = await db.select().from(leads).where(inArray(leads.sessionId, sessionIds));
+    } catch (error) {
+      console.warn("[Analytics] Falling back without leads.sessionId linkage:", error);
+      fallbackLeadRows = [];
+    }
+  }
   const visitRows = sessionIds.length
     ? await db
         .select()
