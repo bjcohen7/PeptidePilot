@@ -376,7 +376,7 @@ export const analyticsRouter = router({
       .select()
       .from(visitorSessions)
       .orderBy(desc(visitorSessions.lastSeenAt))
-      .limit(50);
+      .limit(250);
 
     const hydrated = await buildSessionPayloads(sessions);
     return hydrated.map((session) => ({

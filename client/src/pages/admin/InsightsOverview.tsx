@@ -121,7 +121,9 @@ export default function InsightsOverview() {
       <div className={cardClass()}>
         <div className="mb-4">
           <h2 className="text-lg font-semibold">Session Table</h2>
-          <p className="text-sm text-muted-foreground">Newest visitor activity first. Click a row for full session details.</p>
+          <p className="text-sm text-muted-foreground">
+            Newest visitor activity first. Showing the latest 250 sessions. Click a row for full session details.
+          </p>
         </div>
 
         <div className="overflow-x-auto">
