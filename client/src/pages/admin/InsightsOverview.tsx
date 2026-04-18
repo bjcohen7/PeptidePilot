@@ -54,8 +54,16 @@ function statusPill(status: string) {
 }
 
 export default function InsightsOverview() {
-  const summary = trpc.analytics.summary.useQuery(undefined, { retry: false, refetchOnWindowFocus: false });
-  const sessions = trpc.analytics.recentSessions.useQuery(undefined, { retry: false, refetchOnWindowFocus: false });
+  const summary = trpc.analytics.summary.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: true,
+    refetchInterval: 10000,
+  });
+  const sessions = trpc.analytics.recentSessions.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: true,
+    refetchInterval: 10000,
+  });
   const [, setLocation] = useLocation();
 
   const cards = [
