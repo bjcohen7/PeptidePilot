@@ -2,6 +2,8 @@ import { cn } from "@/lib/utils";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { Component, ReactNode } from "react";
 
+const CHUNK_RELOAD_KEY = "peptidepilot_chunk_reload_attempted";
+
 interface Props {
   children: ReactNode;
 }
@@ -9,6 +11,26 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+}
+
+function isChunkLoadError(error: Error | null) {
+  if (!error) return false;
+  const message = `${error.message ?? ""}\n${error.stack ?? ""}`;
+  return (
+    message.includes("Failed to fetch dynamically imported module") ||
+    message.includes("ChunkLoadError") ||
+    message.includes("Loading chunk") ||
+    message.includes("Importing a module script failed")
+  );
+}
+
+function recoverFromChunkError() {
+  if (typeof window === "undefined") return false;
+  const alreadyRetried = window.sessionStorage.getItem(CHUNK_RELOAD_KEY) === "1";
+  if (alreadyRetried) return false;
+  window.sessionStorage.setItem(CHUNK_RELOAD_KEY, "1");
+  window.location.reload();
+  return true;
 }
 
 class ErrorBoundary extends Component<Props, State> {
@@ -19,6 +41,19 @@ class ErrorBoundary extends Component<Props, State> {
 
   static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error) {
+    if (isChunkLoadError(error)) {
+      recoverFromChunkError();
+    }
+  }
+
+  componentDidMount() {
+    if (typeof window === "undefined") return;
+    if (window.sessionStorage.getItem(CHUNK_RELOAD_KEY) === "1") {
+      window.sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+    }
   }
 
   render() {
