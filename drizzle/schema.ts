@@ -21,6 +21,7 @@ export type InsertUser = typeof users.$inferInsert;
 export const leads = mysqlTable("leads", {
   id: varchar("id", { length: 36 }).primaryKey(), // UUID
   email: varchar("email", { length: 320 }).notNull(),
+  sessionId: varchar("sessionId", { length: 64 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   ageRange: varchar("ageRange", { length: 32 }).notNull(),
   primaryGoal: varchar("primaryGoal", { length: 255 }).notNull(),
@@ -124,3 +125,41 @@ export const affiliateAuditEvents = mysqlTable("affiliate_audit_events", {
 
 export type AffiliateAuditEvent = typeof affiliateAuditEvents.$inferSelect;
 export type InsertAffiliateAuditEvent = typeof affiliateAuditEvents.$inferInsert;
+
+/**
+ * Lightweight first-party visitor session tracking for admin visibility.
+ */
+export const visitorSessions = mysqlTable("visitor_sessions", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  leadId: varchar("leadId", { length: 36 }),
+  firstSeenAt: timestamp("firstSeenAt").defaultNow().notNull(),
+  lastSeenAt: timestamp("lastSeenAt").defaultNow().notNull(),
+  landingPath: varchar("landingPath", { length: 512 }).notNull(),
+  lastPath: varchar("lastPath", { length: 512 }),
+  referrer: varchar("referrer", { length: 1024 }),
+  utmSource: varchar("utmSource", { length: 255 }),
+  utmMedium: varchar("utmMedium", { length: 255 }),
+  utmCampaign: varchar("utmCampaign", { length: 255 }),
+  utmContent: varchar("utmContent", { length: 255 }),
+  utmTerm: varchar("utmTerm", { length: 255 }),
+  userAgent: text("userAgent"),
+  pageViewCount: int("pageViewCount").notNull().default(0),
+  totalDurationMs: int("totalDurationMs").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type VisitorSession = typeof visitorSessions.$inferSelect;
+export type InsertVisitorSession = typeof visitorSessions.$inferInsert;
+
+export const pageVisits = mysqlTable("page_visits", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("sessionId", { length: 64 }).notNull(),
+  path: varchar("path", { length: 512 }).notNull(),
+  durationMs: int("durationMs").notNull().default(0),
+  referrer: varchar("referrer", { length: 1024 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PageVisit = typeof pageVisits.$inferSelect;
+export type InsertPageVisit = typeof pageVisits.$inferInsert;

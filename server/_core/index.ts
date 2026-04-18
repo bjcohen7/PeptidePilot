@@ -8,6 +8,7 @@ import { appRouter } from "../routers";
 import { ensureAffiliateWorkspaceSchema } from "../db";
 import { createContext } from "./context";
 import { ENV } from "./env";
+import { recordPageView } from "../routers/analytics";
 import { serveStatic, setupVite } from "./vite";
 import { blogPosts } from "../../shared/blog";
 import { pseoSections } from "../../shared/pseo";
@@ -97,6 +98,20 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.post("/api/analytics/page-view", express.json({ limit: "1mb" }), async (req, res) => {
+    try {
+      await recordPageView({
+        sessionId: String(req.body?.sessionId ?? ""),
+        path: String(req.body?.path ?? ""),
+        durationMs: Number(req.body?.durationMs ?? 0),
+        referrer: typeof req.body?.referrer === "string" ? req.body.referrer : null,
+      });
+      res.status(204).end();
+    } catch (error) {
+      console.error("[Analytics] Failed to record page view:", error);
+      res.status(400).json({ error: "invalid_page_view" });
+    }
+  });
   app.get("/api/health", (_req, res) => {
     res.json({
       status: "ok",

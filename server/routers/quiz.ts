@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { leads, affiliateClicks } from "../../drizzle/schema";
+import { leads, affiliateClicks, visitorSessions } from "../../drizzle/schema";
 import { calculateMatches, determineTier } from "../../shared/scoring";
 import { nanoid } from "nanoid";
 import { notifyOwner } from "../_core/notification";
+import { eq } from "drizzle-orm";
 
 const TIER1_WEBHOOK = process.env.WEBHOOK_TIER1_URL;
 const TIER2_WEBHOOK = process.env.WEBHOOK_TIER2_URL;
@@ -30,10 +31,11 @@ export const quizRouter = router({
         email: z.string().email(),
         consentGiven: z.boolean(),
         answers: z.array(z.number().int().min(0)).length(20),
+        sessionId: z.string().min(8).max(64).optional().nullable(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { email, consentGiven, answers } = input;
+      const { email, consentGiven, answers, sessionId } = input;
 
       if (!consentGiven) {
         throw new Error("Consent is required to submit.");
@@ -89,6 +91,7 @@ export const quizRouter = router({
         await db.insert(leads).values({
           id: leadId,
           email,
+          sessionId: sessionId ?? null,
           ageRange,
           primaryGoal,
           budget,
@@ -99,6 +102,16 @@ export const quizRouter = router({
           ipAddress,
           rawQuizData: answers,
         });
+
+        if (sessionId) {
+          await db
+            .update(visitorSessions)
+            .set({
+              leadId,
+              lastSeenAt: new Date(),
+            })
+            .where(eq(visitorSessions.id, sessionId));
+        }
       }
 
       // Build webhook payload

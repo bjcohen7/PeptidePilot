@@ -8,6 +8,7 @@ import { QuizProvider } from "./contexts/QuizContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import DashboardLayout from "./components/DashboardLayout";
+import SessionTracker from "./components/SessionTracker";
 import Seo from "./components/Seo";
 
 // Pages
@@ -22,20 +23,7 @@ import { PrivacyPolicy, TermsOfService, MedicalDisclaimer } from "./pages/Legal"
 import BlogArticle from "./pages/BlogArticle";
 import { FAQPage, PseoDetailPage, PseoHub, PseoSectionPage } from "./pages/PseoPages";
 import AffiliatePartnersAdmin from "./pages/admin/AffiliatePartners";
-
-function AdminOverview() {
-  return (
-    <div className="space-y-4">
-      <div>
-        <p className="text-sm font-medium text-muted-foreground">Admin</p>
-        <h1 className="text-3xl font-semibold tracking-tight">PeptidePilot Control Room</h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl">
-          Manage the pieces that make the funnel work: affiliate partners, tracked links, leads, and content operations.
-        </p>
-      </div>
-    </div>
-  );
-}
+import InsightsOverview from "./pages/admin/InsightsOverview";
 
 // Pages that should NOT show the standard navbar/footer
 const BARE_ROUTES = ["/quiz/flow", "/processing"];
@@ -297,7 +285,7 @@ function Router() {
 
       <Route path="/admin">
         <DashboardLayout>
-          <AdminOverview />
+          <InsightsOverview />
         </DashboardLayout>
       </Route>
 
@@ -316,6 +304,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <QuizProvider>
+            <SessionTracker />
             <Router />
           </QuizProvider>
         </TooltipProvider>

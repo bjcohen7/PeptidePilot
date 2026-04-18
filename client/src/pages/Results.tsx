@@ -17,6 +17,7 @@ import { useQuiz } from "@/contexts/QuizContext";
 import { calculateMatches, type MatchResult } from "../../../shared/scoring";
 import { trpc } from "@/lib/trpc";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
+import { getVisitorSessionId } from "@/components/SessionTracker";
 
 // ── Lead Capture Gate ─────────────────────────────────────────────────────────
 
@@ -510,6 +511,7 @@ export default function Results() {
       email,
       consentGiven: consent,
       answers: state.answers.map((a) => a ?? 0),
+      sessionId: getVisitorSessionId(),
     });
   };
 

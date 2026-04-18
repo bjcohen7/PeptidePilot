@@ -31,7 +31,7 @@ import { Input } from "./ui/input";
 import { toast } from "sonner";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Overview", path: "/admin" },
+  { icon: LayoutDashboard, label: "Sessions", path: "/admin" },
   { icon: Handshake, label: "Partners", path: "/admin/partners" },
 ];
 
