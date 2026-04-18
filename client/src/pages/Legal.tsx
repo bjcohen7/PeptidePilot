@@ -1,8 +1,32 @@
 import { Link } from "wouter";
+import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
 
 function LegalLayout({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+  const path =
+    title === "Privacy Policy"
+      ? "/privacy"
+      : title === "Terms of Service"
+        ? "/terms"
+        : "/disclaimer";
+  const description =
+    title === "Privacy Policy"
+      ? "Read how PeptidePilot collects, uses, stores, and shares quiz and lead data."
+      : title === "Terms of Service"
+        ? "Review the terms that govern use of the PeptidePilot platform and educational content."
+        : "Understand the medical and regulatory limitations of PeptidePilot's educational peptide content.";
+
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title={title}
+        description={description}
+        path={path}
+        type="website"
+        jsonLd={buildBreadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: title, path },
+        ])}
+      />
       <section className="bg-brand-gradient text-white py-14">
         <div className="container max-w-3xl">
           <h1 className="text-3xl md:text-4xl font-normal mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>

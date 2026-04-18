@@ -1,10 +1,21 @@
 import { CheckCircle2, FlaskConical, ShieldCheck, Users } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
 
 export default function About() {
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="About PeptidePilot"
+        description="Learn how PeptidePilot approaches independent peptide analysis, evidence-backed education, and transparent affiliate relationships."
+        path="/about"
+        type="website"
+        jsonLd={buildBreadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "About", path: "/about" },
+        ])}
+      />
       {/* Hero */}
       <section className="bg-brand-gradient text-white py-20">
         <div className="container max-w-3xl text-center">

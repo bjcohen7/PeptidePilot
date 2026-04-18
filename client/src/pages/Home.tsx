@@ -18,6 +18,7 @@ import {
   Clock,
 } from "lucide-react";
 import { toast } from "sonner";
+import Seo from "@/components/Seo";
 
 const TRUST_BADGES = [
   { icon: ShieldCheck, label: "Independent & Unbiased" },
@@ -70,6 +71,20 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Seo
+        title="Personalized Peptide Recommendations"
+        description="Take the free 5-minute PeptidePilot quiz to get independent, science-backed peptide recommendations tailored to your goals, biology, and lifestyle."
+        path="/"
+        type="website"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "PeptidePilot",
+          description:
+            "Independent peptide research and personalized peptide matching based on your goals, biology, and lifestyle.",
+          url: `${typeof window !== "undefined" ? window.location.origin : "https://peptidepilot.me"}/`,
+        }}
+      />
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-brand-gradient text-white">
         <div

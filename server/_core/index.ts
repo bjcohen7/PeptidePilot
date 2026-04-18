@@ -9,6 +9,7 @@ import { ensureAffiliateWorkspaceSchema } from "../db";
 import { createContext } from "./context";
 import { ENV } from "./env";
 import { serveStatic, setupVite } from "./vite";
+import { blogPosts } from "../../shared/blog";
 import { pseoSections } from "../../shared/pseo";
 
 const STATIC_SITEMAP_PATHS = [
@@ -38,7 +39,8 @@ function buildSitemapXml() {
     section.path,
     ...section.entries.map((entry) => entry.path),
   ]);
-  const paths = Array.from(new Set([...STATIC_SITEMAP_PATHS, ...pseoPaths]));
+  const blogPaths = blogPosts.map((post) => `/blog/${post.slug}`);
+  const paths = Array.from(new Set([...STATIC_SITEMAP_PATHS, ...pseoPaths, ...blogPaths]));
   const today = new Date().toISOString().slice(0, 10);
 
   const urls = paths

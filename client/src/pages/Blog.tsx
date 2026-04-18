@@ -1,62 +1,33 @@
 import { Link } from "wouter";
-import { ArrowRight, Clock } from "lucide-react";
-
-const BLOG_POSTS = [
-  {
-    slug: "what-are-peptides",
-    title: "What Are Peptides? A Beginner's Guide to Bioregulators",
-    excerpt: "Peptides are short chains of amino acids that act as biological messengers in the body. Learn how they differ from proteins, why they're gaining traction in health optimization, and what the research actually says.",
-    category: "Education",
-    readTime: "6 min read",
-    date: "March 2025",
-  },
-  {
-    slug: "bpc157-complete-guide",
-    title: "BPC-157: The Complete Guide to Body Protection Compound",
-    excerpt: "BPC-157 has become one of the most widely discussed peptides in the recovery and injury-healing space. We break down the preclinical evidence, proposed mechanisms, and what users typically report.",
-    category: "Peptide Profiles",
-    readTime: "9 min read",
-    date: "February 2025",
-  },
-  {
-    slug: "glp1-peptides-explained",
-    title: "GLP-1 Peptides Explained: Semaglutide, Tirzepatide, and the Metabolic Revolution",
-    excerpt: "The GLP-1 class of peptides has transformed the conversation around metabolic health and weight management. Here's what the clinical data actually shows — and what it doesn't.",
-    category: "Metabolic Health",
-    readTime: "11 min read",
-    date: "January 2025",
-  },
-  {
-    slug: "peptides-for-sleep",
-    title: "Peptides for Sleep: DSIP, Epithalon, and the Science of Restorative Rest",
-    excerpt: "Poor sleep is one of the most common complaints we see in quiz responses. Several peptides have demonstrated meaningful effects on sleep architecture. Here's what the evidence shows.",
-    category: "Sleep & Recovery",
-    readTime: "7 min read",
-    date: "December 2024",
-  },
-  {
-    slug: "how-to-source-peptides-safely",
-    title: "How to Source Peptides Safely: What to Look For in a Vendor",
-    excerpt: "The peptide market is largely unregulated, which means quality varies enormously. This guide covers the key markers of a trustworthy vendor — from third-party testing to certificate of analysis standards.",
-    category: "Sourcing Guide",
-    readTime: "8 min read",
-    date: "November 2024",
-  },
-  {
-    slug: "cognitive-peptides-selank-semax",
-    title: "Selank and Semax: The Nootropic Peptides Backed by Decades of Research",
-    excerpt: "Developed in Russia and studied extensively for their cognitive and anxiolytic properties, Selank and Semax remain among the most evidence-backed options for mental performance and stress resilience.",
-    category: "Cognition",
-    readTime: "10 min read",
-    date: "October 2024",
-  },
-];
+import { Clock } from "lucide-react";
+import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
+import { blogPosts } from "../../../shared/blog";
 
 const CATEGORIES = ["All", "Education", "Peptide Profiles", "Metabolic Health", "Sleep & Recovery", "Sourcing Guide", "Cognition"];
 
 export default function Blog() {
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="Peptide Science, Explained"
+        description="Evidence-based peptide guides, profiles, sourcing advice, and metabolic-health explainers written to help people understand the science without the hype."
+        path="/blog"
+        type="website"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            name: "PeptidePilot Learn",
+            description:
+              "Evidence-based peptide guides, profiles, and sourcing explainers from PeptidePilot.",
+            url: `${typeof window !== "undefined" ? window.location.origin : "https://peptidepilot.me"}/blog`,
+          },
+          buildBreadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Learn", path: "/blog" },
+          ]),
+        ]}
+      />
       {/* Header */}
       <section className="bg-brand-gradient text-white py-16">
         <div className="container max-w-3xl text-center">
@@ -92,7 +63,7 @@ export default function Blog() {
       <section className="py-16">
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {BLOG_POSTS.map((post) => (
+            {blogPosts.map((post) => (
               <Link key={post.slug} href={`/blog/${post.slug}`}>
                 <article className="group bg-white rounded-2xl border border-border/60 overflow-hidden hover:shadow-md hover:border-accent/30 transition-all h-full flex flex-col">
                   {/* Category color bar */}

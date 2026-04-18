@@ -1,13 +1,14 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { QuizProvider } from "./contexts/QuizContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import DashboardLayout from "./components/DashboardLayout";
+import Seo from "./components/Seo";
 
 // Pages
 import Home from "./pages/Home";
@@ -59,8 +60,59 @@ function PublicLayout({ children }: { children: React.ReactNode }) {
 }
 
 function Router() {
+  const [location] = useLocation();
+
+  const noindexMeta = (() => {
+    if (location === "/quiz") {
+      return {
+        title: "Quiz",
+        description: "Start the PeptidePilot assessment.",
+      };
+    }
+
+    if (location.startsWith("/quiz/flow")) {
+      return {
+        title: "Quiz Flow",
+        description: "PeptidePilot quiz flow.",
+      };
+    }
+
+    if (location.startsWith("/processing")) {
+      return {
+        title: "Processing",
+        description: "PeptidePilot is processing your quiz responses.",
+      };
+    }
+
+    if (location.startsWith("/results")) {
+      return {
+        title: "Results",
+        description: "Personalized PeptidePilot results.",
+      };
+    }
+
+    if (location.startsWith("/admin")) {
+      return {
+        title: "Admin",
+        description: "PeptidePilot admin workspace.",
+      };
+    }
+
+    return null;
+  })();
+
   return (
-    <Switch>
+    <>
+      {noindexMeta ? (
+        <Seo
+          title={noindexMeta.title}
+          description={noindexMeta.description}
+          path={location}
+          type="website"
+          noindex
+        />
+      ) : null}
+      <Switch>
       {/* Landing page */}
       <Route path="/">
         <PublicLayout>
@@ -252,7 +304,8 @@ function Router() {
       {/* 404 */}
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
-    </Switch>
+      </Switch>
+    </>
   );
 }
 

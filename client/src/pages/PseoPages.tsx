@@ -3,6 +3,7 @@ import { ArrowRight, CheckCircle2, FlaskConical, ShieldAlert, ShieldCheck, Star 
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
 import { getPseoEntry, getPseoSection, pseoSections, type PseoSectionKey } from "@/data/pseo";
 import { getPseoContent } from "../../../shared/pseoContent";
 import { peptideProfiles } from "../../../shared/scoring";
@@ -364,6 +365,33 @@ function exploreDescription(sectionKey: PseoSectionKey, itemTitle: string) {
   return `Explore another ${sectionSingularLabel(sectionKey).toLowerCase()} in the research library.`;
 }
 
+function pseoSectionDescription(sectionKey: PseoSectionKey, count: number) {
+  const copy = SECTION_COPY[sectionKey];
+  return `${copy.body} ${count} pages are currently available in this section.`;
+}
+
+function pseoDetailDescription(
+  sectionKey: PseoSectionKey,
+  entryTitle: string,
+  summary?: string,
+  firstKeyPoint?: string,
+) {
+  if (summary) return summary;
+  if (firstKeyPoint) return firstKeyPoint;
+
+  const defaults: Record<PseoSectionKey, string> = {
+    peptides: `${entryTitle} profile covering evidence level, common use cases, sourcing questions, and safety context.`,
+    goals: `${entryTitle} guide covering the compounds people research most often, key tradeoffs, and evidence-aware decision points.`,
+    compare: `${entryTitle} comparison covering the main differences, best-fit scenarios, and the questions worth asking before you choose.`,
+    stacks: `${entryTitle} stack guide covering rationale, dosing context, overlap risks, and the goals this protocol is meant to address.`,
+    guides: `${entryTitle} practical guide covering key steps, safety checks, and the most common mistakes to avoid.`,
+    for: `${entryTitle} research page covering common compounds, related goals, and evidence-aware questions to verify.`,
+    reviews: `${entryTitle} independent review covering evidence quality, benefits, downsides, and sourcing considerations.`,
+  };
+
+  return defaults[sectionKey];
+}
+
 function expandedCompoundName(profile?: (typeof peptideProfiles)[number]) {
   if (!profile) return "";
   const firstSentence = profile.description.split(".")[0]?.trim() ?? "";
@@ -509,6 +537,25 @@ function PageHero({
 export function PseoHub() {
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="PeptidePilot Research Library"
+        description="Browse peptide profiles, goal guides, comparisons, stack concepts, practical peptide guides, and independent reviews inside the PeptidePilot research library."
+        path="/learn"
+        type="website"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: "PeptidePilot Research Library",
+            description:
+              "Browse peptide profiles, goals, comparisons, stacks, guides, reviews, and educational resources.",
+          },
+          buildBreadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Learn", path: "/learn" },
+          ]),
+        ]}
+      />
       <PageHero
         eyebrow="Learn"
         title="PeptidePilot Research Library"
@@ -549,6 +596,25 @@ export function PseoSectionPage({ sectionKey }: { sectionKey: PseoSectionKey }) 
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title={section.label}
+        description={pseoSectionDescription(sectionKey, section.entries.length)}
+        path={section.path}
+        type="website"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: section.label,
+            description: pseoSectionDescription(sectionKey, section.entries.length),
+          },
+          buildBreadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Learn", path: "/learn" },
+            { name: section.label, path: section.path },
+          ]),
+        ]}
+      />
       <PageHero eyebrow={copy.eyebrow} title={copy.headline} body={copy.body} />
       <section className="py-14 border-b border-border/60">
         <div className="container">
@@ -727,6 +793,44 @@ export function PseoDetailPage({
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title={isCompare ? `${entry.title}: Which Is Right for You?` : entry.title}
+        description={pseoDetailDescription(sectionKey, entry.title, content?.summary, content?.keyPoints?.[0])}
+        path={entry.path}
+        type="article"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type":
+              sectionKey === "reviews"
+                ? "Review"
+                : "Article",
+            headline: isCompare ? `${entry.title}: Which Is Right for You?` : entry.title,
+            description: pseoDetailDescription(sectionKey, entry.title, content?.summary, content?.keyPoints?.[0]),
+          },
+          ...(content?.faqs?.length
+            ? [
+                {
+                  "@context": "https://schema.org",
+                  "@type": "FAQPage",
+                  mainEntity: content.faqs.map((faq) => ({
+                    "@type": "Question",
+                    name: faq.question,
+                    acceptedAnswer: {
+                      "@type": "Answer",
+                      text: faq.answer,
+                    },
+                  })),
+                },
+              ]
+            : []),
+          buildBreadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: breadcrumbTitle(sectionKey), path: section.path },
+            { name: entry.title, path: entry.path },
+          ]),
+        ]}
+      />
       <section className="border-b border-border/60 bg-cyan-50/80">
         <div className="container py-3 text-sm text-muted-foreground">
           <div className="flex flex-wrap items-center gap-2">
@@ -1262,6 +1366,30 @@ export function FAQPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="FAQ"
+        description="Read clear answers about the PeptidePilot quiz, affiliate links, research pages, and the limits of educational peptide content."
+        path="/faq"
+        type="website"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((item) => ({
+              "@type": "Question",
+              name: item.question,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: item.answer,
+              },
+            })),
+          },
+          buildBreadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "FAQ", path: "/faq" },
+          ]),
+        ]}
+      />
       <PageHero
         eyebrow="FAQ"
         title="PeptidePilot Questions"
