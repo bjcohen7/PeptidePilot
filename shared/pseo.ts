@@ -29,7 +29,7 @@ export const pseoSections = [
       {
         "slug": "tb-500",
         "path": "/peptides/tb-500",
-        "title": "TB 500"
+        "title": "TB-500"
       },
       {
         "slug": "ipamorelin",
@@ -190,7 +190,7 @@ export const pseoSections = [
       {
         "slug": "bpc-157-vs-tb-500",
         "path": "/compare/bpc-157-vs-tb-500",
-        "title": "BPC 157 vs TB 500"
+        "title": "BPC-157 vs TB-500"
       },
       {
         "slug": "semaglutide-vs-tirzepatide",
@@ -235,7 +235,7 @@ export const pseoSections = [
       {
         "slug": "tb-500-vs-ghk-cu",
         "path": "/compare/tb-500-vs-ghk-cu",
-        "title": "TB 500 vs GHK Cu"
+        "title": "TB-500 vs GHK-Cu"
       },
       {
         "slug": "tesamorelin-vs-ipamorelin",
@@ -515,7 +515,7 @@ export const pseoSections = [
       {
         "slug": "tb-500-vs-ipamorelin",
         "path": "/compare/tb-500-vs-ipamorelin",
-        "title": "TB 500 vs Ipamorelin"
+        "title": "TB-500 vs Ipamorelin"
       },
       {
         "slug": "bpc-157-vs-nac",
@@ -626,7 +626,7 @@ export const pseoSections = [
       {
         "slug": "how-to-use-tb-500",
         "path": "/guides/how-to-use-tb-500",
-        "title": "How To Use TB 500"
+        "title": "How To Use TB-500"
       },
       {
         "slug": "how-to-use-nad-plus",
@@ -842,7 +842,7 @@ export const pseoSections = [
       {
         "slug": "tb-500-review",
         "path": "/reviews/tb-500-review",
-        "title": "TB 500 Review"
+        "title": "TB-500 Review"
       },
       {
         "slug": "ghk-cu-review",
