@@ -844,8 +844,8 @@ export function PseoDetailPage({
       </section>
 
       <section className="bg-brand-gradient text-white py-14 md:py-16">
-        <div className="container max-w-6xl">
-          <div className="max-w-4xl">
+        <div className="container max-w-7xl">
+          <div className="max-w-5xl">
             <div className="flex flex-wrap gap-2 mb-4">
               {heroTags.map((tag) => (
                 <span key={tag} className="rounded-full border border-white/20 bg-white/8 px-3 py-1 text-[11px] font-semibold tracking-wide text-white/85">
@@ -853,7 +853,7 @@ export function PseoDetailPage({
                 </span>
               ))}
             </div>
-            <h1 className="max-w-4xl text-4xl md:text-[3.35rem] font-normal mb-4 leading-[0.98]" style={{ fontFamily: "'DM Serif Display', serif" }}>
+            <h1 className="max-w-5xl text-4xl md:text-[3.35rem] font-normal mb-4 leading-[0.98]" style={{ fontFamily: "'DM Serif Display', serif" }}>
               {isCompare ? `${entry.title}: Which Is Right for You?` : entry.title}
             </h1>
             {isPeptide && primaryProfile ? (
@@ -866,7 +866,7 @@ export function PseoDetailPage({
                 </div>
               </>
             ) : isCompare ? (
-              <div className="mt-4 max-w-3xl rounded-2xl border border-white/15 bg-white/10 px-5 py-4">
+              <div className="mt-4 max-w-4xl rounded-2xl border border-white/15 bg-white/10 px-5 py-4">
                 <div className="text-xs font-semibold uppercase tracking-[0.12em] text-cyan-200">{heroMetaPrimary}</div>
                 <p className="mt-2 text-white/85 leading-7">{verdictSummary}</p>
               </div>
@@ -884,7 +884,7 @@ export function PseoDetailPage({
       </section>
 
       <section className="pt-6 pb-4 md:py-10">
-        <div className="container max-w-6xl grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-8">
+        <div className="container max-w-7xl grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-8">
           <div className="self-start rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4">
             <div className="flex gap-3">
               <ShieldCheck className="w-5 h-5 text-amber-700 mt-0.5 flex-shrink-0" />
@@ -912,7 +912,7 @@ export function PseoDetailPage({
       </section>
 
       <section className="pb-16 pt-2 md:pt-0">
-        <div className="container max-w-6xl grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-8">
+        <div className="container max-w-7xl grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-8">
           <article className="space-y-10">
             {isPeptide ? (
               <>
