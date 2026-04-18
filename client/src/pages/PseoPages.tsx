@@ -920,7 +920,7 @@ export function PseoDetailPage({
                   <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Quick Reference</h2>
                   <div className="overflow-hidden rounded-2xl border border-border/70 bg-white">
                     {peptideQuickReference.map((row) => (
-                      <div key={row.label} className="grid grid-cols-[160px_minmax(0,1fr)] gap-4 border-t border-border/70 px-5 py-3 first:border-t-0 text-sm">
+                      <div key={row.label} className="grid grid-cols-1 gap-1 border-t border-border/70 px-4 py-3 text-sm first:border-t-0 sm:grid-cols-[160px_minmax(0,1fr)] sm:gap-4 sm:px-5">
                         <div className="font-medium text-foreground">{row.label}</div>
                         <div className="text-muted-foreground">{row.value}</div>
                       </div>
@@ -969,7 +969,7 @@ export function PseoDetailPage({
                       <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
                     </div>
                     <Link href="/quiz">
-                      <Button className="bg-teal-500 text-white hover:bg-teal-400 min-w-[220px]">Take the 5-Minute Quiz</Button>
+                      <Button className="w-full bg-teal-500 text-white hover:bg-teal-400 sm:w-auto sm:min-w-[220px]">Take the 5-Minute Quiz</Button>
                     </Link>
                   </div>
                 </div>
@@ -998,14 +998,14 @@ export function PseoDetailPage({
               <>
                 <section>
                   <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>At a Glance</h2>
-                  <div className="overflow-hidden rounded-2xl border border-border/70 bg-white">
-                    <div className="grid grid-cols-[1.2fr_1.15fr_1.15fr] bg-primary px-5 py-4 text-sm font-semibold text-white">
+                  <div className="overflow-x-auto rounded-2xl border border-border/70 bg-white">
+                    <div className="grid min-w-[640px] grid-cols-[1.2fr_1.15fr_1.15fr] bg-primary px-5 py-4 text-sm font-semibold text-white">
                       <div>Dimension</div>
                       <div>{compareLeft}</div>
                       <div>{compareRight}</div>
                     </div>
                     {compareRows.map((row) => (
-                      <div key={row.label} className="grid grid-cols-[1.2fr_1.15fr_1.15fr] gap-4 border-t border-border/70 px-5 py-4 text-sm">
+                      <div key={row.label} className="grid min-w-[640px] grid-cols-[1.2fr_1.15fr_1.15fr] gap-4 border-t border-border/70 px-5 py-4 text-sm">
                         <div className="font-medium text-foreground">{row.label}</div>
                         <div className="text-muted-foreground">{row.left}</div>
                         <div className="text-muted-foreground">{row.right}</div>
@@ -1060,7 +1060,7 @@ export function PseoDetailPage({
                       <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
                     </div>
                     <Link href="/quiz">
-                      <Button className="bg-teal-500 text-white hover:bg-teal-400 min-w-[220px]">Take the 5-Minute Quiz</Button>
+                      <Button className="w-full bg-teal-500 text-white hover:bg-teal-400 sm:w-auto sm:min-w-[220px]">Take the 5-Minute Quiz</Button>
                     </Link>
                   </div>
                 </div>
@@ -1130,15 +1130,15 @@ export function PseoDetailPage({
                     {isStacks ? (
                       <div className="mt-6">
                         <h3 className="text-xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Dosing Schedule</h3>
-                        <div className="overflow-hidden rounded-2xl border border-border/70 bg-white">
-                          <div className="grid grid-cols-[1.1fr_1.2fr_1.6fr_1.2fr] bg-primary px-5 py-4 text-sm font-semibold text-white">
+                        <div className="overflow-x-auto rounded-2xl border border-border/70 bg-white">
+                          <div className="grid min-w-[720px] grid-cols-[1.1fr_1.2fr_1.6fr_1.2fr] bg-primary px-5 py-4 text-sm font-semibold text-white">
                             <div>Peptide</div>
                             <div>Dose</div>
                             <div>Timing</div>
                             <div>Route</div>
                           </div>
                           {protocolRows.map((row) => (
-                            <div key={row.peptide} className="grid grid-cols-[1.1fr_1.2fr_1.6fr_1.2fr] gap-4 border-t border-border/70 px-5 py-4 text-sm">
+                            <div key={row.peptide} className="grid min-w-[720px] grid-cols-[1.1fr_1.2fr_1.6fr_1.2fr] gap-4 border-t border-border/70 px-5 py-4 text-sm">
                               <div className="font-medium text-foreground">{row.peptide}</div>
                               <div className="text-muted-foreground">{row.dose}</div>
                               <div className="text-muted-foreground">{row.timing}</div>
@@ -1161,7 +1161,7 @@ export function PseoDetailPage({
                           <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
                         </div>
                         <Link href="/quiz">
-                          <Button className="bg-teal-500 text-white hover:bg-teal-400 min-w-[220px]">Take the 5-Minute Quiz</Button>
+                          <Button className="w-full bg-teal-500 text-white hover:bg-teal-400 sm:w-auto sm:min-w-[220px]">Take the 5-Minute Quiz</Button>
                         </Link>
                       </div>
                     </div>
@@ -1203,7 +1203,7 @@ export function PseoDetailPage({
                         <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
                       </div>
                       <Link href="/quiz">
-                        <Button className="bg-teal-500 text-white hover:bg-teal-400 min-w-[220px]">Take the 5-Minute Quiz</Button>
+                        <Button className="w-full bg-teal-500 text-white hover:bg-teal-400 sm:w-auto sm:min-w-[220px]">Take the 5-Minute Quiz</Button>
                       </Link>
                     </div>
                   </div>
