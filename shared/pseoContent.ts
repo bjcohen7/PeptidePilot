@@ -178,6 +178,57 @@ export const pseoContentRecords: Record<string, PseoContentRecord> = {
       },
     ],
   },
+  "/peptides/tb-500": {
+    path: "/peptides/tb-500",
+    summary:
+      "TB-500 is a naturally occurring peptide found in high concentrations in blood platelets and wound fluid.",
+    keyPoints: [
+      "TB-500 is usually discussed as a systemic recovery peptide in joint, tendon, ligament, and soft-tissue conversations.",
+      "Most of the interest comes from preclinical and anecdotal evidence rather than large-scale human trials.",
+      "Source quality, sterile handling, and evidence limits still matter more than the confidence of the marketing copy.",
+    ],
+    scorecard: [
+      { label: "Evidence", value: 5, note: "Compelling preclinical story, limited human depth" },
+      { label: "Goal fit", value: 8, note: "Strong research interest for recovery contexts" },
+      { label: "Complexity", value: 7, note: "Injection handling and sourcing change the risk" },
+      { label: "Caution", value: 8, note: "Should be viewed as a research compound, not settled care" },
+    ],
+    blocks: [
+      {
+        heading: "How TB-500 Works",
+        body:
+          "TB-500 is typically discussed in relation to cell migration, tissue repair, and inflammation modulation. In practical peptide conversations, it is often framed as the more systemic counterpart to compounds like BPC-157, especially when the goal is broad recovery support rather than only localized tissue focus.",
+      },
+      {
+        heading: "Evidence Base",
+        body:
+          "The compound has a strong preclinical narrative around wound healing, tissue remodeling, and recovery from musculoskeletal strain. Human evidence remains limited, which means confidence should stay anchored to the actual evidence level rather than the enthusiasm of online testimonials.",
+      },
+      {
+        heading: "Practical Use Context",
+        body:
+          "People researching TB-500 are usually looking at tendon issues, injury recovery, joint irritation, or heavy training recovery. The main questions should still be source quality, sterile technique, and whether a clinician should be involved before self-directed experimentation is even considered.",
+      },
+    ],
+    decisionChecklist: [
+      "Separate the strong preclinical recovery narrative from mature human clinical certainty.",
+      "Verify whether the source explains testing, sterility, and handling clearly.",
+      "Be skeptical of any page that implies guaranteed healing timelines.",
+      "Use medical judgment for serious injuries, persistent pain, or structural issues.",
+    ],
+    faqs: [
+      {
+        question: "Is TB-500 the same as Thymosin Beta-4?",
+        answer:
+          "TB-500 is commonly described as a synthetic fragment or analog associated with Thymosin Beta-4 discussion. In practical peptide research conversations, the two are often mentioned together even though the naming is not always handled carefully online.",
+      },
+      {
+        question: "Why is TB-500 often paired with BPC-157?",
+        answer:
+          "Usually because TB-500 is framed as the more systemic recovery peptide while BPC-157 is framed as more localized. That pairing logic is common, though it still does not remove the need for evidence awareness and sourcing caution.",
+      },
+    ],
+  },
   "/guides/how-to-reconstitute-peptides": {
     path: "/guides/how-to-reconstitute-peptides",
     summary:

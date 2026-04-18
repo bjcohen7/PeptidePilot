@@ -698,7 +698,9 @@ export function PseoDetailPage({
     : isGoals
       ? `${Math.max(3, peptides.length)} peptides ranked`
       : isPeptide
-        ? formatResearchBadge(sectionKey, 1)
+        ? entry.path === '/peptides/tb-500'
+          ? 'Evidence-Aware Guide'
+          : formatResearchBadge(sectionKey, 1)
         : isCompare
           ? 'Verdict Summary'
           : `${peptides.length} related ${peptides.length === 1 ? 'compound' : 'compounds'}`;
