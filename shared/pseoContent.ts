@@ -8,11 +8,18 @@ export type PseoFaq = {
   answer: string;
 };
 
+export type PseoScore = {
+  label: string;
+  value: number;
+  note: string;
+};
+
 export type PseoContentRecord = {
   path: string;
   summary: string;
   keyPoints: string[];
   blocks: PseoContentBlock[];
+  scorecard?: PseoScore[];
   decisionChecklist?: string[];
   faqs?: PseoFaq[];
 };
@@ -26,6 +33,12 @@ export const pseoContentRecords: Record<string, PseoContentRecord> = {
       "Semaglutide is a GLP-1 receptor agonist, while tirzepatide targets both GIP and GLP-1 receptors.",
       "Tirzepatide is often discussed for stronger average weight-loss outcomes, but tolerability, access, and supervision still matter more than headline numbers alone.",
       "A responsible comparison looks at screening, dose escalation, contraindications, and follow-up support, not just before-and-after stories.",
+    ],
+    scorecard: [
+      { label: "Evidence", value: 9, note: "Strong clinical use and outcome data" },
+      { label: "Goal fit", value: 9, note: "Highly relevant for metabolic and weight-loss research" },
+      { label: "Complexity", value: 6, note: "Requires screening, titration, and follow-up" },
+      { label: "Caution", value: 7, note: "Important contraindication and side-effect review" },
     ],
     blocks: [
       {
@@ -72,6 +85,12 @@ export const pseoContentRecords: Record<string, PseoContentRecord> = {
       "Research compounds like MOTS-c or AOD-9604 are discussed differently from prescription metabolic drugs and should be framed accordingly.",
       "Sustainable fat loss still depends on nutrition, resistance training, sleep, and medical screening.",
     ],
+    scorecard: [
+      { label: "Evidence", value: 8, note: "Mixed by category, strongest around incretin therapies" },
+      { label: "Goal fit", value: 9, note: "Very high interest and broad practical relevance" },
+      { label: "Complexity", value: 7, note: "Source type and mechanism change the decision" },
+      { label: "Caution", value: 7, note: "Medical context and sourcing quality matter" },
+    ],
     blocks: [
       {
         heading: "Common categories",
@@ -116,6 +135,12 @@ export const pseoContentRecords: Record<string, PseoContentRecord> = {
       "Most BPC-157 discussion is based on preclinical and anecdotal evidence rather than large human trials.",
       "The most common research themes are musculoskeletal recovery and gut barrier support.",
       "Source quality, sterility, and clinical judgment matter because regulatory status is unsettled and gray-market sourcing is common.",
+    ],
+    scorecard: [
+      { label: "Evidence", value: 4, note: "Strong interest, limited human evidence" },
+      { label: "Goal fit", value: 8, note: "Frequently researched for recovery and tissue support" },
+      { label: "Complexity", value: 7, note: "Handling and sourcing quality change the risk" },
+      { label: "Caution", value: 8, note: "Gray-market quality issues deserve real skepticism" },
     ],
     blocks: [
       {
@@ -162,6 +187,12 @@ export const pseoContentRecords: Record<string, PseoContentRecord> = {
       "Confirm the vial amount, diluent volume, and intended concentration before mixing anything.",
       "Do not use cloudy, contaminated, expired, or questionable material.",
     ],
+    scorecard: [
+      { label: "Clarity", value: 9, note: "Core concepts are teachable and repeatable" },
+      { label: "Practical value", value: 9, note: "High-value page for real user mistakes" },
+      { label: "Complexity", value: 8, note: "Math and sterile handling both matter" },
+      { label: "Caution", value: 9, note: "Dosing and contamination mistakes can snowball fast" },
+    ],
     blocks: [
       {
         heading: "Core concept",
@@ -206,6 +237,12 @@ export const pseoContentRecords: Record<string, PseoContentRecord> = {
       "Semaglutide has substantial clinical evidence for metabolic outcomes.",
       "The biggest review questions are provider quality, sourcing transparency, and side-effect support.",
       "A serious review separates branded prescription care, compounded care, and unsafe or unverifiable sourcing.",
+    ],
+    scorecard: [
+      { label: "Evidence", value: 9, note: "Substantial clinical backing in metabolic care" },
+      { label: "Provider fit", value: 8, note: "Program quality changes the real experience" },
+      { label: "Complexity", value: 6, note: "Straightforward concept, but not plug-and-play" },
+      { label: "Caution", value: 7, note: "Screening and sourcing still need scrutiny" },
     ],
     blocks: [
       {

@@ -174,6 +174,83 @@ function relatedPeptides(title: string, slug: string) {
   return peptideProfiles.slice(0, 3);
 }
 
+function defaultScorecard(sectionKey: PseoSectionKey) {
+  const maps: Record<PseoSectionKey, { label: string; value: number; note: string }[]> = {
+    peptides: [
+      { label: "Evidence", value: 5, note: "Varies widely by compound" },
+      { label: "Use-case fit", value: 7, note: "Often strong for a narrow goal" },
+      { label: "Complexity", value: 6, note: "Depends on sourcing and handling" },
+      { label: "Caution", value: 7, note: "Worth a skeptical, source-aware read" },
+    ],
+    goals: [
+      { label: "Evidence", value: 6, note: "Usually mixed across compounds" },
+      { label: "Goal fit", value: 8, note: "Useful framing for user intent" },
+      { label: "Complexity", value: 7, note: "Mechanisms and categories matter" },
+      { label: "Caution", value: 7, note: "Clinical context changes the answer" },
+    ],
+    compare: [
+      { label: "Evidence", value: 7, note: "Comparison quality depends on the pair" },
+      { label: "Decision value", value: 9, note: "High value for confused searchers" },
+      { label: "Complexity", value: 7, note: "Tradeoffs matter more than slogans" },
+      { label: "Caution", value: 6, note: "Good when it stays grounded in context" },
+    ],
+    stacks: [
+      { label: "Evidence", value: 4, note: "Often weaker than people assume" },
+      { label: "Goal fit", value: 7, note: "Can be relevant for advanced users" },
+      { label: "Complexity", value: 8, note: "Overlap and interaction questions matter" },
+      { label: "Caution", value: 8, note: "Higher risk of messy self-experimentation" },
+    ],
+    guides: [
+      { label: "Clarity", value: 8, note: "Practical pages help people avoid mistakes" },
+      { label: "Practical value", value: 9, note: "Very useful when tightly written" },
+      { label: "Complexity", value: 7, note: "Details matter more than shortcuts" },
+      { label: "Caution", value: 8, note: "Bad technique can create real problems" },
+    ],
+    for: [
+      { label: "Evidence", value: 5, note: "Condition intent pages need careful framing" },
+      { label: "Intent fit", value: 8, note: "Useful for mapping searches to topics" },
+      { label: "Complexity", value: 7, note: "Symptoms rarely map to one solution" },
+      { label: "Caution", value: 8, note: "Easy category to overclaim in" },
+    ],
+    reviews: [
+      { label: "Evidence", value: 7, note: "Better when grounded in care-model reality" },
+      { label: "Buyer value", value: 8, note: "Strong page type for affiliate due diligence" },
+      { label: "Complexity", value: 6, note: "Readable when anchored in clear criteria" },
+      { label: "Caution", value: 7, note: "Needs discipline to stay credible" },
+    ],
+  };
+
+  return maps[sectionKey];
+}
+
+function ScorePill({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: number;
+  note: string;
+}) {
+  const width = `${Math.max(0, Math.min(10, value)) * 10}%`;
+
+  return (
+    <div className="rounded-xl border border-border/60 bg-white p-5">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <p className="text-sm font-medium text-foreground">{label}</p>
+        <div className="text-2xl font-normal text-foreground" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          {value}
+          <span className="text-sm text-muted-foreground">/10</span>
+        </div>
+      </div>
+      <div className="h-2 rounded-full bg-secondary overflow-hidden mb-3">
+        <div className="h-full rounded-full bg-brand-gradient" style={{ width }} />
+      </div>
+      <p className="text-xs leading-relaxed text-muted-foreground">{note}</p>
+    </div>
+  );
+}
+
 function PageHero({
   eyebrow,
   title,
@@ -303,6 +380,7 @@ export function PseoDetailPage({
   const { section, entry } = result;
   const copy = SECTION_COPY[sectionKey];
   const content = getPseoContent(entry.path);
+  const scorecard = content?.scorecard ?? defaultScorecard(sectionKey);
   const peptides = relatedPeptides(entry.title, entry.slug);
   const siblingLinks = section.entries.filter((item) => item.slug !== slug).slice(0, 6);
 
@@ -312,6 +390,24 @@ export function PseoDetailPage({
       <section className="py-16">
         <div className="container grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-10">
           <article className="space-y-10">
+            <div className="rounded-xl border border-border/60 bg-white p-6 md:p-8">
+              <div className="flex items-end justify-between gap-4 mb-5">
+                <div>
+                  <h2 className="text-2xl font-normal text-foreground mb-2" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                    PeptidePilot scorecard
+                  </h2>
+                  <p className="text-muted-foreground leading-relaxed">
+                    A quick read on how this topic stacks up for evidence, decision value, and caution.
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {scorecard.map((item) => (
+                  <ScorePill key={item.label} label={item.label} value={item.value} note={item.note} />
+                ))}
+              </div>
+            </div>
+
             <div className="rounded-xl border border-border/60 bg-white p-6 md:p-8">
               <h2 className="text-2xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
                 What this page covers
