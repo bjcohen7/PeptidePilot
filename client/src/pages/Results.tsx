@@ -19,6 +19,7 @@ import { trpc } from "@/lib/trpc";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { getVisitorSessionId } from "@/components/SessionTracker";
 import { identifyLogRocketUser } from "@/lib/logrocket";
+import { trackMetaEvent } from "@/lib/metaPixel";
 
 const AGE_RANGES = ["18–25", "26–35", "36–45", "46–55", "56–65", "65+"];
 const PRIMARY_GOALS = [
@@ -515,6 +516,7 @@ export default function Results() {
   const [leadId, setLeadId] = useState("");
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [submittedEmail, setSubmittedEmail] = useState("");
+  const [viewTracked, setViewTracked] = useState(false);
 
   const submitQuiz = trpc.quiz.submitQuiz.useMutation({
     onSuccess: (data) => {
@@ -530,6 +532,16 @@ export default function Results() {
           primaryGoal: PRIMARY_GOALS[state.answers[0] ?? -1] ?? null,
         });
       }
+      trackMetaEvent("Lead", {
+        content_name: "Peptide results unlock",
+        lead_type: "quiz-results",
+        value: 1,
+        currency: "USD",
+      });
+      trackMetaEvent("CompleteRegistration", {
+        status: "completed",
+        content_name: "Peptide quiz completion",
+      });
     },
     onError: (err) => {
       toast.error("Something went wrong. Please try again.");
@@ -565,6 +577,17 @@ export default function Results() {
     reset();
     navigate("/quiz");
   };
+
+  useEffect(() => {
+    if (!revealed || matches.length === 0 || viewTracked === true) return;
+
+    trackMetaEvent("ViewContent", {
+      content_name: matches[0]?.peptide.name ?? "Peptide results",
+      content_category: "results",
+      content_ids: matches.slice(0, 3).map((match) => match.peptide.id).join(","),
+    });
+    setViewTracked(true);
+  }, [matches, revealed, viewTracked]);
 
   if (revealed && matches.length > 0) {
     return <ResultsDisplay matches={matches} leadId={leadId} onRetake={handleRetake} />;

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { trackMetaPageView } from "@/lib/metaPixel";
 
 const VISITOR_SESSION_KEY = "peptidepilot_visitor_session_id";
 
@@ -96,6 +97,11 @@ export default function SessionTracker() {
     currentPathRef.current = nextPath;
     enteredAtRef.current = Date.now();
   }, [location, sessionId, startSession, trackPageView]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !shouldTrackPath(location)) return;
+    trackMetaPageView();
+  }, [location]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
