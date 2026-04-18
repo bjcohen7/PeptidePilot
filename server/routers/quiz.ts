@@ -117,13 +117,28 @@ export const quizRouter = router({
         });
 
         if (sessionId) {
-          await db
-            .update(visitorSessions)
-            .set({
+          const existingSession = await db
+            .select()
+            .from(visitorSessions)
+            .where(eq(visitorSessions.id, sessionId))
+            .limit(1);
+
+          if (existingSession[0]) {
+            await db
+              .update(visitorSessions)
+              .set({
+                leadId,
+                lastSeenAt: new Date(),
+              })
+              .where(eq(visitorSessions.id, sessionId));
+          } else {
+            await db.insert(visitorSessions).values({
+              id: sessionId,
               leadId,
-              lastSeenAt: new Date(),
-            })
-            .where(eq(visitorSessions.id, sessionId));
+              landingPath: "/results",
+              lastPath: "/results",
+            });
+          }
         }
       }
 

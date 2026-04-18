@@ -209,11 +209,14 @@ async function buildSessionPayloads(sessionRows: Array<typeof visitorSessions.$i
   const db = await getDb();
   if (!db || !sessionRows.length) return [];
 
-  const leadIds = sessionRows.map((session) => session.leadId).filter((value): value is string => Boolean(value));
   const sessionIds = sessionRows.map((session) => session.id);
+  const leadIds = sessionRows.map((session) => session.leadId).filter((value): value is string => Boolean(value));
 
   const sessionLeadRows = leadIds.length
     ? await db.select().from(leads).where(inArray(leads.id, leadIds))
+    : [];
+  const fallbackLeadRows = sessionIds.length
+    ? await db.select().from(leads).where(inArray(leads.sessionId, sessionIds))
     : [];
   const visitRows = sessionIds.length
     ? await db
@@ -238,6 +241,11 @@ async function buildSessionPayloads(sessionRows: Array<typeof visitorSessions.$i
     : [];
 
   const leadById = new Map(sessionLeadRows.map((lead) => [lead.id, lead]));
+  const leadBySessionId = new Map(
+    fallbackLeadRows
+      .filter((lead) => Boolean(lead.sessionId))
+      .map((lead) => [lead.sessionId as string, lead]),
+  );
   const visitsBySession = new Map<string, typeof visitRows>();
   const clicksBySession = new Map<string, typeof clickRows>();
   const affiliateByLead = new Map<string, typeof affiliateRows>();
@@ -259,7 +267,10 @@ async function buildSessionPayloads(sessionRows: Array<typeof visitorSessions.$i
   });
 
   return sessionRows.map((session) => {
-    const lead = session.leadId ? leadById.get(session.leadId) : null;
+    const lead =
+      (session.leadId ? leadById.get(session.leadId) : null) ??
+      leadBySessionId.get(session.id) ??
+      null;
     const decodedAnswers = lead ? decodeQuizAnswers(lead.rawQuizData) : [];
     const dimensionScores = lead ? buildDimensionScores(lead.rawQuizData) : [];
 
