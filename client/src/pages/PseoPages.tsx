@@ -394,6 +394,8 @@ function pseoDetailDescription(
 
 function expandedCompoundName(profile?: (typeof peptideProfiles)[number]) {
   if (!profile) return "";
+  if (profile.id === "tb_500") return "Thymosin Beta-4";
+  if (profile.id === "bpc_157") return "Body Protection Compound-157";
   const firstSentence = profile.description.split(".")[0]?.trim() ?? "";
   if (!firstSentence) return profile.name;
   return firstSentence.split(" is ")[0]?.trim() || profile.name;
@@ -729,7 +731,7 @@ export function PseoDetailPage({
       .slice(0, 2) ?? [];
   const relatedStacks = stackSection?.entries.slice(0, 1) ?? [];
   const heroIntro = isPeptide
-    ? `${(content?.keyPoints?.[0] ?? primaryProfile?.description.split('.').slice(0, 1).join('.')).trim()}.`
+    ? `${(content?.summary ?? primaryProfile?.description.split('.').slice(0, 1).join('.')).trim()}.`
     : content?.summary ?? copy.detailIntro;
   const firstBlockHeading =
     content?.blocks?.[0]?.heading ??

@@ -74,7 +74,7 @@ export const blogPosts: readonly BlogPost[] = [
     date: "February 2025",
     publishedAt: "2025-02-14",
     intro:
-      "BPC-157 is a synthetic pentadecapeptide derived from a protein found in human gastric juice. It is one of the most talked-about recovery peptides because of its unusually broad preclinical literature and its heavy presence in musculoskeletal and gut-health conversations.",
+      "BPC-157 (Body Protection Compound-157) is a synthetic pentadecapeptide derived from a protein found in human gastric juice. It consists of 15 amino acids and has been the subject of extensive preclinical research, primarily in rodent models, demonstrating a remarkable range of regenerative and protective effects.",
     sections: [
       {
         heading: "Mechanism of Action",

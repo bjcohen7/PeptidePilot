@@ -28,7 +28,7 @@ export const pseoContentRecords: Record<string, PseoContentRecord> = {
   "/compare/semaglutide-vs-tirzepatide": {
     path: "/compare/semaglutide-vs-tirzepatide",
     summary:
-      "Semaglutide and tirzepatide are both incretin-based medications used in metabolic care, but they do not work identically and they should not be treated as interchangeable shortcuts. The most practical differences usually come down to receptor activity, expected weight-loss response, side-effect profile, cost, and the quality of medical follow-up.",
+      "Tirzepatide produces greater average weight loss in clinical trials. Semaglutide has a longer post-market safety record. Both are excellent options.",
     keyPoints: [
       "Semaglutide is a GLP-1 receptor agonist, while tirzepatide targets both GIP and GLP-1 receptors.",
       "Tirzepatide is often discussed for stronger average weight-loss outcomes, but tolerability, access, and supervision still matter more than headline numbers alone.",
@@ -79,7 +79,7 @@ export const pseoContentRecords: Record<string, PseoContentRecord> = {
   "/goals/fat-loss": {
     path: "/goals/fat-loss",
     summary:
-      "Fat-loss peptide research usually splits into very different buckets: clinically established incretin medications, recovery or mitochondrial research compounds, and growth-hormone related pathways. Those categories should not be flattened into the same promise because they carry different evidence levels, legal status, and safety questions.",
+      "Evidence-based rankings for sustainable fat loss, metabolic health, and body recomposition.",
     keyPoints: [
       "GLP-1 and dual incretin therapies are the most clinically established category for appetite and weight management.",
       "Research compounds like MOTS-c or AOD-9604 are discussed differently from prescription metabolic drugs and should be framed accordingly.",
@@ -232,7 +232,7 @@ export const pseoContentRecords: Record<string, PseoContentRecord> = {
   "/guides/how-to-reconstitute-peptides": {
     path: "/guides/how-to-reconstitute-peptides",
     summary:
-      "Reconstitution is the process of turning a lyophilized peptide vial into a measurable liquid solution. The two big risks are contamination and dosing math errors, which is why sterile technique and concentration math matter more than internet shortcuts.",
+      "Step-by-step guide to reconstituting lyophilized peptides safely. Bacteriostatic water, dosing calculations, storage, and common mistakes. Beginner-friendly.",
     keyPoints: [
       "Use sterile supplies and avoid touching sterile surfaces.",
       "Confirm the vial amount, diluent volume, and intended concentration before mixing anything.",
@@ -283,7 +283,7 @@ export const pseoContentRecords: Record<string, PseoContentRecord> = {
   "/stacks/recovery-stack": {
     path: "/stacks/recovery-stack",
     summary:
-      "The Recovery Stack usually refers to BPC-157 plus TB-500, a pairing that shows up constantly in tendon, ligament, joint, and post-injury conversations. The appeal is straightforward: BPC-157 is usually discussed for localized tissue support, while TB-500 is discussed more often for systemic recovery and inflammation modulation.",
+      "The most researched peptide combination for injury healing, joint recovery, and tissue repair.",
     keyPoints: [
       "BPC-157 and TB-500 are often paired because people want both local tissue support and broader recovery signaling.",
       "Most of the enthusiasm around this stack comes from preclinical logic and anecdotal reports, not large human trials.",
@@ -334,7 +334,7 @@ export const pseoContentRecords: Record<string, PseoContentRecord> = {
   "/reviews/bpc-157-review": {
     path: "/reviews/bpc-157-review",
     summary:
-      "A useful BPC-157 review should balance two truths at the same time: the preclinical story is unusually compelling for a recovery compound, and the human evidence still does not justify the certainty you see on many vendor pages. That tension is the whole review.",
+      "BPC-157 is the most researched healing peptide available, with an impressive preclinical evidence base across multiple organ systems. Its safety profile is excellent and user satisfaction is high. The primary limitation is the lack of large-scale human clinical trials.",
     keyPoints: [
       "BPC-157 has broad preclinical momentum in tendon, ligament, muscle, and gut-related discussions.",
       "The largest weakness is still the lack of robust, large-scale human clinical evidence.",
