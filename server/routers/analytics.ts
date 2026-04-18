@@ -319,9 +319,86 @@ async function buildBasicSessionPayloads(sessionRows: Array<typeof visitorSessio
             dimensionScores: buildDimensionScores(lead.rawQuizData),
           }
         : null,
+      clickCount: 0,
       visits: [],
       clicks: [],
       affiliateClicks: [],
+    };
+  });
+}
+
+async function buildSessionTableRows(sessionRows: Array<typeof visitorSessions.$inferSelect>) {
+  const db = await getDb();
+  if (!db || !sessionRows.length) return [];
+
+  const sessionIds = sessionRows.map((session) => session.id);
+  const leadIds = sessionRows
+    .map((session) => session.leadId)
+    .filter((value): value is string => Boolean(value));
+
+  const sessionLeadRows = leadIds.length
+    ? await db.select().from(leads).where(inArray(leads.id, leadIds))
+    : [];
+  let fallbackLeadRows: Array<typeof leads.$inferSelect> = [];
+  if (sessionIds.length) {
+    try {
+      fallbackLeadRows = await db.select().from(leads).where(inArray(leads.sessionId, sessionIds));
+    } catch (error) {
+      console.warn("[Analytics] Session table skipping leads.sessionId fallback:", error);
+      fallbackLeadRows = [];
+    }
+  }
+
+  const clickCountRows = sessionIds.length
+    ? await db
+        .select({
+          sessionId: clickEvents.sessionId,
+          count: sql<number>`count(*)`,
+        })
+        .from(clickEvents)
+        .where(inArray(clickEvents.sessionId, sessionIds))
+        .groupBy(clickEvents.sessionId)
+    : [];
+
+  const affiliateCountRows = leadIds.length
+    ? await db
+        .select({
+          leadId: affiliateClicks.leadId,
+          count: sql<number>`count(*)`,
+        })
+        .from(affiliateClicks)
+        .where(inArray(affiliateClicks.leadId, leadIds))
+        .groupBy(affiliateClicks.leadId)
+    : [];
+
+  const leadById = new Map(sessionLeadRows.map((lead) => [lead.id, lead]));
+  const leadBySessionId = new Map(
+    fallbackLeadRows
+      .filter((lead) => Boolean(lead.sessionId))
+      .map((lead) => [lead.sessionId as string, lead]),
+  );
+  const clickCountBySessionId = new Map(clickCountRows.map((row) => [row.sessionId, Number(row.count ?? 0)]));
+  const affiliateCountByLeadId = new Map(affiliateCountRows.map((row) => [row.leadId, Number(row.count ?? 0)]));
+
+  return sessionRows.map((session) => {
+    const lead =
+      (session.leadId ? leadById.get(session.leadId) : null) ??
+      leadBySessionId.get(session.id) ??
+      null;
+
+    return {
+      ...session,
+      lead: lead
+        ? {
+            id: lead.id,
+            email: lead.email,
+            topPeptideMatch: lead.topPeptideMatch,
+            budget: lead.budget,
+          }
+        : null,
+      clickCount:
+        (clickCountBySessionId.get(session.id) ?? 0) +
+        (lead ? affiliateCountByLeadId.get(lead.id) ?? 0 : 0),
     };
   });
 }
@@ -414,19 +491,14 @@ export const analyticsRouter = router({
       .orderBy(desc(visitorSessions.lastSeenAt))
       .limit(250);
 
-    let hydrated;
+    let rows;
     try {
-      hydrated = await buildSessionPayloads(sessions);
+      rows = await buildSessionTableRows(sessions);
     } catch (error) {
-      console.error("[Analytics] Failed to fully hydrate recent sessions, falling back to basic rows:", error);
-      hydrated = await buildBasicSessionPayloads(sessions);
+      console.error("[Analytics] Failed to build session table rows, falling back to basic rows:", error);
+      rows = await buildBasicSessionPayloads(sessions);
     }
-    return hydrated.map((session) => ({
-      ...session,
-      visits: session.visits.slice(0, 10),
-      clicks: session.clicks.slice(0, 20),
-      affiliateClicks: session.affiliateClicks.slice(0, 20),
-    }));
+    return rows;
   }),
 
   sessionById: adminProcedure.input(z.object({ sessionId: z.string().min(8).max(64) })).query(async ({ input }) => {

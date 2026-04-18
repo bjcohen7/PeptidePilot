@@ -38,12 +38,14 @@ function getEngagementScore(session: {
   totalDurationMs: number;
   pageViewCount: number;
   lead: unknown | null;
-  clicks: Array<unknown>;
+  clickCount?: number;
+  clicks?: Array<unknown>;
 }) {
   if (session.lead) return 100;
   const durationScore = Math.min(55, Math.round(session.totalDurationMs / 1000 / 6));
   const viewsScore = Math.min(30, session.pageViewCount * 6);
-  const clickScore = Math.min(15, session.clicks.length * 5);
+  const clickEvents = session.clickCount ?? session.clicks?.length ?? 0;
+  const clickScore = Math.min(15, clickEvents * 5);
   return Math.min(99, durationScore + viewsScore + clickScore);
 }
 
@@ -186,7 +188,7 @@ export default function InsightsOverview() {
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{formatDuration(session.totalDurationMs)}</td>
                     <td className="px-4 py-3 text-accent">{session.pageViewCount}</td>
-                    <td className="px-4 py-3 text-accent">{session.clicks.length + session.affiliateClicks.length}</td>
+                    <td className="px-4 py-3 text-accent">{session.clickCount ?? 0}</td>
                     <td className="px-4 py-3">
                       <span className={engagement >= 80 ? "text-emerald-700" : engagement >= 50 ? "text-amber-700" : "text-muted-foreground"}>
                         {engagement}%
