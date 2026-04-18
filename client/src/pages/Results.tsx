@@ -18,6 +18,26 @@ import { calculateMatches, type MatchResult } from "../../../shared/scoring";
 import { trpc } from "@/lib/trpc";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { getVisitorSessionId } from "@/components/SessionTracker";
+import { identifyLogRocketUser } from "@/lib/logrocket";
+
+const AGE_RANGES = ["18–25", "26–35", "36–45", "46–55", "56–65", "65+"];
+const PRIMARY_GOALS = [
+  "Build muscle and increase strength",
+  "Lose body fat and improve body composition",
+  "Boost daily energy and mental clarity",
+  "Slow aging and optimize longevity",
+  "Improve sleep quality and depth",
+  "Heal an injury or chronic pain",
+  "Enhance libido and sexual vitality",
+  "Speed up recovery and reduce soreness",
+];
+const BUDGETS = [
+  "Under $50/month",
+  "$50–$100/month",
+  "$100–$200/month",
+  "$200–$500/month",
+  "$500+/month",
+];
 
 // ── Lead Capture Gate ─────────────────────────────────────────────────────────
 
@@ -494,11 +514,22 @@ export default function Results() {
   const [revealed, setRevealed] = useState(false);
   const [leadId, setLeadId] = useState("");
   const [matches, setMatches] = useState<MatchResult[]>([]);
+  const [submittedEmail, setSubmittedEmail] = useState("");
 
   const submitQuiz = trpc.quiz.submitQuiz.useMutation({
     onSuccess: (data) => {
       setLeadId(data.leadId);
       setRevealed(true);
+      if (submittedEmail) {
+        void identifyLogRocketUser(submittedEmail, {
+          email: submittedEmail,
+          leadId: data.leadId,
+          topMatch: matches[0]?.peptide.id ?? null,
+          budget: BUDGETS[state.answers[17] ?? -1] ?? null,
+          ageRange: AGE_RANGES[state.answers[5] ?? -1] ?? null,
+          primaryGoal: PRIMARY_GOALS[state.answers[0] ?? -1] ?? null,
+        });
+      }
     },
     onError: (err) => {
       toast.error("Something went wrong. Please try again.");
@@ -521,6 +552,7 @@ export default function Results() {
   const handleReveal = (email: string, consent: boolean) => {
     const computed = calculateMatches(state.answers.map((a) => a ?? 0));
     setMatches(computed);
+    setSubmittedEmail(email);
     submitQuiz.mutate({
       email,
       consentGiven: consent,
