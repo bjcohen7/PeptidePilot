@@ -563,9 +563,6 @@ export default function Results() {
     onError: (err) => {
       toast.error("Something went wrong. Please try again.");
       console.error(err);
-      const computed = calculateMatches(state.answers.map((a) => a ?? 0));
-      setMatches(computed);
-      setRevealed(true);
     },
   });
 

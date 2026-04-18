@@ -26,26 +26,13 @@ async function sendWebhook(url: string | undefined, payload: object) {
   }
 }
 
-async function insertLeadWithCompatibilityFallback(
-  values: typeof leads.$inferInsert
+async function insertLead(
+  values: Omit<typeof leads.$inferInsert, "sessionId">
 ) {
   const db = await getDb();
   if (!db) return false;
-
-  try {
-    await db.insert(leads).values(values);
-    return true;
-  } catch (error) {
-    if (!values.sessionId) {
-      throw error;
-    }
-
-    console.warn("[Quiz] Lead insert with sessionId failed, retrying without sessionId:", error);
-
-    const { sessionId: _sessionId, ...legacyValues } = values;
-    await db.insert(leads).values(legacyValues);
-    return true;
-  }
+  await db.insert(leads).values(values);
+  return true;
 }
 
 export const quizRouter = router({
@@ -123,10 +110,9 @@ export const quizRouter = router({
       // Store lead in database
       const db = await getDb();
       if (db) {
-        await insertLeadWithCompatibilityFallback({
+        await insertLead({
           id: leadId,
           email,
-          sessionId: sessionId ?? null,
           ageRange,
           primaryGoal,
           budget,
