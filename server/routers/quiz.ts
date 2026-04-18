@@ -5,7 +5,7 @@ import { leads, affiliateClicks, visitorSessions } from "../../drizzle/schema";
 import { calculateMatches, determineTier } from "../../shared/scoring";
 import { nanoid } from "nanoid";
 import { notifyOwner } from "../_core/notification";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { sendMetaServerEvents } from "../_core/meta";
 import { ENV } from "../_core/env";
 
@@ -31,7 +31,33 @@ async function insertLead(
 ) {
   const db = await getDb();
   if (!db) return false;
-  await db.insert(leads).values(values);
+  await db.execute(sql`
+    insert into leads (
+      id,
+      email,
+      ageRange,
+      primaryGoal,
+      budget,
+      topPeptideMatch,
+      tier,
+      consentGiven,
+      consentTimestamp,
+      ipAddress,
+      rawQuizData
+    ) values (
+      ${values.id},
+      ${values.email},
+      ${values.ageRange},
+      ${values.primaryGoal},
+      ${values.budget},
+      ${values.topPeptideMatch},
+      ${values.tier},
+      ${values.consentGiven},
+      ${values.consentTimestamp},
+      ${values.ipAddress},
+      ${JSON.stringify(values.rawQuizData)}
+    )
+  `);
   return true;
 }
 
