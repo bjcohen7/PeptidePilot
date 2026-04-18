@@ -21,7 +21,14 @@ import About from "./pages/About";
 import Blog from "./pages/Blog";
 import { PrivacyPolicy, TermsOfService, MedicalDisclaimer } from "./pages/Legal";
 import BlogArticle from "./pages/BlogArticle";
-import { FAQPage, PseoDetailPage, PseoHub, PseoSectionPage } from "./pages/PseoPages";
+import { FAQPage, PseoHub, PseoSectionPage } from "./pages/PseoPages";
+import PeptideProfile from "./pages/pseo/PeptideProfile";
+import GoalPage from "./pages/pseo/GoalPage";
+import ComparisonPage from "./pages/pseo/ComparisonPage";
+import StackPage from "./pages/pseo/StackPage";
+import GuidePage from "./pages/pseo/GuidePage";
+import ForConditionPage from "./pages/pseo/ForConditionPage";
+import ReviewPage from "./pages/pseo/ReviewPage";
 import AffiliatePartnersAdmin from "./pages/admin/AffiliatePartners";
 import InsightsOverview from "./pages/admin/InsightsOverview";
 import SessionDetail from "./pages/admin/SessionDetail";
@@ -165,7 +172,7 @@ function Router() {
       <Route path="/peptides/:slug">
         {(params) => (
           <PublicLayout>
-            <PseoDetailPage sectionKey="peptides" slug={params.slug} />
+            <PeptideProfile params={params} />
           </PublicLayout>
         )}
       </Route>
@@ -179,7 +186,7 @@ function Router() {
       <Route path="/goals/:slug">
         {(params) => (
           <PublicLayout>
-            <PseoDetailPage sectionKey="goals" slug={params.slug} />
+            <GoalPage params={params} />
           </PublicLayout>
         )}
       </Route>
@@ -193,7 +200,7 @@ function Router() {
       <Route path="/compare/:slug">
         {(params) => (
           <PublicLayout>
-            <PseoDetailPage sectionKey="compare" slug={params.slug} />
+            <ComparisonPage params={params} />
           </PublicLayout>
         )}
       </Route>
@@ -207,7 +214,7 @@ function Router() {
       <Route path="/stacks/:slug">
         {(params) => (
           <PublicLayout>
-            <PseoDetailPage sectionKey="stacks" slug={params.slug} />
+            <StackPage params={params} />
           </PublicLayout>
         )}
       </Route>
@@ -219,11 +226,9 @@ function Router() {
       </Route>
 
       <Route path="/guides/:slug">
-        {(params) => (
-          <PublicLayout>
-            <PseoDetailPage sectionKey="guides" slug={params.slug} />
-          </PublicLayout>
-        )}
+        <PublicLayout>
+          <GuidePage />
+        </PublicLayout>
       </Route>
 
       <Route path="/for">
@@ -233,11 +238,9 @@ function Router() {
       </Route>
 
       <Route path="/for/:slug">
-        {(params) => (
-          <PublicLayout>
-            <PseoDetailPage sectionKey="for" slug={params.slug} />
-          </PublicLayout>
-        )}
+        <PublicLayout>
+          <ForConditionPage />
+        </PublicLayout>
       </Route>
 
       <Route path="/reviews">
@@ -247,11 +250,9 @@ function Router() {
       </Route>
 
       <Route path="/reviews/:slug">
-        {(params) => (
-          <PublicLayout>
-            <PseoDetailPage sectionKey="reviews" slug={params.slug} />
-          </PublicLayout>
-        )}
+        <PublicLayout>
+          <ReviewPage />
+        </PublicLayout>
       </Route>
 
       <Route path="/privacy">
