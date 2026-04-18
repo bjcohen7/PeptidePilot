@@ -883,7 +883,7 @@ export function PseoDetailPage({
         </div>
       </section>
 
-      <section className="py-8 md:py-10">
+      <section className="pt-6 pb-4 md:py-10">
         <div className="container max-w-6xl grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-8">
           <div className="self-start rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4">
             <div className="flex gap-3">
@@ -898,7 +898,7 @@ export function PseoDetailPage({
             </div>
           </div>
 
-          <aside className="rounded-2xl bg-brand-gradient p-6 text-white">
+          <aside className="hidden rounded-2xl bg-brand-gradient p-6 text-white lg:block">
             <p className="text-xs font-semibold tracking-[0.14em] uppercase text-cyan-200">Free analysis</p>
             <h2 className="mt-3 text-2xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>
               {sidebarTitle}
