@@ -25,7 +25,7 @@ function shouldEnableMetaPixel() {
 }
 
 function bootstrapFbq() {
-  if (window.fbq) return window.fbq;
+  if (typeof window.fbq === "function") return window.fbq;
 
   const fbq = function (...args: unknown[]) {
     if (fbq.callMethod) {
@@ -60,20 +60,36 @@ function loadMetaPixelScript() {
 export function initMetaPixel() {
   if (!shouldEnableMetaPixel() || initialized) return;
 
-  const fbq = bootstrapFbq();
-  loadMetaPixelScript();
-  fbq("init", META_PIXEL_ID);
-  initialized = true;
+  try {
+    const fbq = bootstrapFbq();
+    loadMetaPixelScript();
+    fbq("init", META_PIXEL_ID);
+    initialized = true;
+  } catch (error) {
+    console.error("[Meta Pixel] Failed to initialize", error);
+  }
 }
 
 export function trackMetaPageView() {
   if (!shouldEnableMetaPixel()) return;
   initMetaPixel();
-  window.fbq?.("track", "PageView");
+  try {
+    if (typeof window.fbq === "function") {
+      window.fbq("track", "PageView");
+    }
+  } catch (error) {
+    console.error("[Meta Pixel] Failed to track PageView", error);
+  }
 }
 
 export function trackMetaEvent(name: string, params?: MetaEventParams) {
   if (!shouldEnableMetaPixel()) return;
   initMetaPixel();
-  window.fbq?.("track", name, params ?? {});
+  try {
+    if (typeof window.fbq === "function") {
+      window.fbq("track", name, params ?? {});
+    }
+  } catch (error) {
+    console.error(`[Meta Pixel] Failed to track ${name}`, error);
+  }
 }
