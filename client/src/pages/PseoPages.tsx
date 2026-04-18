@@ -364,6 +364,123 @@ function exploreDescription(sectionKey: PseoSectionKey, itemTitle: string) {
   return `Explore another ${sectionSingularLabel(sectionKey).toLowerCase()} in the research library.`;
 }
 
+function expandedCompoundName(profile?: (typeof peptideProfiles)[number]) {
+  if (!profile) return "";
+  const firstSentence = profile.description.split(".")[0]?.trim() ?? "";
+  if (!firstSentence) return profile.name;
+  return firstSentence.split(" is ")[0]?.trim() || profile.name;
+}
+
+function buildPeptideQuickReference(profile: (typeof peptideProfiles)[number] | undefined) {
+  if (!profile) return [];
+
+  return [
+    { label: "Peptide Class", value: `${profile.categories[0] ?? "Research"} peptide` },
+    { label: "Half-Life", value: profile.name.toLowerCase().includes("tb-500") ? "~3-4 days" : profile.name.toLowerCase().includes("bpc") ? "~4-6 hours" : "Protocol dependent" },
+    { label: "Administration", value: profile.name.toLowerCase().includes("tb-500") ? "Subcutaneous injection, intramuscular injection" : "Subcutaneous injection" },
+    { label: "Typical Dosage", value: inferDoseText(profile.name) },
+    { label: "Cycle Length", value: profile.name.toLowerCase().includes("tb-500") ? "4-6 weeks loading, then maintenance" : "4-6 weeks with reassessment" },
+    { label: "Evidence Level", value: profile.name.toLowerCase().includes("semaglutide") || profile.name.toLowerCase().includes("tirzepatide") ? "Strong Human Clinical" : "Moderate Preclinical / Emerging Human" },
+    {
+      label: "Legal Status",
+      value:
+        profile.name.toLowerCase().includes("semaglutide") || profile.name.toLowerCase().includes("tirzepatide")
+          ? "Prescription medication"
+          : "Research compound — not FDA-approved for human use",
+    },
+    {
+      label: "Approximate Cost",
+      value:
+        profile.name.toLowerCase().includes("tb-500")
+          ? "$40-$90 per vial"
+          : profile.name.toLowerCase().includes("bpc")
+            ? "$30-$80 per vial"
+            : inferEstimatedCost("peptides", [profile]),
+    },
+  ];
+}
+
+function buildPeptideEvidenceCards(profile: (typeof peptideProfiles)[number] | undefined) {
+  if (!profile) return [];
+
+  return [
+    {
+      title: "Preclinical Evidence",
+      body:
+        "Animal studies demonstrate accelerated healing of cardiac tissue after myocardial infarction, improved recovery from muscle tears, and enhanced wound closure. This body of work is where most enthusiasm in the peptide community begins.",
+    },
+    {
+      title: "Human Evidence",
+      body:
+        "Human data remains limited and fragmented. Most practical use cases rely on small studies, clinician observation, and off-label experimentation rather than large randomized trials.",
+    },
+    {
+      title: "Anecdotal Value",
+      body: `${profile.name} is frequently discussed for ${profile.categories.slice(0, 3).join(", ")}. The online consensus tends to be strongest where clinical options feel limited or recovery timelines are frustratingly slow.`,
+    },
+  ];
+}
+
+function buildPubMedLinks(profile: (typeof peptideProfiles)[number] | undefined) {
+  if (!profile) return [];
+  const queries = [profile.name, `${profile.name} recovery`, `${profile.name} peptide study`];
+  return queries.map((query, index) => ({
+    label: `PubMed ${index + 1}`,
+    href: `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(query)}`,
+  }));
+}
+
+function compareItemsFromTitle(title: string) {
+  const [left, right] = title.split(/\s+vs\s+/i);
+  if (left && right) return [left.trim(), right.trim()];
+  return ["Option A", "Option B"];
+}
+
+function buildCompareRows(left: string, right: string) {
+  const pair = `${left.toLowerCase()}|${right.toLowerCase()}`;
+  if (pair.includes("semaglutide") && pair.includes("tirzepatide")) {
+    return [
+      { label: "Mechanism", left: "GLP-1 receptor agonist", right: "Dual GIP + GLP-1 receptor agonist" },
+      { label: "Average Weight Loss", left: "10-15% body weight", right: "15-22.5% body weight" },
+      { label: "Half-Life", left: "~7 days", right: "~5 days" },
+      { label: "Dosing", left: "Weekly injection", right: "Weekly injection" },
+      { label: "FDA Approval", left: "Ozempic (T2D), Wegovy (obesity)", right: "Mounjaro (T2D), Zepbound (obesity)" },
+      { label: "Market Availability", left: "Longer track record", right: "Newer, growing availability" },
+      { label: "Cost (approx.)", left: "$200-$1,200/month brand", right: "$250-$1,300/month brand" },
+    ];
+  }
+
+  return [
+    { label: "Mechanism", left: "Distinct pathway emphasis", right: "Distinct pathway emphasis" },
+    { label: "Primary Use Case", left: "Outcome-specific fit", right: "Outcome-specific fit" },
+    { label: "Dosing", left: "Protocol dependent", right: "Protocol dependent" },
+    { label: "Availability", left: "Varies by source", right: "Varies by source" },
+  ];
+}
+
+function buildCompareChoiceCards(left: string, right: string) {
+  return [
+    {
+      title: `Choose ${left} if...`,
+      tone: "emerald",
+      bullets: [
+        "You want the longer post-market safety record",
+        "You value better-established sourcing pathways",
+        "You prefer the more established compound where clinician familiarity matters most",
+      ],
+    },
+    {
+      title: `Choose ${right} if...`,
+      tone: "blue",
+      bullets: [
+        "You want maximum efficacy for the target outcome",
+        `You have not achieved adequate results with ${left}`,
+        "You are comfortable with a newer compound when the upside appears stronger",
+      ],
+    },
+  ] as const;
+}
+
 
 function PageHero({
   eyebrow,
@@ -495,83 +612,118 @@ export function PseoDetailPage({
   const copy = SECTION_COPY[sectionKey];
   const content = getPseoContent(entry.path);
   const peptides = relatedPeptides(entry.title, entry.slug);
+  const primaryProfile = peptides[0];
   const siblingLinks = section.entries.filter((item) => item.slug !== slug).slice(0, 6);
+  const compareSection = getPseoSection('compare');
+  const stackSection = getPseoSection('stacks');
   const goalTags = relatedGoalTags(peptides);
-  const heroTags = sectionKey === "stacks" ? peptides.slice(0, 3).map((profile) => profile.name) : [sectionGuideLabel(sectionKey)];
-  const heroMetaPrimary =
-    sectionKey === "stacks"
-      ? `${peptides.length} ${peptides.length === 1 ? "peptide" : "peptides"}`
-      : sectionKey === "goals"
-        ? `${Math.max(3, peptides.length)} peptides ranked`
-        : `${peptides.length} related ${peptides.length === 1 ? "compound" : "compounds"}`;
-  const heroMetaSecondary = inferEstimatedCost(sectionKey, peptides);
+  const isGoals = sectionKey === 'goals';
+  const isStacks = sectionKey === 'stacks';
+  const isPeptide = sectionKey === 'peptides';
+  const isCompare = sectionKey === 'compare';
+
+  const heroTags = isStacks
+    ? peptides.slice(0, 3).map((profile) => profile.name)
+    : isPeptide
+      ? primaryProfile?.categories.slice(0, 4).map(slugLabel) ?? [sectionGuideLabel(sectionKey)]
+      : [sectionGuideLabel(sectionKey)];
+  const heroMetaPrimary = isStacks
+    ? `${peptides.length} ${peptides.length === 1 ? 'peptide' : 'peptides'}`
+    : isGoals
+      ? `${Math.max(3, peptides.length)} peptides ranked`
+      : isPeptide
+        ? formatResearchBadge(sectionKey, 1)
+        : isCompare
+          ? 'Verdict Summary'
+          : `${peptides.length} related ${peptides.length === 1 ? 'compound' : 'compounds'}`;
+  const heroMetaSecondary = isPeptide
+    ? 'Research compound — not FDA-approved for human use'
+    : inferEstimatedCost(sectionKey, peptides);
   const rankingCards = buildGoalRankings(sectionKey, peptides, content);
   const protocolRows = buildProtocolRows(peptides);
+  const peptideQuickReference = buildPeptideQuickReference(primaryProfile);
+  const peptideEvidenceCards = buildPeptideEvidenceCards(primaryProfile);
+  const pubMedLinks = buildPubMedLinks(primaryProfile);
+  const [compareLeft, compareRight] = compareItemsFromTitle(entry.title);
+  const compareRows = buildCompareRows(compareLeft, compareRight);
+  const compareChoiceCards = buildCompareChoiceCards(compareLeft, compareRight);
+  const verdictSummary =
+    content?.summary ??
+    `${compareRight} may produce a stronger average effect for the primary outcome, while ${compareLeft} may offer the longer post-market record. Both deserve clinician-guided comparison rather than hype-driven switching.`;
+  const relatedCompareLinks =
+    compareSection?.entries
+      .filter((item) => item.slug !== slug)
+      .filter((item) =>
+        primaryProfile
+          ? slugToSearchText(item.slug).includes(primaryProfile.name.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim())
+          : true,
+      )
+      .slice(0, 2) ?? [];
+  const relatedStacks = stackSection?.entries.slice(0, 1) ?? [];
+  const heroIntro = isPeptide
+    ? `${(content?.keyPoints?.[0] ?? primaryProfile?.description.split('.').slice(0, 1).join('.')).trim()}.`
+    : content?.summary ?? copy.detailIntro;
   const firstBlockHeading =
     content?.blocks?.[0]?.heading ??
-    (sectionKey === "stacks"
-      ? "Why These Peptides Work Together"
-      : sectionKey === "goals"
-        ? "The Science"
-        : "How this page is organized");
+    (isStacks
+      ? 'Why These Peptides Work Together'
+      : isGoals
+        ? 'The Science'
+        : isPeptide
+          ? `How ${primaryProfile?.name ?? entry.title} Works`
+          : 'How this page is organized');
   const firstBlockParagraphs = paragraphFromText(content?.blocks?.[0]?.body ?? content?.summary);
   const secondBlockHeading =
-    content?.blocks?.[1]?.heading ?? (sectionKey === "stacks" ? "Protocol Overview" : "Why this category gets searched");
+    content?.blocks?.[1]?.heading ?? (isStacks ? 'Protocol Overview' : isGoals ? 'Why this category gets searched' : 'How this page is organized');
   const secondBlockParagraphs = paragraphFromText(content?.blocks?.[1]?.body ?? content?.blocks?.[0]?.body);
   const whoItsFor =
     content?.decisionChecklist?.[1] ??
-    (sectionKey === "goals"
-      ? "Adults with BMI ≥27, metabolic-health concerns, or stalled body-composition progress should use these pages as a research starting point before choosing a provider path."
-      : "Athletes recovering from acute injuries, individuals with chronic joint pain or tendon issues, post-surgical patients, and anyone whose training quality is limited by unresolved tissue damage.");
+    (isGoals
+      ? 'Adults with BMI >=27, metabolic-health concerns, or stalled body-composition progress should use these pages as a research starting point before choosing a provider path.'
+      : 'Athletes recovering from acute injuries, individuals with chronic joint pain or tendon issues, post-surgical patients, and anyone whose training quality is limited by unresolved tissue damage.');
   const cautionAudience =
     content?.decisionChecklist?.[2] ??
-    (sectionKey === "goals"
-      ? "Individuals with a personal or family history of medullary thyroid carcinoma, active pancreatitis, pregnancy, or uncontrolled eating-disorder history should not self-direct appetite-suppressing compounds."
-      : "People with complex medication interactions, unresolved injuries, or limited injection experience should not treat stack pages as a substitute for clinician oversight.");
+    (isGoals
+      ? 'Individuals with a personal or family history of medullary thyroid carcinoma, active pancreatitis, pregnancy, or uncontrolled eating-disorder history should not self-direct appetite-suppressing compounds.'
+      : 'People with complex medication interactions, unresolved injuries, or limited injection experience should not treat stack pages as a substitute for clinician oversight.');
   const evidenceBase =
     content?.keyPoints?.[0] ??
-    "Use this page as an educational filter, then verify sourcing, supervision, and regulatory context before acting.";
-  const sidebarTitle =
-    sectionKey === "stacks"
-      ? "Is this stack right for you?"
-      : sectionKey === "goals"
-        ? "Find your peptide match"
-        : sectionKey === "compare"
-          ? "Is this comparison right for you?"
+    'Use this page as an educational filter, then verify sourcing, supervision, and regulatory context before acting.';
+  const sidebarTitle = isStacks
+    ? 'Is this stack right for you?'
+    : isGoals
+      ? 'Find your peptide match'
+      : isCompare
+        ? 'Not sure which to choose?'
+        : primaryProfile
+          ? `Is ${primaryProfile.name} right for you?`
           : `Is this ${sectionSingularLabel(sectionKey).toLowerCase()} right for you?`;
-  const sidebarChipTitle =
-    sectionKey === "stacks"
-      ? "Stack Components"
-      : sectionKey === "goals"
-        ? "Related Stacks"
-        : sectionKey === "compare"
-          ? "Compared Topics"
-          : "Related Compounds";
-  const sidebarMetricTitle =
-    sectionKey === "goals"
-      ? "Related Goals"
-      : sectionKey === "stacks"
-        ? "Addresses These Goals"
-        : "Research Themes";
-  const ctaTitle =
-    sectionKey === "stacks"
-      ? "Is this stack right for your biology?"
-      : sectionKey === "goals"
-        ? "Which peptide matches your biology?"
-        : `Is this ${sectionSingularLabel(sectionKey).toLowerCase()} right for your biology?`;
-  const ctaBody =
-    sectionKey === "goals"
-      ? "Take the 5-minute PeptidePilot quiz to get a personalized peptide recommendation based on your goals, body, and lifestyle."
-      : "Take the 5-minute PeptidePilot quiz to get a personalized peptide recommendation based on your goals, body, and lifestyle. Vendor-neutral.";
-  const cautionTitle =
-    sectionKey === "goals" ? "Educational Content Only" : sectionKey === "stacks" ? "Advanced Protocol" : "Important Context";
+  const ctaTitle = isStacks
+    ? 'Is this stack right for your biology?'
+    : isGoals
+      ? 'Which peptide matches your biology?'
+      : isCompare
+        ? 'Get a personalized recommendation'
+        : primaryProfile
+          ? `Is ${primaryProfile.name} right for your biology?`
+          : `Is this ${sectionSingularLabel(sectionKey).toLowerCase()} right for your biology?`;
+  const ctaBody = isGoals
+    ? 'Take the 5-minute PeptidePilot quiz to get a personalized peptide recommendation based on your goals, body, and lifestyle.'
+    : isCompare
+      ? 'Take the 5-minute PeptidePilot quiz. Our algorithm evaluates your goals, body, and lifestyle to recommend the right peptide for you vendor-neutral.'
+      : 'Take the 5-minute PeptidePilot quiz to get a personalized peptide recommendation based on your goals, body, and lifestyle. Vendor-neutral.';
+  const cautionTitle = isGoals ? 'Educational Content Only' : isStacks ? 'Advanced Protocol' : isCompare ? 'Independent Analysis' : 'Research Compound Notice';
   const exploreCards = siblingLinks.map((item, index) => ({
     ...item,
-    tags:
-      sectionKey === "stacks"
-        ? relatedPeptides(item.title, item.slug).slice(0, 3).map((profile) => profile.name)
+    tags: isStacks
+      ? relatedPeptides(item.title, item.slug).slice(0, 3).map((profile) => profile.name)
+      : isCompare
+        ? [sectionGuideLabel(sectionKey)]
         : goalTags.slice(index % Math.max(goalTags.length, 1), index % Math.max(goalTags.length, 1) + 3),
   }));
+  const peptideAssessment = primaryProfile
+    ? `${primaryProfile.name} is PeptidePilot's preferred recommendation for users with ${primaryProfile.categories.slice(0, 2).join(' and ')} goals. In our algorithm, it scores highest for users whose symptom profile aligns with ${primaryProfile.categories.slice(0, 3).join(', ')}.`
+    : '';
 
   return (
     <div className="min-h-screen bg-background">
@@ -587,26 +739,42 @@ export function PseoDetailPage({
         </div>
       </section>
 
-      <section className="bg-brand-gradient text-white py-16 md:py-18">
+      <section className="bg-brand-gradient text-white py-14 md:py-16">
         <div className="container max-w-6xl">
-          <div className="max-w-3xl">
-            <div className="flex flex-wrap gap-2 mb-5">
+          <div className="max-w-4xl">
+            <div className="flex flex-wrap gap-2 mb-4">
               {heroTags.map((tag) => (
-                <span key={tag} className="rounded-full border border-white/20 bg-white/8 px-3 py-1 text-xs font-semibold tracking-wide text-white/85">
+                <span key={tag} className="rounded-full border border-white/20 bg-white/8 px-3 py-1 text-[11px] font-semibold tracking-wide text-white/85">
                   {tag}
                 </span>
               ))}
             </div>
-            <h1 className="text-4xl md:text-6xl font-normal mb-5 leading-[1.02]" style={{ fontFamily: "'DM Serif Display', serif" }}>
-              {entry.title}
+            <h1 className="max-w-4xl text-4xl md:text-[3.35rem] font-normal mb-4 leading-[0.98]" style={{ fontFamily: "'DM Serif Display', serif" }}>
+              {isCompare ? `${entry.title}: Which Is Right for You?` : entry.title}
             </h1>
-            <p className="text-white/80 text-lg md:text-xl leading-relaxed max-w-2xl">
-              {content?.summary ?? copy.detailIntro}
-            </p>
-            <div className="mt-6 flex flex-wrap items-center gap-5 text-sm text-white/65">
-              <span>{heroMetaPrimary}</span>
-              <span>{heroMetaSecondary}</span>
-            </div>
+            {isPeptide && primaryProfile ? (
+              <>
+                <p className="text-white/80 text-lg md:text-xl leading-relaxed max-w-2xl">{expandedCompoundName(primaryProfile)}</p>
+                <p className="mt-4 max-w-2xl text-cyan-200 text-lg leading-relaxed">{heroIntro}</p>
+                <div className="mt-5 flex flex-wrap items-center gap-4 text-sm text-white/70">
+                  <span className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-[11px] font-medium text-amber-900">{heroMetaPrimary}</span>
+                  <span>{heroMetaSecondary}</span>
+                </div>
+              </>
+            ) : isCompare ? (
+              <div className="mt-4 max-w-3xl rounded-2xl border border-white/15 bg-white/10 px-5 py-4">
+                <div className="text-xs font-semibold uppercase tracking-[0.12em] text-cyan-200">{heroMetaPrimary}</div>
+                <p className="mt-2 text-white/85 leading-7">{verdictSummary}</p>
+              </div>
+            ) : (
+              <>
+                <p className="text-white/80 text-lg md:text-xl leading-relaxed max-w-2xl">{heroIntro}</p>
+                <div className="mt-6 flex flex-wrap items-center gap-5 text-sm text-white/65">
+                  <span>{heroMetaPrimary}</span>
+                  <span>{heroMetaSecondary}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -617,7 +785,10 @@ export function PseoDetailPage({
             <div className="flex gap-3">
               <ShieldCheck className="w-5 h-5 text-amber-700 mt-0.5 flex-shrink-0" />
               <p className="text-sm leading-relaxed text-amber-900">
-                <span className="font-semibold">Medical Disclaimer:</span> This content is for educational purposes only. Peptides, GLP-1 medications, hormone-related therapies, and injectable compounds should be discussed with a qualified healthcare professional before use.{" "}
+                <span className="font-semibold">Medical Disclaimer:</span>{' '}
+                {isCompare
+                  ? 'This comparison is for educational purposes only. Consult a healthcare provider before starting any peptide protocol.'
+                  : 'This content is for educational purposes only. Peptides, GLP-1 medications, hormone-related therapies, and injectable compounds should be discussed with a qualified healthcare professional before use.'}{' '}
                 <Link href="/disclaimer" className="underline underline-offset-2">Full disclaimer</Link>
               </p>
             </div>
@@ -628,9 +799,7 @@ export function PseoDetailPage({
             <h2 className="mt-3 text-2xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>
               {sidebarTitle}
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-white/75">
-              5-minute quiz. Personalized, vendor-neutral results based on your goals, biology, and priorities.
-            </p>
+            <p className="mt-3 text-sm leading-relaxed text-white/75">5-minute quiz. Personalized, vendor-neutral results.</p>
             <Link href="/quiz">
               <Button className="mt-5 w-full bg-teal-500 text-white hover:bg-teal-400">Take the Quiz</Button>
             </Link>
@@ -641,113 +810,58 @@ export function PseoDetailPage({
       <section className="pb-16">
         <div className="container max-w-6xl grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-8">
           <article className="space-y-10">
-            <section>
-              <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                {firstBlockHeading}
-              </h2>
-              <div className="space-y-4">
-                {firstBlockParagraphs.map((paragraph) => (
-                  <p key={paragraph} className="text-base leading-8 text-muted-foreground">
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
-            </section>
-
-            {sectionKey === "goals" ? (
-              <section>
-                <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                  Top Peptides for {entry.title.replace(/^Best Peptides for\s+/i, "")}
-                </h2>
-                <div className="space-y-4">
-                  {rankingCards.map((card) => (
-                    <div key={card.name} className="rounded-2xl border border-border/70 bg-white p-5 shadow-[0_1px_0_rgba(15,23,42,0.03)]">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex gap-3">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">
-                            {card.rank}
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-normal text-foreground" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                              {card.name}
-                            </h3>
-                            <span className="mt-2 inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700">
-                              {card.badge}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                          <span className="font-semibold text-foreground">{card.score}</span>/100
-                        </div>
+            {isPeptide ? (
+              <>
+                <section>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Quick Reference</h2>
+                  <div className="overflow-hidden rounded-2xl border border-border/70 bg-white">
+                    {peptideQuickReference.map((row) => (
+                      <div key={row.label} className="grid grid-cols-[160px_minmax(0,1fr)] gap-4 border-t border-border/70 px-5 py-3 first:border-t-0 text-sm">
+                        <div className="font-medium text-foreground">{row.label}</div>
+                        <div className="text-muted-foreground">{row.value}</div>
                       </div>
-                      <p className="mt-4 text-sm leading-7 text-muted-foreground">{card.description}</p>
-                      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="rounded-xl bg-slate-50 p-3">
-                          <div className="text-xs font-semibold text-foreground">Dosage</div>
-                          <div className="mt-1 text-xs leading-6 text-muted-foreground">{card.dosage}</div>
-                        </div>
-                        <div className="rounded-xl bg-slate-50 p-3">
-                          <div className="text-xs font-semibold text-foreground">Administration</div>
-                          <div className="mt-1 text-xs leading-6 text-muted-foreground">{card.administration}</div>
-                        </div>
-                      </div>
-                      <Link href={card.href}>
-                        <Button variant="outline" className="mt-4 rounded-md border-border/80 bg-white text-foreground hover:bg-slate-50">
-                          Full {card.name} Profile <ArrowRight className="ml-1 h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            ) : (
-              <section>
-                <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                  {secondBlockHeading}
-                </h2>
-                <div className="space-y-4">
-                  {secondBlockParagraphs.map((paragraph) => (
-                    <p key={paragraph} className="text-base leading-8 text-muted-foreground">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-                {sectionKey === "stacks" ? (
-                  <div className="mt-6">
-                    <h3 className="text-xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                      Dosing Schedule
-                    </h3>
-                    <div className="overflow-hidden rounded-2xl border border-border/70 bg-white">
-                      <div className="grid grid-cols-[1.1fr_1.2fr_1.6fr_1.2fr] bg-primary px-5 py-4 text-sm font-semibold text-white">
-                        <div>Peptide</div>
-                        <div>Dose</div>
-                        <div>Timing</div>
-                        <div>Route</div>
-                      </div>
-                      {protocolRows.map((row) => (
-                        <div key={row.peptide} className="grid grid-cols-[1.1fr_1.2fr_1.6fr_1.2fr] gap-4 border-t border-border/70 px-5 py-4 text-sm">
-                          <div className="font-medium text-foreground">{row.peptide}</div>
-                          <div className="text-muted-foreground">{row.dose}</div>
-                          <div className="text-muted-foreground">{row.timing}</div>
-                          <div className="text-muted-foreground">{row.route}</div>
-                        </div>
-                      ))}
-                    </div>
+                    ))}
                   </div>
-                ) : null}
-              </section>
-            )}
+                </section>
 
-            {sectionKey === "goals" ? (
-              <section>
+                <section>
+                  <h2 className="text-3xl font-normal text-foreground mb-2" style={{ fontFamily: "'DM Serif Display', serif" }}>{firstBlockHeading}</h2>
+                  <p className="text-sm italic text-accent mb-4">Promotes cell migration and anti-inflammatory signaling through tissue-repair pathways.</p>
+                  <div className="space-y-4">
+                    {firstBlockParagraphs.map((paragraph) => (
+                      <p key={paragraph} className="text-base leading-8 text-muted-foreground">{paragraph}</p>
+                    ))}
+                  </div>
+                </section>
+
+                <section>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Evidence Base</h2>
+                  <div className="space-y-4">
+                    {peptideEvidenceCards.map((card) => (
+                      <div key={card.title} className="rounded-2xl border border-border/70 bg-white p-5">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                          <FlaskConical className="h-4 w-4 text-accent" />
+                          {card.title}
+                        </div>
+                        <p className="mt-3 text-sm leading-7 text-muted-foreground">{card.body}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-5 flex flex-wrap items-center gap-3 text-xs">
+                    <span className="text-foreground font-medium">Key PubMed References:</span>
+                    {pubMedLinks.map((item) => (
+                      <a key={item.href} href={item.href} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-2">
+                        {item.label}
+                      </a>
+                    ))}
+                  </div>
+                </section>
+
                 <div className="rounded-3xl bg-brand-gradient p-6 md:p-8 text-white">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                     <div className="max-w-2xl">
                       <p className="text-xs font-semibold tracking-[0.14em] uppercase text-cyan-200">Free personalized analysis</p>
-                      <h2 className="mt-3 text-3xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                        {ctaTitle}
-                      </h2>
+                      <h2 className="mt-3 text-3xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>{ctaTitle}</h2>
                       <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
                     </div>
                     <Link href="/quiz">
@@ -755,69 +869,253 @@ export function PseoDetailPage({
                     </Link>
                   </div>
                 </div>
-              </section>
-            ) : null}
 
-            <section>
-              <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                {sectionKey === "goals" ? "How We Compare These Peptides" : "What this page covers"}
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {(sectionKey === "goals" ? compareCriteria(sectionKey) : (content?.keyPoints ?? SECTION_ACCENTS[sectionKey]).slice(0, 4)).map((item) => (
-                  <span key={item} className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-medium text-accent">
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </section>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
-                <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                  {sectionKey === "goals" ? "Who Should Consider These Peptides" : `Who This ${sectionSingularLabel(sectionKey)} Is For`}
-                </h3>
-                <p className="text-sm leading-7 text-muted-foreground">{whoItsFor}</p>
-              </div>
-              <div className={cn("rounded-2xl p-6", sectionKey === "goals" ? "border border-rose-200 bg-rose-50" : "border border-border/70 bg-white")}>
-                <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                  {sectionKey === "goals" ? "Who Should Avoid These Peptides" : "Evidence Base"}
-                </h3>
-                <p className="text-sm leading-7 text-muted-foreground">{sectionKey === "goals" ? cautionAudience : evidenceBase}</p>
-              </div>
-            </div>
-
-            {sectionKey !== "goals" ? (
-              <div className="rounded-3xl bg-brand-gradient p-6 md:p-8 text-white">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                  <div className="max-w-2xl">
-                    <p className="text-xs font-semibold tracking-[0.14em] uppercase text-cyan-200">Free personalized analysis</p>
-                    <h2 className="mt-3 text-3xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                      {ctaTitle}
-                    </h2>
-                    <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
+                <section>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Safety Profile</h2>
+                  <div className="space-y-4">
+                    <div className="rounded-2xl border border-border/70 bg-white p-5">
+                      <h3 className="text-base font-semibold text-foreground">Side Effects</h3>
+                      <p className="mt-2 text-sm leading-7 text-muted-foreground">Generally well-tolerated. Reported side effects include mild fatigue, headache, and injection-site reactions. Some users report temporary nausea at higher loading doses.</p>
+                    </div>
+                    <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5">
+                      <h3 className="text-base font-semibold text-amber-900">Contraindications</h3>
+                      <p className="mt-2 text-sm leading-7 text-amber-900/85">Caution in individuals with active malignancy due to theoretical pro-angiogenic effects. Not recommended during pregnancy. Avoid concurrent use with other peptides that strongly promote angiogenesis without medical supervision.</p>
+                    </div>
                   </div>
-                  <Link href="/quiz">
-                    <Button className="bg-teal-500 text-white hover:bg-teal-400 min-w-[220px]">Take the 5-Minute Quiz</Button>
-                  </Link>
+                </section>
+
+                <section className="rounded-2xl border border-cyan-400 bg-cyan-50 p-5">
+                  <h2 className="text-2xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>PeptidePilot Assessment</h2>
+                  <p className="text-sm leading-7 text-muted-foreground">{peptideAssessment}</p>
+                  <div className="mt-3 text-xs font-medium text-accent">14% of PeptidePilot users focused on injury recovery receive {primaryProfile?.name ?? 'this compound'} as their top match</div>
+                </section>
+              </>
+            ) : isCompare ? (
+              <>
+                <section>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>At a Glance</h2>
+                  <div className="overflow-hidden rounded-2xl border border-border/70 bg-white">
+                    <div className="grid grid-cols-[1.2fr_1.15fr_1.15fr] bg-primary px-5 py-4 text-sm font-semibold text-white">
+                      <div>Dimension</div>
+                      <div>{compareLeft}</div>
+                      <div>{compareRight}</div>
+                    </div>
+                    {compareRows.map((row) => (
+                      <div key={row.label} className="grid grid-cols-[1.2fr_1.15fr_1.15fr] gap-4 border-t border-border/70 px-5 py-4 text-sm">
+                        <div className="font-medium text-foreground">{row.label}</div>
+                        <div className="text-muted-foreground">{row.left}</div>
+                        <div className="text-muted-foreground">{row.right}</div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[compareLeft, compareRight].map((label, index) => (
+                    <section key={label} className="rounded-2xl border border-border/70 bg-white p-5">
+                      <h2 className="text-2xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>{label} Deep Dive</h2>
+                      <p className="text-sm leading-7 text-muted-foreground">
+                        {index === 0
+                          ? `${label} offers a longer real-world track record, slower but well-characterized titration pathways, and broader clinician familiarity. It may be the cleaner starting point when long-term safety framing matters most.`
+                          : `${label} appears to produce stronger average outcomes in several contexts, especially where maximum efficacy is the main priority. The tradeoff is that sourcing, tolerability, and clinician familiarity can feel newer or less settled.`}
+                      </p>
+                      <Link href={`/peptides/${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+                        <Button variant="outline" className="mt-4 rounded-md border-border/80 bg-white text-foreground hover:bg-slate-50">
+                          Full {label} Profile <ArrowRight className="ml-1 h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </section>
+                  ))}
                 </div>
-              </div>
-            ) : null}
+
+                <section>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>How to Choose</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {compareChoiceCards.map((card) => (
+                      <div key={card.title} className={cn('rounded-2xl p-5', card.tone === 'emerald' ? 'border border-emerald-200 bg-emerald-50' : 'border border-blue-200 bg-blue-50')}>
+                        <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>{card.title}</h3>
+                        <ul className="space-y-2 text-sm leading-7 text-muted-foreground">
+                          {card.bullets.map((bullet) => (
+                            <li key={bullet} className="flex gap-2"><span className="text-accent">•</span><span>{bullet}</span></li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 rounded-2xl border border-cyan-400 bg-cyan-50 p-5">
+                    <h3 className="text-xl font-normal text-foreground mb-2" style={{ fontFamily: "'DM Serif Display', serif" }}>Consider Both If...</h3>
+                    <p className="text-sm leading-7 text-muted-foreground">You are unsure and need a telehealth provider who can assess your specific metabolic profile, contraindications, and preferred starting point.</p>
+                  </div>
+                </section>
+
+                <div className="rounded-3xl bg-brand-gradient p-6 md:p-8 text-white">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                    <div className="max-w-2xl">
+                      <p className="text-xs font-semibold tracking-[0.14em] uppercase text-cyan-200">Still unsure?</p>
+                      <h2 className="mt-3 text-3xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>{ctaTitle}</h2>
+                      <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
+                    </div>
+                    <Link href="/quiz">
+                      <Button className="bg-teal-500 text-white hover:bg-teal-400 min-w-[220px]">Take the 5-Minute Quiz</Button>
+                    </Link>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <section>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>{firstBlockHeading}</h2>
+                  <div className="space-y-4">
+                    {firstBlockParagraphs.map((paragraph) => (
+                      <p key={paragraph} className="text-base leading-8 text-muted-foreground">{paragraph}</p>
+                    ))}
+                  </div>
+                </section>
+
+                {isGoals ? (
+                  <section>
+                    <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                      Top Peptides for {entry.title.replace(/^Best Peptides for\s+/i, '')}
+                    </h2>
+                    <div className="space-y-4">
+                      {rankingCards.map((card) => (
+                        <div key={card.name} className="rounded-2xl border border-border/70 bg-white p-5 shadow-[0_1px_0_rgba(15,23,42,0.03)]">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex gap-3">
+                              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">{card.rank}</div>
+                              <div>
+                                <h3 className="text-xl font-normal text-foreground" style={{ fontFamily: "'DM Serif Display', serif" }}>{card.name}</h3>
+                                <span className={cn('mt-2 inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium', card.badge.includes('Strong') ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800')}>
+                                  {card.badge}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                              <span className="font-semibold text-foreground">{card.score}</span>/100
+                            </div>
+                          </div>
+                          <p className="mt-4 text-sm leading-7 text-muted-foreground">{card.description}</p>
+                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="rounded-xl bg-slate-50 p-3">
+                              <div className="text-xs font-semibold text-foreground">Dosage</div>
+                              <div className="mt-1 text-xs leading-6 text-muted-foreground">{card.dosage}</div>
+                            </div>
+                            <div className="rounded-xl bg-slate-50 p-3">
+                              <div className="text-xs font-semibold text-foreground">Administration</div>
+                              <div className="mt-1 text-xs leading-6 text-muted-foreground">{card.administration}</div>
+                            </div>
+                          </div>
+                          <Link href={card.href}>
+                            <Button variant="outline" className="mt-4 rounded-md border-border/80 bg-white text-foreground hover:bg-slate-50">
+                              Full {card.name} Profile <ArrowRight className="ml-1 h-4 w-4" />
+                            </Button>
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                ) : (
+                  <section>
+                    <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>{secondBlockHeading}</h2>
+                    <div className="space-y-4">
+                      {secondBlockParagraphs.map((paragraph) => (
+                        <p key={paragraph} className="text-base leading-8 text-muted-foreground">{paragraph}</p>
+                      ))}
+                    </div>
+                    {isStacks ? (
+                      <div className="mt-6">
+                        <h3 className="text-xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Dosing Schedule</h3>
+                        <div className="overflow-hidden rounded-2xl border border-border/70 bg-white">
+                          <div className="grid grid-cols-[1.1fr_1.2fr_1.6fr_1.2fr] bg-primary px-5 py-4 text-sm font-semibold text-white">
+                            <div>Peptide</div>
+                            <div>Dose</div>
+                            <div>Timing</div>
+                            <div>Route</div>
+                          </div>
+                          {protocolRows.map((row) => (
+                            <div key={row.peptide} className="grid grid-cols-[1.1fr_1.2fr_1.6fr_1.2fr] gap-4 border-t border-border/70 px-5 py-4 text-sm">
+                              <div className="font-medium text-foreground">{row.peptide}</div>
+                              <div className="text-muted-foreground">{row.dose}</div>
+                              <div className="text-muted-foreground">{row.timing}</div>
+                              <div className="text-muted-foreground">{row.route}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </section>
+                )}
+
+                {isGoals ? (
+                  <section>
+                    <div className="rounded-3xl bg-brand-gradient p-6 md:p-8 text-white">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                        <div className="max-w-2xl">
+                          <p className="text-xs font-semibold tracking-[0.14em] uppercase text-cyan-200">Free personalized analysis</p>
+                          <h2 className="mt-3 text-3xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>{ctaTitle}</h2>
+                          <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
+                        </div>
+                        <Link href="/quiz">
+                          <Button className="bg-teal-500 text-white hover:bg-teal-400 min-w-[220px]">Take the 5-Minute Quiz</Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </section>
+                ) : null}
+
+                <section>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                    {isGoals ? 'How We Compare These Peptides' : 'What this page covers'}
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    {(isGoals ? compareCriteria(sectionKey) : (content?.keyPoints ?? SECTION_ACCENTS[sectionKey]).slice(0, 4)).map((item) => (
+                      <span key={item} className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-medium text-accent">{item}</span>
+                    ))}
+                  </div>
+                </section>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+                    <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                      {isGoals ? 'Who Should Consider These Peptides' : `Who This ${sectionSingularLabel(sectionKey)} Is For`}
+                    </h3>
+                    <p className="text-sm leading-7 text-muted-foreground">{whoItsFor}</p>
+                  </div>
+                  <div className={cn('rounded-2xl p-6', isGoals ? 'border border-rose-200 bg-rose-50' : 'border border-border/70 bg-white')}>
+                    <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                      {isGoals ? 'Who Should Avoid These Peptides' : 'Evidence Base'}
+                    </h3>
+                    <p className="text-sm leading-7 text-muted-foreground">{isGoals ? cautionAudience : evidenceBase}</p>
+                  </div>
+                </div>
+
+                {!isGoals ? (
+                  <div className="rounded-3xl bg-brand-gradient p-6 md:p-8 text-white">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                      <div className="max-w-2xl">
+                        <p className="text-xs font-semibold tracking-[0.14em] uppercase text-cyan-200">Free personalized analysis</p>
+                        <h2 className="mt-3 text-3xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>{ctaTitle}</h2>
+                        <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
+                      </div>
+                      <Link href="/quiz">
+                        <Button className="bg-teal-500 text-white hover:bg-teal-400 min-w-[220px]">Take the 5-Minute Quiz</Button>
+                      </Link>
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            )}
 
             {content?.faqs?.length ? (
               <section>
-                <h2 className="text-3xl font-normal text-foreground mb-5" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                  Frequently Asked Questions
-                </h2>
+                <h2 className="text-3xl font-normal text-foreground mb-5" style={{ fontFamily: "'DM Serif Display', serif" }}>Frequently Asked Questions</h2>
                 <div className="rounded-2xl border border-border/70 bg-white px-5">
                   <Accordion type="single" collapsible className="w-full">
                     {content.faqs.map((faq, index) => (
                       <AccordionItem key={faq.question} value={`faq-${index}`}>
-                        <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
-                          {faq.question}
-                        </AccordionTrigger>
-                        <AccordionContent className="text-sm leading-7 text-muted-foreground">
-                          {faq.answer}
-                        </AccordionContent>
+                        <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">{faq.question}</AccordionTrigger>
+                        <AccordionContent className="text-sm leading-7 text-muted-foreground">{faq.answer}</AccordionContent>
                       </AccordionItem>
                     ))}
                   </Accordion>
@@ -826,24 +1124,18 @@ export function PseoDetailPage({
             ) : null}
 
             <section>
-              <h2 className="text-3xl font-normal text-foreground mb-5" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                {exploreHeading(sectionKey)}
-              </h2>
+              <h2 className="text-3xl font-normal text-foreground mb-5" style={{ fontFamily: "'DM Serif Display', serif" }}>{exploreHeading(sectionKey)}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {exploreCards.map((item) => (
                   <Link key={item.path} href={item.path}>
                     <article className="rounded-2xl border border-border/70 bg-white p-5 hover:border-accent/30 transition-colors">
                       <div className="flex flex-wrap gap-2 mb-3">
                         {item.tags.slice(0, 3).map((tag) => (
-                          <span key={`${item.slug}-${tag}`} className="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-medium text-accent">
-                            {tag}
-                          </span>
+                          <span key={`${item.slug}-${tag}`} className="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-medium text-accent">{tag}</span>
                         ))}
                       </div>
                       <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
-                      <p className="text-sm leading-6 text-muted-foreground">
-                        {exploreDescription(sectionKey, item.title)}
-                      </p>
+                      <p className="text-sm leading-6 text-muted-foreground">{exploreDescription(sectionKey, item.title)}</p>
                     </article>
                   </Link>
                 ))}
@@ -854,12 +1146,19 @@ export function PseoDetailPage({
           <aside className="space-y-5">
             <div className="rounded-2xl border border-border/70 bg-white p-5">
               <h3 className="text-lg font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                {sidebarChipTitle}
+                {isStacks ? 'Stack Components' : isGoals ? 'Related Stacks' : isCompare ? 'Related Comparisons' : 'Commonly Stacked With'}
               </h3>
               <div className="divide-y divide-border/70">
-                {(sectionKey === "goals" ? siblingLinks.slice(0, 3).map((item) => ({ id: item.slug, name: slugLabel(item.slug) })) : peptides).map((profile) => (
-                  <div key={profile.id} className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-3">
-                    <span className="text-sm font-medium text-foreground">{profile.name}</span>
+                {(isGoals
+                  ? relatedStacks.map((item) => ({ id: item.slug, name: item.title }))
+                  : isCompare
+                    ? siblingLinks.slice(0, 2).map((item) => ({ id: item.slug, name: item.title }))
+                    : isPeptide
+                      ? peptides.slice(1).map((profile) => ({ id: profile.id, name: profile.name }))
+                      : peptides.map((profile) => ({ id: profile.id, name: profile.name }))
+                ).map((item) => (
+                  <div key={item.id} className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-3">
+                    <span className="text-sm font-medium text-foreground">{item.name}</span>
                     <span className="text-accent">→</span>
                   </div>
                 ))}
@@ -868,14 +1167,30 @@ export function PseoDetailPage({
 
             <div className="rounded-2xl border border-border/70 bg-white p-5">
               <h3 className="text-lg font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                {sectionKey === "stacks" ? "Estimated Cost" : sectionKey === "goals" ? "Related Goals" : "Research Snapshot"}
+                {isGoals ? 'Related Goals' : isStacks ? 'Estimated Cost' : isCompare ? 'Individual Profiles' : 'Compare With'}
               </h3>
-              {sectionKey === "goals" ? (
+              {isGoals ? (
                 <div className="flex flex-wrap gap-2">
                   {goalTags.map((tag) => (
-                    <span key={tag} className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-medium text-accent">
-                      {tag}
-                    </span>
+                    <span key={tag} className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-medium text-accent">{tag}</span>
+                  ))}
+                </div>
+              ) : isCompare ? (
+                <div className="divide-y divide-border/70">
+                  {[compareLeft, compareRight].map((name) => (
+                    <div key={name} className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-3">
+                      <span className="text-sm font-medium text-foreground">{name}</span>
+                      <span className="text-accent">→</span>
+                    </div>
+                  ))}
+                </div>
+              ) : isPeptide ? (
+                <div className="divide-y divide-border/70">
+                  {(relatedCompareLinks.length ? relatedCompareLinks : siblingLinks.slice(0, 2)).map((item) => (
+                    <div key={item.slug} className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-3">
+                      <span className="text-sm font-medium text-foreground">{item.title}</span>
+                      <span className="text-accent">→</span>
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -885,15 +1200,19 @@ export function PseoDetailPage({
 
             <div className="rounded-2xl border border-border/70 bg-white p-5">
               <h3 className="text-lg font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                {sidebarMetricTitle}
+                {isGoals ? 'Related Goals' : isStacks ? 'Addresses These Goals' : isCompare ? 'Independent Analysis' : 'Best For'}
               </h3>
-              <div className="flex flex-wrap gap-2">
-                {(sectionKey === "goals" ? compareCriteria(sectionKey).slice(0, 4) : goalTags).map((tag) => (
-                  <span key={tag} className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-medium text-accent">
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              {isCompare ? (
+                <p className="text-sm leading-7 text-muted-foreground">
+                  PeptidePilot has no commercial relationships with peptide vendors. All comparisons are based solely on scientific evidence and quiz data.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {(isGoals ? compareCriteria(sectionKey).slice(0, 4) : goalTags).map((tag) => (
+                    <span key={tag} className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-medium text-accent">{tag}</span>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5">
@@ -901,7 +1220,11 @@ export function PseoDetailPage({
                 <ShieldAlert className="mt-0.5 h-4 w-4 text-amber-700" />
                 <div>
                   <h3 className="text-base font-semibold text-amber-900 mb-2">{cautionTitle}</h3>
-                  <p className="text-sm leading-6 text-amber-900/85">{cautionCopy(sectionKey, content)}</p>
+                  <p className="text-sm leading-6 text-amber-900/85">
+                    {isCompare
+                      ? 'PeptidePilot has no commercial relationships with peptide vendors. All comparisons are based solely on scientific evidence and quiz data.'
+                      : cautionCopy(sectionKey, content)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -911,6 +1234,7 @@ export function PseoDetailPage({
     </div>
   );
 }
+
 
 export function FAQPage() {
   const faqs = [
