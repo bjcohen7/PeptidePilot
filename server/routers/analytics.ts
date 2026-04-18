@@ -1,7 +1,7 @@
 import { desc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { affiliateClicks, clickEvents, pageVisits, leads, visitorSessions } from "../../drizzle/schema";
-import { QUIZ_QUESTIONS } from "../../shared/scoring";
+import { QUIZ_QUESTIONS, calculateAspectScores } from "../../shared/scoring";
 import { getDb } from "../db";
 import { adminProcedure, publicProcedure, router } from "../_core/trpc";
 
@@ -175,6 +175,110 @@ function decodeQuizAnswers(rawQuizData: unknown) {
   });
 }
 
+function buildDimensionScores(rawQuizData: unknown) {
+  if (!Array.isArray(rawQuizData)) return [];
+
+  const numericAnswers = rawQuizData.map((value) => (typeof value === "number" ? value : 0));
+  const aspects = calculateAspectScores(numericAnswers);
+
+  const groups = [
+    { label: "Physical", max: 24, score: aspects.muscle + aspects.recovery + aspects.endurance + aspects.healing + aspects.injury + aspects.joints },
+    { label: "Metabolic", max: 24, score: aspects.fatloss + aspects.metabolic + aspects.appetite + aspects.energy },
+    { label: "Recovery", max: 24, score: aspects.recovery + aspects.inflammation + aspects.healing + aspects.sleep },
+    { label: "Cognitive", max: 24, score: aspects.cognitive + aspects.focus + aspects.neuroprotection + aspects.mood + aspects.anxiety },
+    { label: "Hormonal", max: 24, score: aspects.hormone + aspects.libido + aspects.confidence + aspects.energy },
+    { label: "Appearance", max: 24, score: aspects.skin + aspects.hair + aspects.collagen + aspects.antiaging + aspects.longevity },
+  ];
+
+  return groups.map((group) => {
+    const normalized = Math.min(group.max, Math.max(0, Math.round(group.score)));
+    const severity =
+      normalized >= 16 ? "High" : normalized >= 10 ? "Medium" : "Low";
+
+    return {
+      dimension: group.label,
+      score: normalized,
+      max: group.max,
+      severity,
+      pct: Math.round((normalized / group.max) * 100),
+    };
+  });
+}
+
+async function buildSessionPayloads(sessionRows: Array<typeof visitorSessions.$inferSelect>) {
+  const db = await getDb();
+  if (!db || !sessionRows.length) return [];
+
+  const leadIds = sessionRows.map((session) => session.leadId).filter((value): value is string => Boolean(value));
+  const sessionIds = sessionRows.map((session) => session.id);
+
+  const sessionLeadRows = leadIds.length
+    ? await db.select().from(leads).where(inArray(leads.id, leadIds))
+    : [];
+  const visitRows = sessionIds.length
+    ? await db
+        .select()
+        .from(pageVisits)
+        .where(inArray(pageVisits.sessionId, sessionIds))
+        .orderBy(desc(pageVisits.createdAt))
+    : [];
+  const clickRows = sessionIds.length
+    ? await db
+        .select()
+        .from(clickEvents)
+        .where(inArray(clickEvents.sessionId, sessionIds))
+        .orderBy(desc(clickEvents.createdAt))
+    : [];
+  const affiliateRows = leadIds.length
+    ? await db
+        .select()
+        .from(affiliateClicks)
+        .where(inArray(affiliateClicks.leadId, leadIds))
+        .orderBy(desc(affiliateClicks.clickedAt))
+    : [];
+
+  const leadById = new Map(sessionLeadRows.map((lead) => [lead.id, lead]));
+  const visitsBySession = new Map<string, typeof visitRows>();
+  const clicksBySession = new Map<string, typeof clickRows>();
+  const affiliateByLead = new Map<string, typeof affiliateRows>();
+
+  visitRows.forEach((visit) => {
+    const current = visitsBySession.get(visit.sessionId) ?? [];
+    current.push(visit);
+    visitsBySession.set(visit.sessionId, current);
+  });
+  clickRows.forEach((event) => {
+    const current = clicksBySession.get(event.sessionId) ?? [];
+    current.push(event);
+    clicksBySession.set(event.sessionId, current);
+  });
+  affiliateRows.forEach((event) => {
+    const current = affiliateByLead.get(event.leadId) ?? [];
+    current.push(event);
+    affiliateByLead.set(event.leadId, current);
+  });
+
+  return sessionRows.map((session) => {
+    const lead = session.leadId ? leadById.get(session.leadId) : null;
+    const decodedAnswers = lead ? decodeQuizAnswers(lead.rawQuizData) : [];
+    const dimensionScores = lead ? buildDimensionScores(lead.rawQuizData) : [];
+
+    return {
+      ...session,
+      lead: lead
+        ? {
+            ...lead,
+            decodedAnswers,
+            dimensionScores,
+          }
+        : null,
+      visits: visitsBySession.get(session.id) ?? [],
+      clicks: clicksBySession.get(session.id) ?? [],
+      affiliateClicks: lead ? affiliateByLead.get(lead.id) ?? [] : [],
+    };
+  });
+}
+
 export const analyticsRouter = router({
   startSession: publicProcedure.input(sessionStartInput).mutation(async ({ input }) => {
     await startVisitorSession(input);
@@ -263,70 +367,28 @@ export const analyticsRouter = router({
       .orderBy(desc(visitorSessions.lastSeenAt))
       .limit(50);
 
-    const leadIds = sessions.map((session) => session.leadId).filter((value): value is string => Boolean(value));
-    const sessionIds = sessions.map((session) => session.id);
+    const hydrated = await buildSessionPayloads(sessions);
+    return hydrated.map((session) => ({
+      ...session,
+      visits: session.visits.slice(0, 10),
+      clicks: session.clicks.slice(0, 20),
+      affiliateClicks: session.affiliateClicks.slice(0, 20),
+    }));
+  }),
 
-    const sessionLeadRows = leadIds.length
-      ? await db.select().from(leads).where(inArray(leads.id, leadIds))
-      : [];
-    const visitRows = sessionIds.length
-      ? await db
-          .select()
-          .from(pageVisits)
-          .where(inArray(pageVisits.sessionId, sessionIds))
-          .orderBy(desc(pageVisits.createdAt))
-      : [];
-    const clickRows = sessionIds.length
-      ? await db
-          .select()
-          .from(clickEvents)
-          .where(inArray(clickEvents.sessionId, sessionIds))
-          .orderBy(desc(clickEvents.createdAt))
-      : [];
-    const affiliateRows = leadIds.length
-      ? await db
-          .select()
-          .from(affiliateClicks)
-          .where(inArray(affiliateClicks.leadId, leadIds))
-          .orderBy(desc(affiliateClicks.clickedAt))
-      : [];
+  sessionById: adminProcedure.input(z.object({ sessionId: z.string().min(8).max(64) })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return null;
 
-    const leadById = new Map(sessionLeadRows.map((lead) => [lead.id, lead]));
-    const visitsBySession = new Map<string, typeof visitRows>();
-    const clicksBySession = new Map<string, typeof clickRows>();
-    const affiliateByLead = new Map<string, typeof affiliateRows>();
+    const sessions = await db
+      .select()
+      .from(visitorSessions)
+      .where(eq(visitorSessions.id, input.sessionId))
+      .limit(1);
 
-    visitRows.forEach((visit) => {
-      const current = visitsBySession.get(visit.sessionId) ?? [];
-      current.push(visit);
-      visitsBySession.set(visit.sessionId, current);
-    });
-    clickRows.forEach((event) => {
-      const current = clicksBySession.get(event.sessionId) ?? [];
-      current.push(event);
-      clicksBySession.set(event.sessionId, current);
-    });
-    affiliateRows.forEach((event) => {
-      const current = affiliateByLead.get(event.leadId) ?? [];
-      current.push(event);
-      affiliateByLead.set(event.leadId, current);
-    });
+    if (!sessions[0]) return null;
 
-    return sessions.map((session) => {
-      const lead = session.leadId ? leadById.get(session.leadId) : null;
-
-      return {
-        ...session,
-        lead: lead
-          ? {
-              ...lead,
-              decodedAnswers: decodeQuizAnswers(lead.rawQuizData),
-            }
-          : null,
-        visits: (visitsBySession.get(session.id) ?? []).slice(0, 10),
-        clicks: (clicksBySession.get(session.id) ?? []).slice(0, 20),
-        affiliateClicks: lead ? (affiliateByLead.get(lead.id) ?? []).slice(0, 20) : [],
-      };
-    });
+    const hydrated = await buildSessionPayloads(sessions);
+    return hydrated[0] ?? null;
   }),
 });

@@ -31,7 +31,7 @@ import { Input } from "./ui/input";
 import { toast } from "sonner";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Sessions", path: "/admin" },
+  { icon: LayoutDashboard, label: "Sessions", path: "/admin/sessions" },
   { icon: Handshake, label: "Partners", path: "/admin/partners" },
 ];
 
@@ -169,7 +169,7 @@ function DashboardLayoutContent({
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = menuItems.find(item => item.path === location);
+  const activeMenuItem = menuItems.find(item => location === item.path || location.startsWith(`${item.path}/`));
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -238,7 +238,7 @@ function DashboardLayoutContent({
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
               {menuItems.map(item => {
-                const isActive = location === item.path;
+                const isActive = location === item.path || location.startsWith(`${item.path}/`);
                 return (
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton

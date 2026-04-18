@@ -24,6 +24,7 @@ import BlogArticle from "./pages/BlogArticle";
 import { FAQPage, PseoDetailPage, PseoHub, PseoSectionPage } from "./pages/PseoPages";
 import AffiliatePartnersAdmin from "./pages/admin/AffiliatePartners";
 import InsightsOverview from "./pages/admin/InsightsOverview";
+import SessionDetail from "./pages/admin/SessionDetail";
 
 // Pages that should NOT show the standard navbar/footer
 const BARE_ROUTES = ["/quiz/flow", "/processing"];
@@ -280,6 +281,20 @@ function Router() {
       <Route path="/admin/partners">
         <DashboardLayout>
           <AffiliatePartnersAdmin />
+        </DashboardLayout>
+      </Route>
+
+      <Route path="/admin/sessions/:sessionId">
+        {(params) => (
+          <DashboardLayout>
+            <SessionDetail sessionId={params.sessionId} />
+          </DashboardLayout>
+        )}
+      </Route>
+
+      <Route path="/admin/sessions">
+        <DashboardLayout>
+          <InsightsOverview />
         </DashboardLayout>
       </Route>
 

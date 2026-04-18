@@ -376,10 +376,9 @@ export interface MatchResult {
   matchPercent: number;
 }
 
-export function calculateMatches(answers: number[]): MatchResult[] {
+export function calculateAspectScores(answers: number[]): AspectScores {
   const aspects = initAspects();
 
-  // Accumulate aspect scores from answers
   for (let i = 0; i < answers.length && i < scoreMaps.length; i++) {
     const answerIdx = answers[i];
     const map = scoreMaps[i];
@@ -390,6 +389,12 @@ export function calculateMatches(answers: number[]): MatchResult[] {
       }
     }
   }
+
+  return aspects;
+}
+
+export function calculateMatches(answers: number[]): MatchResult[] {
+  const aspects = calculateAspectScores(answers);
 
   // Score each peptide
   const scored = peptideProfiles.map((peptide) => {
