@@ -832,7 +832,7 @@ export function PseoDetailPage({
         ]}
       />
       <section className="border-b border-border/60 bg-cyan-50/80">
-        <div className="container py-3 text-sm text-muted-foreground">
+        <div className="mx-auto w-full max-w-[1360px] px-4 py-3 text-sm text-muted-foreground sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
             <span>/</span>
@@ -844,7 +844,7 @@ export function PseoDetailPage({
       </section>
 
       <section className="bg-brand-gradient text-white py-14 md:py-16">
-        <div className="container max-w-7xl">
+        <div className="mx-auto w-full max-w-[1360px] px-4 sm:px-6 lg:px-8">
           <div className="max-w-5xl">
             <div className="flex flex-wrap gap-2 mb-4">
               {heroTags.map((tag) => (
@@ -884,7 +884,7 @@ export function PseoDetailPage({
       </section>
 
       <section className="pt-6 pb-4 md:py-10">
-        <div className="container max-w-7xl grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-8">
+        <div className="mx-auto grid w-full max-w-[1360px] grid-cols-1 gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:px-8">
           <div className="self-start rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4">
             <div className="flex gap-3">
               <ShieldCheck className="w-5 h-5 text-amber-700 mt-0.5 flex-shrink-0" />
@@ -912,7 +912,7 @@ export function PseoDetailPage({
       </section>
 
       <section className="pb-16 pt-2 md:pt-0">
-        <div className="container max-w-7xl grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-8">
+        <div className="mx-auto grid w-full max-w-[1360px] grid-cols-1 gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:px-8">
           <article className="space-y-10">
             {isPeptide ? (
               <>
