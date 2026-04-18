@@ -541,8 +541,6 @@ export default function Results() {
       trackMetaEvent("Lead", {
         content_name: matches[0]?.peptide.name ?? "Peptide Results",
         content_category: "quiz-results",
-        value: BUDGETS[state.answers[17] ?? -1] ?? undefined,
-        currency: "USD",
       }, pendingMetaEventIds?.lead);
       trackMetaEvent("ViewContent", {
         content_name: matches[0]?.peptide.name ?? "Peptide Results",

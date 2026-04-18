@@ -217,8 +217,6 @@ export const quizRouter = router({
           customData: {
             content_name: matches[0]?.peptide.name ?? "Peptide Results",
             content_category: "quiz-results",
-            value: budget,
-            currency: "USD",
           },
         },
         {
