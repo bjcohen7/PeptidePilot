@@ -6,6 +6,8 @@ import { calculateMatches, determineTier } from "../../shared/scoring";
 import { nanoid } from "nanoid";
 import { notifyOwner } from "../_core/notification";
 import { eq } from "drizzle-orm";
+import { sendMetaServerEvents } from "../_core/meta";
+import { ENV } from "../_core/env";
 
 const TIER1_WEBHOOK = process.env.WEBHOOK_TIER1_URL;
 const TIER2_WEBHOOK = process.env.WEBHOOK_TIER2_URL;
@@ -32,10 +34,21 @@ export const quizRouter = router({
         consentGiven: z.boolean(),
         answers: z.array(z.number().int().min(0)).length(20),
         sessionId: z.string().min(8).max(64).optional().nullable(),
+        meta: z
+          .object({
+            sourceUrl: z.string().url().optional().nullable(),
+            leadEventId: z.string().min(8).max(128).optional().nullable(),
+            completeRegistrationEventId: z.string().min(8).max(128).optional().nullable(),
+            viewContentEventId: z.string().min(8).max(128).optional().nullable(),
+            fbp: z.string().min(1).max(512).optional().nullable(),
+            fbc: z.string().min(1).max(512).optional().nullable(),
+          })
+          .optional()
+          .nullable(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { email, consentGiven, answers, sessionId } = input;
+      const { email, consentGiven, answers, sessionId, meta } = input;
 
       if (!consentGiven) {
         throw new Error("Consent is required to submit.");
@@ -127,6 +140,54 @@ export const quizRouter = router({
         consentTimestamp: consentTimestamp.toISOString(),
         ipAddress,
       };
+
+      await sendMetaServerEvents(ctx.req, [
+        {
+          eventName: "CompleteRegistration",
+          eventId: meta?.completeRegistrationEventId,
+          email,
+          clientIpAddress: ipAddress,
+          clientUserAgent: ctx.req.headers["user-agent"] ?? null,
+          sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
+          fbp: meta?.fbp ?? null,
+          fbc: meta?.fbc ?? null,
+          customData: {
+            content_name: "Peptide Quiz",
+            status: "completed",
+          },
+        },
+        {
+          eventName: "Lead",
+          eventId: meta?.leadEventId,
+          email,
+          clientIpAddress: ipAddress,
+          clientUserAgent: ctx.req.headers["user-agent"] ?? null,
+          sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
+          fbp: meta?.fbp ?? null,
+          fbc: meta?.fbc ?? null,
+          customData: {
+            content_name: matches[0]?.peptide.name ?? "Peptide Results",
+            content_category: "quiz-results",
+            value: budget,
+            currency: "USD",
+          },
+        },
+        {
+          eventName: "ViewContent",
+          eventId: meta?.viewContentEventId,
+          email,
+          clientIpAddress: ipAddress,
+          clientUserAgent: ctx.req.headers["user-agent"] ?? null,
+          sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
+          fbp: meta?.fbp ?? null,
+          fbc: meta?.fbc ?? null,
+          customData: {
+            content_name: matches[0]?.peptide.name ?? "Peptide Results",
+            content_category: "quiz-results",
+            content_ids: matches[0]?.peptide.id ? [matches[0].peptide.id] : undefined,
+          },
+        },
+      ]);
 
       // Route to appropriate webhook based on tier
       if (tier === 1) {

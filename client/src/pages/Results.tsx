@@ -19,7 +19,12 @@ import { trpc } from "@/lib/trpc";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { getVisitorSessionId } from "@/components/SessionTracker";
 import { identifyLogRocketUser } from "@/lib/logrocket";
-import { trackMetaEvent } from "@/lib/metaPixel";
+import {
+  applyMetaAdvancedMatching,
+  createMetaEventId,
+  getMetaBrowserIdentifiers,
+  trackMetaEvent,
+} from "@/lib/metaPixel";
 
 const AGE_RANGES = ["18–25", "26–35", "36–45", "46–55", "56–65", "65+"];
 const PRIMARY_GOALS = [
@@ -516,25 +521,34 @@ export default function Results() {
   const [leadId, setLeadId] = useState("");
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [submittedEmail, setSubmittedEmail] = useState("");
+  const [pendingMetaEventIds, setPendingMetaEventIds] = useState<{
+    lead: string;
+    completeRegistration: string;
+    viewContent: string;
+  } | null>(null);
 
   const submitQuiz = trpc.quiz.submitQuiz.useMutation({
     onSuccess: (data) => {
       setLeadId(data.leadId);
       setRevealed(true);
+      if (submittedEmail) {
+        applyMetaAdvancedMatching(submittedEmail);
+      }
       trackMetaEvent("CompleteRegistration", {
         content_name: "Peptide Quiz",
         status: "completed",
-      });
+      }, pendingMetaEventIds?.completeRegistration);
       trackMetaEvent("Lead", {
         content_name: matches[0]?.peptide.name ?? "Peptide Results",
         content_category: "quiz-results",
         value: BUDGETS[state.answers[17] ?? -1] ?? undefined,
-      });
+        currency: "USD",
+      }, pendingMetaEventIds?.lead);
       trackMetaEvent("ViewContent", {
         content_name: matches[0]?.peptide.name ?? "Peptide Results",
         content_category: "quiz-results",
         content_ids: matches[0]?.peptide.id ? [matches[0].peptide.id] : undefined,
-      });
+      }, pendingMetaEventIds?.viewContent);
       if (submittedEmail) {
         void identifyLogRocketUser(submittedEmail, {
           email: submittedEmail,
@@ -566,13 +580,27 @@ export default function Results() {
 
   const handleReveal = (email: string, consent: boolean) => {
     const computed = calculateMatches(state.answers.map((a) => a ?? 0));
+    const eventIds = {
+      lead: createMetaEventId("lead"),
+      completeRegistration: createMetaEventId("complete_registration"),
+      viewContent: createMetaEventId("view_content"),
+    };
+    const browserIds = getMetaBrowserIdentifiers();
     setMatches(computed);
     setSubmittedEmail(email);
+    setPendingMetaEventIds(eventIds);
     submitQuiz.mutate({
       email,
       consentGiven: consent,
       answers: state.answers.map((a) => a ?? 0),
       sessionId: getVisitorSessionId(),
+      meta: {
+        sourceUrl: typeof window !== "undefined" ? window.location.href : undefined,
+        leadEventId: eventIds.lead,
+        completeRegistrationEventId: eventIds.completeRegistration,
+        viewContentEventId: eventIds.viewContent,
+        ...browserIds,
+      },
     });
   };
 

@@ -24,6 +24,27 @@ function getFbq() {
   return typeof window.fbq === "function" ? window.fbq : null;
 }
 
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
+
+function readCookie(name: string) {
+  if (!canUseDom()) return null;
+  const value = document.cookie
+    .split("; ")
+    .find((part) => part.startsWith(`${name}=`))
+    ?.split("=")[1];
+  return value ? decodeURIComponent(value) : null;
+}
+
+export function createMetaEventId(prefix: string) {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return `${prefix}_${crypto.randomUUID()}`;
+  }
+
+  return `${prefix}_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+}
+
 export function initMetaPixel() {
   if (!canUseDom()) return;
   if (import.meta.env.DEV) return;
@@ -82,15 +103,39 @@ export function trackMetaPageView() {
   }
 }
 
+export function applyMetaAdvancedMatching(email: string) {
+  if (import.meta.env.DEV) return;
+
+  try {
+    const fbq = getFbq();
+    if (!fbq) return;
+    fbq("init", META_PIXEL_ID, { em: normalizeEmail(email) });
+  } catch (error) {
+    console.error("[Meta Pixel] Failed to apply advanced matching", error);
+  }
+}
+
+export function getMetaBrowserIdentifiers() {
+  return {
+    fbp: readCookie("_fbp"),
+    fbc: readCookie("_fbc"),
+  };
+}
+
 export function trackMetaEvent(
   name: "Lead" | "CompleteRegistration" | "ViewContent",
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
+  eventId?: string
 ) {
   if (import.meta.env.DEV) return;
 
   try {
     const fbq = getFbq();
     if (!fbq) return;
+    if (eventId) {
+      fbq("track", name, params ?? {}, { eventID: eventId });
+      return;
+    }
     fbq("track", name, params ?? {});
   } catch (error) {
     console.error(`[Meta Pixel] Failed to track ${name}`, error);
