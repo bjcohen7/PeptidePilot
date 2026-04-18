@@ -911,7 +911,7 @@ export function PseoDetailPage({
         </div>
       </section>
 
-      <section className="pb-16">
+      <section className="pb-16 pt-2 md:pt-0">
         <div className="container max-w-6xl grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-8">
           <article className="space-y-10">
             {isPeptide ? (
