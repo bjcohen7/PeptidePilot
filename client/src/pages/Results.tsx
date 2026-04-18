@@ -376,6 +376,7 @@ function ResultsDisplay({
 }) {
   const topMatch = matches[0];
   const secondaryMatches = matches.slice(1, 5);
+  const topCategories = topMatch?.peptide.categories.slice(0, 3) ?? [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -420,6 +421,19 @@ function ResultsDisplay({
           {topMatch && (
             <div className="mb-5 sm:mb-6 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
               <PeptideCard result={topMatch} rank={1} leadId={leadId} />
+              <div className="mt-4 rounded-2xl border border-border/70 bg-white px-4 py-4 sm:px-5">
+                <div className="text-xs font-semibold uppercase tracking-[0.12em] text-accent mb-2">
+                  Why this rose to the top
+                </div>
+                <p className="text-sm leading-7 text-muted-foreground">
+                  Your responses lined up most strongly with{" "}
+                  <span className="font-semibold text-foreground">{topMatch.peptide.name}</span>
+                  {topCategories.length
+                    ? ` across ${topCategories.join(", ").toLowerCase()}`
+                    : ""}.
+                  {" "}That doesn&apos;t mean it&apos;s the only relevant option, but it does mean it had the strongest overall fit against your goals, symptoms, and lifestyle inputs.
+                </p>
+              </div>
             </div>
           )}
 

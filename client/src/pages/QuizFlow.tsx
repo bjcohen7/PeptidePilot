@@ -80,6 +80,13 @@ export default function QuizFlow() {
   const { currentIndex, answers, isComplete } = state;
   const selectedAnswer = answers[currentIndex];
   const isFirst = currentIndex === 0;
+  const currentSectionQuestions = QUIZ_QUESTIONS.filter(
+    (question) => question.section === currentQuestion.section
+  ).length;
+  const currentSectionIndex =
+    QUIZ_QUESTIONS.slice(0, currentIndex + 1).filter(
+      (question) => question.section === currentQuestion.section
+    ).length;
 
   // Breather card state
   const [showBreather, setShowBreather] = useState(false);
@@ -279,6 +286,9 @@ export default function QuizFlow() {
             {/* Section badge */}
             <div className="mb-5 sm:mb-6">
               <span className="section-badge">{currentQuestion.section}</span>
+              <div className="mt-2 text-xs font-medium text-muted-foreground">
+                {currentSectionIndex} of {currentSectionQuestions} in this section
+              </div>
             </div>
 
             {/* Question */}
@@ -328,11 +338,9 @@ export default function QuizFlow() {
             </div>
 
             {/* Mobile hint — only on first question */}
-            {currentIndex === 0 && (
-              <p className="text-xs text-muted-foreground text-center mt-5 animate-fade-in">
-                Tap an answer to continue &middot; Swipe right to go back
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground text-center mt-5 animate-fade-in">
+              Select one answer and we&apos;ll keep things moving. Swipe right to go back.
+            </p>
           </div>
         )}
       </main>

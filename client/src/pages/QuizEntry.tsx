@@ -2,10 +2,11 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock, ShieldCheck, Zap } from "lucide-react";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
+import { QUIZ_QUESTIONS, peptideProfiles } from "../../../shared/scoring";
 
 const STEPS = [
-  { number: "01", label: "Answer 20 targeted questions", sub: "Across 8 biological domains" },
-  { number: "02", label: "We analyze your biology", sub: "Matched against 12 peptide profiles" },
+  { number: "01", label: `Answer ${QUIZ_QUESTIONS.length} targeted questions`, sub: "Across 8 biological domains" },
+  { number: "02", label: "We analyze your biology", sub: `Matched against ${peptideProfiles.length} peptide profiles` },
   { number: "03", label: "Receive your personalized protocol", sub: "Ranked by compatibility with your goals" },
 ];
 

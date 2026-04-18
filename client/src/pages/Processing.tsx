@@ -5,7 +5,7 @@ import { calculateMatches } from "../../../shared/scoring";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 
-const SLIDE_DURATION = 5000;
+const SLIDE_DURATION = 4200;
 
 interface Slide {
   icon: string;
@@ -200,6 +200,7 @@ export default function Processing() {
   const slide = slides[current]!;
   const headline = slide.headline.replace("{count}", String(matchCount));
   const isLast = current === slides.length - 1;
+  const visibleStep = Math.min(current + 1, slides.length);
 
   return (
     <div
@@ -254,6 +255,14 @@ export default function Processing() {
       {/* Main content */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8">
         <div className="w-full max-w-xl">
+          <div className="mb-6 text-center">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/45">
+              Processing your profile
+            </div>
+            <div className="mt-2 text-sm text-white/35">
+              Step {visibleStep} of {slides.length}
+            </div>
+          </div>
 
           {/* Icon + domain */}
           <div
@@ -355,6 +364,16 @@ export default function Processing() {
                 </div>
               )}
             </div>
+          </div>
+
+          <div className="mt-6 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium text-white/55 border border-white/10 bg-white/5">
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: slide.to }} />
+              {isLast ? "Finalizing your protocol..." : "Analyzing response patterns..."}
+            </div>
+            <p className="mt-3 text-xs text-white/30">
+              This usually takes well under a minute.
+            </p>
           </div>
         </div>
       </div>
