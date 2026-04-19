@@ -94,7 +94,7 @@ export default function InsightsOverview() {
       note: "Sessions that became leads",
     },
     {
-      label: "Affiliate Links Clicked",
+      label: "Affiliate Clicks",
       value: summary.data?.totalAffiliateClicks ?? 0,
       icon: ExternalLink,
       note: "Tracked outbound partner clicks",
