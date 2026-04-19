@@ -490,7 +490,13 @@ export const analyticsRouter = router({
 
     if (!sessions[0]) return null;
 
-    const hydrated = await buildSessionPayloads(sessions);
-    return hydrated[0] ?? null;
+    try {
+      const hydrated = await buildSessionPayloads(sessions);
+      return hydrated[0] ?? null;
+    } catch (error) {
+      console.warn("[Analytics] Falling back to basic session detail payload:", error);
+      const fallback = await buildBasicSessionPayloads(sessions);
+      return fallback[0] ?? null;
+    }
   }),
 });
