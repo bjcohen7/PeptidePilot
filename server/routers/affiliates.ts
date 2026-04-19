@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, asc, eq, ne, or } from "drizzle-orm";
+import { and, asc, eq, inArray, ne, or } from "drizzle-orm";
 import { affiliatePartnerSeeds } from "../../shared/affiliatePartners";
 import { affiliateAuditEvents, affiliateLinks, affiliatePartners } from "../../drizzle/schema";
 import { getDb } from "../db";
@@ -224,6 +224,54 @@ export const affiliatesRouter = router({
           )
         )
         .orderBy(asc(affiliateLinks.sortOrder), asc(affiliateLinks.createdAt));
+    }),
+
+  availablePeptideIds: publicProcedure
+    .input(z.object({ peptideIds: z.array(z.string().min(1).max(64)).max(50) }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db || input.peptideIds.length === 0) return [];
+
+      const normalizedIds = Array.from(
+        new Set(
+          input.peptideIds.map((peptideId) => normalizePeptideId(peptideId) ?? peptideId),
+        ),
+      );
+
+      const aliasesById = new Map(
+        normalizedIds.map((id) => [
+          id,
+          Array.from(new Set([id, id.replace(/_/g, "-"), id.replace(/-/g, "_")])),
+        ]),
+      );
+
+      const aliasPool = Array.from(new Set(Array.from(aliasesById.values()).flat()));
+      const rows = await db
+        .select({
+          peptideId: affiliateLinks.peptideId,
+          isGlobal: affiliateLinks.isGlobal,
+        })
+        .from(affiliateLinks)
+        .where(
+          and(
+            eq(affiliateLinks.status, "active"),
+            or(
+              eq(affiliateLinks.isGlobal, true),
+              inArray(affiliateLinks.peptideId, aliasPool),
+            ),
+          ),
+        );
+
+      const hasGlobalLink = rows.some((row) => row.isGlobal);
+      if (hasGlobalLink) {
+        return normalizedIds;
+      }
+
+      const activeIds = new Set(rows.map((row) => row.peptideId).filter((value): value is string => Boolean(value)));
+
+      return normalizedIds.filter((id) =>
+        (aliasesById.get(id) ?? [id]).some((alias) => activeIds.has(alias)),
+      );
     }),
 
   listPartners: adminProcedure.query(async () => {
