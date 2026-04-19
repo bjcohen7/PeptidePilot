@@ -46,12 +46,18 @@ type Props = {
 
 export default function SessionDetail({ sessionId }: Props) {
   const query = trpc.analytics.sessionById.useQuery({ sessionId }, { retry: false, refetchOnWindowFocus: false });
+  const recentSessions = trpc.analytics.recentSessions.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
 
   if (query.isLoading) {
     return <div className="text-sm text-muted-foreground">Loading session…</div>;
   }
 
-  if (!query.data) {
+  const fallbackSession = (recentSessions.data ?? []).find((session) => session.id === sessionId);
+
+  if (!query.data && !fallbackSession) {
     return (
       <div className="space-y-4">
         <Link href="/admin/sessions" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
@@ -68,7 +74,64 @@ export default function SessionDetail({ sessionId }: Props) {
     );
   }
 
-  const session = query.data;
+  if (!query.data && fallbackSession) {
+    const status = getSessionStatus(fallbackSession);
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <Link href="/admin/sessions" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-4 w-4" />
+              Sessions
+            </Link>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight">Session Detail</h1>
+            <p className="mt-2 text-sm text-muted-foreground font-mono">{fallbackSession.id}</p>
+          </div>
+          <span className={`inline-flex rounded-full border px-3 py-1.5 text-xs font-medium ${statusPill(status)}`}>
+            {status}
+          </span>
+        </div>
+
+        <div className={cardClass()}>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+            <div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">Email</div>
+              <div className="mt-2 text-sm font-medium text-foreground">{fallbackSession.lead?.email ?? "Anonymous visitor"}</div>
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">Top Match</div>
+              <div className="mt-2 text-sm font-medium text-foreground">{fallbackSession.lead?.topPeptideMatch ?? "—"}</div>
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">Budget</div>
+              <div className="mt-2 text-sm font-medium text-foreground">{fallbackSession.lead?.budget ?? "—"}</div>
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">Started</div>
+              <div className="mt-2 text-sm font-medium text-foreground">{new Date(fallbackSession.firstSeenAt).toLocaleString()}</div>
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">Duration</div>
+              <div className="mt-2 text-sm font-medium text-foreground">{formatDuration(fallbackSession.totalDurationMs)}</div>
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">Views</div>
+              <div className="mt-2 text-sm font-medium text-foreground">{fallbackSession.pageViewCount}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className={cardClass()}>
+          <h2 className="text-lg font-semibold">Detail still loading from tracking data</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            We found the session row, but the richer event timeline for this session isn&apos;t available from the detail endpoint yet. The summary above is live from the sessions table, so you can still confirm email, match, and engagement at a glance.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const session = query.data!;
   const status = getSessionStatus(session);
   const mergedEvents = [
     ...session.visits.map((visit) => ({
