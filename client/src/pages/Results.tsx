@@ -296,6 +296,7 @@ function PeptideCard({
 }) {
   const { peptide, matchPercent } = result;
   const isTop = rank === 1;
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const trackClick = trpc.quiz.trackAffiliateClick.useMutation();
   const activeLinks = trpc.affiliates.activeLinksByPeptide.useQuery(
@@ -369,9 +370,23 @@ function PeptideCard({
           />
         </div>
 
-        <p className={`text-sm text-muted-foreground leading-relaxed mb-4 sm:mb-5 ${isTop ? "" : "line-clamp-3"}`}>
+        <p
+          className={`text-sm text-muted-foreground leading-relaxed ${vendors.length > 0 ? "mb-4 sm:mb-5" : "mb-3"} ${
+            isTop || isExpanded ? "" : "line-clamp-3"
+          }`}
+        >
           {peptide.description}
         </p>
+
+        {!isTop && (
+          <button
+            type="button"
+            onClick={() => setIsExpanded((current) => !current)}
+            className="mb-4 text-sm font-semibold text-accent transition-opacity hover:opacity-80"
+          >
+            {isExpanded ? "Show less" : "Read more"}
+          </button>
+        )}
 
         {vendors.length > 0 ? (
           <div className="flex flex-col sm:flex-row flex-wrap gap-2">
