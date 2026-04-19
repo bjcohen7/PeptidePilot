@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Bot, ExternalLink, Link2, Plus, RefreshCw, Save } from "lucide-react";
+import { Ban, Bot, ExternalLink, Link2, Plus, RefreshCw, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
@@ -92,6 +92,21 @@ export default function AffiliatePartnersAdmin() {
     },
     onError: (error) => toast.error(error.message),
   });
+  const setPartnerStatus = trpc.affiliates.setPartnerStatus.useMutation({
+    onSuccess: async (_result, variables) => {
+      toast.success(
+        variables.status === "paused"
+          ? "Partner deactivated."
+          : `Partner marked ${variables.status}.`,
+      );
+      await Promise.all([
+        utils.affiliates.listPartners.invalidate(),
+        utils.affiliates.listLinks.invalidate(),
+        utils.affiliates.listAuditEvents.invalidate(),
+      ]);
+    },
+    onError: (error) => toast.error(error.message),
+  });
   const createLink = trpc.affiliates.createLink.useMutation({
     onSuccess: async () => {
       toast.success("Affiliate link created.");
@@ -105,6 +120,20 @@ export default function AffiliatePartnersAdmin() {
       toast.success("Affiliate link updated.");
       setLinkForm(emptyLink);
       await utils.affiliates.listLinks.invalidate();
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  const setLinkStatus = trpc.affiliates.setLinkStatus.useMutation({
+    onSuccess: async (_result, variables) => {
+      toast.success(
+        variables.status === "paused"
+          ? "Tracked link deactivated."
+          : `Tracked link marked ${variables.status}.`,
+      );
+      await Promise.all([
+        utils.affiliates.listLinks.invalidate(),
+        utils.affiliates.listAuditEvents.invalidate(),
+      ]);
     },
     onError: (error) => toast.error(error.message),
   });
@@ -222,6 +251,29 @@ export default function AffiliatePartnersAdmin() {
       primaryUrl: partner.primaryUrl,
       notes: partner.notes ?? "",
     });
+  };
+
+  const togglePartnerStatus = (partner: (typeof rows)[number]) => {
+    if (typeof partner.id !== "number") return;
+    const nextStatus = partner.status === "paused" ? "active" : "paused";
+    const confirmed = window.confirm(
+      nextStatus === "paused"
+        ? `Deactivate ${partner.name}? This will also pause all tracked links for this partner.`
+        : `Reactivate ${partner.name}?`,
+    );
+    if (!confirmed) return;
+    setPartnerStatus.mutate({ id: partner.id, status: nextStatus });
+  };
+
+  const toggleLinkStatus = (link: (typeof linkRows)[number]) => {
+    const nextStatus = link.status === "paused" ? "active" : "paused";
+    const confirmed = window.confirm(
+      nextStatus === "paused"
+        ? `Deactivate the tracked link "${link.label}"?`
+        : `Reactivate the tracked link "${link.label}"?`,
+    );
+    if (!confirmed) return;
+    setLinkStatus.mutate({ id: link.id, status: nextStatus });
   };
 
   return (
@@ -448,6 +500,15 @@ export default function AffiliatePartnersAdmin() {
                 >
                   Edit
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={typeof partner.id !== "number" || setPartnerStatus.isPending}
+                  onClick={() => togglePartnerStatus(partner)}
+                >
+                  <Ban className="w-4 h-4 mr-2" />
+                  {partner.status === "paused" ? "Reactivate" : "Deactivate"}
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => testLink.mutate({ url: partner.primaryUrl })}>
                   <Link2 className="w-4 h-4 mr-2" />
                   Test
@@ -505,6 +566,15 @@ export default function AffiliatePartnersAdmin() {
                 <div className="flex flex-col sm:flex-row lg:flex-col gap-2">
                   <Button variant="outline" size="sm" onClick={() => editLink(link)}>
                     Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={setLinkStatus.isPending}
+                    onClick={() => toggleLinkStatus(link)}
+                  >
+                    <Ban className="w-4 h-4 mr-2" />
+                    {link.status === "paused" ? "Reactivate" : "Deactivate"}
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => testLink.mutate({ url: link.url })}>
                     <Link2 className="w-4 h-4 mr-2" />

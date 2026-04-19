@@ -274,6 +274,56 @@ export const affiliatesRouter = router({
       return { status: "updated" as const };
     }),
 
+  setPartnerStatus: adminProcedure
+    .input(
+      z.object({
+        id: z.number().int().positive(),
+        status: z.enum(["active", "draft", "paused"]),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database is required to update affiliate partners.");
+      }
+
+      const existing = await db
+        .select()
+        .from(affiliatePartners)
+        .where(eq(affiliatePartners.id, input.id))
+        .limit(1);
+
+      const partner = existing[0];
+      if (!partner) {
+        throw new Error("Partner not found.");
+      }
+
+      await db
+        .update(affiliatePartners)
+        .set({ status: input.status })
+        .where(eq(affiliatePartners.id, input.id));
+
+      if (input.status === "paused") {
+        await db
+          .update(affiliateLinks)
+          .set({ status: "paused" })
+          .where(eq(affiliateLinks.partnerId, input.id));
+      }
+
+      await logAffiliateAudit(db, ctx, {
+        action: "status_update",
+        entityType: "affiliate_partner",
+        entityId: input.id,
+        summary:
+          input.status === "paused"
+            ? `Paused affiliate partner ${partner.name} and disabled its tracked links.`
+            : `Set affiliate partner ${partner.name} to ${input.status}.`,
+        metadata: { status: input.status },
+      });
+
+      return { status: "updated" as const };
+    }),
+
   createLink: adminProcedure.input(linkInput).mutation(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) {
@@ -340,6 +390,46 @@ export const affiliatesRouter = router({
         summary: `Updated affiliate link ${normalizedValues.label}.`,
         metadata: normalizedValues,
       });
+      return { status: "updated" as const };
+    }),
+
+  setLinkStatus: adminProcedure
+    .input(
+      z.object({
+        id: z.number().int().positive(),
+        status: z.enum(["active", "draft", "paused"]),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database is required to update affiliate links.");
+      }
+
+      const existing = await db
+        .select()
+        .from(affiliateLinks)
+        .where(eq(affiliateLinks.id, input.id))
+        .limit(1);
+
+      const link = existing[0];
+      if (!link) {
+        throw new Error("Tracked link not found.");
+      }
+
+      await db
+        .update(affiliateLinks)
+        .set({ status: input.status })
+        .where(eq(affiliateLinks.id, input.id));
+
+      await logAffiliateAudit(db, ctx, {
+        action: "status_update",
+        entityType: "affiliate_link",
+        entityId: input.id,
+        summary: `Set affiliate link ${link.label} to ${input.status}.`,
+        metadata: { status: input.status },
+      });
+
       return { status: "updated" as const };
     }),
 
