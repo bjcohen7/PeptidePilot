@@ -397,11 +397,7 @@ function PeptideCard({
               </a>
             ))}
           </div>
-        ) : (
-          <div className="rounded-xl border border-border/70 bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-            Provider options for this peptide aren&apos;t available right now.
-          </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
