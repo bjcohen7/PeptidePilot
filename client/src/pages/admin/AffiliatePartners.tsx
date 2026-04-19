@@ -414,7 +414,7 @@ export default function AffiliatePartnersAdmin() {
         <form onSubmit={saveLink} className="rounded-xl border border-border bg-white p-5 space-y-4">
           <div>
             <h2 className="font-semibold">{linkForm.id ? "Edit tracked link" : "Add tracked link"}</h2>
-            <p className="text-sm text-muted-foreground">Map partner URLs to result cards, PSEO pages, and future placements. Managed links show first on the results page before legacy fallback links.</p>
+            <p className="text-sm text-muted-foreground">Map partner URLs to result cards, PSEO pages, and future placements. Only active managed links appear on the results page.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <select className={inputClass()} value={linkForm.partnerId} onChange={(e) => setLinkForm({ ...linkForm, partnerId: e.target.value })} required>
@@ -524,7 +524,7 @@ export default function AffiliatePartnersAdmin() {
           <div>
             <h2 className="font-semibold">Tracked links</h2>
             <p className="text-sm text-muted-foreground">
-              Active links are sorted by order before legacy fallback links appear on result cards.
+              Active links are sorted by order on result cards.
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={() => links.refetch()}>

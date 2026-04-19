@@ -290,10 +290,7 @@ function PeptideCard({
     { peptideId: peptide.id },
     { retry: false, refetchOnWindowFocus: false }
   );
-  const hasManagedLinks = Boolean(activeLinks.data?.length);
-  const vendors = activeLinks.data?.length
-    ? activeLinks.data.map((link) => ({ name: link.label, url: link.url }))
-    : peptide.vendors;
+  const vendors = (activeLinks.data ?? []).map((link) => ({ name: link.label, url: link.url }));
 
   const handleVendorClick = (vendor: string) => {
     if (leadId) {
@@ -364,21 +361,23 @@ function PeptideCard({
           {peptide.description}
         </p>
 
-        <div className="flex flex-col sm:flex-row flex-wrap gap-2">
-          {vendors.map((vendor) => (
-            <a
-              key={vendor.name}
-              href={vendor.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => handleVendorClick(vendor.name)}
-              className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2.5 sm:py-2 rounded-lg border border-accent/30 text-accent hover:bg-accent hover:text-white transition-all sm:text-xs sm:px-3"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              {vendor.name}
-            </a>
-          ))}
-        </div>
+        {vendors.length > 0 ? (
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+            {vendors.map((vendor) => (
+              <a
+                key={vendor.name}
+                href={vendor.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => handleVendorClick(vendor.name)}
+                className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2.5 sm:py-2 rounded-lg border border-accent/30 text-accent hover:bg-accent hover:text-white transition-all sm:text-xs sm:px-3"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                {vendor.name}
+              </a>
+            ))}
+          </div>
+        ) : null}
       </div>
     </div>
   );
