@@ -429,7 +429,7 @@ export default function AffiliatePartnersAdmin() {
               <option value="results-card">results-card</option>
               <option value="pseo-page">pseo-page</option>
             </select>
-            <input className={inputClass()} placeholder={linkForm.isGlobal ? "Leave blank for global links" : "Peptide ID, e.g. semaglutide"} value={linkForm.peptideId} onChange={(e) => setLinkForm({ ...linkForm, peptideId: e.target.value })} disabled={linkForm.isGlobal} />
+            <input className={inputClass()} placeholder={linkForm.isGlobal ? "Leave blank for global links" : "Peptide ID or slug, e.g. semaglutide or ghk-cu"} value={linkForm.peptideId} onChange={(e) => setLinkForm({ ...linkForm, peptideId: e.target.value })} disabled={linkForm.isGlobal} />
             <input className={inputClass()} placeholder="Sort order, e.g. 1" value={linkForm.sortOrder} onChange={(e) => setLinkForm({ ...linkForm, sortOrder: e.target.value })} />
             <select className={inputClass()} value={linkForm.status} onChange={(e) => setLinkForm({ ...linkForm, status: e.target.value as LinkForm["status"] })}>
               <option value="draft">Draft</option>

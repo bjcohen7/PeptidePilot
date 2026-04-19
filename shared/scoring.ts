@@ -235,6 +235,16 @@ export interface PeptideProfile {
   vendors: Array<{ name: string; url: string }>;
 }
 
+export const libraryBackedPeptideProfileIds = [
+  "bpc157",
+  "tb500",
+  "sermorelin",
+  "semaglutide",
+  "epithalon",
+  "pt141",
+  "ghk_cu",
+] as const;
+
 export const peptideProfiles: PeptideProfile[] = [
   {
     id: "bpc157",

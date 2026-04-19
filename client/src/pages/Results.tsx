@@ -14,7 +14,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuiz } from "@/contexts/QuizContext";
-import { calculateMatches, type MatchResult } from "../../../shared/scoring";
+import {
+  calculateMatches,
+  libraryBackedPeptideProfileIds,
+  type MatchResult,
+} from "../../../shared/scoring";
 import { trpc } from "@/lib/trpc";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { getVisitorSessionId } from "@/components/SessionTracker";
@@ -44,6 +48,14 @@ const BUDGETS = [
   "$200–$500/month",
   "$500+/month",
 ];
+
+const LIBRARY_BACKED_PROFILE_IDS = new Set<string>(libraryBackedPeptideProfileIds);
+
+function getLibraryBackedMatches(answers: number[]) {
+  return calculateMatches(answers).filter((result) =>
+    LIBRARY_BACKED_PROFILE_IDS.has(result.peptide.id),
+  );
+}
 
 // ── Lead Capture Gate ─────────────────────────────────────────────────────────
 
@@ -377,7 +389,11 @@ function PeptideCard({
               </a>
             ))}
           </div>
-        ) : null}
+        ) : (
+          <div className="rounded-xl border border-border/70 bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+            Provider options for this peptide aren&apos;t available right now.
+          </div>
+        )}
       </div>
     </div>
   );
@@ -559,7 +575,7 @@ export default function Results() {
   });
 
   // Pre-compute matches for the preview
-  const previewMatches = calculateMatches(state.answers.map((a) => a ?? 0));
+  const previewMatches = getLibraryBackedMatches(state.answers.map((a) => a ?? 0));
 
   useEffect(() => {
     if (!state.isComplete && state.answers.every((a) => a === null)) {
@@ -568,7 +584,7 @@ export default function Results() {
   }, [state, navigate]);
 
   const handleReveal = (email: string, consent: boolean) => {
-    const computed = calculateMatches(state.answers.map((a) => a ?? 0));
+    const computed = getLibraryBackedMatches(state.answers.map((a) => a ?? 0));
     const eventIds = {
       lead: createMetaEventId("lead"),
       completeRegistration: createMetaEventId("complete_registration"),

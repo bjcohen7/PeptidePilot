@@ -45,6 +45,18 @@ function findPeptideId(command: string) {
   return match?.id ?? null;
 }
 
+function normalizePeptideId(peptideId: string | null | undefined) {
+  if (!peptideId) return null;
+
+  const trimmed = peptideId.trim();
+  if (!trimmed) return null;
+
+  const exactProfile = peptideProfiles.find((profile) => profile.id === trimmed);
+  if (exactProfile) return exactProfile.id;
+
+  return findPeptideId(trimmed) ?? trimmed;
+}
+
 function extractUrl(command: string) {
   return command.match(/https?:\/\/[^\s)]+/i)?.[0] ?? null;
 }
@@ -190,12 +202,24 @@ export const affiliatesRouter = router({
       const db = await getDb();
       if (!db) return [];
 
+      const normalizedPeptideId = normalizePeptideId(input.peptideId) ?? input.peptideId;
+      const peptideAliases = Array.from(
+        new Set([
+          normalizedPeptideId,
+          normalizedPeptideId.replace(/_/g, "-"),
+          normalizedPeptideId.replace(/-/g, "_"),
+        ]),
+      );
+
       return db
         .select()
         .from(affiliateLinks)
         .where(
           and(
-            or(eq(affiliateLinks.peptideId, input.peptideId), eq(affiliateLinks.isGlobal, true)),
+            or(
+              ...peptideAliases.map((peptideId) => eq(affiliateLinks.peptideId, peptideId)),
+              eq(affiliateLinks.isGlobal, true),
+            ),
             eq(affiliateLinks.status, "active")
           )
         )
@@ -332,7 +356,7 @@ export const affiliatesRouter = router({
 
     const duplicate = await findDuplicateLink(db, {
       placement: input.placement,
-      peptideId: input.isGlobal ? null : input.peptideId ?? null,
+      peptideId: input.isGlobal ? null : normalizePeptideId(input.peptideId),
       isGlobal: input.isGlobal,
       url: input.url,
     });
@@ -343,7 +367,7 @@ export const affiliatesRouter = router({
 
     const normalizedInput = {
       ...input,
-      peptideId: input.isGlobal ? null : input.peptideId ?? null,
+      peptideId: input.isGlobal ? null : normalizePeptideId(input.peptideId),
     };
     const result = await db.insert(affiliateLinks).values(normalizedInput);
     const id = Number(result[0].insertId);
@@ -368,7 +392,7 @@ export const affiliatesRouter = router({
       const { id, ...values } = input;
       const normalizedValues = {
         ...values,
-        peptideId: values.isGlobal ? null : values.peptideId ?? null,
+        peptideId: values.isGlobal ? null : normalizePeptideId(values.peptideId),
       };
       const duplicate = await findDuplicateLink(db, {
         placement: normalizedValues.placement,
