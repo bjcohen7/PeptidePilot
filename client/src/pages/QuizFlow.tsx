@@ -107,6 +107,10 @@ export default function QuizFlow() {
   }, [currentIndex]);
 
   useEffect(() => {
+    void import("./Processing");
+  }, []);
+
+  useEffect(() => {
     if (isComplete) {
       navigate("/processing");
     }

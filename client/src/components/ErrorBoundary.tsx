@@ -58,6 +58,14 @@ class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      if (isChunkLoadError(this.state.error)) {
+        return (
+          <div className="flex items-center justify-center min-h-screen p-8 bg-background">
+            <div className="text-sm text-muted-foreground">Refreshing…</div>
+          </div>
+        );
+      }
+
       return (
         <div className="flex items-center justify-center min-h-screen p-8 bg-background">
           <div className="flex flex-col items-center w-full max-w-2xl p-8">
