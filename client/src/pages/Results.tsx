@@ -365,11 +365,6 @@ function PeptideCard({
         </p>
 
         <div className="flex flex-col sm:flex-row flex-wrap gap-2">
-          {hasManagedLinks && (
-            <div className="w-full text-xs font-medium text-muted-foreground mb-1">
-              Partner order managed in admin.
-            </div>
-          )}
           {vendors.map((vendor) => (
             <a
               key={vendor.name}
