@@ -1,7 +1,6 @@
-import { Activity, Mail, MousePointerClick, Search, Timer, Trash2 } from "lucide-react";
+import { Activity, Mail, MousePointerClick, Search, Timer } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { toast } from "sonner";
 
 function cardClass() {
   return "rounded-xl border border-border bg-white p-5";
@@ -57,7 +56,6 @@ function statusPill(status: string) {
 }
 
 export default function InsightsOverview() {
-  const utils = trpc.useUtils();
   const summary = trpc.analytics.summary.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: true,
@@ -69,27 +67,6 @@ export default function InsightsOverview() {
     refetchInterval: 10000,
   });
   const [, setLocation] = useLocation();
-  const clearTestData = trpc.analytics.clearTestData.useMutation({
-    onSuccess: async () => {
-      toast.success("Admin sessions, clicks, and quiz leads cleared.");
-      await Promise.all([
-        utils.analytics.summary.invalidate(),
-        utils.analytics.recentSessions.invalidate(),
-      ]);
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to clear test data.");
-    },
-  });
-
-  const handleClearTestData = () => {
-    const confirmed = window.confirm(
-      "Clear all tracked sessions, page views, clicks, affiliate click logs, and quiz leads? This keeps partner settings intact.",
-    );
-
-    if (!confirmed || clearTestData.isPending) return;
-    clearTestData.mutate();
-  };
 
   const cards = [
     {
@@ -132,17 +109,6 @@ export default function InsightsOverview() {
         <p className="text-muted-foreground mt-2 max-w-3xl">
           Scan live traffic quickly, then click into a session to see referral context, engagement, click behavior, and the full quiz profile once a lead is created.
         </p>
-        <div className="mt-4">
-          <button
-            type="button"
-            onClick={handleClearTestData}
-            disabled={clearTestData.isPending}
-            className="inline-flex items-center gap-2 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            <Trash2 className="h-4 w-4" />
-            {clearTestData.isPending ? "Clearing Test Data..." : "Clear Test Data"}
-          </button>
-        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
