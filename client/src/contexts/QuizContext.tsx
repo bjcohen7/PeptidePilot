@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from "react";
 import { QUIZ_QUESTIONS } from "../../../shared/scoring";
 
 export interface QuizState {
@@ -20,15 +20,52 @@ interface QuizContextValue {
 }
 
 const QuizContext = createContext<QuizContextValue | null>(null);
+const QUIZ_STORAGE_KEY = "peptidepilot_quiz_state_v1";
+
+function getInitialQuizState(totalQuestions: number): QuizState {
+  const emptyState: QuizState = {
+    answers: new Array(totalQuestions).fill(null),
+    currentIndex: 0,
+    isComplete: false,
+  };
+
+  if (typeof window === "undefined") return emptyState;
+
+  try {
+    const raw = window.sessionStorage.getItem(QUIZ_STORAGE_KEY);
+    if (!raw) return emptyState;
+    const parsed = JSON.parse(raw) as Partial<QuizState> | null;
+    if (!parsed || !Array.isArray(parsed.answers)) return emptyState;
+
+    const answers = new Array(totalQuestions).fill(null).map((_, index) => {
+      const value = parsed.answers?.[index];
+      return typeof value === "number" ? value : null;
+    });
+
+    const safeIndex =
+      typeof parsed.currentIndex === "number"
+        ? Math.min(Math.max(parsed.currentIndex, 0), totalQuestions - 1)
+        : 0;
+
+    return {
+      answers,
+      currentIndex: safeIndex,
+      isComplete: Boolean(parsed.isComplete),
+    };
+  } catch {
+    return emptyState;
+  }
+}
 
 export function QuizProvider({ children }: { children: ReactNode }) {
   const totalQuestions = QUIZ_QUESTIONS.length;
 
-  const [state, setState] = useState<QuizState>({
-    answers: new Array(totalQuestions).fill(null),
-    currentIndex: 0,
-    isComplete: false,
-  });
+  const [state, setState] = useState<QuizState>(() => getInitialQuizState(totalQuestions));
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.sessionStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(state));
+  }, [state]);
 
   const selectAnswer = useCallback((answerIndex: number) => {
     setState((prev) => {
@@ -56,11 +93,15 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const reset = useCallback(() => {
-    setState({
+    const nextState = {
       answers: new Array(totalQuestions).fill(null),
       currentIndex: 0,
       isComplete: false,
-    });
+    };
+    setState(nextState);
+    if (typeof window !== "undefined") {
+      window.sessionStorage.removeItem(QUIZ_STORAGE_KEY);
+    }
   }, [totalQuestions]);
 
   const currentQuestion = QUIZ_QUESTIONS[state.currentIndex];
