@@ -420,26 +420,8 @@ function ResultsDisplay({
   sessionId: string;
   onRetake: () => void;
 }) {
-  const availableMatches = trpc.affiliates.availablePeptideIds.useQuery(
-    { peptideIds: matches.map((match) => match.peptide.id) },
-    { retry: false, refetchOnWindowFocus: false, enabled: matches.length > 0 },
-  );
-
-  const providerBackedMatches = useMemo(() => {
-    if (!availableMatches.data) return [];
-    const availableIds = new Set(availableMatches.data);
-    return matches.filter((match) => availableIds.has(match.peptide.id));
-  }, [availableMatches.data, matches]);
-
-  const displayMatches =
-    availableMatches.data && providerBackedMatches.length > 0
-      ? providerBackedMatches
-      : availableMatches.data
-        ? []
-        : matches;
-
-  const topMatch = displayMatches[0];
-  const secondaryMatches = displayMatches.slice(1, 5);
+  const topMatch = matches[0];
+  const secondaryMatches = matches.slice(1, 5);
   const topCategories = topMatch?.peptide.categories.slice(0, 3) ?? [];
 
   return (
@@ -481,12 +463,6 @@ function ResultsDisplay({
               Based on your responses, here are the peptides most aligned with your biology and goals.
             </p>
           </div>
-
-          {availableMatches.data && providerBackedMatches.length === 0 ? (
-            <div className="mb-6 rounded-2xl border border-border/70 bg-white px-5 py-5 text-sm leading-7 text-muted-foreground">
-              We don&apos;t have live provider options for your current top quiz matches yet. We&apos;re holding those cards back instead of showing dead-end options.
-            </div>
-          ) : null}
 
           {topMatch && (
             <div className="mb-5 sm:mb-6 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
