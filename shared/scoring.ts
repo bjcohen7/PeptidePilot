@@ -1,6 +1,6 @@
 /**
  * PeptidePilot Scoring Engine
- * 20-question quiz (2–3 per section × 8 sections).
+ * 22-question quiz with conditional GLP-1 branching for weight-loss users.
  * Maps quiz answers to health aspect scores, then ranks peptide profiles.
  */
 
@@ -9,7 +9,8 @@ export type AspectKey =
   | "cognitive" | "mood" | "anxiety" | "sleep" | "energy" | "antiaging"
   | "longevity" | "skin" | "hair" | "collagen" | "libido" | "confidence"
   | "hormone" | "metabolic" | "appetite" | "inflammation" | "healing"
-  | "neuroprotection" | "endurance" | "focus" | "cardiovascular";
+  | "neuroprotection" | "endurance" | "focus" | "cardiovascular"
+  | "bmi_qualifies" | "glp1_budget" | "insurance";
 
 export type AspectScores = Record<AspectKey, number>;
 
@@ -20,6 +21,7 @@ export function initAspects(): AspectScores {
     longevity: 0, skin: 0, hair: 0, collagen: 0, libido: 0, confidence: 0,
     hormone: 0, metabolic: 0, appetite: 0, inflammation: 0, healing: 0,
     neuroprotection: 0, endurance: 0, focus: 0, cardiovascular: 0,
+    bmi_qualifies: 0, glp1_budget: 0, insurance: 0,
   };
 }
 
@@ -79,6 +81,23 @@ export const scoreMaps: ScoreMap[] = [
     { recovery: 1 },                                   // Sometimes — usually fine
     { recovery: 2, inflammation: 1 },                  // Often — soreness lasts 2–3 days
     { recovery: 3, inflammation: 2, injury: 1 },       // Almost always — major limiting factor
+  ],
+
+  // ─── SECTION 2B: Metabolic Health ────────────────────────────────────────
+
+  // Q6: What is your current BMI range?
+  [
+    {},                                                // BMI under 25
+    { fatloss: 1 },                                    // BMI 25–27
+    { bmi_qualifies: 3, fatloss: 2, metabolic: 1 },    // BMI 27–30
+    { bmi_qualifies: 5, fatloss: 3, metabolic: 2 },    // BMI over 30
+  ],
+
+  // Q7: Do you have health insurance that could help cover prescription care?
+  [
+    { insurance: 2, glp1_budget: 1 },                  // Commercial / ACA
+    { insurance: 1 },                                  // Medicare / Medicaid
+    { glp1_budget: 1 },                                // Self-pay / uninsured
   ],
 
   // ─── SECTION 3: Age & Hormones ───────────────────────────────────────────
@@ -295,7 +314,16 @@ export const peptideProfiles: PeptideProfile[] = [
     name: "Semaglutide / Tirzepatide",
     description: "GLP-1 receptor agonists like Semaglutide and the dual GIP/GLP-1 agonist Tirzepatide represent the most clinically validated peptides for metabolic health and weight management. They work by regulating appetite, slowing gastric emptying, and improving insulin sensitivity. Clinical trials have demonstrated significant and sustained reductions in body weight and improvements in metabolic markers.",
     categories: ["fat loss", "metabolic health", "appetite control", "energy"],
-    weights: { fatloss: 3, metabolic: 3, appetite: 3, energy: 1, inflammation: 1 },
+    weights: {
+      fatloss: 3,
+      metabolic: 3,
+      appetite: 3,
+      energy: 1,
+      inflammation: 1,
+      bmi_qualifies: 5,
+      glp1_budget: 2,
+      insurance: 1,
+    },
     vendors: [
       { name: "Hone Health", url: "https://honehealth.com" },
       { name: "LifeMD", url: "https://www.lifemd.com" },
@@ -428,24 +456,51 @@ export function calculateMatches(answers: number[]): MatchResult[] {
     }));
 }
 
+export const QUIZ_INDEX = {
+  PRIMARY_GOAL: 0,
+  GLP1_BMI: 5,
+  GLP1_INSURANCE: 6,
+  AGE_RANGE: 7,
+  HORMONE: 8,
+  LIBIDO: 9,
+  BUDGET: 19,
+} as const;
+
+export const AGE_RANGE_OPTIONS = ["18–25", "26–35", "36–45", "46–55", "56–65", "65+"] as const;
+
+export const PRIMARY_GOAL_OPTIONS = [
+  "Build muscle and increase strength",
+  "Lose body fat and improve body composition",
+  "Boost daily energy and mental clarity",
+  "Slow aging and optimize longevity",
+  "Improve sleep quality and depth",
+  "Heal an injury or chronic pain",
+  "Enhance libido and sexual vitality",
+  "Speed up recovery and reduce soreness",
+] as const;
+
+export const BUDGET_OPTIONS = [
+  "Under $50/month",
+  "$50–$100/month",
+  "$100–$200/month",
+  "$200–$500/month",
+  "$500+/month",
+] as const;
+
 /**
- * Determine lead tier based on 20-question quiz answers.
- * Q6 (index 5) = age range
- * Q7 (index 6) = hormonal imbalances
- * Q8 (index 7) = libido
- * Q18 (index 17) = budget
+ * Determine lead tier based on quiz answers.
  */
 export function determineTier(answers: number[]): 1 | 2 | 3 {
-  const ageIdx = answers[5] ?? -1;          // Q6: age range
+  const ageIdx = answers[QUIZ_INDEX.AGE_RANGE] ?? -1;
   const isOlderAge = ageIdx >= 3;           // 46-55, 56-65, 65+
 
-  const hormoneIdx = answers[6] ?? -1;      // Q7: hormonal issues
+  const hormoneIdx = answers[QUIZ_INDEX.HORMONE] ?? -1;
   const hasHormonalIssues = hormoneIdx >= 2;
 
-  const libidoIdx = answers[7] ?? -1;       // Q8: libido
+  const libidoIdx = answers[QUIZ_INDEX.LIBIDO] ?? -1;
   const hasLowLibido = libidoIdx >= 2;
 
-  const budgetIdx = answers[17] ?? -1;      // Q18: budget
+  const budgetIdx = answers[QUIZ_INDEX.BUDGET] ?? -1;
   const isPremiumBudget = budgetIdx >= 3;   // $200+
   const isStandardBudget = budgetIdx >= 1;  // $50+
 
@@ -462,7 +517,7 @@ export function determineTier(answers: number[]): 1 | 2 | 3 {
   return 3;
 }
 
-// ─── QUIZ QUESTIONS (20 total, 2–3 per section) ───────────────────────────────
+// ─── QUIZ QUESTIONS (22 total, with GLP-1 branching for weight-loss users) ──
 
 export const QUIZ_QUESTIONS = [
   // ── Section 1: Goals & Priorities ──────────────────────────────────────────
@@ -526,6 +581,27 @@ export const QUIZ_QUESTIONS = [
       "Sometimes — usually fine within a day or two",
       "Often — soreness lasts 2 to 3 days",
       "Almost always — recovery is a major limiting factor",
+    ],
+  },
+
+  // ── Section 2B: Metabolic Health ──────────────────────────────────────────
+  {
+    section: "Metabolic Health",
+    question: "What is your current BMI range?",
+    options: [
+      "Under 25 (normal weight)",
+      "25 to 27 (overweight)",
+      "27 to 30 (overweight with risk factors)",
+      "Over 30 (obesity range)",
+    ],
+  },
+  {
+    section: "Metabolic Health",
+    question: "Do you have health insurance that could help cover prescription care?",
+    options: [
+      "Yes — commercial insurance or ACA plan",
+      "Yes — Medicare or Medicaid",
+      "No — uninsured or self-pay",
     ],
   },
 

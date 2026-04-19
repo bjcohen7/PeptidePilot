@@ -12,6 +12,8 @@ interface QuizContextValue {
   selectAnswer: (answerIndex: number) => void;
   goNext: () => void;
   goBack: () => void;
+  goTo: (questionIndex: number) => void;
+  completeQuiz: () => void;
   reset: () => void;
   currentQuestion: typeof QUIZ_QUESTIONS[0];
   progress: number; // 0–100
@@ -106,6 +108,26 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const goTo = useCallback((questionIndex: number) => {
+    setState((prev) => {
+      const nextState = {
+        ...prev,
+        currentIndex: Math.min(Math.max(questionIndex, 0), totalQuestions - 1),
+        isComplete: false,
+      };
+      persistQuizState(nextState);
+      return nextState;
+    });
+  }, [totalQuestions]);
+
+  const completeQuiz = useCallback(() => {
+    setState((prev) => {
+      const nextState = { ...prev, isComplete: true };
+      persistQuizState(nextState);
+      return nextState;
+    });
+  }, []);
+
   const reset = useCallback(() => {
     const nextState: QuizState = {
       answers: new Array(totalQuestions).fill(null),
@@ -129,6 +151,8 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         selectAnswer,
         goNext,
         goBack,
+        goTo,
+        completeQuiz,
         reset,
         currentQuestion,
         progress,

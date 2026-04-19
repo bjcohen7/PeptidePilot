@@ -2,7 +2,15 @@ import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { leads, affiliateClicks, visitorSessions } from "../../drizzle/schema";
-import { calculateMatches, determineTier } from "../../shared/scoring";
+import {
+  AGE_RANGE_OPTIONS,
+  BUDGET_OPTIONS,
+  calculateMatches,
+  determineTier,
+  PRIMARY_GOAL_OPTIONS,
+  QUIZ_INDEX,
+  QUIZ_QUESTIONS,
+} from "../../shared/scoring";
 import { nanoid } from "nanoid";
 import { notifyOwner } from "../_core/notification";
 import { eq, sql } from "drizzle-orm";
@@ -67,7 +75,7 @@ export const quizRouter = router({
       z.object({
         email: z.string().email(),
         consentGiven: z.boolean(),
-        answers: z.array(z.number().int().min(0)).length(20),
+        answers: z.array(z.number().int().min(-1)).length(QUIZ_QUESTIONS.length),
         sessionId: z.string().min(8).max(64).optional().nullable(),
         meta: z
           .object({
@@ -97,32 +105,11 @@ export const quizRouter = router({
       // Determine tier
       const tier = determineTier(answers);
 
-      // Q6 (index 5): age range
-      const AGE_RANGES = ["18–25", "26–35", "36–45", "46–55", "56–65", "65+"];
-      const ageRange = AGE_RANGES[answers[5]] ?? "unknown";
-
-      // Q1 (index 0): primary goal
-      const PRIMARY_GOALS = [
-        "Build muscle and increase strength",
-        "Lose body fat and improve body composition",
-        "Boost daily energy and mental clarity",
-        "Slow aging and optimize longevity",
-        "Improve sleep quality and depth",
-        "Heal an injury or chronic pain",
-        "Enhance libido and sexual vitality",
-        "Speed up recovery and reduce soreness",
-      ];
-      const primaryGoal = PRIMARY_GOALS[answers[0]] ?? "unknown";
-
-      // Q18 (index 17): budget
-      const BUDGETS = [
-        "Under $50/month",
-        "$50–$100/month",
-        "$100–$200/month",
-        "$200–$500/month",
-        "$500+/month",
-      ];
-      const budget = BUDGETS[answers[17]] ?? "unknown";
+      const ageRange = AGE_RANGE_OPTIONS[answers[QUIZ_INDEX.AGE_RANGE] ?? -1] ?? "unknown";
+      const primaryGoal =
+        PRIMARY_GOAL_OPTIONS[answers[QUIZ_INDEX.PRIMARY_GOAL] ?? -1] ?? "unknown";
+      const budget = BUDGET_OPTIONS[answers[QUIZ_INDEX.BUDGET] ?? -1] ?? "unknown";
+      const isGlp1Lead = topPeptideMatch === "semaglutide";
 
       // Get IP address
       const ipAddress =
@@ -216,7 +203,9 @@ export const quizRouter = router({
           fbc: meta?.fbc ?? null,
           customData: {
             content_name: matches[0]?.peptide.name ?? "Peptide Results",
-            content_category: "quiz-results",
+            content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+            value: isGlp1Lead ? 50 : 10,
+            currency: "USD",
           },
         },
         {
@@ -230,7 +219,7 @@ export const quizRouter = router({
           fbc: meta?.fbc ?? null,
           customData: {
             content_name: matches[0]?.peptide.name ?? "Peptide Results",
-            content_category: "quiz-results",
+            content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
             content_ids: matches[0]?.peptide.id ? [matches[0].peptide.id] : undefined,
           },
         },

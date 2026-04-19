@@ -1,21 +1,35 @@
-import { useEffect, useCallback, useRef, useState } from "react";
-import { useLocation } from "wouter";
+import { useEffect, useCallback, useMemo, useRef, useState } from "react";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useQuiz } from "@/contexts/QuizContext";
 import { useSwipe } from "@/hooks/useSwipe";
-import { Link } from "wouter";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
-import { QUIZ_QUESTIONS } from "../../../shared/scoring";
+import {
+  PRIMARY_GOAL_OPTIONS,
+  QUIZ_INDEX,
+  QUIZ_QUESTIONS,
+} from "../../../shared/scoring";
 
 type Direction = "forward" | "backward";
 
-// Breather card data — shown between sections. No emojis. Medical-grade copy.
-const SECTION_BREATHERS: Record<string, { label: string; headline: string; body: string }> = {
+const WEIGHT_LOSS_GOAL_INDEX = PRIMARY_GOAL_OPTIONS.indexOf(
+  "Lose body fat and improve body composition",
+);
+
+const SECTION_BREATHERS: Record<
+  string,
+  { label: string; headline: string; body: string }
+> = {
   "Body & Fitness": {
     label: "Body Composition",
     headline: "Individual biology determines individual outcomes.",
     body: "The same peptide protocol can produce meaningfully different results across individuals. This assessment evaluates your goals, physiology, and lifestyle in combination — not any single factor in isolation.",
+  },
+  "Metabolic Health": {
+    label: "Metabolic Health",
+    headline: "Prescription GLP-1 fit depends on more than just weight-loss interest.",
+    body: "For weight-loss users, we add a short eligibility layer so your results can better distinguish metabolic-health candidates from general fat-loss support options.",
   },
   "Age & Hormones": {
     label: "Endocrine Health",
@@ -49,12 +63,20 @@ const SECTION_BREATHERS: Record<string, { label: string; headline: string; body:
   },
 };
 
-// Compute which question indices trigger a breather before them
-function getBreatherIndices(): Set<number> {
+function getVisibleQuestionIndices(isWeightLossGoal: boolean): number[] {
+  return QUIZ_QUESTIONS.map((_, index) => index).filter((index) => {
+    if (isWeightLossGoal) return true;
+    return (
+      index !== QUIZ_INDEX.GLP1_BMI && index !== QUIZ_INDEX.GLP1_INSURANCE
+    );
+  });
+}
+
+function getBreatherIndices(questionIndices: number[]): Set<number> {
   const indices = new Set<number>();
-  let lastSection = QUIZ_QUESTIONS[0]?.section ?? "";
-  for (let i = 1; i < QUIZ_QUESTIONS.length; i++) {
-    const section = QUIZ_QUESTIONS[i]?.section ?? "";
+  let lastSection = QUIZ_QUESTIONS[questionIndices[0] ?? 0]?.section ?? "";
+  for (let i = 1; i < questionIndices.length; i++) {
+    const section = QUIZ_QUESTIONS[questionIndices[i] ?? 0]?.section ?? "";
     if (section !== lastSection) {
       indices.add(i);
       lastSection = section;
@@ -63,32 +85,45 @@ function getBreatherIndices(): Set<number> {
   return indices;
 }
 
-const BREATHER_INDICES = getBreatherIndices();
-
 export default function QuizFlow() {
   const [, navigate] = useLocation();
   const {
     state,
     selectAnswer,
-    goNext,
-    goBack,
+    goTo,
+    completeQuiz,
     currentQuestion,
-    progress,
-    totalQuestions,
   } = useQuiz();
 
   const { currentIndex, answers, isComplete } = state;
+  const isWeightLossGoal = answers[QUIZ_INDEX.PRIMARY_GOAL] === WEIGHT_LOSS_GOAL_INDEX;
+  const visibleQuestionIndices = useMemo(
+    () => getVisibleQuestionIndices(isWeightLossGoal),
+    [isWeightLossGoal],
+  );
+  const breatherIndices = useMemo(
+    () => getBreatherIndices(visibleQuestionIndices),
+    [visibleQuestionIndices],
+  );
+  const totalQuestions = visibleQuestionIndices.length;
+  const currentVisibleIndex = Math.max(
+    0,
+    visibleQuestionIndices.indexOf(currentIndex),
+  );
   const selectedAnswer = answers[currentIndex];
-  const isFirst = currentIndex === 0;
-  const currentSectionQuestions = QUIZ_QUESTIONS.filter(
-    (question) => question.section === currentQuestion.section
-  ).length;
-  const currentSectionIndex =
-    QUIZ_QUESTIONS.slice(0, currentIndex + 1).filter(
-      (question) => question.section === currentQuestion.section
-    ).length;
+  const isFirst = currentVisibleIndex === 0;
 
-  // Breather card state
+  const currentSectionQuestions = visibleQuestionIndices.filter(
+    (index) => QUIZ_QUESTIONS[index]?.section === currentQuestion.section,
+  ).length;
+  const currentSectionIndex = visibleQuestionIndices
+    .slice(0, currentVisibleIndex + 1)
+    .filter((index) => QUIZ_QUESTIONS[index]?.section === currentQuestion.section)
+    .length;
+
+  const nextQuestionIndex = visibleQuestionIndices[currentVisibleIndex + 1];
+  const previousQuestionIndex = visibleQuestionIndices[currentVisibleIndex - 1];
+
   const [showBreather, setShowBreather] = useState(false);
   const [breatherSection, setBreatherSection] = useState<string>("");
 
@@ -111,6 +146,12 @@ export default function QuizFlow() {
   }, []);
 
   useEffect(() => {
+    if (!visibleQuestionIndices.includes(currentIndex)) {
+      goTo(visibleQuestionIndices[0] ?? 0);
+    }
+  }, [currentIndex, goTo, visibleQuestionIndices]);
+
+  useEffect(() => {
     if (isComplete) {
       navigate("/processing");
     }
@@ -126,38 +167,63 @@ export default function QuizFlow() {
         advanceFn();
       }, 220);
     },
-    [isTransitioning]
+    [isTransitioning],
   );
+
+  const moveForward = useCallback(() => {
+    if (typeof nextQuestionIndex === "number") {
+      goTo(nextQuestionIndex);
+      return;
+    }
+    completeQuiz();
+  }, [completeQuiz, goTo, nextQuestionIndex]);
+
+  const moveBackward = useCallback(() => {
+    if (typeof previousQuestionIndex === "number") {
+      goTo(previousQuestionIndex);
+    }
+  }, [goTo, previousQuestionIndex]);
 
   const handleSelectAnswer = useCallback(
     (idx: number) => {
       if (isTransitioning || selectedAnswer !== null) return;
       selectAnswer(idx);
 
-      // Check if next question starts a new section → show breather
-      const nextIdx = currentIndex + 1;
-      if (nextIdx < totalQuestions && BREATHER_INDICES.has(nextIdx)) {
-        const nextSection = QUIZ_QUESTIONS[nextIdx]?.section ?? "";
+      if (
+        typeof nextQuestionIndex === "number" &&
+        breatherIndices.has(currentVisibleIndex + 1)
+      ) {
+        const nextSection = QUIZ_QUESTIONS[nextQuestionIndex]?.section ?? "";
         setTimeout(() => {
           setBreatherSection(nextSection);
           setShowBreather(true);
           setIsTransitioning(false);
         }, 320);
-      } else {
-        setTimeout(() => {
-          triggerAdvance("forward", goNext);
-        }, 320);
+        return;
       }
+
+      setTimeout(() => {
+        triggerAdvance("forward", moveForward);
+      }, 320);
     },
-    [isTransitioning, selectedAnswer, selectAnswer, currentIndex, totalQuestions, triggerAdvance, goNext]
+    [
+      isTransitioning,
+      selectedAnswer,
+      selectAnswer,
+      nextQuestionIndex,
+      breatherIndices,
+      currentVisibleIndex,
+      triggerAdvance,
+      moveForward,
+    ],
   );
 
   const handleBreatherContinue = useCallback(() => {
     setShowBreather(false);
     setTimeout(() => {
-      triggerAdvance("forward", goNext);
+      triggerAdvance("forward", moveForward);
     }, 80);
-  }, [triggerAdvance, goNext]);
+  }, [triggerAdvance, moveForward]);
 
   const handleBack = useCallback(() => {
     if (showBreather) {
@@ -165,8 +231,8 @@ export default function QuizFlow() {
       return;
     }
     if (isFirst || isTransitioning) return;
-    triggerAdvance("backward", goBack);
-  }, [showBreather, isFirst, isTransitioning, triggerAdvance, goBack]);
+    triggerAdvance("backward", moveBackward);
+  }, [showBreather, isFirst, isTransitioning, triggerAdvance, moveBackward]);
 
   const handleSwipeLeft = useCallback(() => {
     if (showBreather) {
@@ -174,9 +240,16 @@ export default function QuizFlow() {
       return;
     }
     if (selectedAnswer !== null && !isTransitioning) {
-      triggerAdvance("forward", goNext);
+      triggerAdvance("forward", moveForward);
     }
-  }, [showBreather, handleBreatherContinue, selectedAnswer, isTransitioning, triggerAdvance, goNext]);
+  }, [
+    showBreather,
+    handleBreatherContinue,
+    selectedAnswer,
+    isTransitioning,
+    triggerAdvance,
+    moveForward,
+  ]);
 
   const swipeHandlers = useSwipe({
     onSwipeLeft: handleSwipeLeft,
@@ -188,16 +261,16 @@ export default function QuizFlow() {
   if (!currentQuestion) return null;
 
   const breatherData = SECTION_BREATHERS[breatherSection];
-
-  // Effective progress — count breather as half a question
-  const effectiveProgress = Math.round(((currentIndex + (showBreather ? 0.5 : 0)) / totalQuestions) * 100);
+  const effectiveProgress = Math.round(
+    ((currentVisibleIndex + (showBreather ? 0.5 : 0)) / totalQuestions) * 100,
+  );
+  const progressDotIndex = Math.floor((currentVisibleIndex / totalQuestions) * 10);
 
   return (
     <div
       className="min-h-screen bg-background flex flex-col overflow-hidden"
       {...swipeHandlers}
     >
-      {/* Sticky header */}
       <header className="border-b border-border/60 bg-white/95 backdrop-blur-md sticky top-0 z-40">
         <div className="container">
           <div className="flex items-center justify-between h-14">
@@ -206,7 +279,7 @@ export default function QuizFlow() {
             </Link>
             {!showBreather && (
               <span className="text-xs sm:text-sm text-muted-foreground font-medium tabular-nums">
-                {currentIndex + 1} <span className="text-border">/</span> {totalQuestions}
+                {currentVisibleIndex + 1} <span className="text-border">/</span> {totalQuestions}
               </span>
             )}
             {showBreather && (
@@ -215,7 +288,6 @@ export default function QuizFlow() {
               </span>
             )}
           </div>
-          {/* Progress bar */}
           <div className="h-1.5 bg-border/50 -mx-4 sm:-mx-6 lg:-mx-8">
             <div
               className="progress-bar-fill h-full transition-all duration-500"
@@ -225,10 +297,7 @@ export default function QuizFlow() {
         </div>
       </header>
 
-      {/* Main content */}
       <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4 overflow-hidden">
-
-        {/* BREATHER CARD */}
         {showBreather && breatherData && (
           <div className="w-full max-w-lg quiz-slide-enter-forward">
             <div
@@ -237,7 +306,6 @@ export default function QuizFlow() {
                 background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f2744 100%)",
               }}
             >
-              {/* Domain label pill — replaces emoji */}
               <div className="flex items-center justify-center mb-6">
                 <span
                   className="text-xs font-semibold tracking-widest uppercase px-4 py-1.5 rounded-full"
@@ -252,7 +320,6 @@ export default function QuizFlow() {
                 </span>
               </div>
 
-              {/* Thin gradient accent line */}
               <div
                 className="w-12 h-0.5 mx-auto mb-6 rounded-full"
                 style={{ background: "linear-gradient(90deg, #38bdf8, #818cf8)" }}
@@ -281,13 +348,8 @@ export default function QuizFlow() {
           </div>
         )}
 
-        {/* QUESTION CARD */}
         {!showBreather && (
-          <div
-            key={currentIndex}
-            className={`w-full max-w-2xl ${animClass}`}
-          >
-            {/* Section badge */}
+          <div key={currentIndex} className={`w-full max-w-2xl ${animClass}`}>
             <div className="mb-5 sm:mb-6">
               <span className="section-badge">{currentQuestion.section}</span>
               <div className="mt-2 text-xs font-medium text-muted-foreground">
@@ -295,7 +357,6 @@ export default function QuizFlow() {
               </div>
             </div>
 
-            {/* Question */}
             <h2
               className="text-xl sm:text-2xl md:text-3xl font-normal text-foreground mb-7 sm:mb-8 leading-snug"
               style={{ fontFamily: "'DM Serif Display', serif" }}
@@ -303,7 +364,6 @@ export default function QuizFlow() {
               {currentQuestion.question}
             </h2>
 
-            {/* Answer options */}
             <div className="space-y-3">
               {currentQuestion.options.map((option, idx) => (
                 <button
@@ -330,7 +390,9 @@ export default function QuizFlow() {
                         <div className="w-2 h-2 rounded-full bg-white" />
                       )}
                     </div>
-                    <span className="text-sm sm:text-base leading-snug text-left flex-1">{option}</span>
+                    <span className="text-sm sm:text-base leading-snug text-left flex-1">
+                      {option}
+                    </span>
                     {selectedAnswer === idx ? (
                       <span className="text-xs font-semibold uppercase tracking-wide text-accent">
                         Selected
@@ -341,7 +403,6 @@ export default function QuizFlow() {
               ))}
             </div>
 
-            {/* Mobile hint — only on first question */}
             <p className="text-xs text-muted-foreground text-center mt-5 animate-fade-in">
               Select one answer and we&apos;ll keep things moving. Swipe right to go back.
             </p>
@@ -349,7 +410,6 @@ export default function QuizFlow() {
         )}
       </main>
 
-      {/* Sticky footer with Back button */}
       <footer className="border-t border-border/60 bg-white/95 backdrop-blur-md sticky bottom-0">
         <div className="container">
           <div className="flex items-center justify-between h-16">
@@ -363,12 +423,10 @@ export default function QuizFlow() {
               <span className="text-sm">Back</span>
             </Button>
 
-            {/* Progress dots */}
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(totalQuestions, 10) }).map((_, i) => {
-                const questionIdx = Math.floor((currentIndex / totalQuestions) * 10);
-                const isActive = i === questionIdx;
-                const isPast = i < questionIdx;
+                const isActive = i === progressDotIndex;
+                const isPast = i < progressDotIndex;
                 return (
                   <div
                     key={i}
@@ -376,15 +434,14 @@ export default function QuizFlow() {
                       isActive
                         ? "w-4 h-2 bg-accent"
                         : isPast
-                        ? "w-2 h-2 bg-accent/40"
-                        : "w-2 h-2 bg-border"
+                          ? "w-2 h-2 bg-accent/40"
+                          : "w-2 h-2 bg-border"
                     }`}
                   />
                 );
               })}
             </div>
 
-            {/* Spacer */}
             <div className="w-16 sm:w-20" />
           </div>
         </div>

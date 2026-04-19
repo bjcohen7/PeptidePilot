@@ -15,8 +15,12 @@ import {
 import { toast } from "sonner";
 import { useQuiz } from "@/contexts/QuizContext";
 import {
+  AGE_RANGE_OPTIONS,
+  BUDGET_OPTIONS,
   calculateMatches,
   libraryBackedPeptideProfileIds,
+  PRIMARY_GOAL_OPTIONS,
+  QUIZ_INDEX,
   type MatchResult,
 } from "../../../shared/scoring";
 import { trpc } from "@/lib/trpc";
@@ -30,25 +34,6 @@ import {
   getMetaBrowserIdentifiers,
   trackMetaEvent,
 } from "@/lib/metaPixel";
-
-const AGE_RANGES = ["18–25", "26–35", "36–45", "46–55", "56–65", "65+"];
-const PRIMARY_GOALS = [
-  "Build muscle and increase strength",
-  "Lose body fat and improve body composition",
-  "Boost daily energy and mental clarity",
-  "Slow aging and optimize longevity",
-  "Improve sleep quality and depth",
-  "Heal an injury or chronic pain",
-  "Enhance libido and sexual vitality",
-  "Speed up recovery and reduce soreness",
-];
-const BUDGETS = [
-  "Under $50/month",
-  "$50–$100/month",
-  "$100–$200/month",
-  "$200–$500/month",
-  "$500+/month",
-];
 
 const LIBRARY_BACKED_PROFILE_IDS = new Set<string>(libraryBackedPeptideProfileIds);
 
@@ -298,6 +283,7 @@ function PeptideCard({
   const { peptide, matchPercent } = result;
   const isTop = rank === 1;
   const [isExpanded, setIsExpanded] = useState(false);
+  const isGlp1Match = peptide.id === "semaglutide";
 
   const trackClick = trpc.quiz.trackAffiliateClick.useMutation();
   const activeLinks = trpc.affiliates.activeLinksByPeptide.useQuery(
@@ -389,6 +375,12 @@ function PeptideCard({
           </button>
         )}
 
+        {isGlp1Match && (
+          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+            GLP-1 medications require clinician review, prescription eligibility, and individualized medical guidance.
+          </div>
+        )}
+
         {vendors.length > 0 ? (
           <div className="flex flex-col sm:flex-row flex-wrap gap-2">
             {vendors.map((vendor) => (
@@ -401,7 +393,7 @@ function PeptideCard({
                 className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2.5 sm:py-2 rounded-lg border border-accent/30 text-accent hover:bg-accent hover:text-white transition-all sm:text-xs sm:px-3"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
-                {vendor.name}
+                {isGlp1Match ? `Check Eligibility with ${vendor.name}` : vendor.name}
               </a>
             ))}
           </div>
@@ -589,17 +581,20 @@ export default function Results() {
       if (submittedEmail) {
         applyMetaAdvancedMatching(submittedEmail);
       }
+      const isGlp1Lead = matches[0]?.peptide.id === "semaglutide";
       trackMetaEvent("CompleteRegistration", {
         content_name: "Peptide Quiz",
         status: "completed",
       }, pendingMetaEventIds?.completeRegistration);
       trackMetaEvent("Lead", {
         content_name: matches[0]?.peptide.name ?? "Peptide Results",
-        content_category: "quiz-results",
+        content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+        value: isGlp1Lead ? 50 : 10,
+        currency: "USD",
       }, pendingMetaEventIds?.lead);
       trackMetaEvent("ViewContent", {
         content_name: matches[0]?.peptide.name ?? "Peptide Results",
-        content_category: "quiz-results",
+        content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
         content_ids: matches[0]?.peptide.id ? [matches[0].peptide.id] : undefined,
       }, pendingMetaEventIds?.viewContent);
       if (submittedEmail) {
@@ -607,9 +602,10 @@ export default function Results() {
           email: submittedEmail,
           leadId: data.leadId,
           topMatch: matches[0]?.peptide.id ?? null,
-          budget: BUDGETS[state.answers[17] ?? -1] ?? null,
-          ageRange: AGE_RANGES[state.answers[5] ?? -1] ?? null,
-          primaryGoal: PRIMARY_GOALS[state.answers[0] ?? -1] ?? null,
+          budget: BUDGET_OPTIONS[state.answers[QUIZ_INDEX.BUDGET] ?? -1] ?? null,
+          ageRange: AGE_RANGE_OPTIONS[state.answers[QUIZ_INDEX.AGE_RANGE] ?? -1] ?? null,
+          primaryGoal:
+            PRIMARY_GOAL_OPTIONS[state.answers[QUIZ_INDEX.PRIMARY_GOAL] ?? -1] ?? null,
         });
       }
     },
@@ -620,7 +616,7 @@ export default function Results() {
   });
 
   // Pre-compute matches for the preview
-  const previewMatches = getLibraryBackedMatches(state.answers.map((a) => a ?? 0));
+  const previewMatches = getLibraryBackedMatches(state.answers.map((a) => a ?? -1));
 
   useEffect(() => {
     if (!state.isComplete && state.answers.every((a) => a === null)) {
@@ -629,7 +625,7 @@ export default function Results() {
   }, [state, navigate]);
 
   const handleReveal = (email: string, consent: boolean) => {
-    const computed = getLibraryBackedMatches(state.answers.map((a) => a ?? 0));
+    const computed = getLibraryBackedMatches(state.answers.map((a) => a ?? -1));
     const eventIds = {
       lead: createMetaEventId("lead"),
       completeRegistration: createMetaEventId("complete_registration"),
@@ -642,7 +638,7 @@ export default function Results() {
     submitQuiz.mutate({
       email,
       consentGiven: consent,
-      answers: state.answers.map((a) => a ?? 0),
+      answers: state.answers.map((a) => a ?? -1),
       sessionId: getVisitorSessionId(),
       meta: {
         sourceUrl: typeof window !== "undefined" ? window.location.href : undefined,
