@@ -1,4 +1,4 @@
-import { Activity, ListChecks, Mail, Search, Timer } from "lucide-react";
+import { Activity, ExternalLink, ListChecks, Mail, Search } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 
@@ -94,10 +94,10 @@ export default function InsightsOverview() {
       note: "Sessions that became leads",
     },
     {
-      label: "Avg. Engagement",
-      value: `${summary.data?.avgEngagementSeconds ?? 0}s`,
-      icon: Timer,
-      note: "Tracked public-site time",
+      label: "Affiliate Links Clicked",
+      value: summary.data?.totalAffiliateClicks ?? 0,
+      icon: ExternalLink,
+      note: "Tracked outbound partner clicks",
     },
   ];
 

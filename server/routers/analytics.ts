@@ -410,6 +410,7 @@ export const analyticsRouter = router({
         totalSessions: 0,
         totalLeads: 0,
         totalQuizStarts: 0,
+        totalAffiliateClicks: 0,
         quizCompletionRate: 0,
         avgEngagementSeconds: 0,
         topReferrers: [],
@@ -436,6 +437,12 @@ export const analyticsRouter = router({
         totalClicks: sql<number>`count(*)`,
       })
       .from(clickEvents);
+
+    const [affiliateClickStats] = await db
+      .select({
+        totalAffiliateClicks: sql<number>`count(*)`,
+      })
+      .from(affiliateClicks);
 
     const [quizStartStats] = await db
       .select({
@@ -464,6 +471,7 @@ export const analyticsRouter = router({
       totalSessions,
       totalLeads,
       totalQuizStarts: Number(quizStartStats?.totalQuizStarts ?? 0),
+      totalAffiliateClicks: Number(affiliateClickStats?.totalAffiliateClicks ?? 0),
       totalClicks: Number(clickStats?.totalClicks ?? 0),
       quizCompletionRate: totalSessions ? Math.round((completedSessions / totalSessions) * 100) : 0,
       avgEngagementSeconds: totalSessions ? Math.round(totalDurationMs / totalSessions / 1000) : 0,
