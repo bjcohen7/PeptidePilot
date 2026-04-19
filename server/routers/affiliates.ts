@@ -607,64 +607,6 @@ export const affiliatesRouter = router({
       };
     }),
 
-  seedLegacyLinks: adminProcedure.mutation(async ({ ctx }) => {
-    const db = await getDb();
-    if (!db) {
-      throw new Error("Database is required to seed legacy affiliate links.");
-    }
-
-    let createdPartners = 0;
-    let createdLinks = 0;
-
-    for (const profile of peptideProfiles) {
-      for (let index = 0; index < profile.vendors.length; index += 1) {
-        const vendor = profile.vendors[index];
-        const existingPartner = await db
-          .select()
-          .from(affiliatePartners)
-          .where(eq(affiliatePartners.name, vendor.name))
-          .limit(1);
-        const partnerId = await findOrCreatePartner(db, {
-          name: vendor.name,
-          url: vendor.url,
-          notes: "Seeded from legacy scoring vendor links.",
-        });
-        if (existingPartner.length === 0) {
-          createdPartners += 1;
-        }
-
-        const existing = await db
-          .select()
-          .from(affiliateLinks)
-          .where(and(eq(affiliateLinks.url, vendor.url), eq(affiliateLinks.peptideId, profile.id)))
-          .limit(1);
-
-        if (existing.length === 0) {
-          await db.insert(affiliateLinks).values({
-            partnerId,
-            label: vendor.name,
-            url: vendor.url,
-            placement: "results-card",
-            peptideId: profile.id,
-            isGlobal: false,
-            sortOrder: (index + 1) * 10,
-            status: "active",
-          });
-          createdLinks += 1;
-        }
-      }
-    }
-
-    await logAffiliateAudit(db, ctx, {
-      action: "seed",
-      entityType: "affiliate_link",
-      summary: `Seeded ${createdLinks} legacy affiliate links.`,
-      metadata: { createdPartners, createdLinks },
-    });
-
-    return { status: "seeded" as const, createdPartners, createdLinks };
-  }),
-
   testLink: adminProcedure
     .input(z.object({ url: z.string().url() }))
     .mutation(async ({ input }) => {

@@ -162,25 +162,8 @@ export default function AffiliatePartnersAdmin() {
     },
     onError: (error) => toast.error(error.message),
   });
-  const seedLegacyLinks = trpc.affiliates.seedLegacyLinks.useMutation({
-    onSuccess: async (result) => {
-      toast.success(
-        result.createdLinks > 0
-          ? `Seeded ${result.createdLinks} links across ${result.createdPartners} partners.`
-          : "Legacy links were already seeded."
-      );
-      await Promise.all([
-        utils.affiliates.listPartners.invalidate(),
-        utils.affiliates.listLinks.invalidate(),
-        utils.affiliates.listAuditEvents.invalidate(),
-      ]);
-    },
-    onError: (error) => toast.error(error.message),
-  });
-
   const rows = partners.data?.length ? partners.data : affiliatePartnerSeeds;
   const linkRows = links.data ?? [];
-  const showSeedBanner = linkRows.length === 0;
   const numericPartners = useMemo(
     () => rows.filter((partner): partner is Extract<typeof partner, { id: number }> => typeof partner.id === "number"),
     [rows]
@@ -287,13 +270,6 @@ export default function AffiliatePartnersAdmin() {
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
-          <Button
-            variant="outline"
-            onClick={() => seedLegacyLinks.mutate()}
-            disabled={seedLegacyLinks.isPending}
-          >
-            {seedLegacyLinks.isPending ? "Seeding..." : "Seed Legacy Links"}
-          </Button>
           <Button className="bg-brand-gradient text-white hover:opacity-90" onClick={() => setPartnerForm(emptyPartner)}>
             <Plus className="w-4 h-4 mr-2" />
             New Partner
@@ -313,22 +289,6 @@ export default function AffiliatePartnersAdmin() {
           </div>
         ))}
       </div>
-
-      {showSeedBanner && (
-        <div className="rounded-xl border border-accent/30 bg-secondary/40 p-5">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h2 className="font-semibold text-foreground">Bring legacy vendor links under admin control</h2>
-              <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-                The results page still falls back to hard-coded vendor links until we seed the managed link table. Run this once and the dashboard becomes the source of truth for ordering and updates.
-              </p>
-            </div>
-            <Button onClick={() => seedLegacyLinks.mutate()} disabled={seedLegacyLinks.isPending}>
-              {seedLegacyLinks.isPending ? "Seeding..." : "Seed Legacy Links Now"}
-            </Button>
-          </div>
-        </div>
-      )}
 
       <form onSubmit={runAssistant} className="rounded-xl border border-accent/30 bg-white p-5 space-y-4">
         <div className="flex items-start gap-3">
@@ -585,20 +545,6 @@ export default function AffiliatePartnersAdmin() {
             ))}
           </div>
         )}
-      </div>
-
-      <div className="rounded-xl border border-border bg-white overflow-hidden">
-        <div className="flex flex-col gap-3 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="font-semibold">Migration tools</h2>
-            <p className="text-sm text-muted-foreground">
-              One-time import tools for moving legacy result-card vendors into the managed affiliate system.
-            </p>
-          </div>
-          <Button variant="outline" onClick={() => seedLegacyLinks.mutate()} disabled={seedLegacyLinks.isPending}>
-            {seedLegacyLinks.isPending ? "Seeding..." : "Seed Legacy Links"}
-          </Button>
-        </div>
       </div>
 
       <div className="rounded-xl border border-border bg-white overflow-hidden">
