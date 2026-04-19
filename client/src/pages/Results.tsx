@@ -21,6 +21,7 @@ import {
 } from "../../../shared/scoring";
 import { trpc } from "@/lib/trpc";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
+import { GLP1PromoBox } from "@/components/GLP1PromoBox";
 import { getVisitorSessionId } from "@/components/SessionTracker";
 import { identifyLogRocketUser } from "@/lib/logrocket";
 import {
@@ -419,10 +420,12 @@ function PeptideCard({
 function ResultsDisplay({
   matches,
   leadId,
+  sessionId,
   onRetake,
 }: {
   matches: MatchResult[];
   leadId: string;
+  sessionId: string;
   onRetake: () => void;
 }) {
   const topMatch = matches[0];
@@ -531,6 +534,8 @@ function ResultsDisplay({
               Retake the Quiz
             </Button>
           </div>
+
+          <GLP1PromoBox leadId={leadId} sessionId={sessionId} />
         </div>
       </main>
     </div>
@@ -546,6 +551,7 @@ export default function Results() {
   const [leadId, setLeadId] = useState("");
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [submittedEmail, setSubmittedEmail] = useState("");
+  const sessionId = getVisitorSessionId();
   const [pendingMetaEventIds, setPendingMetaEventIds] = useState<{
     lead: string;
     completeRegistration: string;
@@ -630,7 +636,7 @@ export default function Results() {
   };
 
   if (revealed && matches.length > 0) {
-    return <ResultsDisplay matches={matches} leadId={leadId} onRetake={handleRetake} />;
+    return <ResultsDisplay matches={matches} leadId={leadId} sessionId={sessionId} onRetake={handleRetake} />;
   }
 
   return (
