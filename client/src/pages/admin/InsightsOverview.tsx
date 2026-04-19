@@ -1,4 +1,4 @@
-import { Activity, Mail, MousePointerClick, Search, Timer } from "lucide-react";
+import { Activity, ListChecks, Mail, Search, Timer } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 
@@ -82,10 +82,10 @@ export default function InsightsOverview() {
       note: "Submitted email + consent",
     },
     {
-      label: "Tracked Clicks",
-      value: summary.data?.totalClicks ?? 0,
-      icon: MousePointerClick,
-      note: "Internal, CTA, and outbound clicks",
+      label: "Quizzes Taken",
+      value: summary.data?.totalQuizStarts ?? 0,
+      icon: ListChecks,
+      note: "Sessions that reached the quiz flow",
     },
     {
       label: "Completion Rate",

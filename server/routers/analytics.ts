@@ -409,6 +409,7 @@ export const analyticsRouter = router({
       return {
         totalSessions: 0,
         totalLeads: 0,
+        totalQuizStarts: 0,
         quizCompletionRate: 0,
         avgEngagementSeconds: 0,
         topReferrers: [],
@@ -436,6 +437,13 @@ export const analyticsRouter = router({
       })
       .from(clickEvents);
 
+    const [quizStartStats] = await db
+      .select({
+        totalQuizStarts: sql<number>`count(distinct ${pageVisits.sessionId})`,
+      })
+      .from(pageVisits)
+      .where(eq(pageVisits.path, "/quiz/flow"));
+
     const referrerRows = await db
       .select({
         referrer: visitorSessions.referrer,
@@ -455,6 +463,7 @@ export const analyticsRouter = router({
     return {
       totalSessions,
       totalLeads,
+      totalQuizStarts: Number(quizStartStats?.totalQuizStarts ?? 0),
       totalClicks: Number(clickStats?.totalClicks ?? 0),
       quizCompletionRate: totalSessions ? Math.round((completedSessions / totalSessions) * 100) : 0,
       avgEngagementSeconds: totalSessions ? Math.round(totalDurationMs / totalSessions / 1000) : 0,
