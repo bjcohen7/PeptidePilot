@@ -22,6 +22,11 @@ interface QuizContextValue {
 const QuizContext = createContext<QuizContextValue | null>(null);
 const QUIZ_STORAGE_KEY = "peptidepilot_quiz_state_v1";
 
+function persistQuizState(state: QuizState) {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(state));
+}
+
 function getInitialQuizState(totalQuestions: number): QuizState {
   const emptyState: QuizState = {
     answers: new Array(totalQuestions).fill(null),
@@ -63,37 +68,46 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<QuizState>(() => getInitialQuizState(totalQuestions));
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.sessionStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(state));
+    persistQuizState(state);
   }, [state]);
 
   const selectAnswer = useCallback((answerIndex: number) => {
     setState((prev) => {
       const answers = [...prev.answers];
       answers[prev.currentIndex] = answerIndex;
-      return { ...prev, answers };
+      const nextState = { ...prev, answers };
+      persistQuizState(nextState);
+      return nextState;
     });
   }, []);
 
   const goNext = useCallback(() => {
     setState((prev) => {
       if (prev.currentIndex >= totalQuestions - 1) {
-        return { ...prev, isComplete: true };
+        const nextState = { ...prev, isComplete: true };
+        persistQuizState(nextState);
+        return nextState;
       }
-      return { ...prev, currentIndex: prev.currentIndex + 1 };
+      const nextState = { ...prev, currentIndex: prev.currentIndex + 1 };
+      persistQuizState(nextState);
+      return nextState;
     });
   }, [totalQuestions]);
 
   const goBack = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      currentIndex: Math.max(0, prev.currentIndex - 1),
-      isComplete: false,
-    }));
+    setState((prev) => {
+      const nextState = {
+        ...prev,
+        currentIndex: Math.max(0, prev.currentIndex - 1),
+        isComplete: false,
+      };
+      persistQuizState(nextState);
+      return nextState;
+    });
   }, []);
 
   const reset = useCallback(() => {
-    const nextState = {
+    const nextState: QuizState = {
       answers: new Array(totalQuestions).fill(null),
       currentIndex: 0,
       isComplete: false,
