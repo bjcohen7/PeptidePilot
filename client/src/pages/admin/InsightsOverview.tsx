@@ -34,24 +34,6 @@ function getSessionStatus(session: {
   return minutesAgo > 30 ? "abandoned" : "active";
 }
 
-function getEngagementScore(session: {
-  totalDurationMs: number;
-  pageViewCount: number;
-  lead: unknown | null;
-  clickCount?: number;
-  affiliateClickCount?: number;
-  clicks?: Array<unknown>;
-}) {
-  if (session.lead) return 100;
-  const durationScore = Math.min(55, Math.round(session.totalDurationMs / 1000 / 6));
-  const viewsScore = Math.min(30, session.pageViewCount * 6);
-  const clickEvents =
-    (session.clickCount ?? session.clicks?.length ?? 0) +
-    (session.affiliateClickCount ?? 0);
-  const clickScore = Math.min(15, clickEvents * 5);
-  return Math.min(99, durationScore + viewsScore + clickScore);
-}
-
 function statusPill(status: string) {
   if (status === "completed") return "bg-emerald-50 text-emerald-700 border-emerald-200";
   if (status === "abandoned") return "bg-rose-50 text-rose-700 border-rose-200";
@@ -110,7 +92,7 @@ export default function InsightsOverview() {
         <p className="text-sm font-medium text-muted-foreground">Admin</p>
         <h1 className="text-3xl font-semibold tracking-tight">Sessions</h1>
         <p className="text-muted-foreground mt-2 max-w-3xl">
-          Scan live traffic quickly, then click into a session to see referral context, engagement, click behavior, and the full quiz profile once a lead is created.
+          Scan live traffic quickly, then click into a session to see referral context, affiliate activity, and the full quiz profile once a lead is created.
         </p>
       </div>
 
@@ -152,13 +134,11 @@ export default function InsightsOverview() {
                 <th className="px-4 py-3 font-medium">Started</th>
                 <th className="px-4 py-3 font-medium">Duration</th>
                 <th className="px-4 py-3 font-medium">Affiliate Clicks</th>
-                <th className="px-4 py-3 font-medium">Engaged</th>
               </tr>
             </thead>
             <tbody>
               {(sessions.data ?? []).map((session) => {
                 const status = getSessionStatus(session);
-                const engagement = getEngagementScore(session);
 
                 return (
                   <tr
@@ -190,11 +170,6 @@ export default function InsightsOverview() {
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{formatDuration(session.totalDurationMs)}</td>
                     <td className="px-4 py-3 text-accent">{session.affiliateClickCount ?? 0}</td>
-                    <td className="px-4 py-3">
-                      <span className={engagement >= 80 ? "text-emerald-700" : engagement >= 50 ? "text-amber-700" : "text-muted-foreground"}>
-                        {engagement}%
-                      </span>
-                    </td>
                   </tr>
                 );
               })}
