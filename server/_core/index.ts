@@ -10,50 +10,57 @@ import { createContext } from "./context";
 import { ENV } from "./env";
 import { recordClickEvent, recordPageView, startVisitorSession } from "../routers/analytics";
 import { serveStatic, setupVite } from "./vite";
-import { blogPosts } from "../../shared/blog";
-import { pseoSections } from "../../shared/pseo";
+import { prerenderRoutes, SITE_URL } from "../../scripts/prerender-routes";
 
 const STATIC_SITEMAP_PATHS = [
-  "/",
   "/quiz",
-  "/results",
-  "/about",
-  "/blog",
-  "/faq",
-  "/disclaimer",
-  "/privacy",
-  "/terms",
-  "/learn",
 ];
 
 function getSiteUrl() {
   return (
     process.env.SITE_URL ||
     process.env.VITE_SITE_URL ||
-    "https://www.peptidepilot.me"
+    SITE_URL
   ).replace(/\/$/, "");
+}
+
+function getPriorityForPath(path: string) {
+  if (path === "/") return "1.0";
+  if (path.startsWith("/peptides/") || path.startsWith("/compare/")) return "0.9";
+  if (path.startsWith("/goals/") || path.startsWith("/for/")) return "0.85";
+  if (path === "/learn" || path === "/blog" || path === "/peptides" || path === "/compare" || path === "/goals") {
+    return "0.8";
+  }
+  if (path.startsWith("/guides/") || path.startsWith("/reviews/") || path.startsWith("/stacks/") || path.startsWith("/blog/")) {
+    return "0.75";
+  }
+  if (path === "/quiz") return "0.7";
+  if (path === "/privacy" || path === "/terms" || path === "/disclaimer") return "0.3";
+  return "0.6";
+}
+
+function getChangefreqForPath(path: string) {
+  if (path === "/" || path === "/quiz" || path === "/learn" || path === "/blog") return "weekly";
+  if (path.startsWith("/blog/")) return "monthly";
+  return "monthly";
 }
 
 function buildSitemapXml() {
   const siteUrl = getSiteUrl();
-  const pseoPaths = pseoSections.flatMap((section) => [
-    section.path,
-    ...section.entries.map((entry) => entry.path),
-  ]);
-  const blogPaths = blogPosts.map((post) => `/blog/${post.slug}`);
-  const paths = Array.from(new Set([...STATIC_SITEMAP_PATHS, ...pseoPaths, ...blogPaths]));
+  const prerenderedPaths = prerenderRoutes
+    .filter((route) => !route.noindex)
+    .map((route) => route.path);
+  const paths = Array.from(new Set([...prerenderedPaths, ...STATIC_SITEMAP_PATHS]));
   const today = new Date().toISOString().slice(0, 10);
 
   const urls = paths
     .map((path) => {
-      const priority = path === "/" ? "1.0" : path.split("/").filter(Boolean).length === 1 ? "0.9" : "0.7";
-      const changefreq = path.split("/").filter(Boolean).length <= 1 ? "weekly" : "monthly";
       return [
         "  <url>",
         `    <loc>${siteUrl}${path === "/" ? "" : path}</loc>`,
         `    <lastmod>${today}</lastmod>`,
-        `    <changefreq>${changefreq}</changefreq>`,
-        `    <priority>${priority}</priority>`,
+        `    <changefreq>${getChangefreqForPath(path)}</changefreq>`,
+        `    <priority>${getPriorityForPath(path)}</priority>`,
         "  </url>",
       ].join("\n");
     })
@@ -96,6 +103,9 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   app.use((req, res, next) => {
+    if (process.env.NODE_ENV !== "development" && req.hostname === "peptidepilot.me") {
+      return res.redirect(301, `https://www.peptidepilot.me${req.originalUrl}`);
+    }
     if (req.path.length > 1 && req.path.endsWith("/")) {
       const query = req.url.slice(req.path.length);
       return res.redirect(301, `${req.path.replace(/\/+$/, "")}${query}`);
