@@ -27,13 +27,22 @@ export const generatedBlogPostIndex = [
     "publishedAt": "2026-04-17"
   },
   {
+    "slug": "how-do-peptides-work",
+    "title": "How Do Peptides Work?",
+    "excerpt": "Peptides have become one of the most talked-about topics in health, wellness, and longevity. From weight loss medications like semaglutide to recovery compounds like BPC-157, these molecules are...",
+    "category": "Guides",
+    "readTime": "5 min read",
+    "date": "April 2026",
+    "publishedAt": "2026-04-16"
+  },
+  {
     "slug": "are-peptides-safe",
     "title": "Are Peptides Safe? Side Effects Explained",
     "excerpt": "Peptides are one of the most talked-about breakthroughs in health and wellness, with the potential to help individuals achieve goals ranging from weight loss to injury recovery and anti-aging. As...",
     "category": "Guides",
     "readTime": "6 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-16"
+    "publishedAt": "2026-04-15"
   },
   {
     "slug": "best-peptides-for-beginners",
@@ -42,7 +51,7 @@ export const generatedBlogPostIndex = [
     "category": "Education",
     "readTime": "6 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-15"
+    "publishedAt": "2026-04-14"
   },
   {
     "slug": "best-peptides-for-muscle-growth",
@@ -51,7 +60,7 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "7 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-14"
+    "publishedAt": "2026-04-13"
   },
   {
     "slug": "best-peptides-for-weight-loss",
@@ -60,7 +69,7 @@ export const generatedBlogPostIndex = [
     "category": "Metabolic Health",
     "readTime": "6 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-13"
+    "publishedAt": "2026-04-12"
   },
   {
     "slug": "best-peptides-for-anti-aging",
@@ -69,7 +78,7 @@ export const generatedBlogPostIndex = [
     "category": "Longevity & Anti-Aging",
     "readTime": "6 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-12"
+    "publishedAt": "2026-04-11"
   },
   {
     "slug": "best-peptides-for-recovery",
@@ -78,7 +87,7 @@ export const generatedBlogPostIndex = [
     "category": "Sleep & Recovery",
     "readTime": "7 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-11"
+    "publishedAt": "2026-04-10"
   },
   {
     "slug": "best-peptides-for-sleep",
@@ -87,7 +96,7 @@ export const generatedBlogPostIndex = [
     "category": "Sleep & Recovery",
     "readTime": "6 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-10"
+    "publishedAt": "2026-04-09"
   },
   {
     "slug": "best-peptides-for-skin-and-hair",
@@ -96,7 +105,7 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "5 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-09"
+    "publishedAt": "2026-04-08"
   },
   {
     "slug": "best-peptides-for-joint-pain",
@@ -105,7 +114,7 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "6 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-08"
+    "publishedAt": "2026-04-07"
   },
   {
     "slug": "best-peptides-for-energy-and-focus",
@@ -114,7 +123,7 @@ export const generatedBlogPostIndex = [
     "category": "Cognition",
     "readTime": "5 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-07"
+    "publishedAt": "2026-04-06"
   },
   {
     "slug": "best-peptides-for-longevity",
@@ -123,7 +132,7 @@ export const generatedBlogPostIndex = [
     "category": "Longevity & Anti-Aging",
     "readTime": "6 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-06"
+    "publishedAt": "2026-04-05"
   },
   {
     "slug": "bpc-157-vs-tb-500",
@@ -132,7 +141,7 @@ export const generatedBlogPostIndex = [
     "category": "Comparisons",
     "readTime": "6 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-05"
+    "publishedAt": "2026-04-04"
   },
   {
     "slug": "semaglutide-vs-tirzepatide",
@@ -141,7 +150,7 @@ export const generatedBlogPostIndex = [
     "category": "Comparisons",
     "readTime": "6 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-04"
+    "publishedAt": "2026-04-03"
   },
   {
     "slug": "cjc-1295-ipamorelin",
@@ -150,7 +159,7 @@ export const generatedBlogPostIndex = [
     "category": "Stacks",
     "readTime": "7 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-03"
+    "publishedAt": "2026-04-02"
   },
   {
     "slug": "best-peptide-stacks",
@@ -159,7 +168,7 @@ export const generatedBlogPostIndex = [
     "category": "Stacks",
     "readTime": "6 min read",
     "date": "April 2026",
-    "publishedAt": "2026-04-02"
+    "publishedAt": "2026-04-01"
   },
   {
     "slug": "peptide-dosing-guide",
@@ -167,8 +176,8 @@ export const generatedBlogPostIndex = [
     "excerpt": "As interest in peptide therapy continues to surge, one of the most common questions newcomers have is about dosing. How much of a specific peptide should you take to achieve your desired results...",
     "category": "Guides",
     "readTime": "6 min read",
-    "date": "April 2026",
-    "publishedAt": "2026-04-01"
+    "date": "March 2026",
+    "publishedAt": "2026-03-31"
   },
   {
     "slug": "peptide-quiz",
@@ -177,7 +186,7 @@ export const generatedBlogPostIndex = [
     "category": "Education",
     "readTime": "5 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-31"
+    "publishedAt": "2026-03-30"
   },
   {
     "slug": "bpc-157-benefits",
@@ -186,7 +195,16 @@ export const generatedBlogPostIndex = [
     "category": "Peptide Profiles",
     "readTime": "7 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-30"
+    "publishedAt": "2026-03-29"
+  },
+  {
+    "slug": "ghk-cu-copper-peptide",
+    "title": "GHK-Cu: The Copper Peptide for Anti-Aging and Skin Health",
+    "excerpt": "In the world of anti-aging and regenerative medicine, few compounds have garnered as much attention—and scientific backing—as GHK-Cu. Known commonly as the \"copper peptide,\" this naturally...",
+    "category": "Longevity & Anti-Aging",
+    "readTime": "4 min read",
+    "date": "March 2026",
+    "publishedAt": "2026-03-28"
   },
   {
     "slug": "what-is-retatrutide",
@@ -195,7 +213,7 @@ export const generatedBlogPostIndex = [
     "category": "Peptide Profiles",
     "readTime": "5 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-29"
+    "publishedAt": "2026-03-27"
   },
   {
     "slug": "peptide-therapy-guide",
@@ -204,7 +222,7 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "7 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-28"
+    "publishedAt": "2026-03-26"
   },
   {
     "slug": "best-peptides-for-gut-health",
@@ -213,7 +231,7 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "6 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-27"
+    "publishedAt": "2026-03-25"
   },
   {
     "slug": "best-peptides-for-tendon-repair",
@@ -222,7 +240,7 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "6 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-26"
+    "publishedAt": "2026-03-24"
   },
   {
     "slug": "best-peptides-for-libido",
@@ -231,7 +249,7 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "7 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-25"
+    "publishedAt": "2026-03-23"
   },
   {
     "slug": "best-peptides-for-immune-system",
@@ -240,7 +258,7 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "6 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-24"
+    "publishedAt": "2026-03-22"
   },
   {
     "slug": "best-peptides-for-bone-density",
@@ -249,7 +267,7 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "6 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-23"
+    "publishedAt": "2026-03-21"
   },
   {
     "slug": "best-peptides-for-wound-healing",
@@ -258,7 +276,7 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "7 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-22"
+    "publishedAt": "2026-03-20"
   },
   {
     "slug": "best-peptides-for-anxiety",
@@ -267,7 +285,7 @@ export const generatedBlogPostIndex = [
     "category": "Cognition",
     "readTime": "6 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-21"
+    "publishedAt": "2026-03-19"
   },
   {
     "slug": "best-peptides-for-depression",
@@ -276,7 +294,7 @@ export const generatedBlogPostIndex = [
     "category": "Cognition",
     "readTime": "5 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-20"
+    "publishedAt": "2026-03-18"
   },
   {
     "slug": "best-peptides-for-post-surgery-recovery",
@@ -285,7 +303,7 @@ export const generatedBlogPostIndex = [
     "category": "Sleep & Recovery",
     "readTime": "6 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-19"
+    "publishedAt": "2026-03-17"
   },
   {
     "slug": "best-peptides-for-endurance",
@@ -294,7 +312,7 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "7 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-18"
+    "publishedAt": "2026-03-16"
   },
   {
     "slug": "best-peptides-for-bodybuilding",
@@ -303,7 +321,7 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "6 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-17"
+    "publishedAt": "2026-03-15"
   },
   {
     "slug": "best-peptides-for-women-over-40",
@@ -312,7 +330,7 @@ export const generatedBlogPostIndex = [
     "category": "Longevity & Anti-Aging",
     "readTime": "6 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-16"
+    "publishedAt": "2026-03-14"
   },
   {
     "slug": "best-peptides-for-men-over-50",
@@ -321,7 +339,7 @@ export const generatedBlogPostIndex = [
     "category": "Longevity & Anti-Aging",
     "readTime": "6 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-15"
+    "publishedAt": "2026-03-13"
   },
   {
     "slug": "best-peptides-for-athletes",
@@ -330,7 +348,7 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "7 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-14"
+    "publishedAt": "2026-03-12"
   },
   {
     "slug": "best-peptides-for-crossfit",
@@ -339,7 +357,16 @@ export const generatedBlogPostIndex = [
     "category": "Sleep & Recovery",
     "readTime": "14 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-13"
+    "publishedAt": "2026-03-11"
+  },
+  {
+    "slug": "best-peptides-for-marathon-runners",
+    "title": "Best Peptides for Marathon Runners",
+    "excerpt": "Marathon training places an extraordinary demand on the human body. The sheer volume of repetitive impact, the massive caloric expenditure, and the constant need for cellular repair push the...",
+    "category": "Performance & Recovery",
+    "readTime": "5 min read",
+    "date": "March 2026",
+    "publishedAt": "2026-03-10"
   },
   {
     "slug": "peptides-after-menopause",
@@ -348,7 +375,7 @@ export const generatedBlogPostIndex = [
     "category": "Longevity & Anti-Aging",
     "readTime": "8 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-12"
+    "publishedAt": "2026-03-09"
   },
   {
     "slug": "best-peptides-for-inflammation",
@@ -357,7 +384,16 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "12 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-11"
+    "publishedAt": "2026-03-08"
+  },
+  {
+    "slug": "best-peptides-for-brain-health",
+    "title": "Best Peptides for Brain Health and Memory",
+    "excerpt": "Cognitive decline, brain fog, and memory issues are often accepted as inevitable parts of aging or the results of high-stress lifestyles. However, the emerging field of peptide therapy is...",
+    "category": "Cognition",
+    "readTime": "4 min read",
+    "date": "March 2026",
+    "publishedAt": "2026-03-07"
   },
   {
     "slug": "best-peptides-for-collagen",
@@ -366,7 +402,7 @@ export const generatedBlogPostIndex = [
     "category": "Longevity & Anti-Aging",
     "readTime": "8 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-10"
+    "publishedAt": "2026-03-06"
   },
   {
     "slug": "best-peptides-for-testosterone",
@@ -375,7 +411,7 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "7 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-09"
+    "publishedAt": "2026-03-05"
   },
   {
     "slug": "best-peptides-for-growth-hormone",
@@ -384,7 +420,16 @@ export const generatedBlogPostIndex = [
     "category": "Performance & Recovery",
     "readTime": "12 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-08"
+    "publishedAt": "2026-03-04"
+  },
+  {
+    "slug": "peptides-for-injury-recovery-athletes",
+    "title": "Best Peptides for Injury Recovery in Athletes",
+    "excerpt": "For a competitive athlete, an injury is more than just physical pain—it is lost time, missed competitions, and a threat to their career. Traditional sports medicine relies heavily on rest, ice,...",
+    "category": "Sleep & Recovery",
+    "readTime": "5 min read",
+    "date": "March 2026",
+    "publishedAt": "2026-03-03"
   },
   {
     "slug": "best-peptides-for-wrinkles",
@@ -393,7 +438,7 @@ export const generatedBlogPostIndex = [
     "category": "Longevity & Anti-Aging",
     "readTime": "7 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-07"
+    "publishedAt": "2026-03-02"
   },
   {
     "slug": "best-peptides-for-belly-fat",
@@ -402,7 +447,7 @@ export const generatedBlogPostIndex = [
     "category": "Metabolic Health",
     "readTime": "6 min read",
     "date": "March 2026",
-    "publishedAt": "2026-03-06"
+    "publishedAt": "2026-03-01"
   },
   {
     "slug": "bpc-157-vs-ghk-cu",
@@ -410,8 +455,8 @@ export const generatedBlogPostIndex = [
     "excerpt": "In the rapidly evolving landscape of peptide therapy, two compounds have emerged as frontrunners for those seeking enhanced recovery and rejuvenation: BPC-157 and GHK-Cu. While both have garnered...",
     "category": "Comparisons",
     "readTime": "7 min read",
-    "date": "March 2026",
-    "publishedAt": "2026-03-05"
+    "date": "February 2026",
+    "publishedAt": "2026-02-28"
   },
   {
     "slug": "ipamorelin-vs-sermorelin",
@@ -419,8 +464,8 @@ export const generatedBlogPostIndex = [
     "excerpt": "Navigating the world of peptide therapy can feel complex, with numerous compounds available, each promising a unique set of benefits. Among the most discussed are those that stimulate the body's...",
     "category": "Comparisons",
     "readTime": "7 min read",
-    "date": "March 2026",
-    "publishedAt": "2026-03-04"
+    "date": "February 2026",
+    "publishedAt": "2026-02-27"
   },
   {
     "slug": "compounded-semaglutide-vs-wegovy",
@@ -428,8 +473,8 @@ export const generatedBlogPostIndex = [
     "excerpt": "The world of weight loss has been revolutionized by GLP-1 agonists, and at the forefront is semaglutide, the active ingredient in brand-name drugs like Wegovy and Ozempic. But with a high price...",
     "category": "Comparisons",
     "readTime": "7 min read",
-    "date": "March 2026",
-    "publishedAt": "2026-03-03"
+    "date": "February 2026",
+    "publishedAt": "2026-02-26"
   },
   {
     "slug": "tirzepatide-vs-retatrutide",
@@ -437,8 +482,17 @@ export const generatedBlogPostIndex = [
     "excerpt": "The landscape of metabolic medicine is rapidly evolving, thanks to GLP-1 receptor agonists. Initially for type 2 diabetes, these peptides have become powerful tools for weight loss. After the...",
     "category": "Comparisons",
     "readTime": "14 min read",
-    "date": "March 2026",
-    "publishedAt": "2026-03-02"
+    "date": "February 2026",
+    "publishedAt": "2026-02-25"
+  },
+  {
+    "slug": "aod-9604-vs-semaglutide",
+    "title": "AOD-9604 vs Semaglutide for Weight Loss",
+    "excerpt": "When it comes to peptide therapy for weight loss, the landscape can be confusing. On one side, you have massively popular, FDA-approved medications that have dominated the news cycle. On the...",
+    "category": "Comparisons",
+    "readTime": "5 min read",
+    "date": "February 2026",
+    "publishedAt": "2026-02-24"
   },
   {
     "slug": "semax-vs-selank",
@@ -446,8 +500,8 @@ export const generatedBlogPostIndex = [
     "excerpt": "In the world of cognitive enhancement and mental wellness, a fascinating class of compounds known as nootropic peptides has gained significant attention. These short chains of amino acids act as...",
     "category": "Comparisons",
     "readTime": "7 min read",
-    "date": "March 2026",
-    "publishedAt": "2026-03-01"
+    "date": "February 2026",
+    "publishedAt": "2026-02-23"
   },
   {
     "slug": "peptides-vs-sarms",
@@ -456,7 +510,7 @@ export const generatedBlogPostIndex = [
     "category": "Comparisons",
     "readTime": "7 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-28"
+    "publishedAt": "2026-02-22"
   },
   {
     "slug": "peptides-vs-steroids",
@@ -465,7 +519,16 @@ export const generatedBlogPostIndex = [
     "category": "Comparisons",
     "readTime": "8 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-27"
+    "publishedAt": "2026-02-21"
+  },
+  {
+    "slug": "peptides-vs-hgh",
+    "title": "Peptides vs HGH: Which Is Better for Anti-Aging?",
+    "excerpt": "For decades, synthetic Human Growth Hormone (HGH) was the undisputed king of anti-aging medicine. Hollywood elites, professional athletes, and longevity enthusiasts spent thousands of dollars a...",
+    "category": "Comparisons",
+    "readTime": "4 min read",
+    "date": "February 2026",
+    "publishedAt": "2026-02-20"
   },
   {
     "slug": "oral-vs-injectable-peptides",
@@ -474,7 +537,7 @@ export const generatedBlogPostIndex = [
     "category": "Comparisons",
     "readTime": "7 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-26"
+    "publishedAt": "2026-02-19"
   },
   {
     "slug": "how-to-inject-peptides",
@@ -483,7 +546,7 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "7 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-25"
+    "publishedAt": "2026-02-18"
   },
   {
     "slug": "how-to-store-peptides",
@@ -492,7 +555,7 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "6 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-24"
+    "publishedAt": "2026-02-17"
   },
   {
     "slug": "how-to-reconstitute-peptides",
@@ -501,7 +564,7 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "6 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-23"
+    "publishedAt": "2026-02-16"
   },
   {
     "slug": "how-to-cycle-peptides",
@@ -510,7 +573,7 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "6 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-22"
+    "publishedAt": "2026-02-15"
   },
   {
     "slug": "how-long-do-peptides-take-to-work",
@@ -519,7 +582,7 @@ export const generatedBlogPostIndex = [
     "category": "Education",
     "readTime": "7 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-21"
+    "publishedAt": "2026-02-14"
   },
   {
     "slug": "are-peptides-legal",
@@ -528,7 +591,7 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "5 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-20"
+    "publishedAt": "2026-02-13"
   },
   {
     "slug": "are-peptides-fda-approved",
@@ -537,7 +600,7 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "7 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-19"
+    "publishedAt": "2026-02-12"
   },
   {
     "slug": "are-peptides-steroids",
@@ -546,7 +609,7 @@ export const generatedBlogPostIndex = [
     "category": "Comparisons",
     "readTime": "7 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-18"
+    "publishedAt": "2026-02-11"
   },
   {
     "slug": "peptide-side-effects",
@@ -555,7 +618,7 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "6 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-17"
+    "publishedAt": "2026-02-10"
   },
   {
     "slug": "can-you-take-peptides-orally",
@@ -564,7 +627,7 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "6 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-16"
+    "publishedAt": "2026-02-09"
   },
   {
     "slug": "how-much-do-peptides-cost",
@@ -573,7 +636,7 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "7 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-15"
+    "publishedAt": "2026-02-08"
   },
   {
     "slug": "where-to-buy-peptides",
@@ -582,7 +645,7 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "6 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-14"
+    "publishedAt": "2026-02-07"
   },
   {
     "slug": "online-peptide-consultation",
@@ -591,7 +654,7 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "8 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-13"
+    "publishedAt": "2026-02-06"
   },
   {
     "slug": "peptide-clinic-near-me",
@@ -600,7 +663,7 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "7 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-12"
+    "publishedAt": "2026-02-05"
   },
   {
     "slug": "do-you-need-a-prescription-for-peptides",
@@ -609,7 +672,7 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "7 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-11"
+    "publishedAt": "2026-02-04"
   },
   {
     "slug": "best-peptide-stack-for-anti-aging",
@@ -618,7 +681,7 @@ export const generatedBlogPostIndex = [
     "category": "Stacks",
     "readTime": "6 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-10"
+    "publishedAt": "2026-02-03"
   },
   {
     "slug": "best-peptide-stack-for-fat-loss-and-muscle-gain",
@@ -627,7 +690,7 @@ export const generatedBlogPostIndex = [
     "category": "Stacks",
     "readTime": "6 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-09"
+    "publishedAt": "2026-02-02"
   },
   {
     "slug": "best-peptide-stack-for-healing",
@@ -636,7 +699,7 @@ export const generatedBlogPostIndex = [
     "category": "Stacks",
     "readTime": "6 min read",
     "date": "February 2026",
-    "publishedAt": "2026-02-08"
+    "publishedAt": "2026-02-01"
   },
   {
     "slug": "best-peptide-stack-for-women",
@@ -644,8 +707,8 @@ export const generatedBlogPostIndex = [
     "excerpt": "As women navigate different life stages, from reproductive years to perimenopause and beyond, their health and wellness goals evolve. Peptide therapy offers a targeted approach to address these...",
     "category": "Stacks",
     "readTime": "6 min read",
-    "date": "February 2026",
-    "publishedAt": "2026-02-07"
+    "date": "January 2026",
+    "publishedAt": "2026-01-31"
   },
   {
     "slug": "best-peptide-stack-for-sleep",
@@ -653,8 +716,8 @@ export const generatedBlogPostIndex = [
     "excerpt": "In the relentless pursuit of peak performance and optimal health, sleep is the non-negotiable foundation upon which all recovery, growth, and cognitive function are built. However, quality sleep...",
     "category": "Stacks",
     "readTime": "6 min read",
-    "date": "February 2026",
-    "publishedAt": "2026-02-06"
+    "date": "January 2026",
+    "publishedAt": "2026-01-30"
   },
   {
     "slug": "what-is-sermorelin",
@@ -662,8 +725,8 @@ export const generatedBlogPostIndex = [
     "excerpt": "In the ever-evolving landscape of peptide therapy, Sermorelin stands out as one of the original and most well-researched growth hormone-releasing peptides. While newer and more complex peptides...",
     "category": "Peptide Profiles",
     "readTime": "6 min read",
-    "date": "February 2026",
-    "publishedAt": "2026-02-05"
+    "date": "January 2026",
+    "publishedAt": "2026-01-29"
   },
   {
     "slug": "what-is-tb-500",
@@ -671,8 +734,8 @@ export const generatedBlogPostIndex = [
     "excerpt": "In the ever-evolving landscape of peptide research, few compounds have generated as much interest for systemic repair and recovery as TB-500. Known for its remarkable healing properties,...",
     "category": "Peptide Profiles",
     "readTime": "6 min read",
-    "date": "February 2026",
-    "publishedAt": "2026-02-04"
+    "date": "January 2026",
+    "publishedAt": "2026-01-28"
   },
   {
     "slug": "what-is-aod-9604",
@@ -680,8 +743,8 @@ export const generatedBlogPostIndex = [
     "excerpt": "Navigating the world of peptides can feel like exploring a new frontier in health and wellness. Among the many compounds discussed for their potential benefits, AOD-9604 frequently emerges in...",
     "category": "Peptide Profiles",
     "readTime": "6 min read",
-    "date": "February 2026",
-    "publishedAt": "2026-02-03"
+    "date": "January 2026",
+    "publishedAt": "2026-01-27"
   },
   {
     "slug": "what-is-thymosin-alpha-1",
@@ -689,8 +752,8 @@ export const generatedBlogPostIndex = [
     "excerpt": "In the intricate world of peptides, few compounds command as much clinical respect as Thymosin Alpha-1 (Tα1). This potent peptide, produced naturally by your own body, has garnered significant...",
     "category": "Peptide Profiles",
     "readTime": "6 min read",
-    "date": "February 2026",
-    "publishedAt": "2026-02-02"
+    "date": "January 2026",
+    "publishedAt": "2026-01-26"
   },
   {
     "slug": "what-is-kpv-peptide",
@@ -698,8 +761,8 @@ export const generatedBlogPostIndex = [
     "excerpt": "In the expanding world of peptide therapy, new compounds regularly emerge, offering targeted support for a wide range of health goals. One such peptide gaining significant attention for its...",
     "category": "Peptide Profiles",
     "readTime": "6 min read",
-    "date": "February 2026",
-    "publishedAt": "2026-02-01"
+    "date": "January 2026",
+    "publishedAt": "2026-01-25"
   },
   {
     "slug": "what-is-mots-c",
@@ -708,7 +771,7 @@ export const generatedBlogPostIndex = [
     "category": "Peptide Profiles",
     "readTime": "6 min read",
     "date": "January 2026",
-    "publishedAt": "2026-01-31"
+    "publishedAt": "2026-01-24"
   },
   {
     "slug": "what-is-semax",
@@ -717,7 +780,7 @@ export const generatedBlogPostIndex = [
     "category": "Peptide Profiles",
     "readTime": "6 min read",
     "date": "January 2026",
-    "publishedAt": "2026-01-30"
+    "publishedAt": "2026-01-23"
   },
   {
     "slug": "what-is-selank",
@@ -726,7 +789,7 @@ export const generatedBlogPostIndex = [
     "category": "Peptide Profiles",
     "readTime": "8 min read",
     "date": "January 2026",
-    "publishedAt": "2026-01-29"
+    "publishedAt": "2026-01-22"
   },
   {
     "slug": "what-is-epitalon",
@@ -735,7 +798,7 @@ export const generatedBlogPostIndex = [
     "category": "Peptide Profiles",
     "readTime": "7 min read",
     "date": "January 2026",
-    "publishedAt": "2026-01-28"
+    "publishedAt": "2026-01-21"
   },
   {
     "slug": "what-is-tesamorelin",
@@ -744,7 +807,7 @@ export const generatedBlogPostIndex = [
     "category": "Peptide Profiles",
     "readTime": "4 min read",
     "date": "January 2026",
-    "publishedAt": "2026-01-27"
+    "publishedAt": "2026-01-20"
   },
   {
     "slug": "what-is-pt-141",
@@ -753,7 +816,7 @@ export const generatedBlogPostIndex = [
     "category": "Peptide Profiles",
     "readTime": "5 min read",
     "date": "January 2026",
-    "publishedAt": "2026-01-26"
+    "publishedAt": "2026-01-19"
   },
   {
     "slug": "what-is-ipamorelin",
@@ -762,7 +825,7 @@ export const generatedBlogPostIndex = [
     "category": "Peptide Profiles",
     "readTime": "6 min read",
     "date": "January 2026",
-    "publishedAt": "2026-01-25"
+    "publishedAt": "2026-01-18"
   },
   {
     "slug": "what-is-cjc-1295",
@@ -771,7 +834,16 @@ export const generatedBlogPostIndex = [
     "category": "Comparisons",
     "readTime": "12 min read",
     "date": "January 2026",
-    "publishedAt": "2026-01-24"
+    "publishedAt": "2026-01-17"
+  },
+  {
+    "slug": "peptides-for-athletes-over-40",
+    "title": "Peptides for Athletes Over 40: A Performance Guide",
+    "excerpt": "Reaching your 40s as an athlete is a double-edged sword. You have the wisdom, the tactical experience, and the mental fortitude that only comes with decades of training. But biologically, the...",
+    "category": "Performance & Recovery",
+    "readTime": "5 min read",
+    "date": "January 2026",
+    "publishedAt": "2026-01-16"
   },
   {
     "slug": "peptides-for-runners",
@@ -780,7 +852,16 @@ export const generatedBlogPostIndex = [
     "category": "Sleep & Recovery",
     "readTime": "6 min read",
     "date": "January 2026",
-    "publishedAt": "2026-01-23"
+    "publishedAt": "2026-01-15"
+  },
+  {
+    "slug": "peptides-for-bjj-mma",
+    "title": "Peptides for BJJ and MMA Recovery",
+    "excerpt": "Combat sports like Brazilian Jiu-Jitsu (BJJ) and Mixed Martial Arts (MMA) are uniquely punishing. Unlike traditional sports that feature predictable, linear movements, grappling and striking...",
+    "category": "Sleep & Recovery",
+    "readTime": "5 min read",
+    "date": "January 2026",
+    "publishedAt": "2026-01-14"
   },
   {
     "slug": "peptides-for-golfers",
@@ -789,7 +870,7 @@ export const generatedBlogPostIndex = [
     "category": "Sleep & Recovery",
     "readTime": "6 min read",
     "date": "January 2026",
-    "publishedAt": "2026-01-22"
+    "publishedAt": "2026-01-13"
   },
   {
     "slug": "peptides-and-intermittent-fasting",
@@ -798,7 +879,7 @@ export const generatedBlogPostIndex = [
     "category": "Education",
     "readTime": "7 min read",
     "date": "January 2026",
-    "publishedAt": "2026-01-21"
+    "publishedAt": "2026-01-12"
   },
   {
     "slug": "natural-peptides-in-food",
@@ -807,7 +888,7 @@ export const generatedBlogPostIndex = [
     "category": "Longevity & Anti-Aging",
     "readTime": "6 min read",
     "date": "January 2026",
-    "publishedAt": "2026-01-20"
+    "publishedAt": "2026-01-11"
   },
   {
     "slug": "future-of-peptide-therapy",
@@ -816,6 +897,6 @@ export const generatedBlogPostIndex = [
     "category": "Guides",
     "readTime": "7 min read",
     "date": "January 2026",
-    "publishedAt": "2026-01-19"
+    "publishedAt": "2026-01-10"
   }
 ] as const;
