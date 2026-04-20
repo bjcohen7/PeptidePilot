@@ -300,16 +300,34 @@ async function buildBasicSessionPayloads(sessionRows: Array<typeof visitorSessio
   const db = await getDb();
   if (!db || !sessionRows.length) return [];
 
+  const sessionIds = sessionRows.map((session) => session.id);
   const leadIds = sessionRows
     .map((session) => session.leadId)
     .filter((value): value is string => Boolean(value));
   const sessionLeadRows = leadIds.length
     ? await db.select().from(leads).where(inArray(leads.id, leadIds))
     : [];
+  let fallbackLeadRows: typeof sessionLeadRows = [];
+  try {
+    fallbackLeadRows = sessionIds.length
+      ? await db.select().from(leads).where(inArray(leads.sessionId, sessionIds))
+      : [];
+  } catch (error) {
+    console.warn("[Analytics] Basic payload fallback without leads.sessionId linkage:", error);
+  }
+
   const leadById = new Map(sessionLeadRows.map((lead) => [lead.id, lead]));
+  const leadBySessionId = new Map(
+    fallbackLeadRows
+      .filter((lead) => Boolean(lead.sessionId))
+      .map((lead) => [lead.sessionId as string, lead]),
+  );
 
   return sessionRows.map((session) => {
-    const lead = session.leadId ? leadById.get(session.leadId) ?? null : null;
+    const lead =
+      (session.leadId ? leadById.get(session.leadId) ?? null : null) ??
+      leadBySessionId.get(session.id) ??
+      null;
     return {
       ...session,
       lead: lead

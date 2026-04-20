@@ -41,6 +41,7 @@ function statusPill(status: string) {
 }
 
 export default function InsightsOverview() {
+  const utils = trpc.useUtils();
   const summary = trpc.analytics.summary.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: true,
@@ -144,6 +145,12 @@ export default function InsightsOverview() {
                 return (
                   <tr
                     key={session.id}
+                    onMouseEnter={() => {
+                      void utils.analytics.sessionById.prefetch({ sessionId: session.id });
+                    }}
+                    onFocus={() => {
+                      void utils.analytics.sessionById.prefetch({ sessionId: session.id });
+                    }}
                     onClick={() => setLocation(`/admin/sessions/${session.id}`)}
                     className="cursor-pointer border-b border-border/70 transition-colors hover:bg-accent/5"
                   >
