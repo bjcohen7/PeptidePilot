@@ -68,7 +68,7 @@ export default function GoalPage({ params }: { params: { slug: string } }) {
             description: goal.metaDescription,
             author: { "@type": "Organization", name: "PeptidePilot" },
             publisher: { "@type": "Organization", name: "PeptidePilot" },
-            mainEntityOfPage: `https://peptidepilot.me/goals/${goal.slug}`,
+            mainEntityOfPage: `https://www.peptidepilot.me/goals/${goal.slug}`,
           }),
         }}
       />

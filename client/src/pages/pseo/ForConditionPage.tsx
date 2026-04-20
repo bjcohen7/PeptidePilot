@@ -1,6 +1,6 @@
-import { useEffect } from "react";
 import { useRoute, Link } from "wouter";
 import { forConditionPages } from "../../../../shared/pseoData";
+import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,33 +24,6 @@ export default function ForConditionPage() {
   const slug = params?.slug ?? "";
   const page = forConditionPages.find((p) => p.slug === slug);
 
-  useEffect(() => {
-    if (!page) return;
-    // MedicalCondition schema — symptom-first, structurally distinct from Profile (MedicalEntity) and Guide (HowTo)
-    const schema = {
-      "@context": "https://schema.org",
-      "@type": "MedicalCondition",
-      name: page.condition,
-      description: page.conditionOverview,
-      signOrSymptom: page.symptoms.map((s) => ({ "@type": "MedicalSymptom", name: s })),
-      possibleTreatment: page.topPeptides.map((p) => ({
-        "@type": "MedicalTherapy",
-        name: p.peptideName,
-        description: p.mechanism,
-      })),
-    };
-    const el = document.createElement("script");
-    el.type = "application/ld+json";
-    el.text = JSON.stringify(schema);
-    el.id = "condition-schema";
-    document.head.querySelector("#condition-schema")?.remove();
-    document.head.appendChild(el);
-    document.title = `${page.h1} | PeptidePilot`;
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", page.metaDescription);
-    return () => document.head.querySelector("#condition-schema")?.remove();
-  }, [page]);
-
   if (!page) {
     return (
       <div className="container py-20 text-center">
@@ -60,8 +33,36 @@ export default function ForConditionPage() {
     );
   }
 
+  const conditionSchema = {
+    "@context": "https://schema.org",
+    "@type": "MedicalCondition",
+    name: page.condition,
+    description: page.conditionOverview,
+    signOrSymptom: page.symptoms.map((s) => ({ "@type": "MedicalSymptom", name: s })),
+    possibleTreatment: page.topPeptides.map((p) => ({
+      "@type": "MedicalTherapy",
+      name: p.peptideName,
+      description: p.mechanism,
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title={page.h1}
+        description={page.metaDescription}
+        path={`/for/${page.slug}`}
+        type="article"
+        jsonLd={[
+          conditionSchema,
+          buildBreadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "For", path: "/for" },
+            { name: page.condition, path: `/for/${page.slug}` },
+          ]),
+        ]}
+      />
+      <script type="application/ld+json">{JSON.stringify(conditionSchema)}</script>
       {/* ── Hero — symptom-first layout ── */}
       <section className="bg-gradient-to-br from-rose-950 via-slate-900 to-slate-900 text-white py-16">
         <div className="container max-w-4xl">

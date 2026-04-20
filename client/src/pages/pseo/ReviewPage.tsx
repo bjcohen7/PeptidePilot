@@ -1,6 +1,6 @@
-import { useEffect } from "react";
 import { useRoute, Link } from "wouter";
 import { reviewPages } from "../../../../shared/pseoData";
+import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,42 +42,6 @@ export default function ReviewPage() {
   const slug = params?.slug ?? "";
   const review = reviewPages.find((r) => r.slug === slug);
 
-  useEffect(() => {
-    if (!review) return;
-    // Review schema — verdict-first, pros/cons layout, structurally distinct from Profile (MedicalEntity), Guide (HowTo), and ForCondition (MedicalCondition)
-    const schema = {
-      "@context": "https://schema.org",
-      "@type": "Review",
-      name: review.h1,
-      description: review.metaDescription,
-      reviewBody: review.verdictParagraph,
-      reviewRating: {
-        "@type": "Rating",
-        ratingValue: review.overallRating,
-        bestRating: 10,
-        worstRating: 1,
-      },
-      itemReviewed: {
-        "@type": "Drug",
-        name: review.peptideName,
-      },
-      author: {
-        "@type": "Organization",
-        name: "PeptidePilot",
-      },
-    };
-    const el = document.createElement("script");
-    el.type = "application/ld+json";
-    el.text = JSON.stringify(schema);
-    el.id = "review-schema";
-    document.head.querySelector("#review-schema")?.remove();
-    document.head.appendChild(el);
-    document.title = `${review.h1} | PeptidePilot`;
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", review.metaDescription);
-    return () => document.head.querySelector("#review-schema")?.remove();
-  }, [review]);
-
   if (!review) {
     return (
       <div className="container py-20 text-center">
@@ -87,8 +51,45 @@ export default function ReviewPage() {
     );
   }
 
+  const reviewSchema = {
+    "@context": "https://schema.org",
+    "@type": "Review",
+    name: review.h1,
+    description: review.metaDescription,
+    reviewBody: review.verdictParagraph,
+    reviewRating: {
+      "@type": "Rating",
+      ratingValue: review.overallRating,
+      bestRating: 10,
+      worstRating: 1,
+    },
+    itemReviewed: {
+      "@type": "Drug",
+      name: review.peptideName,
+    },
+    author: {
+      "@type": "Organization",
+      name: "PeptidePilot",
+    },
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title={review.h1}
+        description={review.metaDescription}
+        path={`/reviews/${review.slug}`}
+        type="article"
+        jsonLd={[
+          reviewSchema,
+          buildBreadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Reviews", path: "/reviews" },
+            { name: review.h1, path: `/reviews/${review.slug}` },
+          ]),
+        ]}
+      />
+      <script type="application/ld+json">{JSON.stringify(reviewSchema)}</script>
       {/* ── Hero — verdict-first layout ── */}
       <section className="bg-gradient-to-br from-violet-950 via-slate-900 to-slate-900 text-white py-16">
         <div className="container max-w-4xl">

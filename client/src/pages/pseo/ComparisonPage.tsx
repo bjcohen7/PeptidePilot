@@ -61,7 +61,7 @@ export default function ComparisonPage({ params }: { params: { slug: string } })
             description: comparison.metaDescription,
             author: { "@type": "Organization", name: "PeptidePilot" },
             publisher: { "@type": "Organization", name: "PeptidePilot" },
-            mainEntityOfPage: `https://peptidepilot.me/compare/${comparison.slug}`,
+            mainEntityOfPage: `https://www.peptidepilot.me/compare/${comparison.slug}`,
           }),
         }}
       />

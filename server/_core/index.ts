@@ -30,7 +30,7 @@ function getSiteUrl() {
   return (
     process.env.SITE_URL ||
     process.env.VITE_SITE_URL ||
-    "https://peptidepilot.me"
+    "https://www.peptidepilot.me"
   ).replace(/\/$/, "");
 }
 
@@ -95,6 +95,13 @@ async function startServer() {
 
   const app = express();
   const server = createServer(app);
+  app.use((req, res, next) => {
+    if (req.path.length > 1 && req.path.endsWith("/")) {
+      const query = req.url.slice(req.path.length);
+      return res.redirect(301, `${req.path.replace(/\/+$/, "")}${query}`);
+    }
+    return next();
+  });
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));

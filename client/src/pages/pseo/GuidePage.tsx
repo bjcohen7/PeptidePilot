@@ -1,6 +1,6 @@
-import { useEffect } from "react";
 import { useRoute, Link } from "wouter";
 import { guidePages } from "../../../../shared/pseoData";
+import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,35 +19,6 @@ export default function GuidePage() {
   const slug = params?.slug ?? "";
   const guide = guidePages.find((g) => g.slug === slug);
 
-  useEffect(() => {
-    if (!guide) return;
-    // HowTo schema — structurally distinct from Profile pages (which use MedicalEntity schema)
-    const schema = {
-      "@context": "https://schema.org",
-      "@type": "HowTo",
-      name: guide.h1,
-      description: guide.metaDescription,
-      totalTime: guide.timeRequired,
-      tool: guide.whatYouNeed.map((t) => ({ "@type": "HowToTool", name: t })),
-      step: guide.steps.map((s) => ({
-        "@type": "HowToStep",
-        position: s.stepNumber,
-        name: s.title,
-        text: s.description,
-      })),
-    };
-    const el = document.createElement("script");
-    el.type = "application/ld+json";
-    el.text = JSON.stringify(schema);
-    el.id = "howto-schema";
-    document.head.querySelector("#howto-schema")?.remove();
-    document.head.appendChild(el);
-    document.title = `${guide.title} | PeptidePilot`;
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", guide.metaDescription);
-    return () => document.head.querySelector("#howto-schema")?.remove();
-  }, [guide]);
-
   if (!guide) {
     return (
       <div className="container py-20 text-center">
@@ -57,8 +28,38 @@ export default function GuidePage() {
     );
   }
 
+  const howToSchema = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: guide.h1,
+    description: guide.metaDescription,
+    totalTime: guide.timeRequired,
+    tool: guide.whatYouNeed.map((t) => ({ "@type": "HowToTool", name: t })),
+    step: guide.steps.map((s) => ({
+      "@type": "HowToStep",
+      position: s.stepNumber,
+      name: s.title,
+      text: s.description,
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title={guide.h1}
+        description={guide.metaDescription}
+        path={`/guides/${guide.slug}`}
+        type="article"
+        jsonLd={[
+          howToSchema,
+          buildBreadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Guides", path: "/guides" },
+            { name: guide.title, path: `/guides/${guide.slug}` },
+          ]),
+        ]}
+      />
+      <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
       {/* ── Hero ── */}
       <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16">
         <div className="container max-w-4xl">

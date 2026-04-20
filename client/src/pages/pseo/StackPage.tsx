@@ -63,7 +63,7 @@ export default function StackPage({ params }: { params: { slug: string } }) {
             description: stack.metaDescription,
             author: { "@type": "Organization", name: "PeptidePilot" },
             publisher: { "@type": "Organization", name: "PeptidePilot" },
-            mainEntityOfPage: `https://peptidepilot.me/stacks/${stack.slug}`,
+            mainEntityOfPage: `https://www.peptidepilot.me/stacks/${stack.slug}`,
           }),
         }}
       />

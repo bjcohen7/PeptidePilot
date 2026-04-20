@@ -14,14 +14,22 @@ interface SeoProps {
 
 function getSiteOrigin() {
   if (typeof window !== "undefined" && window.location.origin) return window.location.origin;
-  return import.meta.env.VITE_SITE_URL || "https://peptidepilot.me";
+  return ((import.meta as { env?: Record<string, string | undefined> }).env?.VITE_SITE_URL ||
+    (typeof process !== "undefined" ? process.env.VITE_SITE_URL : undefined) ||
+    "https://www.peptidepilot.me");
+}
+
+function normalizePath(path: string) {
+  if (!path || path === "/") return "/";
+  return path.replace(/\/+$/, "") || "/";
 }
 
 function absoluteUrl(path?: string) {
   const origin = getSiteOrigin().replace(/\/$/, "");
   if (!path) return origin;
   if (/^https?:\/\//i.test(path)) return path;
-  return `${origin}${path.startsWith("/") ? path : `/${path}`}`;
+  const normalized = normalizePath(path.startsWith("/") ? path : `/${path}`);
+  return `${origin}${normalized}`;
 }
 
 function upsertMeta(attribute: "name" | "property", value: string, content: string) {
@@ -67,9 +75,10 @@ export default function Seo({
   jsonLd,
 }: SeoProps) {
   useEffect(() => {
-    const canonical = absoluteUrl(path || (typeof window !== "undefined" ? window.location.pathname : "/"));
+    const canonicalPath = normalizePath(path || (typeof window !== "undefined" ? window.location.pathname : "/"));
+    const canonical = absoluteUrl(canonicalPath);
     const normalizedTitle = title.includes("PeptidePilot") ? title : `${title} | PeptidePilot`;
-    const normalizedImage = image ? absoluteUrl(image) : undefined;
+    const normalizedImage = absoluteUrl(image || "/apple-touch-icon.png");
     const normalizedJsonLd = Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : [];
 
     document.title = normalizedTitle;
@@ -81,7 +90,7 @@ export default function Seo({
     upsertMeta("property", "og:type", type);
     upsertMeta("property", "og:url", canonical);
     upsertMeta("property", "og:site_name", "PeptidePilot");
-    upsertMeta("name", "twitter:card", normalizedImage ? "summary_large_image" : "summary");
+    upsertMeta("name", "twitter:card", "summary");
     upsertMeta("name", "twitter:title", normalizedTitle);
     upsertMeta("name", "twitter:description", description);
 

@@ -121,7 +121,7 @@ export default function PeptideProfile({ params }: { params: { slug: string } })
             description: peptide.metaDescription,
             author: { "@type": "Organization", name: "PeptidePilot" },
             publisher: { "@type": "Organization", name: "PeptidePilot" },
-            mainEntityOfPage: `https://peptidepilot.me/peptides/${peptide.slug}`,
+            mainEntityOfPage: `https://www.peptidepilot.me/peptides/${peptide.slug}`,
           }),
         }}
       />

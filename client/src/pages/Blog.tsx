@@ -4,6 +4,7 @@ import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
 import { blogPosts } from "../../../shared/blog";
 
 const CATEGORIES = ["All", "Education", "Peptide Profiles", "Metabolic Health", "Sleep & Recovery", "Sourcing Guide", "Cognition"];
+const SITE_URL = "https://www.peptidepilot.me";
 
 export default function Blog() {
   return (
@@ -20,7 +21,7 @@ export default function Blog() {
             name: "PeptidePilot Learn",
             description:
               "Evidence-based peptide guides, profiles, and sourcing explainers from PeptidePilot.",
-            url: `${typeof window !== "undefined" ? window.location.origin : "https://peptidepilot.me"}/blog`,
+            url: `${SITE_URL}/blog`,
           },
           buildBreadcrumbJsonLd([
             { name: "Home", path: "/" },

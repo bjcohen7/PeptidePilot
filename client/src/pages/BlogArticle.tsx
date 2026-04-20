@@ -8,6 +8,8 @@ interface BlogArticleProps {
   params: { slug: string };
 }
 
+const SITE_URL = "https://www.peptidepilot.me";
+
 export default function BlogArticle({ params }: BlogArticleProps) {
   const article = getBlogPost(params.slug);
 
@@ -49,7 +51,7 @@ export default function BlogArticle({ params }: BlogArticleProps) {
               "@type": "Organization",
               name: "PeptidePilot",
             },
-            mainEntityOfPage: `${typeof window !== "undefined" ? window.location.origin : "https://peptidepilot.me"}/blog/${article.slug}`,
+            mainEntityOfPage: `${SITE_URL}/blog/${article.slug}`,
           },
           buildBreadcrumbJsonLd([
             { name: "Home", path: "/" },

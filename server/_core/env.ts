@@ -3,7 +3,7 @@ export const ENV = {
   cookieSecret: process.env.JWT_SECRET ?? "",
   databaseUrl: process.env.DATABASE_URL ?? "",
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
-  siteUrl: process.env.SITE_URL || process.env.VITE_SITE_URL || "https://peptidepilot.me",
+  siteUrl: process.env.SITE_URL || process.env.VITE_SITE_URL || "https://www.peptidepilot.me",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
   metaPixelId: process.env.VITE_META_PIXEL_ID || "26875589488702265",
   metaCapiToken: process.env.META_CAPI_TOKEN ?? "",

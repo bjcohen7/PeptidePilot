@@ -20,6 +20,8 @@ import {
 import { toast } from "sonner";
 import Seo from "@/components/Seo";
 
+const SITE_URL = "https://www.peptidepilot.me";
+
 const TRUST_BADGES = [
   { icon: ShieldCheck, label: "Independent & Unbiased" },
   { icon: FlaskConical, label: "Science-Backed" },
@@ -82,7 +84,7 @@ export default function Home() {
           name: "PeptidePilot",
           description:
             "Independent peptide research and personalized peptide matching based on your goals, biology, and lifestyle.",
-          url: `${typeof window !== "undefined" ? window.location.origin : "https://peptidepilot.me"}/`,
+          url: `${SITE_URL}/`,
         }}
       />
       {/* ── Hero ─────────────────────────────────────────────────── */}
