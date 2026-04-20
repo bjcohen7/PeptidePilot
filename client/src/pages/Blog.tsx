@@ -3,7 +3,7 @@ import { Clock } from "lucide-react";
 import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
 import { blogPosts } from "../../../shared/blog";
 
-const CATEGORIES = ["All", "Education", "Peptide Profiles", "Metabolic Health", "Sleep & Recovery", "Sourcing Guide", "Cognition"];
+const CATEGORIES = ["All", ...Array.from(new Set(blogPosts.map((post) => post.category)))];
 const SITE_URL = "https://www.peptidepilot.me";
 
 export default function Blog() {

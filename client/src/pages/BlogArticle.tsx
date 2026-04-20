@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { ArrowLeft, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
-import { getBlogPost } from "../../../shared/blog";
+import { getBlogPost } from "../../../shared/blog-content";
 
 interface BlogArticleProps {
   params: { slug: string };
@@ -89,22 +89,28 @@ export default function BlogArticle({ params }: BlogArticleProps) {
       <section className="py-14">
         <div className="container max-w-3xl">
           <div className="prose prose-slate max-w-none">
-            <p className="text-muted-foreground leading-relaxed mb-8 text-lg">{article.intro}</p>
-            {article.sections.map((section) => (
-              <div key={section.heading} className="mb-8">
-                <h2
-                  className="text-xl font-semibold text-foreground mt-8 mb-3"
-                  style={{ fontFamily: "'DM Serif Display', serif" }}
-                >
-                  {section.heading}
-                </h2>
-                {section.paragraphs.map((paragraph) => (
-                  <p key={paragraph} className="text-muted-foreground leading-relaxed mb-4">
-                    {paragraph}
-                  </p>
+            {"contentHtml" in article ? (
+              <div dangerouslySetInnerHTML={{ __html: article.contentHtml }} />
+            ) : (
+              <>
+                <p className="text-muted-foreground leading-relaxed mb-8 text-lg">{article.intro}</p>
+                {article.sections.map((section) => (
+                  <div key={section.heading} className="mb-8">
+                    <h2
+                      className="text-xl font-semibold text-foreground mt-8 mb-3"
+                      style={{ fontFamily: "'DM Serif Display', serif" }}
+                    >
+                      {section.heading}
+                    </h2>
+                    {section.paragraphs.map((paragraph) => (
+                      <p key={paragraph} className="text-muted-foreground leading-relaxed mb-4">
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
                 ))}
-              </div>
-            ))}
+              </>
+            )}
           </div>
 
           {/* CTA */}
