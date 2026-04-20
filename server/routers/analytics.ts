@@ -376,13 +376,13 @@ async function buildSessionTableRows(sessionRows: Array<typeof visitorSessions.$
 
   return sessionRows.map((session) => {
     const lead = session.leadId ? leadById.get(session.leadId) ?? null : null;
+    const affiliateClickCount = lead ? affiliateCountByLeadId.get(lead.id) ?? 0 : 0;
 
     return {
       ...session,
       lead: lead ? { ...lead } : null,
-      clickCount:
-        (clickCountBySessionId.get(session.id) ?? 0) +
-        (lead ? affiliateCountByLeadId.get(lead.id) ?? 0 : 0),
+      clickCount: clickCountBySessionId.get(session.id) ?? 0,
+      affiliateClickCount,
     };
   });
 }

@@ -39,12 +39,15 @@ function getEngagementScore(session: {
   pageViewCount: number;
   lead: unknown | null;
   clickCount?: number;
+  affiliateClickCount?: number;
   clicks?: Array<unknown>;
 }) {
   if (session.lead) return 100;
   const durationScore = Math.min(55, Math.round(session.totalDurationMs / 1000 / 6));
   const viewsScore = Math.min(30, session.pageViewCount * 6);
-  const clickEvents = session.clickCount ?? session.clicks?.length ?? 0;
+  const clickEvents =
+    (session.clickCount ?? session.clicks?.length ?? 0) +
+    (session.affiliateClickCount ?? 0);
   const clickScore = Math.min(15, clickEvents * 5);
   return Math.min(99, durationScore + viewsScore + clickScore);
 }
@@ -148,8 +151,7 @@ export default function InsightsOverview() {
                 <th className="px-4 py-3 font-medium">Source</th>
                 <th className="px-4 py-3 font-medium">Started</th>
                 <th className="px-4 py-3 font-medium">Duration</th>
-                <th className="px-4 py-3 font-medium">Views</th>
-                <th className="px-4 py-3 font-medium">Clicks</th>
+                <th className="px-4 py-3 font-medium">Affiliate Clicks</th>
                 <th className="px-4 py-3 font-medium">Engaged</th>
               </tr>
             </thead>
@@ -187,8 +189,7 @@ export default function InsightsOverview() {
                       {new Date(session.firstSeenAt).toLocaleString()}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{formatDuration(session.totalDurationMs)}</td>
-                    <td className="px-4 py-3 text-accent">{session.pageViewCount}</td>
-                    <td className="px-4 py-3 text-accent">{session.clickCount ?? 0}</td>
+                    <td className="px-4 py-3 text-accent">{session.affiliateClickCount ?? 0}</td>
                     <td className="px-4 py-3">
                       <span className={engagement >= 80 ? "text-emerald-700" : engagement >= 50 ? "text-amber-700" : "text-muted-foreground"}>
                         {engagement}%
