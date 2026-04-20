@@ -1,4 +1,4 @@
-import { Activity, ExternalLink, ListChecks, Mail, Search } from "lucide-react";
+import { Activity, Check, ExternalLink, ListChecks, Mail, Search, X } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 
@@ -133,7 +133,8 @@ export default function InsightsOverview() {
                 <th className="px-4 py-3 font-medium">Source</th>
                 <th className="px-4 py-3 font-medium">Started</th>
                 <th className="px-4 py-3 font-medium">Duration</th>
-                <th className="px-4 py-3 font-medium">Affiliate Clicks</th>
+                <th className="px-4 py-3 font-medium">Affiliate Click</th>
+                <th className="px-4 py-3 font-medium">Partner Clicked</th>
               </tr>
             </thead>
             <tbody>
@@ -169,7 +170,20 @@ export default function InsightsOverview() {
                       {new Date(session.firstSeenAt).toLocaleString()}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{formatDuration(session.totalDurationMs)}</td>
-                    <td className="px-4 py-3 text-accent">{session.affiliateClickCount ?? 0}</td>
+                    <td className="px-4 py-3">
+                      {session.affiliateClickCount ? (
+                        <span className="inline-flex items-center text-emerald-600" aria-label="Affiliate link clicked">
+                          <Check className="h-4 w-4" />
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center text-rose-600" aria-label="No affiliate link clicked">
+                          <X className="h-4 w-4" />
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {session.affiliateVendors?.length ? session.affiliateVendors.join(", ") : "—"}
+                    </td>
                   </tr>
                 );
               })}

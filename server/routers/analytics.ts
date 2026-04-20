@@ -369,20 +369,39 @@ async function buildSessionTableRows(sessionRows: Array<typeof visitorSessions.$
         .where(inArray(affiliateClicks.leadId, leadIds))
         .groupBy(affiliateClicks.leadId)
     : [];
+  const affiliateVendorRows = leadIds.length
+    ? await db
+        .select({
+          leadId: affiliateClicks.leadId,
+          vendor: affiliateClicks.vendor,
+        })
+        .from(affiliateClicks)
+        .where(inArray(affiliateClicks.leadId, leadIds))
+        .orderBy(desc(affiliateClicks.clickedAt))
+    : [];
 
   const leadById = new Map(sessionLeadRows.map((lead) => [lead.id, lead]));
   const clickCountBySessionId = new Map(clickCountRows.map((row) => [row.sessionId, Number(row.count ?? 0)]));
   const affiliateCountByLeadId = new Map(affiliateCountRows.map((row) => [row.leadId, Number(row.count ?? 0)]));
+  const affiliateVendorsByLeadId = new Map<string, string[]>();
+
+  affiliateVendorRows.forEach((row) => {
+    const current = affiliateVendorsByLeadId.get(row.leadId) ?? [];
+    if (!current.includes(row.vendor)) current.push(row.vendor);
+    affiliateVendorsByLeadId.set(row.leadId, current);
+  });
 
   return sessionRows.map((session) => {
     const lead = session.leadId ? leadById.get(session.leadId) ?? null : null;
     const affiliateClickCount = lead ? affiliateCountByLeadId.get(lead.id) ?? 0 : 0;
+    const affiliateVendors = lead ? affiliateVendorsByLeadId.get(lead.id) ?? [] : [];
 
     return {
       ...session,
       lead: lead ? { ...lead } : null,
       clickCount: clickCountBySessionId.get(session.id) ?? 0,
       affiliateClickCount,
+      affiliateVendors,
     };
   });
 }
