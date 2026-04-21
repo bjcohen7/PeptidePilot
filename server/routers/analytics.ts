@@ -448,6 +448,7 @@ export const analyticsRouter = router({
         totalLeads: 0,
         totalQuizStarts: 0,
         totalAffiliateClicks: 0,
+        leadsWithAffiliateClicks: 0,
         quizCompletionRate: 0,
         avgEngagementSeconds: 0,
         topReferrers: [],
@@ -478,6 +479,7 @@ export const analyticsRouter = router({
     const [affiliateClickStats] = await db
       .select({
         totalAffiliateClicks: sql<number>`count(*)`,
+        leadsWithAffiliateClicks: sql<number>`count(distinct ${affiliateClicks.leadId})`,
       })
       .from(affiliateClicks);
 
@@ -509,6 +511,7 @@ export const analyticsRouter = router({
       totalLeads,
       totalQuizStarts: Number(quizStartStats?.totalQuizStarts ?? 0),
       totalAffiliateClicks: Number(affiliateClickStats?.totalAffiliateClicks ?? 0),
+      leadsWithAffiliateClicks: Number(affiliateClickStats?.leadsWithAffiliateClicks ?? 0),
       totalClicks: Number(clickStats?.totalClicks ?? 0),
       quizCompletionRate: totalSessions ? Math.round((completedSessions / totalSessions) * 100) : 0,
       avgEngagementSeconds: totalSessions ? Math.round(totalDurationMs / totalSessions / 1000) : 0,
@@ -553,4 +556,57 @@ export const analyticsRouter = router({
       return fallback[0] ?? null;
     }
   }),
+
+  deleteSession: adminProcedure
+    .input(z.object({ sessionId: z.string().min(8).max(64) }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database is not available.");
+      }
+
+      const sessions = await db
+        .select()
+        .from(visitorSessions)
+        .where(eq(visitorSessions.id, input.sessionId))
+        .limit(1);
+
+      const session = sessions[0];
+      if (!session) {
+        throw new Error("Session not found.");
+      }
+
+      const leadIds = new Set<string>();
+      if (session.leadId) leadIds.add(session.leadId);
+
+      try {
+        const linkedLeads = await db
+          .select({ id: leads.id })
+          .from(leads)
+          .where(eq(leads.sessionId, input.sessionId));
+        linkedLeads.forEach((lead) => leadIds.add(lead.id));
+      } catch (error) {
+        console.warn("[Analytics] Delete session fallback without leads.sessionId linkage:", error);
+      }
+
+      const leadIdList = Array.from(leadIds);
+
+      await db.transaction(async (tx) => {
+        await tx.delete(pageVisits).where(eq(pageVisits.sessionId, input.sessionId));
+        await tx.delete(clickEvents).where(eq(clickEvents.sessionId, input.sessionId));
+
+        if (leadIdList.length) {
+          await tx.delete(affiliateClicks).where(inArray(affiliateClicks.leadId, leadIdList));
+          await tx.delete(clickEvents).where(inArray(clickEvents.leadId, leadIdList));
+          await tx.delete(leads).where(inArray(leads.id, leadIdList));
+        }
+
+        await tx.delete(visitorSessions).where(eq(visitorSessions.id, input.sessionId));
+      });
+
+      return {
+        deletedSessionId: input.sessionId,
+        deletedLeadCount: leadIdList.length,
+      };
+    }),
 });

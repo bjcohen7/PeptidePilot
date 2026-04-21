@@ -1,4 +1,5 @@
-import { Activity, Check, ExternalLink, ListChecks, Mail, Search, X } from "lucide-react";
+import { Activity, Check, ExternalLink, ListChecks, Mail, Search, Sparkles, Trash2, X } from "lucide-react";
+import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 
@@ -40,6 +41,11 @@ function statusPill(status: string) {
   return "bg-amber-50 text-amber-800 border-amber-200";
 }
 
+function formatRate(numerator: number, denominator: number) {
+  if (!denominator) return "0%";
+  return `${Math.round((numerator / denominator) * 100)}%`;
+}
+
 export default function InsightsOverview() {
   const utils = trpc.useUtils();
   const summary = trpc.analytics.summary.useQuery(undefined, {
@@ -53,6 +59,41 @@ export default function InsightsOverview() {
     refetchInterval: 10000,
   });
   const [, setLocation] = useLocation();
+  const deleteSession = trpc.analytics.deleteSession.useMutation({
+    onSuccess: async ({ deletedLeadCount }) => {
+      toast.success(deletedLeadCount ? "Session and linked lead deleted." : "Session deleted.");
+      await Promise.all([
+        utils.analytics.summary.invalidate(),
+        utils.analytics.recentSessions.invalidate(),
+      ]);
+    },
+    onError: (error) => toast.error(error.message),
+  });
+
+  const totalSessions = summary.data?.totalSessions ?? 0;
+  const totalQuizStarts = summary.data?.totalQuizStarts ?? 0;
+  const totalLeads = summary.data?.totalLeads ?? 0;
+  const totalAffiliateClicks = summary.data?.totalAffiliateClicks ?? 0;
+  const leadsWithAffiliateClicks = summary.data?.leadsWithAffiliateClicks ?? 0;
+  const topReferrer = summary.data?.topReferrers?.[0];
+
+  const assistantNotes = [
+    `${formatRate(totalQuizStarts, totalSessions)} of visitors start the quiz (${totalQuizStarts}/${totalSessions}).`,
+    `${formatRate(totalLeads, totalQuizStarts)} of quiz starters become leads (${totalLeads}/${totalQuizStarts || 0}).`,
+    `${formatRate(leadsWithAffiliateClicks, totalLeads)} of leads click at least one affiliate partner (${leadsWithAffiliateClicks}/${totalLeads || 0}).`,
+    totalAffiliateClicks
+      ? `You have ${totalAffiliateClicks} total affiliate click${totalAffiliateClicks === 1 ? "" : "s"} across all sessions.`
+      : "No affiliate partner clicks yet, so this is the next behavior worth watching.",
+  ];
+
+  const opportunityNote =
+    totalQuizStarts && totalLeads < totalQuizStarts
+      ? "Biggest opportunity right now: improve the step between quiz completion and email submit."
+      : totalLeads && !leadsWithAffiliateClicks
+        ? "Leads are coming in, but nobody is clicking through to partners yet. Results-page CTA clarity is the first thing I’d tune."
+        : totalLeads && leadsWithAffiliateClicks
+          ? "The funnel is moving end to end. Next useful question is which referrers and partners produce the best-quality leads."
+          : "Once a little more live traffic comes in, this panel will start telling a much clearer conversion story.";
 
   const cards = [
     {
@@ -115,6 +156,37 @@ export default function InsightsOverview() {
       </div>
 
       <div className={cardClass()}>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
+              <Sparkles className="h-4 w-4 text-accent" />
+              Conversion Assistant
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Plain-English readout of how visitors move from landing to quiz to lead to partner click.
+            </p>
+          </div>
+          {topReferrer ? (
+            <div className="rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground">
+              Top referrer: <span className="font-medium text-foreground">{formatReferrer(topReferrer.referrer)}</span>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          {assistantNotes.map((note) => (
+            <div key={note} className="rounded-lg border border-border px-4 py-3 text-sm text-foreground">
+              {note}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
+          {opportunityNote}
+        </div>
+      </div>
+
+      <div className={cardClass()}>
         <div className="mb-4">
           <h2 className="text-lg font-semibold">Session Table</h2>
           <p className="text-sm text-muted-foreground">
@@ -136,6 +208,7 @@ export default function InsightsOverview() {
                 <th className="px-4 py-3 font-medium">Duration</th>
                 <th className="px-4 py-3 font-medium">Affiliate Click</th>
                 <th className="px-4 py-3 font-medium">Partner Clicked</th>
+                <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -190,6 +263,24 @@ export default function InsightsOverview() {
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {session.affiliateVendors?.length ? session.affiliateVendors.join(", ") : "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          const confirmed = window.confirm(
+                            "Delete this session and any linked lead, clicks, visits, and affiliate records? This can’t be undone.",
+                          );
+                          if (!confirmed) return;
+                          deleteSession.mutate({ sessionId: session.id });
+                        }}
+                        disabled={deleteSession.isPending}
+                        className="inline-flex items-center gap-2 rounded-md border border-rose-200 px-2.5 py-1.5 text-xs font-medium text-rose-700 transition-colors hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 );

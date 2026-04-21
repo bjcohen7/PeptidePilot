@@ -1,5 +1,6 @@
-import { Activity, ArrowLeft, Clock3, ExternalLink, Mail, MousePointerClick, Search, Timer } from "lucide-react";
-import { Link } from "wouter";
+import { Activity, ArrowLeft, Clock3, ExternalLink, Mail, MousePointerClick, Search, Timer, Trash2 } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 
 function cardClass() {
@@ -103,12 +104,26 @@ function FallbackSessionDetail({ session }: { session: any }) {
 }
 
 export default function SessionDetail({ sessionId }: Props) {
+  const utils = trpc.useUtils();
+  const [, setLocation] = useLocation();
   const query = trpc.analytics.sessionById.useQuery({ sessionId }, { retry: false, refetchOnWindowFocus: false });
   const recentSessions = trpc.analytics.recentSessions.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: false,
   });
   const fallbackSession = (recentSessions.data ?? []).find((session) => session.id === sessionId);
+  const deleteSession = trpc.analytics.deleteSession.useMutation({
+    onSuccess: async ({ deletedLeadCount }) => {
+      toast.success(deletedLeadCount ? "Session and linked lead deleted." : "Session deleted.");
+      await Promise.all([
+        utils.analytics.summary.invalidate(),
+        utils.analytics.recentSessions.invalidate(),
+        utils.analytics.sessionById.invalidate({ sessionId }),
+      ]);
+      setLocation("/admin/sessions");
+    },
+    onError: (error) => toast.error(error.message),
+  });
 
   if (query.isLoading && !fallbackSession) {
     return <div className="text-sm text-muted-foreground">Loading session…</div>;
@@ -167,6 +182,14 @@ export default function SessionDetail({ sessionId }: Props) {
     { label: "Lead captured", complete: Boolean(session.lead), timestamp: session.lead?.createdAt ?? null },
   ];
 
+  const handleDelete = () => {
+    const confirmed = window.confirm(
+      "Delete this session and any linked lead, clicks, visits, and affiliate records? This can’t be undone.",
+    );
+    if (!confirmed) return;
+    deleteSession.mutate({ sessionId });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
@@ -178,9 +201,20 @@ export default function SessionDetail({ sessionId }: Props) {
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">Session Detail</h1>
           <p className="mt-2 text-sm text-muted-foreground font-mono">{session.id}</p>
         </div>
-        <span className={`inline-flex rounded-full border px-3 py-1.5 text-xs font-medium ${statusPill(status)}`}>
-          {status}
-        </span>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleteSession.isPending}
+            className="inline-flex items-center gap-2 rounded-md border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-700 transition-colors hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete Session
+          </button>
+          <span className={`inline-flex rounded-full border px-3 py-1.5 text-xs font-medium ${statusPill(status)}`}>
+            {status}
+          </span>
+        </div>
       </div>
 
       <div className={cardClass()}>
