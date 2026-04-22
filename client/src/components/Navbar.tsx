@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { Menu, X, ArrowRight, ChevronDown } from "lucide-react";
 import { pseoSections } from "@/data/pseo";
+import { preloadQuizEntry } from "@/lib/preloadQuiz";
 
 const NAV_LINKS = [
   { href: "/about", label: "About" },
@@ -84,6 +85,9 @@ export default function Navbar() {
               <Button
                 size="sm"
                 className="bg-brand-gradient text-white hover:opacity-90 transition-opacity font-semibold shadow-sm"
+                onMouseEnter={() => void preloadQuizEntry()}
+                onFocus={() => void preloadQuizEntry()}
+                onTouchStart={() => void preloadQuizEntry()}
               >
                 Take the Quiz
               </Button>
@@ -139,6 +143,9 @@ export default function Navbar() {
                 <Button
                   size="lg"
                   className="w-full bg-brand-gradient text-white hover:opacity-90 font-semibold"
+                  onMouseEnter={() => void preloadQuizEntry()}
+                  onFocus={() => void preloadQuizEntry()}
+                  onTouchStart={() => void preloadQuizEntry()}
                 >
                   Take the Free Quiz
                   <ArrowRight className="ml-2 w-4 h-4" />
