@@ -10,12 +10,14 @@ import {
   PRIMARY_GOAL_OPTIONS,
   QUIZ_INDEX,
   QUIZ_QUESTIONS,
+  toReturningMatchSummary,
 } from "../../shared/scoring";
 import { nanoid } from "nanoid";
 import { notifyOwner } from "../_core/notification";
 import { eq, sql } from "drizzle-orm";
 import { sendMetaServerEvents } from "../_core/meta";
 import { ENV } from "../_core/env";
+import { randomBytes } from "crypto";
 
 const TIER1_WEBHOOK = process.env.WEBHOOK_TIER1_URL;
 const TIER2_WEBHOOK = process.env.WEBHOOK_TIER2_URL;
@@ -35,7 +37,23 @@ async function sendWebhook(url: string | undefined, payload: object) {
 }
 
 async function insertLead(
-  values: Omit<typeof leads.$inferInsert, "sessionId">
+  values: Pick<
+    typeof leads.$inferInsert,
+    | "id"
+    | "email"
+    | "sessionId"
+    | "returningToken"
+    | "tokenExpiresAt"
+    | "ageRange"
+    | "primaryGoal"
+    | "budget"
+    | "topPeptideMatch"
+    | "tier"
+    | "consentGiven"
+    | "consentTimestamp"
+    | "ipAddress"
+    | "rawQuizData"
+  >
 ) {
   const db = await getDb();
   if (!db) return false;
@@ -43,6 +61,9 @@ async function insertLead(
     insert into leads (
       id,
       email,
+      sessionId,
+      returningToken,
+      tokenExpiresAt,
       ageRange,
       primaryGoal,
       budget,
@@ -55,6 +76,9 @@ async function insertLead(
     ) values (
       ${values.id},
       ${values.email},
+      ${values.sessionId ?? null},
+      ${values.returningToken ?? null},
+      ${values.tokenExpiresAt ?? null},
       ${values.ageRange},
       ${values.primaryGoal},
       ${values.budget},
@@ -69,7 +93,61 @@ async function insertLead(
   return true;
 }
 
+function createReturningToken() {
+  return randomBytes(32).toString("hex");
+}
+
+function createTokenExpiry() {
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 180);
+  return expiresAt;
+}
+
 export const quizRouter = router({
+  getReturningResultsByToken: publicProcedure
+    .input(
+      z.object({
+        token: z.string().min(32).max(128),
+      }),
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database not available.");
+      }
+
+      const rows = await db
+        .select()
+        .from(leads)
+        .where(eq(leads.returningToken, input.token))
+        .limit(1);
+
+      const lead = rows[0];
+      if (!lead) {
+        throw new Error("Returning results not found.");
+      }
+
+      if (lead.tokenExpiresAt && lead.tokenExpiresAt.getTime() < Date.now()) {
+        throw new Error("Returning results expired.");
+      }
+
+      const answers = Array.isArray(lead.rawQuizData)
+        ? lead.rawQuizData.map((value) =>
+            typeof value === "number" && Number.isFinite(value) ? value : -1,
+          )
+        : [];
+      const topMatches = calculateMatches(answers)
+        .slice(0, 5)
+        .map(toReturningMatchSummary);
+
+      return {
+        token: lead.returningToken,
+        leadId: lead.id,
+        createdAt: lead.createdAt,
+        topMatches,
+      };
+    }),
+
   submitQuiz: publicProcedure
     .input(
       z.object({
@@ -119,6 +197,8 @@ export const quizRouter = router({
 
       const leadId = nanoid();
       const consentTimestamp = new Date();
+      const returningToken = createReturningToken();
+      const tokenExpiresAt = createTokenExpiry();
 
       // Store lead in database
       const db = await getDb();
@@ -126,6 +206,9 @@ export const quizRouter = router({
         await insertLead({
           id: leadId,
           email,
+          sessionId: sessionId ?? undefined,
+          returningToken,
+          tokenExpiresAt,
           ageRange,
           primaryGoal,
           budget,
@@ -167,6 +250,7 @@ export const quizRouter = router({
       const webhookPayload = {
         leadId,
         email,
+        returningToken,
         ageRange,
         primaryGoal,
         budget,
@@ -244,6 +328,8 @@ export const quizRouter = router({
         status: "success" as const,
         leadId,
         topMatches,
+        returningToken,
+        returningResults: matches.slice(0, 5).map(toReturningMatchSummary),
       };
     }),
 
