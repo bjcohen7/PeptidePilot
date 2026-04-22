@@ -64,6 +64,8 @@ Current status:
 - TypeScript check passes.
 - Test suite passes: 23 tests.
 - Production build passes.
+- Railway rebuilds can be safely retriggered from a fresh `main` commit when the platform does not expose a manual redeploy action.
+- Build verification should use the latest `main` commit when recent Railway attempts fail on stale snapshots.
 
 ## Migration Notes
 
