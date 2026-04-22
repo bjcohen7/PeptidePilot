@@ -1,54 +1,161 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
-import type { inferRouterOutputs } from "@trpc/server";
-import type { AppRouter } from "../../../server/routers";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
+import {
+  RETURNING_TOKEN_KEY,
+  resolveReturningToken,
+  shouldClearReturningToken,
+} from "@/lib/returningToken";
+import type { ReturningMatchSummary } from "../../../shared/scoring";
 
-type RouterOutputs = inferRouterOutputs<AppRouter>;
-export type ReturningUserPayload = RouterOutputs["quiz"]["getReturningResultsByToken"];
-
-export interface UserSessionState {
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  token: string | null;
-  results: ReturningUserPayload | null;
+export type ReturningSession = {
+  token: string;
+  leadId: string;
+  createdAt: Date | string;
+  topMatches: ReturningMatchSummary[];
   justCompletedQuiz: boolean;
-  error: string | null;
-}
-
-interface UserSessionContextType extends UserSessionState {
-  setSession: (partial: Partial<UserSessionState>) => void;
-  resetSession: () => void;
-}
-
-const defaultState: UserSessionState = {
-  isAuthenticated: false,
-  isLoading: false,
-  token: null,
-  results: null,
-  justCompletedQuiz: false,
-  error: null,
 };
 
-const UserSessionContext = createContext<UserSessionContextType | null>(null);
+type UserSessionContextValue = {
+  session: ReturningSession | null;
+  isLoading: boolean;
+  hasSettledHydration: boolean;
+  seedReturningSession: (session: ReturningSession) => void;
+  clearReturningSession: () => void;
+};
 
-export function UserSessionProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<UserSessionState>(defaultState);
+const UserSessionContext = createContext<UserSessionContextValue | null>(null);
 
-  const value = useMemo<UserSessionContextType>(
+function getTokenFromUrl() {
+  if (typeof window === "undefined") return null;
+
+  const url = new URL(window.location.href);
+  return url.searchParams.get("token");
+}
+
+function clearTokenFromUrl() {
+  if (typeof window === "undefined") return;
+
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has("token")) return;
+
+  url.searchParams.delete("token");
+  const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+  window.history.replaceState({}, "", nextUrl);
+}
+
+export function UserSessionProvider({ children }: { children: React.ReactNode }) {
+  const [resolvedToken, setResolvedToken] = useState<string | null>(null);
+  const [session, setSession] = useState<ReturningSession | null>(null);
+  const [hasInitialized, setHasInitialized] = useState(false);
+  const [hasSettledHydration, setHasSettledHydration] = useState(false);
+  const [urlToken, setUrlToken] = useState<string | null>(null);
+
+  const returningResults = trpc.quiz.getReturningResultsByToken.useQuery(
+    { token: resolvedToken ?? "" },
+    {
+      enabled: Boolean(resolvedToken),
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const existingToken = window.localStorage.getItem(RETURNING_TOKEN_KEY);
+    const urlToken = getTokenFromUrl();
+    const nextToken = resolveReturningToken(urlToken, existingToken);
+
+    if (nextToken.shouldToastReplacement) {
+      toast.success("Updated your saved results from the latest email link.");
+    }
+
+    if (nextToken.shouldPersistUrlToken && urlToken) {
+      window.localStorage.setItem(RETURNING_TOKEN_KEY, urlToken);
+    }
+
+    setUrlToken(urlToken);
+    setResolvedToken(nextToken.activeToken);
+    setHasInitialized(true);
+    setHasSettledHydration(!nextToken.activeToken);
+  }, []);
+
+  useEffect(() => {
+    if (!returningResults.data || !resolvedToken) return;
+
+    setSession({
+      token: resolvedToken,
+      leadId: returningResults.data.leadId,
+      createdAt: returningResults.data.createdAt,
+      topMatches: returningResults.data.topMatches,
+      justCompletedQuiz: false,
+    });
+
+    if (urlToken && resolvedToken === urlToken) {
+      clearTokenFromUrl();
+      setUrlToken(null);
+    }
+
+    setHasSettledHydration(true);
+  }, [resolvedToken, returningResults.data, urlToken]);
+
+  useEffect(() => {
+    if (!returningResults.error) return;
+
+    if (!shouldClearReturningToken(returningResults.error)) {
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(RETURNING_TOKEN_KEY);
+    }
+
+    if (urlToken && resolvedToken === urlToken) {
+      clearTokenFromUrl();
+      setUrlToken(null);
+    }
+
+    setResolvedToken(null);
+    setSession(null);
+    setHasSettledHydration(true);
+  }, [resolvedToken, returningResults.error, urlToken]);
+
+  const value = useMemo<UserSessionContextValue>(
     () => ({
-      ...state,
-      setSession: (partial) => setState((current) => ({ ...current, ...partial })),
-      resetSession: () => setState(defaultState),
+      session,
+      isLoading: !hasInitialized || (Boolean(resolvedToken) && !hasSettledHydration),
+      hasSettledHydration,
+      seedReturningSession(nextSession) {
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(RETURNING_TOKEN_KEY, nextSession.token);
+        }
+
+        setResolvedToken(nextSession.token);
+        setSession(nextSession);
+        setHasSettledHydration(true);
+      },
+      clearReturningSession() {
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem(RETURNING_TOKEN_KEY);
+        }
+
+        setResolvedToken(null);
+        setUrlToken(null);
+        setSession(null);
+        setHasSettledHydration(true);
+      },
     }),
-    [state],
+    [hasInitialized, hasSettledHydration, resolvedToken, session],
   );
 
   return <UserSessionContext.Provider value={value}>{children}</UserSessionContext.Provider>;
 }
 
-export function useUserSession() {
+export function useReturningSession() {
   const context = useContext(UserSessionContext);
   if (!context) {
-    throw new Error("useUserSession must be used within UserSessionProvider");
+    throw new Error("useReturningSession must be used within UserSessionProvider");
   }
 
   return context;
