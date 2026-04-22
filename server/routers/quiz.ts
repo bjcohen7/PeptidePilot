@@ -44,44 +44,55 @@ async function sendWebhook(url: string | undefined, payload: object) {
 }
 
 async function insertLead(
-  values: Pick<
-    typeof leads.$inferInsert,
-    | "id"
-    | "email"
-    | "sessionId"
-    | "returningToken"
-    | "tokenExpiresAt"
-    | "ageRange"
-    | "primaryGoal"
-    | "budget"
-    | "topPeptideMatch"
-    | "tier"
-    | "consentGiven"
-    | "consentTimestamp"
-    | "ipAddress"
-    | "rawQuizData"
-  >
+  values: Omit<typeof leads.$inferInsert, "sessionId" | "returningToken" | "tokenExpiresAt">
 ) {
   const db = await getDb();
   if (!db) return false;
-
-  await db.insert(leads).values({
-    id: values.id,
-    email: values.email,
-    sessionId: values.sessionId ?? null,
-    returningToken: values.returningToken ?? null,
-    tokenExpiresAt: values.tokenExpiresAt ?? null,
-    ageRange: values.ageRange,
-    primaryGoal: values.primaryGoal,
-    budget: values.budget,
-    topPeptideMatch: values.topPeptideMatch,
-    tier: values.tier,
-    consentGiven: values.consentGiven,
-    consentTimestamp: values.consentTimestamp,
-    ipAddress: values.ipAddress,
-    rawQuizData: values.rawQuizData,
-  });
+  await db.execute(sql`
+    insert into leads (
+      id,
+      email,
+      ageRange,
+      primaryGoal,
+      budget,
+      topPeptideMatch,
+      tier,
+      consentGiven,
+      consentTimestamp,
+      ipAddress,
+      rawQuizData
+    ) values (
+      ${values.id},
+      ${values.email},
+      ${values.ageRange},
+      ${values.primaryGoal},
+      ${values.budget},
+      ${values.topPeptideMatch},
+      ${values.tier},
+      ${values.consentGiven},
+      ${values.consentTimestamp},
+      ${values.ipAddress},
+      ${JSON.stringify(values.rawQuizData)}
+    )
+  `);
   return true;
+}
+
+async function generateAndStoreReturningToken(leadId: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const returningToken = createReturningToken();
+  const tokenExpiresAt = createTokenExpiry();
+  try {
+    await db
+      .update(leads)
+      .set({ returningToken, tokenExpiresAt })
+      .where(eq(leads.id, leadId));
+  } catch (error) {
+    console.error("[ReturningUser] Failed to store token:", error);
+    return null;
+  }
+  return returningToken;
 }
 
 function createReturningToken() {
@@ -263,17 +274,12 @@ export const quizRouter = router({
 
       const leadId = nanoid();
       const consentTimestamp = new Date();
-      const returningToken = createReturningToken();
-      const tokenExpiresAt = createTokenExpiry();
 
       const db = await getDb();
       if (db) {
         await insertLead({
           id: leadId,
           email,
-          sessionId: sessionId ?? undefined,
-          returningToken,
-          tokenExpiresAt,
           ageRange,
           primaryGoal,
           budget,
@@ -284,6 +290,15 @@ export const quizRouter = router({
           ipAddress,
           rawQuizData: answers,
         });
+
+        // Update sessionId separately
+        if (sessionId) {
+          try {
+            await db.update(leads).set({ sessionId }).where(eq(leads.id, leadId));
+          } catch (e) {
+            console.error("[submitQuiz] Failed to set sessionId:", e);
+          }
+        }
 
         if (sessionId) {
           const existingSession = await db
@@ -309,6 +324,14 @@ export const quizRouter = router({
             });
           }
         }
+      }
+
+      // Generate and store returning token separately (two-step to avoid schema mismatch)
+      let returningToken: string | null = null;
+      try {
+        returningToken = await generateAndStoreReturningToken(leadId);
+      } catch (error) {
+        console.error("[ReturningUser] Failed to generate/store token:", error);
       }
 
       const webhookPayload = {
