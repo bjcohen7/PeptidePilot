@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
-import { getDb } from "../db";
+import { ensureAffiliateWorkspaceSchema, getDb } from "../db";
 import { leads, affiliateClicks, visitorSessions } from "../../drizzle/schema";
 import {
   AGE_RANGE_OPTIONS,
@@ -10,12 +10,14 @@ import {
   PRIMARY_GOAL_OPTIONS,
   QUIZ_INDEX,
   QUIZ_QUESTIONS,
+  toReturningMatchSummary,
 } from "../../shared/scoring";
 import { nanoid } from "nanoid";
 import { notifyOwner } from "../_core/notification";
 import { eq, sql } from "drizzle-orm";
 import { sendMetaServerEvents } from "../_core/meta";
 import { ENV } from "../_core/env";
+import { randomBytes } from "crypto";
 
 const TIER1_WEBHOOK = process.env.WEBHOOK_TIER1_URL;
 const TIER2_WEBHOOK = process.env.WEBHOOK_TIER2_URL;
@@ -35,41 +37,122 @@ async function sendWebhook(url: string | undefined, payload: object) {
 }
 
 async function insertLead(
-  values: Omit<typeof leads.$inferInsert, "sessionId">
+  values: Pick<
+    typeof leads.$inferInsert,
+    | "id"
+    | "email"
+    | "sessionId"
+    | "returningToken"
+    | "tokenExpiresAt"
+    | "ageRange"
+    | "primaryGoal"
+    | "budget"
+    | "topPeptideMatch"
+    | "tier"
+    | "consentGiven"
+    | "consentTimestamp"
+    | "ipAddress"
+    | "rawQuizData"
+  >
 ) {
   const db = await getDb();
   if (!db) return false;
-  await db.execute(sql`
-    insert into leads (
-      id,
-      email,
-      ageRange,
-      primaryGoal,
-      budget,
-      topPeptideMatch,
-      tier,
-      consentGiven,
-      consentTimestamp,
-      ipAddress,
-      rawQuizData
-    ) values (
-      ${values.id},
-      ${values.email},
-      ${values.ageRange},
-      ${values.primaryGoal},
-      ${values.budget},
-      ${values.topPeptideMatch},
-      ${values.tier},
-      ${values.consentGiven},
-      ${values.consentTimestamp},
-      ${values.ipAddress},
-      ${JSON.stringify(values.rawQuizData)}
-    )
-  `);
-  return true;
+
+  const result = await db.execute(sql.raw("SHOW COLUMNS FROM leads"));
+  const rows = Array.isArray(result) ? result : ((result as any).rows ?? []);
+  const availableColumns = new Set(
+    rows
+      .map((row: Record<string, unknown>) => row.Field)
+      .filter((value: unknown): value is string => typeof value === "string"),
+  );
+
+  const insertValues: Record<string, unknown> = {
+    id: values.id,
+    email: values.email,
+    ageRange: values.ageRange,
+    primaryGoal: values.primaryGoal,
+    budget: values.budget,
+    topPeptideMatch: values.topPeptideMatch,
+    tier: values.tier,
+    consentGiven: values.consentGiven,
+    consentTimestamp: values.consentTimestamp,
+    ipAddress: values.ipAddress,
+    rawQuizData: values.rawQuizData,
+  };
+
+  if (availableColumns.has("sessionId")) {
+    insertValues.sessionId = values.sessionId ?? null;
+  }
+
+  if (availableColumns.has("returningToken")) {
+    insertValues.returningToken = values.returningToken ?? null;
+  }
+
+  if (availableColumns.has("tokenExpiresAt")) {
+    insertValues.tokenExpiresAt = values.tokenExpiresAt ?? null;
+  }
+
+  await db.insert(leads).values(insertValues as typeof leads.$inferInsert);
+  return availableColumns.has("returningToken") && availableColumns.has("tokenExpiresAt");
+}
+
+function createReturningToken() {
+  return randomBytes(32).toString("hex");
+}
+
+function createTokenExpiry() {
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 180);
+  return expiresAt;
 }
 
 export const quizRouter = router({
+  getReturningResultsByToken: publicProcedure
+    .input(
+      z.object({
+        token: z.string().min(32).max(128),
+      }),
+    )
+    .query(async ({ input }) => {
+      await ensureAffiliateWorkspaceSchema();
+
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database not available.");
+      }
+
+      const rows = await db
+        .select()
+        .from(leads)
+        .where(eq(leads.returningToken, input.token))
+        .limit(1);
+
+      const lead = rows[0];
+      if (!lead) {
+        throw new Error("Returning results not found.");
+      }
+
+      if (lead.tokenExpiresAt && lead.tokenExpiresAt.getTime() < Date.now()) {
+        throw new Error("Returning results expired.");
+      }
+
+      const answers = Array.isArray(lead.rawQuizData)
+        ? lead.rawQuizData.map((value) =>
+            typeof value === "number" && Number.isFinite(value) ? value : -1,
+          )
+        : [];
+      const topMatches = calculateMatches(answers)
+        .slice(0, 5)
+        .map(toReturningMatchSummary);
+
+      return {
+        token: lead.returningToken,
+        leadId: lead.id,
+        createdAt: lead.createdAt,
+        topMatches,
+      };
+    }),
+
   submitQuiz: publicProcedure
     .input(
       z.object({
@@ -97,12 +180,11 @@ export const quizRouter = router({
         throw new Error("Consent is required to submit.");
       }
 
-      // Run scoring algorithm
+      await ensureAffiliateWorkspaceSchema();
+
       const matches = calculateMatches(answers);
       const topMatches = matches.slice(0, 5).map((m) => m.peptide.id);
       const topPeptideMatch = topMatches[0] ?? "unknown";
-
-      // Determine tier
       const tier = determineTier(answers);
 
       const ageRange = AGE_RANGE_OPTIONS[answers[QUIZ_INDEX.AGE_RANGE] ?? -1] ?? "unknown";
@@ -111,7 +193,6 @@ export const quizRouter = router({
       const budget = BUDGET_OPTIONS[answers[QUIZ_INDEX.BUDGET] ?? -1] ?? "unknown";
       const isGlp1Lead = topPeptideMatch === "semaglutide";
 
-      // Get IP address
       const ipAddress =
         (ctx.req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
         (ctx.req.socket as { remoteAddress?: string })?.remoteAddress ||
@@ -119,13 +200,17 @@ export const quizRouter = router({
 
       const leadId = nanoid();
       const consentTimestamp = new Date();
+      const returningToken = createReturningToken();
+      const tokenExpiresAt = createTokenExpiry();
 
-      // Store lead in database
       const db = await getDb();
       if (db) {
         await insertLead({
           id: leadId,
           email,
+          sessionId: sessionId ?? undefined,
+          returningToken,
+          tokenExpiresAt,
           ageRange,
           primaryGoal,
           budget,
@@ -163,10 +248,10 @@ export const quizRouter = router({
         }
       }
 
-      // Build webhook payload
       const webhookPayload = {
         leadId,
         email,
+        returningToken,
         ageRange,
         primaryGoal,
         budget,
@@ -225,7 +310,6 @@ export const quizRouter = router({
         },
       ]);
 
-      // Route to appropriate webhook based on tier
       if (tier === 1) {
         await sendWebhook(TIER1_WEBHOOK, webhookPayload);
       } else if (tier === 2) {
@@ -234,7 +318,6 @@ export const quizRouter = router({
         await sendWebhook(TIER3_WEBHOOK, webhookPayload);
       }
 
-      // Notify owner of new lead
       await notifyOwner({
         title: `New PeptidePilot Lead — Tier ${tier}`,
         content: `Email: ${email}\nTop Match: ${topPeptideMatch}\nBudget: ${budget}\nAge: ${ageRange}`,
@@ -244,6 +327,8 @@ export const quizRouter = router({
         status: "success" as const,
         leadId,
         topMatches,
+        returningToken,
+        returningResults: matches.slice(0, 5).map(toReturningMatchSummary),
       };
     }),
 
