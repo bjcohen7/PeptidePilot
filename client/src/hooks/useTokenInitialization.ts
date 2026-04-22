@@ -17,10 +17,42 @@ type TelemetryPayload = {
   reason?: string | null;
 };
 
+function getUrlToken() {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get("token");
+}
+
+function clearUrlToken() {
+  if (typeof window === "undefined") return;
+
+  const searchParams = new URLSearchParams(window.location.search);
+  if (!searchParams.has("token")) return;
+
+  searchParams.delete("token");
+  const nextSearch = searchParams.toString();
+  const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`;
+  window.history.replaceState({}, "", nextUrl);
+}
+
+function getErrorCode(error: unknown) {
+  if (!error || typeof error !== "object") return null;
+
+  const candidate = error as {
+    data?: { code?: string };
+    shape?: { data?: { code?: string } };
+  };
+
+  return candidate.data?.code ?? candidate.shape?.data?.code ?? null;
+}
+
 export function useTokenInitialization() {
   const { setSession, resetSession } = useUserSession();
   const hasInitializedRef = useRef(false);
+  const hasCandidateToken =
+    typeof window !== "undefined" &&
+    Boolean(getUrlToken() || window.localStorage.getItem(TOKEN_STORAGE_KEY));
   const flagsQuery = trpc.config.getFeatureFlags.useQuery(undefined, {
+    enabled: hasCandidateToken,
     staleTime: Infinity,
     retry: false,
     refetchOnWindowFocus: false,
@@ -30,6 +62,12 @@ export function useTokenInitialization() {
 
   useEffect(() => {
     if (hasInitializedRef.current) return;
+
+    if (!hasCandidateToken) {
+      hasInitializedRef.current = true;
+      return;
+    }
+
     if (flagsQuery.isLoading) return;
 
     if (flagsQuery.error || !flagsQuery.data?.ENABLE_RETURNING_USER_RECOGNITION) {
@@ -58,8 +96,7 @@ export function useTokenInitialization() {
     };
 
     const initialize = async () => {
-      const searchParams = new URLSearchParams(window.location.search);
-      const urlToken = searchParams.get("token");
+      const urlToken = getUrlToken();
       const localToken = window.localStorage.getItem(TOKEN_STORAGE_KEY);
 
       let activeToken = localToken;
@@ -77,10 +114,6 @@ export function useTokenInitialization() {
 
         activeToken = urlToken;
         tokenSource = "url";
-        searchParams.delete("token");
-        const nextSearch = searchParams.toString();
-        const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`;
-        window.history.replaceState({}, "", nextUrl);
       }
 
       if (!activeToken) {
@@ -106,19 +139,25 @@ export function useTokenInitialization() {
           error: null,
         });
 
+        if (urlToken && activeToken === urlToken) {
+          clearUrlToken();
+        }
+
         logTelemetry({
           event: "token_hydration_succeeded",
           token: activeToken,
           tokenSource,
         });
       } catch (error) {
-        const errorData =
-          typeof error === "object" && error !== null && "data" in error
-            ? (error as { data?: { code?: string } }).data
-            : undefined;
-        const isNotFound = errorData?.code === "NOT_FOUND";
+        const isNotFound = getErrorCode(error) === "NOT_FOUND";
 
-        window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+        if (isNotFound) {
+          window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+          if (urlToken && activeToken === urlToken) {
+            clearUrlToken();
+          }
+        }
+
         resetSession();
 
         logTelemetry({
@@ -131,5 +170,14 @@ export function useTokenInitialization() {
     };
 
     void initialize();
-  }, [flagsQuery.data, flagsQuery.error, flagsQuery.isLoading, resetSession, setSession, telemetry, utils]);
+  }, [
+    flagsQuery.data,
+    flagsQuery.error,
+    flagsQuery.isLoading,
+    hasCandidateToken,
+    resetSession,
+    setSession,
+    telemetry,
+    utils,
+  ]);
 }
