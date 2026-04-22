@@ -65,17 +65,12 @@ async function insertLead(
   const db = await getDb();
   if (!db) return false;
 
-  const result = await db.execute(sql.raw("SHOW COLUMNS FROM leads"));
-  const rows = Array.isArray(result) ? result : ((result as any).rows ?? []);
-  const availableColumns = new Set(
-    rows
-      .map((row: Record<string, unknown>) => row.Field)
-      .filter((value: unknown): value is string => typeof value === "string"),
-  );
-
-  const insertValues: Record<string, unknown> = {
+  await db.insert(leads).values({
     id: values.id,
     email: values.email,
+    sessionId: values.sessionId ?? null,
+    returningToken: values.returningToken ?? null,
+    tokenExpiresAt: values.tokenExpiresAt ?? null,
     ageRange: values.ageRange,
     primaryGoal: values.primaryGoal,
     budget: values.budget,
@@ -85,22 +80,8 @@ async function insertLead(
     consentTimestamp: values.consentTimestamp,
     ipAddress: values.ipAddress,
     rawQuizData: values.rawQuizData,
-  };
-
-  if (availableColumns.has("sessionId")) {
-    insertValues.sessionId = values.sessionId ?? null;
-  }
-
-  if (availableColumns.has("returningToken")) {
-    insertValues.returningToken = values.returningToken ?? null;
-  }
-
-  if (availableColumns.has("tokenExpiresAt")) {
-    insertValues.tokenExpiresAt = values.tokenExpiresAt ?? null;
-  }
-
-  await db.insert(leads).values(insertValues as typeof leads.$inferInsert);
-  return availableColumns.has("returningToken") && availableColumns.has("tokenExpiresAt");
+  });
+  return true;
 }
 
 function createReturningToken() {
