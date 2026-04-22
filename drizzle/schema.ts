@@ -22,7 +22,7 @@ export const leads = mysqlTable("leads", {
   id: varchar("id", { length: 36 }).primaryKey(), // UUID
   email: varchar("email", { length: 320 }).notNull(),
   sessionId: varchar("sessionId", { length: 64 }),
-  returningToken: varchar("returningToken", { length: 64 }),
+  returningToken: varchar("returningToken", { length: 128 }),
   tokenExpiresAt: timestamp("tokenExpiresAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   ageRange: varchar("ageRange", { length: 32 }).notNull(),

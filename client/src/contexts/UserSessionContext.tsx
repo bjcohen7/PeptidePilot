@@ -6,15 +6,20 @@ import {
   resolveReturningToken,
   shouldClearReturningToken,
 } from "@/lib/returningToken";
-import type { ReturningMatchSummary } from "../../../shared/scoring";
+import {
+  peptideProfiles,
+  type ReturningMatchSummary,
+} from "../../../shared/scoring";
 
 export type ReturningSession = {
   token: string;
-  leadId: string;
-  createdAt: Date | string;
+  leadId?: string;
+  createdAt?: Date | string;
   topMatches: ReturningMatchSummary[];
   justCompletedQuiz: boolean;
 };
+
+export type ReturningSessionStatus = "pending" | "restored" | "empty";
 
 type LegacySessionPatch = Partial<{
   isAuthenticated: boolean;
@@ -30,10 +35,59 @@ type LegacySessionPatch = Partial<{
   error: string | null;
 }>;
 
+type ReturningLookupMatch =
+  | ReturningMatchSummary
+  | {
+      slug?: string;
+      name?: string;
+      score?: number;
+      matchPercent?: number;
+    };
+
+function normalizeReturningMatches(matches: unknown): ReturningMatchSummary[] {
+  if (!Array.isArray(matches)) return [];
+
+  return matches.flatMap((match) => {
+    if (!match || typeof match !== "object") return [];
+
+    const candidate = match as ReturningLookupMatch;
+
+    if ("peptideId" in candidate && typeof candidate.peptideId === "string") {
+      return [
+        {
+          peptideId: candidate.peptideId,
+          name: candidate.name,
+          description: candidate.description,
+          categories: Array.isArray(candidate.categories) ? candidate.categories : [],
+          matchPercent: candidate.matchPercent,
+        },
+      ];
+    }
+
+    const peptideId =
+      "slug" in candidate && typeof candidate.slug === "string" ? candidate.slug : null;
+    if (!peptideId) return [];
+
+    const profile = peptideProfiles.find((entry) => entry.id === peptideId);
+
+    return [
+      {
+        peptideId,
+        name: candidate.name ?? profile?.name ?? peptideId,
+        description: profile?.description ?? "",
+        categories: profile?.categories ?? [],
+        matchPercent:
+          typeof candidate.matchPercent === "number" ? candidate.matchPercent : 0,
+      },
+    ];
+  });
+}
+
 type UserSessionContextValue = {
   session: ReturningSession | null;
   isLoading: boolean;
   hasSettledHydration: boolean;
+  sessionStatus: ReturningSessionStatus;
   isAuthenticated: boolean;
   token: string | null;
   results: {
@@ -111,11 +165,20 @@ export function UserSessionProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (!returningResults.data || !resolvedToken) return;
 
+    const normalizedMatches = normalizeReturningMatches(returningResults.data.topMatches);
+
     setSession({
       token: resolvedToken,
-      leadId: returningResults.data.leadId,
-      createdAt: returningResults.data.createdAt,
-      topMatches: returningResults.data.topMatches,
+      leadId:
+        "leadId" in returningResults.data &&
+        typeof returningResults.data.leadId === "string"
+          ? returningResults.data.leadId
+          : undefined,
+      createdAt:
+        "createdAt" in returningResults.data
+          ? (returningResults.data.createdAt as Date | string | undefined)
+          : undefined,
+      topMatches: normalizedMatches,
       justCompletedQuiz: false,
     });
     setLegacyError(null);
@@ -156,13 +219,18 @@ export function UserSessionProvider({ children }: { children: React.ReactNode })
       session,
       isLoading: !hasInitialized || (Boolean(resolvedToken) && !hasSettledHydration),
       hasSettledHydration,
+      sessionStatus: !hasInitialized || (Boolean(resolvedToken) && !hasSettledHydration)
+        ? "pending"
+        : session
+          ? "restored"
+          : "empty",
       isAuthenticated: Boolean(session),
       token: session?.token ?? resolvedToken,
       results: session
         ? {
             token: session.token,
-            leadId: session.leadId,
-            createdAt: session.createdAt,
+            leadId: session.leadId ?? "",
+            createdAt: session.createdAt ?? "",
             topMatches: session.topMatches,
           }
         : null,
