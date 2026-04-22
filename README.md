@@ -64,6 +64,7 @@ Current status:
 - TypeScript check passes.
 - Test suite passes: 23 tests.
 - Production build passes.
+- Railway rebuilds can be safely retriggered from `main` with a no-op docs commit when the platform gets stuck.
 
 ## Migration Notes
 
