@@ -353,6 +353,9 @@ export interface MatchResult {
   matchPercent: number;
 }
 
+/**
+ * Serializable match shape used by the returning-results hydration flow.
+ */
 export interface ReturningMatchSummary {
   peptideId: string;
   name: string;
