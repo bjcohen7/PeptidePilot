@@ -15,7 +15,7 @@ import {
 } from "../../shared/scoring";
 import { nanoid } from "nanoid";
 import { notifyOwner } from "../_core/notification";
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { sendMetaServerEvents } from "../_core/meta";
 import { ENV } from "../_core/env";
 
