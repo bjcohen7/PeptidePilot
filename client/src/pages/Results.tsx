@@ -22,7 +22,6 @@ import {
   libraryBackedPeptideProfileIds,
   PRIMARY_GOAL_OPTIONS,
   QUIZ_INDEX,
-  toReturningMatchSummary,
   type ReturningMatchSummary,
 } from "../../../shared/scoring";
 import { trpc } from "@/lib/trpc";
@@ -38,6 +37,16 @@ import {
 } from "@/lib/metaPixel";
 
 const LIBRARY_BACKED_PROFILE_IDS = new Set<string>(libraryBackedPeptideProfileIds);
+
+function toReturningMatchSummary(result: ReturnType<typeof calculateMatches>[number]): ReturningMatchSummary {
+  return {
+    peptideId: result.peptide.id,
+    name: result.peptide.name,
+    description: result.peptide.description,
+    categories: result.peptide.categories,
+    matchPercent: result.matchPercent,
+  };
+}
 
 function getLibraryBackedMatches(answers: number[]) {
   return calculateMatches(answers).filter((result) =>
@@ -531,7 +540,7 @@ export default function Results() {
   const {
     session,
     isLoading: isReturningSessionLoading,
-    hasSettledHydration: hasSettledReturningSession,
+    sessionStatus,
     seedReturningSession,
   } =
     useReturningSession();
@@ -603,6 +612,7 @@ export default function Results() {
     },
   });
 
+  // Pre-compute matches for the preview
   const hasFreshQuizState = state.isComplete || state.answers.some((answer) => answer !== null);
   const previewMatches = getLibraryBackedMatches(state.answers.map((a) => a ?? -1)).map(
     toReturningMatchSummary,
@@ -613,10 +623,12 @@ export default function Results() {
   const isReturningUser = !revealed && Boolean(session && !session.justCompletedQuiz);
 
   useEffect(() => {
-    if (!hasFreshQuizState && hasSettledReturningSession && !session) {
-      navigate("/quiz");
-    }
-  }, [hasFreshQuizState, hasSettledReturningSession, navigate, session]);
+    if (hasFreshQuizState) return;
+    if (sessionStatus === "pending") return;
+    if (sessionStatus === "restored") return;
+
+    navigate("/quiz");
+  }, [hasFreshQuizState, navigate, sessionStatus]);
 
   const handleReveal = (email: string, consent: boolean) => {
     const eventIds = {
@@ -647,7 +659,7 @@ export default function Results() {
     navigate("/quiz");
   };
 
-  if (!hasFreshQuizState && isReturningSessionLoading) {
+  if (!hasFreshQuizState && sessionStatus === "pending" && isReturningSessionLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-sm text-muted-foreground">Loading your saved results…</div>
