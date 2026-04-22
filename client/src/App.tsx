@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -6,6 +6,8 @@ import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { QuizProvider } from "./contexts/QuizContext";
+import { UserSessionProvider } from "./contexts/UserSessionContext";
+import { useTokenInitialization } from "./hooks/useTokenInitialization";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import DashboardLayout from "./components/DashboardLayout";
@@ -430,6 +432,11 @@ function Router() {
   );
 }
 
+function TokenInitializationBoundary({ children }: { children: ReactNode }) {
+  useTokenInitialization();
+  return <>{children}</>;
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -437,8 +444,12 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <QuizProvider>
-            <SessionTracker />
-            <Router />
+            <UserSessionProvider>
+              <SessionTracker />
+              <TokenInitializationBoundary>
+                <Router />
+              </TokenInitializationBoundary>
+            </UserSessionProvider>
           </QuizProvider>
         </TooltipProvider>
       </ThemeProvider>
