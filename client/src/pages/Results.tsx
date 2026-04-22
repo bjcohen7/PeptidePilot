@@ -22,7 +22,6 @@ import {
   libraryBackedPeptideProfileIds,
   PRIMARY_GOAL_OPTIONS,
   QUIZ_INDEX,
-  toReturningMatchSummary,
   type ReturningMatchSummary,
 } from "../../../shared/scoring";
 import { trpc } from "@/lib/trpc";
@@ -38,6 +37,16 @@ import {
 } from "@/lib/metaPixel";
 
 const LIBRARY_BACKED_PROFILE_IDS = new Set<string>(libraryBackedPeptideProfileIds);
+
+function toReturningMatchSummary(result: ReturnType<typeof calculateMatches>[number]): ReturningMatchSummary {
+  return {
+    peptideId: result.peptide.id,
+    name: result.peptide.name,
+    description: result.peptide.description,
+    categories: result.peptide.categories,
+    matchPercent: result.matchPercent,
+  };
+}
 
 function getLibraryBackedMatches(answers: number[]) {
   return calculateMatches(answers).filter((result) =>
