@@ -149,7 +149,7 @@ export const scoreMaps: ScoreMap[] = [
     { sleep: 3, energy: 3, recovery: 1 },              // Never — fatigue constant
   ],
 
-  // ─── SECTION 5: Pain & Injury ─────────────────────────────────────────────
+  // ─── SECTION 5: Pain & Injury ────────────────────────────────────────────
 
   // Q11: Do you currently have any joint, tendon, or ligament pain?
   [
@@ -414,24 +414,6 @@ export interface MatchResult {
   matchPercent: number;
 }
 
-export interface ReturningMatchSummary {
-  peptideId: string;
-  name: string;
-  description: string;
-  categories: string[];
-  matchPercent: number;
-}
-
-export function toReturningMatchSummary(result: MatchResult): ReturningMatchSummary {
-  return {
-    peptideId: result.peptide.id,
-    name: result.peptide.name,
-    description: result.peptide.description,
-    categories: result.peptide.categories,
-    matchPercent: result.matchPercent,
-  };
-}
-
 export function calculateAspectScores(answers: number[]): AspectScores {
   const aspects = initAspects();
 
@@ -535,10 +517,10 @@ export function determineTier(answers: number[]): 1 | 2 | 3 {
   return 3;
 }
 
-// ─── QUIZ QUESTIONS (22 total, with GLP-1 branching for weight-loss users) ──
+// ─── QUIZ QUESTIONS (22 total, with GLP-1 branching for weight-loss users) ───
 
 export const QUIZ_QUESTIONS = [
-  // ── Section 1: Goals & Priorities ──────────────────────────────────────────
+  // ── Section 1: Goals & Priorities ─────────────────────────────────────────
   {
     section: "Goals & Priorities",
     question: "What is your single most important health goal right now?",
@@ -568,7 +550,7 @@ export const QUIZ_QUESTIONS = [
     ],
   },
 
-  // ── Section 2: Body & Fitness ───────────────────────────────────────────────
+  // ── Section 2: Body & Fitness ─────────────────────────────────────────────
   {
     section: "Body & Fitness",
     question: "How would you describe your current activity level?",
@@ -623,7 +605,7 @@ export const QUIZ_QUESTIONS = [
     ],
   },
 
-  // ── Section 3: Age & Hormones ───────────────────────────────────────────────
+  // ── Section 3: Age & Hormones ─────────────────────────────────────────────
   {
     section: "Age & Hormones",
     question: "What is your age range?",
@@ -652,7 +634,7 @@ export const QUIZ_QUESTIONS = [
     ],
   },
 
-  // ── Section 4: Sleep & Recovery ─────────────────────────────────────────────
+  // ── Section 4: Sleep & Recovery ───────────────────────────────────────────
   {
     section: "Sleep & Recovery",
     question: "How would you rate your overall sleep quality?",
@@ -675,7 +657,7 @@ export const QUIZ_QUESTIONS = [
     ],
   },
 
-  // ── Section 5: Pain & Injury ────────────────────────────────────────────────
+  // ── Section 5: Pain & Injury ──────────────────────────────────────────────
   {
     section: "Pain & Injury",
     question: "Do you currently have any joint, tendon, or ligament pain?",
@@ -699,7 +681,7 @@ export const QUIZ_QUESTIONS = [
     ],
   },
 
-  // ── Section 6: Cognition & Mood ─────────────────────────────────────────────
+  // ── Section 6: Cognition & Mood ───────────────────────────────────────────
   {
     section: "Cognition & Mood",
     question: "How would you rate your day-to-day mental clarity and focus?",
@@ -721,7 +703,7 @@ export const QUIZ_QUESTIONS = [
     ],
   },
 
-  // ── Section 7: Skin, Hair & Appearance ──────────────────────────────────────
+  // ── Section 7: Skin, Hair & Appearance ────────────────────────────────────
   {
     section: "Skin, Hair & Appearance",
     question: "How would you describe your current skin condition?",
@@ -744,7 +726,7 @@ export const QUIZ_QUESTIONS = [
     ],
   },
 
-  // ── Section 8: Lifestyle & Preferences ──────────────────────────────────────
+  // ── Section 8: Lifestyle & Preferences ────────────────────────────────────
   {
     section: "Lifestyle & Preferences",
     question: "How experienced are you with peptides or biohacking in general?",
