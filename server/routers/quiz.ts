@@ -57,40 +57,43 @@ async function insertLead(
 ) {
   const db = await getDb();
   if (!db) return false;
-  await db.execute(sql`
-    insert into leads (
-      id,
-      email,
-      sessionId,
-      returningToken,
-      tokenExpiresAt,
-      ageRange,
-      primaryGoal,
-      budget,
-      topPeptideMatch,
-      tier,
-      consentGiven,
-      consentTimestamp,
-      ipAddress,
-      rawQuizData
-    ) values (
-      ${values.id},
-      ${values.email},
-      ${values.sessionId ?? null},
-      ${values.returningToken ?? null},
-      ${values.tokenExpiresAt ?? null},
-      ${values.ageRange},
-      ${values.primaryGoal},
-      ${values.budget},
-      ${values.topPeptideMatch},
-      ${values.tier},
-      ${values.consentGiven},
-      ${values.consentTimestamp},
-      ${values.ipAddress},
-      ${JSON.stringify(values.rawQuizData)}
-    )
-  `);
-  return true;
+
+  const result = await db.execute(sql.raw("SHOW COLUMNS FROM leads"));
+  const rows = Array.isArray(result) ? result : ((result as any).rows ?? []);
+  const availableColumns = new Set(
+    rows
+      .map((row: Record<string, unknown>) => row.Field)
+      .filter((value: unknown): value is string => typeof value === "string"),
+  );
+
+  const insertValues: Record<string, unknown> = {
+    id: values.id,
+    email: values.email,
+    ageRange: values.ageRange,
+    primaryGoal: values.primaryGoal,
+    budget: values.budget,
+    topPeptideMatch: values.topPeptideMatch,
+    tier: values.tier,
+    consentGiven: values.consentGiven,
+    consentTimestamp: values.consentTimestamp,
+    ipAddress: values.ipAddress,
+    rawQuizData: values.rawQuizData,
+  };
+
+  if (availableColumns.has("sessionId")) {
+    insertValues.sessionId = values.sessionId ?? null;
+  }
+
+  if (availableColumns.has("returningToken")) {
+    insertValues.returningToken = values.returningToken ?? null;
+  }
+
+  if (availableColumns.has("tokenExpiresAt")) {
+    insertValues.tokenExpiresAt = values.tokenExpiresAt ?? null;
+  }
+
+  await db.insert(leads).values(insertValues as typeof leads.$inferInsert);
+  return availableColumns.has("returningToken") && availableColumns.has("tokenExpiresAt");
 }
 
 function createReturningToken() {
@@ -206,8 +209,9 @@ export const quizRouter = router({
 
       // Store lead in database
       const db = await getDb();
+      let storedReturningToken = false;
       if (db) {
-        await insertLead({
+        storedReturningToken = await insertLead({
           id: leadId,
           email,
           sessionId: sessionId ?? undefined,
@@ -254,7 +258,7 @@ export const quizRouter = router({
       const webhookPayload = {
         leadId,
         email,
-        returningToken,
+        returningToken: storedReturningToken ? returningToken : undefined,
         ageRange,
         primaryGoal,
         budget,
@@ -332,7 +336,7 @@ export const quizRouter = router({
         status: "success" as const,
         leadId,
         topMatches,
-        returningToken,
+        returningToken: storedReturningToken ? returningToken : null,
         returningResults: matches.slice(0, 5).map(toReturningMatchSummary),
       };
     }),

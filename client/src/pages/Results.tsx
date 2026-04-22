@@ -45,8 +45,6 @@ function getLibraryBackedMatches(answers: number[]) {
   );
 }
 
-// ── Lead Capture Gate ─────────────────────────────────────────────────────────
-
 function LeadCaptureGate({
   onReveal,
   isLoading,
@@ -82,7 +80,6 @@ function LeadCaptureGate({
       className="min-h-screen flex flex-col"
       style={{ background: "linear-gradient(160deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)" }}
     >
-      {/* Ambient glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div
           className="absolute rounded-full blur-3xl"
@@ -100,7 +97,6 @@ function LeadCaptureGate({
         />
       </div>
 
-      {/* Header */}
       <header className="relative z-10 flex items-center justify-center px-4 pt-5 pb-4">
         <Link href="/">
           <PeptidePilotLogo height={30} variant="light" />
@@ -109,8 +105,6 @@ function LeadCaptureGate({
 
       <main className="relative z-10 flex-1 flex items-center justify-center py-6 sm:py-10 px-4">
         <div className="w-full max-w-lg">
-
-          {/* Headline */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-5 text-xs font-semibold tracking-widest uppercase"
               style={{ background: "rgba(56,189,248,0.12)", color: "#38bdf8", border: "1px solid rgba(56,189,248,0.25)" }}>
@@ -132,7 +126,6 @@ function LeadCaptureGate({
             </p>
           </div>
 
-          {/* Results preview — blurred teaser */}
           {topThree.length > 0 && (
             <div className="mb-7 relative">
               <div className="space-y-2.5">
@@ -182,7 +175,6 @@ function LeadCaptureGate({
                   </div>
                 ))}
               </div>
-              {/* Fade overlay on bottom rows */}
               <div
                 className="absolute bottom-0 left-0 right-0 h-20 rounded-b-xl"
                 style={{ background: "linear-gradient(to bottom, transparent, #0f172a)" }}
@@ -190,7 +182,6 @@ function LeadCaptureGate({
             </div>
           )}
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Input
@@ -215,7 +206,6 @@ function LeadCaptureGate({
               )}
             </div>
 
-            {/* Explicit consent — never pre-checked */}
             <div
               className="flex items-start gap-3 p-4 rounded-xl"
               style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
@@ -270,8 +260,6 @@ function LeadCaptureGate({
     </div>
   );
 }
-
-// ── Peptide Match Card ────────────────────────────────────────────────────────
 
 function PeptideCard({
   result,
@@ -405,8 +393,6 @@ function PeptideCard({
   );
 }
 
-// ── Results Display ───────────────────────────────────────────────────────────
-
 function ResultsDisplay({
   matches,
   leadId,
@@ -539,8 +525,6 @@ function ResultsDisplay({
   );
 }
 
-// ── Main Results Page ─────────────────────────────────────────────────────────
-
 export default function Results() {
   const [, navigate] = useLocation();
   const { state, reset } = useQuiz();
@@ -562,13 +546,15 @@ export default function Results() {
       setLeadId(data.leadId);
       setMatches(data.returningResults);
       setRevealed(true);
-      seedReturningSession({
-        token: data.returningToken,
-        leadId: data.leadId,
-        createdAt: new Date(),
-        topMatches: data.returningResults,
-        justCompletedQuiz: true,
-      });
+      if (data.returningToken) {
+        seedReturningSession({
+          token: data.returningToken,
+          leadId: data.leadId,
+          createdAt: new Date(),
+          topMatches: data.returningResults,
+          justCompletedQuiz: true,
+        });
+      }
       if (submittedEmail) {
         applyMetaAdvancedMatching(submittedEmail);
       }
@@ -608,7 +594,6 @@ export default function Results() {
     },
   });
 
-  // Pre-compute matches for the preview
   const hasFreshQuizState = state.isComplete || state.answers.some((answer) => answer !== null);
   const previewMatches = getLibraryBackedMatches(state.answers.map((a) => a ?? -1)).map(
     toReturningMatchSummary,
