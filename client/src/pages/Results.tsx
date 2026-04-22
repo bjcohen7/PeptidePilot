@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuiz } from "@/contexts/QuizContext";
+import { useReturningSession } from "@/contexts/UserSessionContext";
 import {
   AGE_RANGE_OPTIONS,
   BUDGET_OPTIONS,
@@ -21,7 +22,8 @@ import {
   libraryBackedPeptideProfileIds,
   PRIMARY_GOAL_OPTIONS,
   QUIZ_INDEX,
-  type MatchResult,
+  toReturningMatchSummary,
+  type ReturningMatchSummary,
 } from "../../../shared/scoring";
 import { trpc } from "@/lib/trpc";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
@@ -43,8 +45,6 @@ function getLibraryBackedMatches(answers: number[]) {
   );
 }
 
-// ── Lead Capture Gate ─────────────────────────────────────────────────────────
-
 function LeadCaptureGate({
   onReveal,
   isLoading,
@@ -52,7 +52,7 @@ function LeadCaptureGate({
 }: {
   onReveal: (email: string, consent: boolean) => void;
   isLoading: boolean;
-  previewMatches: MatchResult[];
+  previewMatches: ReturningMatchSummary[];
 }) {
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
@@ -80,7 +80,6 @@ function LeadCaptureGate({
       className="min-h-screen flex flex-col"
       style={{ background: "linear-gradient(160deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)" }}
     >
-      {/* Ambient glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div
           className="absolute rounded-full blur-3xl"
@@ -98,7 +97,6 @@ function LeadCaptureGate({
         />
       </div>
 
-      {/* Header */}
       <header className="relative z-10 flex items-center justify-center px-4 pt-5 pb-4">
         <Link href="/">
           <PeptidePilotLogo height={30} variant="light" />
@@ -107,8 +105,6 @@ function LeadCaptureGate({
 
       <main className="relative z-10 flex-1 flex items-center justify-center py-6 sm:py-10 px-4">
         <div className="w-full max-w-lg">
-
-          {/* Headline */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-5 text-xs font-semibold tracking-widest uppercase"
               style={{ background: "rgba(56,189,248,0.12)", color: "#38bdf8", border: "1px solid rgba(56,189,248,0.25)" }}>
@@ -130,13 +126,12 @@ function LeadCaptureGate({
             </p>
           </div>
 
-          {/* Results preview — blurred teaser */}
           {topThree.length > 0 && (
             <div className="mb-7 relative">
               <div className="space-y-2.5">
                 {topThree.map((m, i) => (
                   <div
-                    key={m.peptide.id}
+                    key={m.peptideId}
                     className="flex items-center gap-3 rounded-xl px-4 py-3"
                     style={{
                       background: "rgba(255,255,255,0.05)",
@@ -154,9 +149,9 @@ function LeadCaptureGate({
                           className="font-semibold text-white text-sm"
                           style={i > 0 ? { filter: "blur(5px)", userSelect: "none" } : {}}
                         >
-                          {i === 0 ? m.peptide.name : "████████"}
+                          {i === 0 ? m.name : "████████"}
                         </span>
-                        {i === 0 && m.peptide.categories.slice(0, 2).map((c) => (
+                        {i === 0 && m.categories.slice(0, 2).map((c) => (
                           <span
                             key={c}
                             className="text-xs px-2 py-0.5 rounded-full"
@@ -180,7 +175,6 @@ function LeadCaptureGate({
                   </div>
                 ))}
               </div>
-              {/* Fade overlay on bottom rows */}
               <div
                 className="absolute bottom-0 left-0 right-0 h-20 rounded-b-xl"
                 style={{ background: "linear-gradient(to bottom, transparent, #0f172a)" }}
@@ -188,7 +182,6 @@ function LeadCaptureGate({
             </div>
           )}
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Input
@@ -213,7 +206,6 @@ function LeadCaptureGate({
               )}
             </div>
 
-            {/* Explicit consent — never pre-checked */}
             <div
               className="flex items-start gap-3 p-4 rounded-xl"
               style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
@@ -269,32 +261,30 @@ function LeadCaptureGate({
   );
 }
 
-// ── Peptide Match Card ────────────────────────────────────────────────────────
-
 function PeptideCard({
   result,
   rank,
   leadId,
 }: {
-  result: MatchResult;
+  result: ReturningMatchSummary;
   rank: number;
   leadId: string;
 }) {
-  const { peptide, matchPercent } = result;
+  const { peptideId, name, description, categories, matchPercent } = result;
   const isTop = rank === 1;
   const [isExpanded, setIsExpanded] = useState(false);
-  const isGlp1Match = peptide.id === "semaglutide";
+  const isGlp1Match = peptideId === "semaglutide";
 
   const trackClick = trpc.quiz.trackAffiliateClick.useMutation();
   const activeLinks = trpc.affiliates.activeLinksByPeptide.useQuery(
-    { peptideId: peptide.id },
+    { peptideId },
     { retry: false, refetchOnWindowFocus: false }
   );
   const vendors = (activeLinks.data ?? []).map((link) => ({ name: link.label, url: link.url }));
 
   const handleVendorClick = (vendor: string) => {
     if (leadId) {
-      trackClick.mutate({ leadId, peptideId: peptide.id, vendor });
+      trackClick.mutate({ leadId, peptideId, vendor });
     }
   };
 
@@ -323,11 +313,11 @@ function PeptideCard({
                 className={`font-normal text-foreground leading-tight ${isTop ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"}`}
                 style={{ fontFamily: "'DM Serif Display', serif" }}
               >
-                {peptide.name}
+                {name}
               </h3>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {peptide.categories.map((cat) => (
+              {categories.map((cat) => (
                 <Badge
                   key={cat}
                   variant="secondary"
@@ -362,7 +352,7 @@ function PeptideCard({
             isTop || isExpanded ? "" : "line-clamp-3"
           }`}
         >
-          {peptide.description}
+          {description}
         </p>
 
         {!isTop && (
@@ -403,22 +393,22 @@ function PeptideCard({
   );
 }
 
-// ── Results Display ───────────────────────────────────────────────────────────
-
 function ResultsDisplay({
   matches,
   leadId,
   sessionId,
   onRetake,
+  isReturningUser,
 }: {
-  matches: MatchResult[];
+  matches: ReturningMatchSummary[];
   leadId: string;
   sessionId: string;
   onRetake: () => void;
+  isReturningUser: boolean;
 }) {
   const topMatch = matches[0];
   const secondaryMatches = matches.slice(1, 5);
-  const topCategories = topMatch?.peptide.categories.slice(0, 3) ?? [];
+  const topCategories = topMatch?.categories.slice(0, 3) ?? [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -445,6 +435,11 @@ function ResultsDisplay({
       <main className="py-8 sm:py-12">
         <div className="container max-w-3xl">
           <div className="text-center mb-8 sm:mb-10 animate-fade-in-up">
+            {isReturningUser ? (
+              <div className="mb-3 text-sm font-medium text-accent">
+                Welcome back. We saved your peptide profile.
+              </div>
+            ) : null}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4 text-xs font-semibold tracking-widest uppercase bg-accent/10 text-accent border border-accent/20">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Analysis Complete
@@ -469,7 +464,7 @@ function ResultsDisplay({
                 </div>
                 <p className="text-sm leading-7 text-muted-foreground">
                   Your responses lined up most strongly with{" "}
-                  <span className="font-semibold text-foreground">{topMatch.peptide.name}</span>
+                  <span className="font-semibold text-foreground">{topMatch.name}</span>
                   {topCategories.length
                     ? ` across ${topCategories.join(", ").toLowerCase()}`
                     : ""}.
@@ -488,7 +483,7 @@ function ResultsDisplay({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {secondaryMatches.map((result, idx) => (
                   <div
-                    key={result.peptide.id}
+                    key={result.peptideId}
                     className="animate-fade-in-up"
                     style={{ animationDelay: `${0.15 + idx * 0.07}s` }}
                   >
@@ -530,14 +525,14 @@ function ResultsDisplay({
   );
 }
 
-// ── Main Results Page ─────────────────────────────────────────────────────────
-
 export default function Results() {
   const [, navigate] = useLocation();
   const { state, reset } = useQuiz();
+  const { session, isLoading: isReturningSessionLoading, seedReturningSession } =
+    useReturningSession();
   const [revealed, setRevealed] = useState(false);
   const [leadId, setLeadId] = useState("");
-  const [matches, setMatches] = useState<MatchResult[]>([]);
+  const [matches, setMatches] = useState<ReturningMatchSummary[]>([]);
   const [submittedEmail, setSubmittedEmail] = useState("");
   const sessionId = getVisitorSessionId();
   const [pendingMetaEventIds, setPendingMetaEventIds] = useState<{
@@ -549,36 +544,52 @@ export default function Results() {
   const submitQuiz = trpc.quiz.submitQuiz.useMutation({
     onSuccess: (data) => {
       setLeadId(data.leadId);
+      setMatches(data.returningResults);
       setRevealed(true);
       if (submittedEmail) {
         applyMetaAdvancedMatching(submittedEmail);
       }
-      const isGlp1Lead = matches[0]?.peptide.id === "semaglutide";
+      const isGlp1Lead = data.returningResults[0]?.peptideId === "semaglutide";
       trackMetaEvent("CompleteRegistration", {
         content_name: "Peptide Quiz",
         status: "completed",
       }, pendingMetaEventIds?.completeRegistration);
       trackMetaEvent("Lead", {
-        content_name: matches[0]?.peptide.name ?? "Peptide Results",
+        content_name: data.returningResults[0]?.name ?? "Peptide Results",
         content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
         value: isGlp1Lead ? 50 : 10,
         currency: "USD",
       }, pendingMetaEventIds?.lead);
       trackMetaEvent("ViewContent", {
-        content_name: matches[0]?.peptide.name ?? "Peptide Results",
+        content_name: data.returningResults[0]?.name ?? "Peptide Results",
         content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
-        content_ids: matches[0]?.peptide.id ? [matches[0].peptide.id] : undefined,
+        content_ids: data.returningResults[0]?.peptideId
+          ? [data.returningResults[0].peptideId]
+          : undefined,
       }, pendingMetaEventIds?.viewContent);
       if (submittedEmail) {
         void identifyLogRocketUser(submittedEmail, {
           email: submittedEmail,
           leadId: data.leadId,
-          topMatch: matches[0]?.peptide.id ?? null,
+          topMatch: data.returningResults[0]?.peptideId ?? null,
           budget: BUDGET_OPTIONS[state.answers[QUIZ_INDEX.BUDGET] ?? -1] ?? null,
           ageRange: AGE_RANGE_OPTIONS[state.answers[QUIZ_INDEX.AGE_RANGE] ?? -1] ?? null,
           primaryGoal:
             PRIMARY_GOAL_OPTIONS[state.answers[QUIZ_INDEX.PRIMARY_GOAL] ?? -1] ?? null,
         });
+      }
+      if (data.returningToken) {
+        try {
+          seedReturningSession({
+            token: data.returningToken,
+            leadId: data.leadId,
+            createdAt: new Date(),
+            topMatches: data.returningResults,
+            justCompletedQuiz: true,
+          });
+        } catch (error) {
+          console.error("[ReturningUser] Failed to seed session:", error);
+        }
       }
     },
     onError: (err) => {
@@ -587,24 +598,28 @@ export default function Results() {
     },
   });
 
-  // Pre-compute matches for the preview
-  const previewMatches = getLibraryBackedMatches(state.answers.map((a) => a ?? -1));
+  const hasFreshQuizState = state.isComplete || state.answers.some((answer) => answer !== null);
+  const previewMatches = getLibraryBackedMatches(state.answers.map((a) => a ?? -1)).map(
+    toReturningMatchSummary,
+  );
+  const restoredMatches = !hasFreshQuizState ? session?.topMatches ?? [] : [];
+  const activeLeadId = revealed ? leadId : session?.leadId ?? "";
+  const activeMatches = revealed ? matches : restoredMatches;
+  const isReturningUser = !revealed && Boolean(session && !session.justCompletedQuiz);
 
   useEffect(() => {
-    if (!state.isComplete && state.answers.every((a) => a === null)) {
+    if (!hasFreshQuizState && !session && !isReturningSessionLoading) {
       navigate("/quiz");
     }
-  }, [state, navigate]);
+  }, [hasFreshQuizState, isReturningSessionLoading, navigate, session]);
 
   const handleReveal = (email: string, consent: boolean) => {
-    const computed = getLibraryBackedMatches(state.answers.map((a) => a ?? -1));
     const eventIds = {
       lead: createMetaEventId("lead"),
       completeRegistration: createMetaEventId("complete_registration"),
       viewContent: createMetaEventId("view_content"),
     };
     const browserIds = getMetaBrowserIdentifiers();
-    setMatches(computed);
     setSubmittedEmail(email);
     setPendingMetaEventIds(eventIds);
     submitQuiz.mutate({
@@ -627,8 +642,24 @@ export default function Results() {
     navigate("/quiz");
   };
 
-  if (revealed && matches.length > 0) {
-    return <ResultsDisplay matches={matches} leadId={leadId} sessionId={sessionId} onRetake={handleRetake} />;
+  if (!hasFreshQuizState && isReturningSessionLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-sm text-muted-foreground">Loading your saved results…</div>
+      </div>
+    );
+  }
+
+  if (activeMatches.length > 0) {
+    return (
+      <ResultsDisplay
+        matches={activeMatches}
+        leadId={activeLeadId}
+        sessionId={sessionId}
+        onRetake={handleRetake}
+        isReturningUser={isReturningUser}
+      />
+    );
   }
 
   return (
