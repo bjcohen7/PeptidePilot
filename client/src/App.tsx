@@ -11,6 +11,8 @@ import Footer from "./components/Footer";
 import DashboardLayout from "./components/DashboardLayout";
 import SessionTracker from "./components/SessionTracker";
 import Seo from "./components/Seo";
+import PersistentRecommendationBar from "./components/PersistentRecommendationBar";
+import { UserSessionProvider } from "./contexts/UserSessionContext";
 
 // Pages
 const Home = lazy(() => import("./pages/Home"));
@@ -66,6 +68,7 @@ function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
+      <PersistentRecommendationBar />
       <main className="flex-1">{children}</main>
       <Footer />
     </div>
@@ -407,8 +410,10 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <QuizProvider>
-            <SessionTracker />
-            <Router />
+            <UserSessionProvider>
+              <SessionTracker />
+              <Router />
+            </UserSessionProvider>
           </QuizProvider>
         </TooltipProvider>
       </ThemeProvider>
