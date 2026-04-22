@@ -5,7 +5,17 @@ import { trpc } from "@/lib/trpc";
 
 const TOKEN_STORAGE_KEY = "peptidepilot_returning_token";
 
-type TelemetryEvent = Parameters<typeof trpc.config.logTelemetry.useMutation>[0];
+type TelemetryPayload = {
+  event:
+    | "token_hydration_attempted"
+    | "token_hydration_succeeded"
+    | "token_hydration_failed"
+    | "token_invalid_or_expired"
+    | "token_replaced_by_url";
+  token?: string | null;
+  tokenSource?: "url" | "localStorage" | null;
+  reason?: string | null;
+};
 
 export function useTokenInitialization() {
   const { setSession, resetSession } = useUserSession();
@@ -29,12 +39,7 @@ export function useTokenInitialization() {
 
     hasInitializedRef.current = true;
 
-    const logTelemetry = (input: {
-      event: "token_hydration_attempted" | "token_hydration_succeeded" | "token_hydration_failed" | "token_invalid_or_expired" | "token_replaced_by_url";
-      token?: string | null;
-      tokenSource?: "url" | "localStorage" | null;
-      reason?: string | null;
-    }) => {
+    const logTelemetry = (input: TelemetryPayload) => {
       telemetry.mutate(
         {
           event: input.event,
@@ -107,12 +112,11 @@ export function useTokenInitialization() {
           tokenSource,
         });
       } catch (error) {
-        const isNotFound =
-          typeof error === "object" &&
-          error !== null &&
-          "data" in error &&
-          typeof (error as { data?: { code?: string } }).data?.code === "string" &&
-          (error as { data?: { code?: string } }).data?.code === "NOT_FOUND";
+        const errorData =
+          typeof error === "object" && error !== null && "data" in error
+            ? (error as { data?: { code?: string } }).data
+            : undefined;
+        const isNotFound = errorData?.code === "NOT_FOUND";
 
         window.localStorage.removeItem(TOKEN_STORAGE_KEY);
         resetSession();
