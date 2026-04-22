@@ -414,6 +414,24 @@ export interface MatchResult {
   matchPercent: number;
 }
 
+export interface ReturningMatchSummary {
+  peptideId: string;
+  name: string;
+  description: string;
+  categories: string[];
+  matchPercent: number;
+}
+
+export function toReturningMatchSummary(result: MatchResult): ReturningMatchSummary {
+  return {
+    peptideId: result.peptide.id,
+    name: result.peptide.name,
+    description: result.peptide.description,
+    categories: result.peptide.categories,
+    matchPercent: result.matchPercent,
+  };
+}
+
 export function calculateAspectScores(answers: number[]): AspectScores {
   const aspects = initAspects();
 
