@@ -537,7 +537,12 @@ function ResultsDisplay({
 export default function Results() {
   const [, navigate] = useLocation();
   const { state, reset } = useQuiz();
-  const { session, isLoading: isReturningSessionLoading, seedReturningSession } =
+  const {
+    session,
+    isLoading: isReturningSessionLoading,
+    sessionStatus,
+    seedReturningSession,
+  } =
     useReturningSession();
   const [revealed, setRevealed] = useState(false);
   const [leadId, setLeadId] = useState("");
@@ -607,6 +612,7 @@ export default function Results() {
     },
   });
 
+  // Pre-compute matches for the preview
   const hasFreshQuizState = state.isComplete || state.answers.some((answer) => answer !== null);
   const previewMatches = getLibraryBackedMatches(state.answers.map((a) => a ?? -1)).map(
     toReturningMatchSummary,
@@ -617,10 +623,12 @@ export default function Results() {
   const isReturningUser = !revealed && Boolean(session && !session.justCompletedQuiz);
 
   useEffect(() => {
-    if (!hasFreshQuizState && !session && !isReturningSessionLoading) {
-      navigate("/quiz");
-    }
-  }, [hasFreshQuizState, isReturningSessionLoading, navigate, session]);
+    if (hasFreshQuizState) return;
+    if (sessionStatus === "pending") return;
+    if (sessionStatus === "restored") return;
+
+    navigate("/quiz");
+  }, [hasFreshQuizState, navigate, sessionStatus]);
 
   const handleReveal = (email: string, consent: boolean) => {
     const eventIds = {
@@ -651,7 +659,7 @@ export default function Results() {
     navigate("/quiz");
   };
 
-  if (!hasFreshQuizState && isReturningSessionLoading) {
+  if (!hasFreshQuizState && sessionStatus === "pending" && isReturningSessionLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-sm text-muted-foreground">Loading your saved results…</div>
