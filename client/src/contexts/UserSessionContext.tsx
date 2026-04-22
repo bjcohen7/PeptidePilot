@@ -19,6 +19,8 @@ export type ReturningSession = {
   justCompletedQuiz: boolean;
 };
 
+export type ReturningSessionStatus = "pending" | "restored" | "empty";
+
 type LegacySessionPatch = Partial<{
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -85,6 +87,7 @@ type UserSessionContextValue = {
   session: ReturningSession | null;
   isLoading: boolean;
   hasSettledHydration: boolean;
+  sessionStatus: ReturningSessionStatus;
   isAuthenticated: boolean;
   token: string | null;
   results: {
@@ -216,6 +219,11 @@ export function UserSessionProvider({ children }: { children: React.ReactNode })
       session,
       isLoading: !hasInitialized || (Boolean(resolvedToken) && !hasSettledHydration),
       hasSettledHydration,
+      sessionStatus: !hasInitialized || (Boolean(resolvedToken) && !hasSettledHydration)
+        ? "pending"
+        : session
+          ? "restored"
+          : "empty",
       isAuthenticated: Boolean(session),
       token: session?.token ?? resolvedToken,
       results: session
