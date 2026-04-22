@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
-import { getDb } from "../db";
+import { ensureAffiliateWorkspaceSchema, getDb } from "../db";
 import { leads, affiliateClicks, visitorSessions } from "../../drizzle/schema";
 import {
   AGE_RANGE_OPTIONS,
@@ -111,6 +111,8 @@ export const quizRouter = router({
       }),
     )
     .query(async ({ input }) => {
+      await ensureAffiliateWorkspaceSchema();
+
       const db = await getDb();
       if (!db) {
         throw new Error("Database not available.");
@@ -174,6 +176,8 @@ export const quizRouter = router({
       if (!consentGiven) {
         throw new Error("Consent is required to submit.");
       }
+
+      await ensureAffiliateWorkspaceSchema();
 
       // Run scoring algorithm
       const matches = calculateMatches(answers);
