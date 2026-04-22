@@ -39,6 +39,79 @@ async function hasIndex(
   return rows.length > 0;
 }
 
+function findMysqlErrorCode(error: unknown): string | null {
+  let current = error as { code?: string; cause?: unknown } | undefined;
+
+  while (current && typeof current === "object") {
+    if (typeof current.code === "string") {
+      return current.code;
+    }
+
+    current = current.cause as { code?: string; cause?: unknown } | undefined;
+  }
+
+  return null;
+}
+
+async function addColumnIfMissing(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  table: string,
+  column: string,
+  definitionSql: string,
+  options?: { force?: boolean },
+) {
+  if (!options?.force && (await hasColumn(db, table, column))) {
+    return;
+  }
+
+  try {
+    await db.execute(sql.raw(`ALTER TABLE \`${table}\` ADD COLUMN ${definitionSql}`));
+  } catch (error) {
+    const code = findMysqlErrorCode(error);
+    if (code === "ER_DUP_FIELDNAME") {
+      return;
+    }
+    throw error;
+  }
+}
+
+async function addIndexIfMissing(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  table: string,
+  indexName: string,
+  definitionSql: string,
+  options?: { force?: boolean },
+) {
+  if (!options?.force && (await hasIndex(db, table, indexName))) {
+    return;
+  }
+
+  try {
+    await db.execute(sql.raw(`ALTER TABLE \`${table}\` ADD ${definitionSql}`));
+  } catch (error) {
+    const code = findMysqlErrorCode(error);
+    if (code === "ER_DUP_KEYNAME" || code === "ER_DUP_ENTRY") {
+      return;
+    }
+    throw error;
+  }
+}
+
+export async function ensureReturningUserLeadSchema(options?: { force?: boolean }) {
+  const db = await getDb();
+  if (!db) return;
+
+  await addColumnIfMissing(db, "leads", "returningToken", "`returningToken` varchar(64)", options);
+  await addColumnIfMissing(db, "leads", "tokenExpiresAt", "`tokenExpiresAt` timestamp NULL", options);
+  await addIndexIfMissing(
+    db,
+    "leads",
+    "leads_returning_token_unique",
+    "UNIQUE INDEX `leads_returning_token_unique` (`returningToken`)",
+    options,
+  );
+}
+
 export async function ensureAffiliateWorkspaceSchema() {
   const db = await getDb();
   if (!db) return;
@@ -154,17 +227,7 @@ export async function ensureAffiliateWorkspaceSchema() {
         await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `sessionId` varchar(64)"));
       }
 
-      if (!(await hasColumn(db, "leads", "returningToken"))) {
-        await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `returningToken` varchar(64)"));
-      }
-
-      if (!(await hasColumn(db, "leads", "tokenExpiresAt"))) {
-        await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `tokenExpiresAt` timestamp NULL"));
-      }
-
-      if (!(await hasIndex(db, "leads", "leads_returning_token_unique"))) {
-        await db.execute(sql.raw("ALTER TABLE `leads` ADD UNIQUE INDEX `leads_returning_token_unique` (`returningToken`)"));
-      }
+      await ensureReturningUserLeadSchema();
     })().catch((error) => {
       affiliateWorkspaceBootstrap = null;
       throw error;
