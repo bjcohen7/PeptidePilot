@@ -194,22 +194,27 @@ export const quizRouter = router({
 
       const db = await getDb();
       if (!db) {
-        throw new Error("Database not available.");
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available." });
       }
 
       const rows = await db
-        .select()
+        .select({
+          id: leads.id,
+          returningToken: leads.returningToken,
+          tokenExpiresAt: leads.tokenExpiresAt,
+          rawQuizData: leads.rawQuizData,
+        })
         .from(leads)
         .where(eq(leads.returningToken, input.token))
         .limit(1);
 
       const lead = rows[0];
       if (!lead) {
-        throw new Error("Returning results not found.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Returning session not found." });
       }
 
       if (lead.tokenExpiresAt && lead.tokenExpiresAt.getTime() < Date.now()) {
-        throw new Error("Returning results expired.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Returning session not found." });
       }
 
       const answers = Array.isArray(lead.rawQuizData)
@@ -224,7 +229,6 @@ export const quizRouter = router({
       return {
         token: lead.returningToken,
         leadId: lead.id,
-        createdAt: lead.createdAt,
         topMatches,
       };
     }),
