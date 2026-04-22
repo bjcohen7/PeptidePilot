@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
@@ -124,55 +123,7 @@ function buildReturningTopMatches(rawQuizData: unknown) {
   }));
 }
 
-function isMissingReturningSchemaError(error: unknown) {
-  let current = error as { code?: string; sqlMessage?: string; message?: string; cause?: unknown } | undefined;
 
-  while (current && typeof current === "object") {
-    const message = [current.sqlMessage, current.message].filter(Boolean).join(" ");
-    if (current.code === "ER_BAD_FIELD_ERROR" && message.includes("returningToken")) {
-      return true;
-    }
-
-    current = current.cause as
-      | { code?: string; sqlMessage?: string; message?: string; cause?: unknown }
-      | undefined;
-  }
-
-  return false;
-}
-
-async function generateAndStoreReturningToken(leadId: string) {
-  const db = await getDb();
-  if (!db) return null;
-
-  const returningToken = randomUUID();
-  const tokenExpiresAt = new Date(Date.now() + RETURNING_TOKEN_TTL_MS);
-
-  const persistToken = async () => {
-    await db
-      .update(leads)
-      .set({
-        returningToken,
-        tokenExpiresAt,
-      })
-      .where(eq(leads.id, leadId));
-  };
-
-  await ensureReturningUserLeadSchema();
-
-  try {
-    await persistToken();
-  } catch (error) {
-    if (!isMissingReturningSchemaError(error)) {
-      throw error;
-    }
-
-    await ensureReturningUserLeadSchema({ force: true });
-    await persistToken();
-  }
-
-  return returningToken;
-}
 
 export const quizRouter = router({
   getReturningResultsByToken: publicProcedure
