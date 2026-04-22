@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock, ShieldCheck, Zap } from "lucide-react";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { QUIZ_QUESTIONS, peptideProfiles } from "../../../shared/scoring";
+import { preloadQuizFlow } from "@/lib/preloadQuiz";
 
 const STEPS = [
   { number: "01", label: `Answer ${QUIZ_QUESTIONS.length} targeted questions`, sub: "Across 8 biological domains" },
@@ -11,6 +13,10 @@ const STEPS = [
 ];
 
 export default function QuizEntry() {
+  useEffect(() => {
+    void preloadQuizFlow();
+  }, []);
+
   return (
     <div
       className="min-h-screen flex flex-col"
@@ -109,6 +115,9 @@ export default function QuizEntry() {
                 background: "linear-gradient(135deg, #38bdf8, #0d9488)",
                 boxShadow: "0 8px 32px rgba(56,189,248,0.25)",
               }}
+              onMouseEnter={() => void preloadQuizFlow()}
+              onFocus={() => void preloadQuizFlow()}
+              onTouchStart={() => void preloadQuizFlow()}
             >
               Begin My Assessment
               <ArrowRight className="ml-2 w-4 h-4" />
