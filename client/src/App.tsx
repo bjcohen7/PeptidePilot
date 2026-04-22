@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -14,7 +14,7 @@ import DashboardLayout from "./components/DashboardLayout";
 import SessionTracker from "./components/SessionTracker";
 import Seo from "./components/Seo";
 import PersistentRecommendationBar from "./components/PersistentRecommendationBar";
-import { UserSessionProvider } from "./contexts/UserSessionContext";
+import PeptidePilotLogo from "./components/PeptidePilotLogo";
 
 // Pages
 const Home = lazy(() => import("./pages/Home"));
