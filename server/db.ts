@@ -143,14 +143,6 @@ export async function ensureAffiliateWorkspaceSchema() {
       if (!(await hasColumn(db, "leads", "sessionId"))) {
         await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `sessionId` varchar(64)"));
       }
-
-      if (!(await hasColumn(db, "leads", "returningToken"))) {
-        await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `returningToken` varchar(128)"));
-      }
-
-      if (!(await hasColumn(db, "leads", "tokenExpiresAt"))) {
-        await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `tokenExpiresAt` timestamp NULL"));
-      }
     })().catch((error) => {
       affiliateWorkspaceBootstrap = null;
       throw error;
