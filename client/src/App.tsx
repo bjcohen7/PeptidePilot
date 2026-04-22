@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -14,7 +14,6 @@ import Seo from "./components/Seo";
 import PersistentRecommendationBar from "./components/PersistentRecommendationBar";
 import { UserSessionProvider } from "./contexts/UserSessionContext";
 
-// Pages
 const Home = lazy(() => import("./pages/Home"));
 const QuizEntry = lazy(() => import("./pages/QuizEntry"));
 const QuizFlow = lazy(() => import("./pages/QuizFlow"));
@@ -52,7 +51,6 @@ const AffiliatePartnersAdmin = lazy(() => import("./pages/admin/AffiliatePartner
 const InsightsOverview = lazy(() => import("./pages/admin/InsightsOverview"));
 const SessionDetail = lazy(() => import("./pages/admin/SessionDetail"));
 
-// Pages that should NOT show the standard navbar/footer
 const BARE_ROUTES = ["/quiz/flow", "/processing"];
 
 function isBareRoute(path: string) {
@@ -60,7 +58,6 @@ function isBareRoute(path: string) {
 }
 
 function Layout({ children }: { children: React.ReactNode }) {
-  // We use a simple heuristic: quiz/flow and processing pages manage their own headers
   return <>{children}</>;
 }
 
@@ -137,7 +134,6 @@ function Router() {
         />
       ) : null}
       <Switch>
-      {/* Landing page */}
       <Route path="/">
         <PublicLayout>
           <Suspense fallback={<RouteFallback />}>
@@ -146,35 +142,30 @@ function Router() {
         </PublicLayout>
       </Route>
 
-      {/* Quiz entry — minimal header, no footer */}
       <Route path="/quiz">
         <Suspense fallback={<RouteFallback />}>
           <QuizEntry />
         </Suspense>
       </Route>
 
-      {/* Quiz flow — fully self-contained */}
       <Route path="/quiz/flow">
         <Suspense fallback={<RouteFallback />}>
           <QuizFlow />
         </Suspense>
       </Route>
 
-      {/* Processing screen — no nav */}
       <Route path="/processing">
         <Suspense fallback={<RouteFallback />}>
           <Processing />
         </Suspense>
       </Route>
 
-      {/* Results — manages its own header */}
       <Route path="/results">
         <Suspense fallback={<RouteFallback />}>
           <Results />
         </Suspense>
       </Route>
 
-      {/* Supporting pages */}
       <Route path="/about">
         <PublicLayout>
           <Suspense fallback={<RouteFallback />}>
@@ -395,7 +386,6 @@ function Router() {
         </DashboardLayout>
       </Route>
 
-      {/* 404 */}
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
       </Switch>
@@ -404,6 +394,10 @@ function Router() {
 }
 
 function App() {
+  useEffect(() => {
+    void import("./pages/QuizEntry");
+  }, []);
+
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
