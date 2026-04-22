@@ -1,6 +1,8 @@
+import { randomUUID } from "crypto";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
-import { getDb } from "../db";
+import { ensureAffiliateWorkspaceSchema, getDb } from "../db";
 import { leads, affiliateClicks, visitorSessions } from "../../drizzle/schema";
 import {
   AGE_RANGE_OPTIONS,
@@ -20,6 +22,11 @@ import { ENV } from "../_core/env";
 const TIER1_WEBHOOK = process.env.WEBHOOK_TIER1_URL;
 const TIER2_WEBHOOK = process.env.WEBHOOK_TIER2_URL;
 const TIER3_WEBHOOK = process.env.WEBHOOK_TIER3_URL;
+const RETURNING_TOKEN_TTL_MS = 90 * 24 * 60 * 60 * 1000;
+
+const returningLookupInput = z.object({
+  token: z.string().min(8).max(128),
+});
 
 async function sendWebhook(url: string | undefined, payload: object) {
   if (!url) return;
@@ -35,7 +42,7 @@ async function sendWebhook(url: string | undefined, payload: object) {
 }
 
 async function insertLead(
-  values: Omit<typeof leads.$inferInsert, "sessionId">
+  values: Omit<typeof leads.$inferInsert, "sessionId" | "returningToken" | "tokenExpiresAt">
 ) {
   const db = await getDb();
   if (!db) return false;
@@ -69,7 +76,80 @@ async function insertLead(
   return true;
 }
 
+function decodeLeadAnswers(rawQuizData: unknown) {
+  if (!Array.isArray(rawQuizData)) return [];
+  return rawQuizData.map((value) => (typeof value === "number" ? value : -1));
+}
+
+function buildReturningTopMatches(rawQuizData: unknown) {
+  const answers = decodeLeadAnswers(rawQuizData);
+  if (answers.length !== QUIZ_QUESTIONS.length) {
+    return [];
+  }
+
+  return calculateMatches(answers).slice(0, 5).map((match) => ({
+    slug: match.peptide.id,
+    name: match.peptide.name,
+    score: match.score,
+    matchPercent: match.matchPercent,
+  }));
+}
+
+async function generateAndStoreReturningToken(leadId: string) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const returningToken = randomUUID();
+  const tokenExpiresAt = new Date(Date.now() + RETURNING_TOKEN_TTL_MS);
+
+  await db
+    .update(leads)
+    .set({
+      returningToken,
+      tokenExpiresAt,
+    })
+    .where(eq(leads.id, leadId));
+
+  return returningToken;
+}
+
 export const quizRouter = router({
+  getReturningResultsByToken: publicProcedure
+    .input(returningLookupInput)
+    .query(async ({ input }) => {
+      await ensureAffiliateWorkspaceSchema();
+
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available." });
+      }
+
+      const lead = await db
+        .select({
+          id: leads.id,
+          returningToken: leads.returningToken,
+          tokenExpiresAt: leads.tokenExpiresAt,
+          rawQuizData: leads.rawQuizData,
+        })
+        .from(leads)
+        .where(eq(leads.returningToken, input.token))
+        .limit(1)
+        .then((rows) => rows[0] ?? null);
+
+      if (!lead || !lead.returningToken) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Returning session not found." });
+      }
+
+      if (lead.tokenExpiresAt && lead.tokenExpiresAt.getTime() < Date.now()) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Returning session not found." });
+      }
+
+      return {
+        token: lead.returningToken,
+        topMatches: buildReturningTopMatches(lead.rawQuizData),
+      };
+    }),
+
   submitQuiz: publicProcedure
     .input(
       z.object({
@@ -91,6 +171,8 @@ export const quizRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      await ensureAffiliateWorkspaceSchema();
+
       const { email, consentGiven, answers, sessionId, meta } = input;
 
       if (!consentGiven) {
@@ -161,6 +243,13 @@ export const quizRouter = router({
             });
           }
         }
+      }
+
+      let returningToken: string | null = null;
+      try {
+        returningToken = await generateAndStoreReturningToken(leadId);
+      } catch (error) {
+        console.error("[ReturningUser] Failed to generate/store token:", error);
       }
 
       // Build webhook payload
@@ -244,6 +333,7 @@ export const quizRouter = router({
         status: "success" as const,
         leadId,
         topMatches,
+        returningToken,
       };
     }),
 

@@ -29,6 +29,16 @@ async function hasColumn(
   return rows.length > 0;
 }
 
+async function hasIndex(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  table: string,
+  index: string,
+) {
+  const result = await db.execute(sql.raw(`SHOW INDEX FROM \`${table}\` WHERE Key_name = '${index}'`));
+  const rows = Array.isArray(result) ? result : ((result as any).rows ?? []);
+  return rows.length > 0;
+}
+
 export async function ensureAffiliateWorkspaceSchema() {
   const db = await getDb();
   if (!db) return;
@@ -142,6 +152,18 @@ export async function ensureAffiliateWorkspaceSchema() {
 
       if (!(await hasColumn(db, "leads", "sessionId"))) {
         await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `sessionId` varchar(64)"));
+      }
+
+      if (!(await hasColumn(db, "leads", "returningToken"))) {
+        await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `returningToken` varchar(64)"));
+      }
+
+      if (!(await hasColumn(db, "leads", "tokenExpiresAt"))) {
+        await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `tokenExpiresAt` timestamp NULL"));
+      }
+
+      if (!(await hasIndex(db, "leads", "leads_returning_token_unique"))) {
+        await db.execute(sql.raw("ALTER TABLE `leads` ADD UNIQUE INDEX `leads_returning_token_unique` (`returningToken`)"));
       }
     })().catch((error) => {
       affiliateWorkspaceBootstrap = null;

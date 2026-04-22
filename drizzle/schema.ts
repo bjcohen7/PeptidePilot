@@ -22,6 +22,8 @@ export const leads = mysqlTable("leads", {
   id: varchar("id", { length: 36 }).primaryKey(), // UUID
   email: varchar("email", { length: 320 }).notNull(),
   sessionId: varchar("sessionId", { length: 64 }),
+  returningToken: varchar("returningToken", { length: 64 }),
+  tokenExpiresAt: timestamp("tokenExpiresAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   ageRange: varchar("ageRange", { length: 32 }).notNull(),
   primaryGoal: varchar("primaryGoal", { length: 255 }).notNull(),
@@ -31,7 +33,7 @@ export const leads = mysqlTable("leads", {
   consentGiven: boolean("consentGiven").notNull().default(false),
   consentTimestamp: timestamp("consentTimestamp").notNull(),
   ipAddress: varchar("ipAddress", { length: 64 }).notNull(),
-  rawQuizData: json("rawQuizData").notNull(), // array of 40 answer indices
+  rawQuizData: json("rawQuizData").notNull(), // array of quiz answer indices
 });
 
 export type Lead = typeof leads.$inferSelect;
