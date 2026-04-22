@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import Seo from "@/components/Seo";
+import { preloadQuizExperience } from "@/lib/preloadQuiz";
 
 const SITE_URL = "https://www.peptidepilot.me";
 
@@ -61,6 +62,25 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
+  useEffect(() => {
+    const preload = () => {
+      preloadQuizExperience();
+    };
+
+    const idleHandle =
+      typeof window !== "undefined" && "requestIdleCallback" in window
+        ? window.requestIdleCallback(preload, { timeout: 1200 })
+        : window.setTimeout(preload, 350);
+
+    return () => {
+      if (typeof idleHandle === "number") {
+        window.clearTimeout(idleHandle);
+      } else if (typeof window !== "undefined" && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleHandle);
+      }
+    };
+  }, []);
+
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.includes("@")) {
@@ -87,7 +107,7 @@ export default function Home() {
           url: `${SITE_URL}/`,
         }}
       />
-      {/* ── Hero ─────────────────────────────────────────────────── */}
+      {/* ── Hero ───────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-brand-gradient text-white">
         <div
           className="absolute inset-0 opacity-10"
@@ -118,6 +138,9 @@ export default function Home() {
             <Button
               size="lg"
               className="bg-white text-primary hover:bg-white/90 transition-all font-semibold text-base px-8 py-5 sm:py-6 h-auto rounded-xl shadow-lg shadow-black/20 group w-full sm:w-auto"
+              onMouseEnter={() => preloadQuizExperience()}
+              onFocus={() => preloadQuizExperience()}
+              onTouchStart={() => preloadQuizExperience()}
             >
               Take the 5-Minute Quiz
               <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -136,7 +159,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Social Proof Banner ───────────────────────────────────── */}
+      {/* ── Social Proof Banner ────────────────────────────────────── */}
       <section className="bg-secondary/60 border-y border-border/60 py-4 sm:py-5">
         <div className="container">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-10 text-sm text-muted-foreground">
@@ -158,7 +181,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── How It Works ─────────────────────────────────────────── */}
+      {/* ── How It Works ───────────────────────────────────────────── */}
       <section className="py-14 sm:py-20 bg-background">
         <div className="container">
           <div className="text-center mb-10 sm:mb-14">
@@ -195,7 +218,7 @@ export default function Home() {
 
           <div className="text-center mt-10 sm:mt-12">
             <Link href="/quiz">
-              <Button size="lg" className="bg-brand-gradient text-white hover:opacity-90 font-semibold px-8 py-5 sm:py-6 h-auto rounded-xl w-full sm:w-auto">
+              <Button size="lg" className="bg-brand-gradient text-white hover:opacity-90 font-semibold px-8 py-5 sm:py-6 h-auto rounded-xl w-full sm:w-auto" onMouseEnter={() => preloadQuizExperience()} onFocus={() => preloadQuizExperience()} onTouchStart={() => preloadQuizExperience()}>
                 Start Your Free Analysis
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
@@ -204,7 +227,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Science Section ───────────────────────────────────────── */}
+      {/* ── Science Section ────────────────────────────────────────── */}
       <section className="py-14 sm:py-20 bg-muted/40">
         <div className="container">
           <div className="text-center mb-10 sm:mb-14">
@@ -262,7 +285,7 @@ export default function Home() {
                 ))}
               </ul>
               <Link href="/quiz">
-                <Button size="lg" className="bg-brand-gradient text-white hover:opacity-90 font-semibold px-8 rounded-xl w-full sm:w-auto">
+                <Button size="lg" className="bg-brand-gradient text-white hover:opacity-90 font-semibold px-8 rounded-xl w-full sm:w-auto" onMouseEnter={() => preloadQuizExperience()} onFocus={() => preloadQuizExperience()} onTouchStart={() => preloadQuizExperience()}>
                   Get My Free Report
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
@@ -320,7 +343,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Independent Positioning ───────────────────────────────── */}
+      {/* ── Independent Positioning ────────────────────────────────── */}
       <section className="py-14 sm:py-20 bg-background">
         <div className="container max-w-3xl text-center">
           <div className="section-badge mb-5 sm:mb-6">Why PeptidePilot</div>
@@ -352,7 +375,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Email Capture ─────────────────────────────────────────── */}
+      {/* ── Email Capture ──────────────────────────────────────────── */}
       <section className="py-12 sm:py-16 bg-secondary/40 border-y border-border/60">
         <div className="container max-w-xl text-center">
           <h2 className="text-2xl sm:text-3xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
@@ -389,7 +412,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Final CTA ─────────────────────────────────────────────── */}
+      {/* ── Final CTA ──────────────────────────────────────────────── */}
       <section className="py-14 sm:py-20 bg-brand-gradient text-white">
         <div className="container text-center">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-normal mb-4 sm:mb-5" style={{ fontFamily: "'DM Serif Display', serif" }}>
@@ -402,6 +425,9 @@ export default function Home() {
             <Button
               size="lg"
               className="bg-white text-primary hover:bg-white/90 font-semibold text-base px-8 py-5 sm:py-6 h-auto rounded-xl shadow-lg shadow-black/20 group w-full sm:w-auto"
+              onMouseEnter={() => preloadQuizExperience()}
+              onFocus={() => preloadQuizExperience()}
+              onTouchStart={() => preloadQuizExperience()}
             >
               Take the Free Quiz
               <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
