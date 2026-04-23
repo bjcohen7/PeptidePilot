@@ -67,18 +67,19 @@ export default function Home() {
       preloadQuizExperience();
     };
 
-    const idleHandle =
-      typeof window !== "undefined" && "requestIdleCallback" in window
-        ? window.requestIdleCallback(preload, { timeout: 1200 })
-        : window.setTimeout(preload, 350);
+    if (typeof window === "undefined") {
+      return;
+    }
 
-    return () => {
-      if (typeof idleHandle === "number") {
-        window.clearTimeout(idleHandle);
-      } else if (typeof window !== "undefined" && "cancelIdleCallback" in window) {
+    if ("requestIdleCallback" in window) {
+      const idleHandle = window.requestIdleCallback(preload, { timeout: 1200 });
+      return () => {
         window.cancelIdleCallback(idleHandle);
-      }
-    };
+      };
+    }
+
+    const timeoutHandle = setTimeout(preload, 350);
+    return () => clearTimeout(timeoutHandle);
   }, []);
 
   const handleSubscribe = (e: React.FormEvent) => {

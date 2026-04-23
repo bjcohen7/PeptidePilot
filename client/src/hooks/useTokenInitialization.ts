@@ -134,7 +134,14 @@ export function useTokenInitialization() {
           isAuthenticated: true,
           isLoading: false,
           token: activeToken,
-          results,
+          results: {
+            ...results,
+            token: results.token ?? activeToken,
+            createdAt:
+              "createdAt" in results && (typeof results.createdAt === "string" || results.createdAt instanceof Date)
+                ? results.createdAt
+                : new Date().toISOString(),
+          },
           justCompletedQuiz: false,
           error: null,
         });
