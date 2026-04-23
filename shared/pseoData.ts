@@ -7711,51 +7711,6 @@ export const forConditionPages: ForConditionPageData[] = [
     relatedConditions: ["long-covid", "fibromyalgia", "sleep-disorders", "cognitive-decline"],
   },
   {
-    slug: "anxiety",
-    condition: "Anxiety Disorders",
-    h1: "Best Peptides for Anxiety: Evidence-Based Guide",
-    metaDescription: "Guide to peptides for anxiety — selank, BPC-157, and thymosin alpha-1 with evidence, dosing, and protocols for anxiety management.",
-    category: "Mental Health",
-    icdCode: "F41.9",
-    prevalence: "Affects 284 million people worldwide; most common mental health disorder",
-    conditionOverview: "Anxiety disorders encompass generalized anxiety disorder (GAD), social anxiety, panic disorder, and PTSD. They involve dysregulation of the HPA axis, GABAergic and serotonergic neurotransmission, and neuroinflammation. Standard treatments include SSRIs, SNRIs, benzodiazepines, and cognitive behavioral therapy.",
-    symptoms: ["Persistent worry and apprehension", "Physical tension and restlessness", "Sleep disturbances", "Difficulty concentrating", "Avoidance behaviors", "Panic attacks (in panic disorder)"],
-    conventionalTreatments: ["SSRIs and SNRIs (first-line)", "Benzodiazepines (short-term)", "Cognitive behavioral therapy (CBT)", "Buspirone", "Beta-blockers (situational anxiety)"],
-    howPeptidesHelp: "Selank is a synthetic analogue of tuftsin with anxiolytic properties demonstrated in Russian clinical trials — it modulates GABA-A receptors and reduces anxiety without sedation or dependence. BPC-157 has shown anxiolytic effects in animal models, possibly through dopaminergic and serotonergic modulation. Thymosin Alpha-1 may help by reducing neuroinflammation, which is increasingly linked to anxiety disorders.",
-    topPeptides: [
-    {
-      peptideSlug: "selank",
-      peptideName: "Selank",
-      mechanism: "GABA-A modulation, anxiolytic without sedation, reduces stress response",
-        evidenceLevel: "Moderate Preclinical / Emerging Human",
-          typicalDose: "250-500mcg intranasal or SubQ, 1-2x daily",
-      rank: 1,
-    },    {
-      peptideSlug: "bpc-157",
-      peptideName: "BPC-157",
-      mechanism: "Dopaminergic and serotonergic modulation, gut-brain axis support",
-        evidenceLevel: "Moderate Preclinical / Emerging Human",
-          typicalDose: "250-500mcg SubQ or oral daily",
-      rank: 2,
-    }
-    ],
-    protocolSuggestion: "Selank 250mcg intranasal or SubQ, twice daily for 4-8 weeks. Can be combined with BPC-157 250mcg oral daily for gut-brain axis support. These are adjuncts to, not replacements for, evidence-based anxiety treatments (CBT, SSRIs).",
-    importantCaveats: "Selank has limited Western clinical trial data — most evidence is from Russian studies. Do not discontinue prescribed anxiety medications without physician guidance. Peptides for anxiety are experimental and should be used under medical supervision.",
-    faqItems: [
-    {
-      q: "Is selank safe?",
-      a: "Selank has a good safety profile in Russian clinical trials with no significant adverse effects reported. It does not cause sedation, dependence, or withdrawal — key advantages over benzodiazepines.",
-    },    {
-      q: "How quickly does selank work for anxiety?",
-      a: "Many users report anxiolytic effects within 30-60 minutes of intranasal administration. Consistent daily use over 2-4 weeks appears to produce cumulative benefits.",
-    },    {
-      q: "Can peptides replace SSRIs for anxiety?",
-      a: "No. Peptides are experimental adjuncts, not replacements for evidence-based anxiety treatments. Never discontinue prescribed medications without physician guidance.",
-    }
-    ],
-    relatedConditions: ["depression", "ptsd", "sleep-disorders", "chronic-fatigue"],
-  },
-  {
     slug: "depression",
     condition: "Depression (Major Depressive Disorder)",
     h1: "Best Peptides for Depression: Evidence-Based Guide",
@@ -8194,51 +8149,6 @@ export const forConditionPages: ForConditionPageData[] = [
     }
     ],
     relatedConditions: ["tendinopathy", "sports-injury", "skin-aging", "type-2-diabetes"],
-  },
-  {
-    slug: "low-testosterone",
-    condition: "Low Testosterone (Male Hypogonadism)",
-    h1: "Best Peptides for Low Testosterone: Evidence-Based Guide",
-    metaDescription: "Guide to peptides for low testosterone — sermorelin, ipamorelin, and kisspeptin with evidence, dosing, and testosterone support protocols.",
-    category: "Hormonal Health",
-    icdCode: "E29.1",
-    prevalence: "Affects approximately 40% of men over 45; 4-5 million men in the US have hypogonadism",
-    conditionOverview: "Male hypogonadism involves insufficient testosterone production due to testicular failure (primary) or hypothalamic-pituitary dysfunction (secondary). Symptoms include reduced libido, erectile dysfunction, fatigue, muscle loss, fat gain, mood changes, and reduced bone density.",
-    symptoms: ["Reduced libido and sexual function", "Fatigue and low energy", "Loss of muscle mass and strength", "Increased body fat (especially visceral)", "Mood changes, depression, irritability", "Reduced bone density"],
-    conventionalTreatments: ["Testosterone replacement therapy (TRT) — injections, gels, patches", "Clomiphene citrate (for secondary hypogonadism)", "HCG (to preserve testicular function)", "Lifestyle modification (exercise, sleep, weight loss)"],
-    howPeptidesHelp: "GH secretagogues (sermorelin, ipamorelin) support the GH/IGF-1 axis, which interacts with testosterone production. Kisspeptin stimulates GnRH release, which drives LH/FSH and testosterone production — a more physiological approach than TRT. BPC-157 may support testicular vascular health.",
-    topPeptides: [
-    {
-      peptideSlug: "sermorelin",
-      peptideName: "Sermorelin",
-      mechanism: "GH secretagogue; increases GH/IGF-1 which supports testosterone production and body composition",
-        evidenceLevel: "Moderate Preclinical / Emerging Human",
-          typicalDose: "200-300mcg SubQ at bedtime",
-      rank: 1,
-    },    {
-      peptideSlug: "ipamorelin",
-      peptideName: "Ipamorelin",
-      mechanism: "GH secretagogue; supports body composition and energy — complements testosterone optimization",
-        evidenceLevel: "Moderate Preclinical / Emerging Human",
-          typicalDose: "200-300mcg SubQ 2-3x daily",
-      rank: 2,
-    }
-    ],
-    protocolSuggestion: "For secondary hypogonadism: sermorelin 200mcg at bedtime + ipamorelin 200mcg morning and pre-sleep. These support the GH axis and body composition. For primary hypogonadism (testicular failure), TRT is the appropriate treatment — peptides are adjuncts.",
-    importantCaveats: "Low testosterone requires medical evaluation to determine cause (primary vs. secondary). TRT is the most evidence-backed treatment for symptomatic hypogonadism. Peptides are adjuncts. Never self-diagnose or self-treat hypogonadism — get bloodwork (total T, free T, LH, FSH) first.",
-    faqItems: [
-    {
-      q: "Can peptides replace testosterone replacement therapy?",
-      a: "No. TRT is the standard of care for symptomatic hypogonadism. Peptides like sermorelin support the GH axis and body composition but do not directly replace testosterone. For secondary hypogonadism, kisspeptin analogues are being investigated as a more physiological approach.",
-    },    {
-      q: "Do GH secretagogues increase testosterone?",
-      a: "GH secretagogues primarily increase GH/IGF-1, not testosterone directly. However, optimizing the GH axis supports overall anabolic hormone balance and body composition, which may indirectly support testosterone levels.",
-    },    {
-      q: "What is the best lifestyle intervention for low testosterone?",
-      a: "Resistance training, weight loss (especially visceral fat reduction), sleep optimization (7-9 hours), and stress management have the strongest evidence for naturally supporting testosterone levels.",
-    }
-    ],
-    relatedConditions: ["erectile-dysfunction", "muscle-loss", "depression", "obesity"],
   },
   {
     slug: "autoimmune-disease",
