@@ -7308,6 +7308,68 @@ export interface ForConditionPageData {
 }
 export const forConditionPages: ForConditionPageData[] = [
   {
+    slug: "brain-fog",
+    condition: "Brain Fog and Cognitive Fatigue",
+    h1: "Best Peptides for Brain Fog: Evidence-Based Guide",
+    metaDescription: "Independent guide to peptides for brain fog and cognitive fatigue. Semax, Selank, and Dihexa compared. Mechanism, evidence, and protocols. Vendor-neutral.",
+    category: "Cognitive Health",
+    icdCode: "R41.84",
+    prevalence: "Affects up to 20-30% of adults globally, often associated with stress, sleep deprivation, long COVID, or chronic fatigue.",
+    conditionOverview: "Brain fog is not a medical diagnosis but a symptom characterized by confusion, forgetfulness, lack of focus, and mental clarity. It can result from neuroinflammation, poor sleep, hormonal imbalances, chronic stress, or post-viral syndromes. While addressing the root cause (e.g., sleep, diet, stress) is essential, certain nootropic peptides can help restore cognitive function by modulating neurotransmitters, reducing neuroinflammation, and promoting neuroplasticity.",
+    symptoms: [
+      "Difficulty concentrating or focusing",
+      "Short-term memory issues",
+      "Mental fatigue after minor exertion",
+      "Slow processing speed",
+      "Word-finding difficulties",
+      "Feeling 'spaced out' or disconnected"
+    ],
+    conventionalTreatments: [
+      "Sleep optimization and hygiene",
+      "Stress management and mindfulness",
+      "Dietary changes (anti-inflammatory diet)",
+      "Addressing underlying conditions (e.g., thyroid, hormones)",
+      "Stimulants (e.g., caffeine, modafinil) for symptom management",
+      "Cognitive behavioral therapy (CBT)"
+    ],
+    howPeptidesHelp: "Peptides like Semax and Selank can rapidly upregulate Brain-Derived Neurotrophic Factor (BDNF), enhancing neuroplasticity and cognitive resilience. They modulate neurotransmitters (dopamine, serotonin) without the crash associated with traditional stimulants. Other peptides like Dihexa offer profound synaptogenic effects, while BPC-157 may help resolve underlying neuroinflammation or gut-brain axis dysfunction contributing to the fog.",
+    topPeptides: [
+      {
+        peptideSlug: "semax",
+        peptideName: "Semax",
+        mechanism: "Upregulates BDNF, modulates dopamine and serotonin, enhances focus and learning",
+        evidenceLevel: "Moderate Preclinical / Emerging Human",
+        typicalDose: "200-600mcg intranasal, 1-2x daily",
+        rank: 1
+      },
+      {
+        peptideSlug: "selank",
+        peptideName: "Selank",
+        mechanism: "GABAergic modulation, reduces stress-induced cognitive impairment, anxiolytic",
+        evidenceLevel: "Moderate Preclinical / Emerging Human",
+        typicalDose: "250-500mcg intranasal, 1-2x daily",
+        rank: 2
+      },
+      {
+        peptideSlug: "dihexa",
+        peptideName: "Dihexa",
+        mechanism: "HGF activator, profound synaptogenesis, repairs cognitive pathways",
+        evidenceLevel: "Preclinical Only",
+        typicalDose: "10-20mg oral or transdermal, 1-2x weekly",
+        rank: 3
+      }
+    ],
+    protocolSuggestion: "For acute brain fog and focus, Semax (200-600mcg intranasal) is the most targeted starting point. If brain fog is driven by stress or anxiety, Selank (250-500mcg intranasal) may be more appropriate. They can be stacked together. Address foundational pillars like sleep (7-9 hours) and nutrition before relying on peptides.",
+    importantCaveats: "Nootropic peptides are not FDA-approved for cognitive enhancement or brain fog. Most human data comes from Russian clinical trials. They should not replace medical evaluation for underlying causes of cognitive decline, such as thyroid dysfunction, sleep apnea, or neurodegenerative disease.",
+    faqItems: [
+      { q: "What is the best peptide for brain fog?", a: "Semax is generally considered the most effective peptide for acute brain fog due to its rapid BDNF upregulation and dopaminergic modulation, which enhance focus and mental clarity." },
+      { q: "Can I take Semax and Selank together?", a: "Yes, stacking Semax and Selank is a common protocol. Semax provides the drive and focus, while Selank smooths out the experience by reducing stress and anxiety, creating a state of calm productivity." },
+      { q: "Do these peptides cause a crash like caffeine?", a: "No. Unlike traditional stimulants that deplete neurotransmitter stores, peptides like Semax and Selank modulate receptor sensitivity and promote neuroplasticity, generally avoiding the 'crash' or withdrawal symptoms associated with stimulants." }
+    ],
+    relatedConditions: ["chronic-fatigue", "cognitive-decline", "anxiety", "poor-sleep"]
+  },
+
+  {
     slug: "leaky-gut",
     condition: "Leaky Gut (Intestinal Permeability)",
     h1: "Best Peptides for Leaky Gut: Evidence-Based Guide",
