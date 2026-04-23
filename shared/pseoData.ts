@@ -827,6 +827,753 @@ export const peptidePages: PeptidePageData[] = [
       { q: "How long does Nandrolone stay in the system?", a: "Nandrolone decanoate (the most common ester) has a half-life of approximately 6-12 days. It can be detected in urine for up to 18 months in some individuals due to its storage in fat tissue." },
     ],
   },
+
+  {
+      "slug": "retatrutide",
+      "name": "Retatrutide",
+      "fullName": "Retatrutide",
+      "peptideClass": "GLP-1/GIP/Glucagon Triple Agonist",
+      "tagline": "Retatrutide is an emerging peptide profile for weight loss with an evidence-first safety frame.",
+      "metaDescription": "Independent guide to retatrutide peptide weight loss: mechanism, evidence, dosing context, safety, and comparisons. Science-backed, vendor-neutral.",
+      "categories": [
+        "Weight Loss",
+        "Metabolic Health"
+      ],
+      "primaryGoals": [
+        "fat-loss",
+        "metabolic-health"
+      ],
+      "secondaryGoals": [
+        "anti-aging",
+        "inflammation"
+      ],
+      "halfLife": "Variable; protocol-dependent",
+      "administration": [
+        "Subcutaneous injection",
+        "Oral or topical where applicable"
+      ],
+      "typicalDosage": "Protocol-dependent; discuss with a qualified clinician",
+      "cycleLength": "4-12 weeks depending on goal and supervision",
+      "evidenceLevel": "Moderate Preclinical / Emerging Human",
+      "legalStatus": "Research compound or prescription-only depending on jurisdiction and indication",
+      "approximateCost": "$50-$300/month depending on source and protocol",
+      "mechanismSummary": "Retatrutide is discussed for weight loss because its mechanism overlaps with fat-loss, metabolic-health goals.",
+      "mechanism": "Retatrutide works through pathways relevant to weight loss, but it should not be treated as a universal shortcut. Research discussions focus on receptor signaling, mitochondrial function, inflammatory modulation, or metabolic regulation depending on the compound.",
+      "preclinicalEvidence": "Preclinical evidence suggests biologic plausibility, especially in models relevant to inflammation, metabolism, mitochondrial function, or tissue signaling.",
+      "humanEvidence": "Human evidence varies by compound. Some agents have clinical trial data or approved indications; others remain early-stage research tools with limited published human outcomes.",
+      "anecdotalEvidence": "Anecdotal reports around Retatrutide often focus on weight loss outcomes, but user reports are highly confounded by lifestyle, dosing, concurrent protocols, and product quality.",
+      "pubmedLinks": [
+        "https://pubmed.ncbi.nlm.nih.gov/?term=Retatrutide",
+        "https://pubmed.ncbi.nlm.nih.gov/?term=Retatrutide"
+      ],
+      "sideEffects": "Potential side effects depend on dose, route, sterility, product quality, and individual medical history. Injection-site irritation, nausea, fatigue, appetite changes, or immune effects may occur depending on compound class.",
+      "contraindications": "Avoid unsupervised use during pregnancy or breastfeeding, in active cancer, uncontrolled endocrine disease, or complex autoimmune disease unless specifically supervised by a qualified clinician.",
+      "peptidePilotAssessment": "PeptidePilot treats Retatrutide as an educational profile rather than a default recommendation. It may be relevant for users whose goals align with fat-loss, metabolic-health, but evidence level and safety context should determine whether it belongs in a real protocol discussion.",
+      "quizMatchRate": "Emerging profile; not yet a primary PeptidePilot algorithm match for most users.",
+      "comparablePeptides": [
+        "semaglutide",
+        "tirzepatide"
+      ],
+      "stackPartners": [
+        "semaglutide",
+        "tirzepatide"
+      ],
+      "vendors": [
+        {
+          "name": "Core Peptides",
+          "url": "https://corepeptides.com"
+        },
+        {
+          "name": "Limitless Life",
+          "url": "https://limitlesslifenootropics.com"
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "What is Retatrutide used for?",
+          "a": "Retatrutide is mainly researched or discussed for weight loss applications. The strength of evidence depends on the compound and should be reviewed carefully."
+        },
+        {
+          "q": "Is Retatrutide FDA-approved?",
+          "a": "Approval status varies by compound and indication. Many research peptides are not FDA-approved for human use."
+        },
+        {
+          "q": "How does Retatrutide compare with semaglutide?",
+          "a": "Retatrutide and semaglutide target different mechanisms and should be compared by goal fit, evidence, safety, and medical context."
+        }
+      ]
+    },
+  {
+      "slug": "kpv",
+      "name": "KPV",
+      "fullName": "Lysine-Proline-Valine (KPV)",
+      "peptideClass": "Anti-Inflammatory Tripeptide",
+      "tagline": "KPV is an emerging peptide profile for gut health with an evidence-first safety frame.",
+      "metaDescription": "Independent guide to KPV peptide gut inflammation: mechanism, evidence, dosing context, safety, and comparisons. Science-backed, vendor-neutral.",
+      "categories": [
+        "Gut Health",
+        "Anti-Inflammatory"
+      ],
+      "primaryGoals": [
+        "gut-health",
+        "inflammation"
+      ],
+      "secondaryGoals": [
+        "anti-aging",
+        "inflammation"
+      ],
+      "halfLife": "Variable; protocol-dependent",
+      "administration": [
+        "Subcutaneous injection",
+        "Oral or topical where applicable"
+      ],
+      "typicalDosage": "Protocol-dependent; discuss with a qualified clinician",
+      "cycleLength": "4-12 weeks depending on goal and supervision",
+      "evidenceLevel": "Preclinical Only",
+      "legalStatus": "Research compound or prescription-only depending on jurisdiction and indication",
+      "approximateCost": "$50-$300/month depending on source and protocol",
+      "mechanismSummary": "KPV is discussed for gut health because its mechanism overlaps with gut-health, inflammation goals.",
+      "mechanism": "KPV works through pathways relevant to gut health, but it should not be treated as a universal shortcut. Research discussions focus on receptor signaling, mitochondrial function, inflammatory modulation, or metabolic regulation depending on the compound.",
+      "preclinicalEvidence": "Preclinical evidence suggests biologic plausibility, especially in models relevant to inflammation, metabolism, mitochondrial function, or tissue signaling.",
+      "humanEvidence": "Human evidence varies by compound. Some agents have clinical trial data or approved indications; others remain early-stage research tools with limited published human outcomes.",
+      "anecdotalEvidence": "Anecdotal reports around KPV often focus on gut health outcomes, but user reports are highly confounded by lifestyle, dosing, concurrent protocols, and product quality.",
+      "pubmedLinks": [
+        "https://pubmed.ncbi.nlm.nih.gov/?term=KPV",
+        "https://pubmed.ncbi.nlm.nih.gov/?term=Lysine-Proline-Valine%20(KPV)"
+      ],
+      "sideEffects": "Potential side effects depend on dose, route, sterility, product quality, and individual medical history. Injection-site irritation, nausea, fatigue, appetite changes, or immune effects may occur depending on compound class.",
+      "contraindications": "Avoid unsupervised use during pregnancy or breastfeeding, in active cancer, uncontrolled endocrine disease, or complex autoimmune disease unless specifically supervised by a qualified clinician.",
+      "peptidePilotAssessment": "PeptidePilot treats KPV as an educational profile rather than a default recommendation. It may be relevant for users whose goals align with gut-health, inflammation, but evidence level and safety context should determine whether it belongs in a real protocol discussion.",
+      "quizMatchRate": "Emerging profile; not yet a primary PeptidePilot algorithm match for most users.",
+      "comparablePeptides": [
+        "bpc-157",
+        "ghk-cu"
+      ],
+      "stackPartners": [
+        "bpc-157",
+        "ghk-cu"
+      ],
+      "vendors": [
+        {
+          "name": "Core Peptides",
+          "url": "https://corepeptides.com"
+        },
+        {
+          "name": "Limitless Life",
+          "url": "https://limitlesslifenootropics.com"
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "What is KPV used for?",
+          "a": "KPV is mainly researched or discussed for gut health applications. The strength of evidence depends on the compound and should be reviewed carefully."
+        },
+        {
+          "q": "Is KPV FDA-approved?",
+          "a": "Approval status varies by compound and indication. Many research peptides are not FDA-approved for human use."
+        },
+        {
+          "q": "How does KPV compare with bpc-157?",
+          "a": "KPV and bpc-157 target different mechanisms and should be compared by goal fit, evidence, safety, and medical context."
+        }
+      ]
+    },
+  {
+      "slug": "mots-c",
+      "name": "MOTS-c",
+      "fullName": "Mitochondrial Open Reading Frame of the 12S rRNA-c",
+      "peptideClass": "Mitochondrial-Derived Peptide",
+      "tagline": "MOTS-c is an emerging peptide profile for longevity with an evidence-first safety frame.",
+      "metaDescription": "Independent guide to MOTS-c peptide longevity: mechanism, evidence, dosing context, safety, and comparisons. Science-backed, vendor-neutral.",
+      "categories": [
+        "Longevity",
+        "Metabolic Health"
+      ],
+      "primaryGoals": [
+        "anti-aging",
+        "metabolic-health"
+      ],
+      "secondaryGoals": [
+        "anti-aging",
+        "inflammation"
+      ],
+      "halfLife": "Variable; protocol-dependent",
+      "administration": [
+        "Subcutaneous injection",
+        "Oral or topical where applicable"
+      ],
+      "typicalDosage": "Protocol-dependent; discuss with a qualified clinician",
+      "cycleLength": "4-12 weeks depending on goal and supervision",
+      "evidenceLevel": "Moderate Preclinical / Emerging Human",
+      "legalStatus": "Research compound or prescription-only depending on jurisdiction and indication",
+      "approximateCost": "$50-$300/month depending on source and protocol",
+      "mechanismSummary": "MOTS-c is discussed for longevity because its mechanism overlaps with anti-aging, metabolic-health goals.",
+      "mechanism": "MOTS-c works through pathways relevant to longevity, but it should not be treated as a universal shortcut. Research discussions focus on receptor signaling, mitochondrial function, inflammatory modulation, or metabolic regulation depending on the compound.",
+      "preclinicalEvidence": "Preclinical evidence suggests biologic plausibility, especially in models relevant to inflammation, metabolism, mitochondrial function, or tissue signaling.",
+      "humanEvidence": "Human evidence varies by compound. Some agents have clinical trial data or approved indications; others remain early-stage research tools with limited published human outcomes.",
+      "anecdotalEvidence": "Anecdotal reports around MOTS-c often focus on longevity outcomes, but user reports are highly confounded by lifestyle, dosing, concurrent protocols, and product quality.",
+      "pubmedLinks": [
+        "https://pubmed.ncbi.nlm.nih.gov/?term=MOTS-c",
+        "https://pubmed.ncbi.nlm.nih.gov/?term=Mitochondrial%20Open%20Reading%20Frame%20of%20the%2012S%20rRNA-c"
+      ],
+      "sideEffects": "Potential side effects depend on dose, route, sterility, product quality, and individual medical history. Injection-site irritation, nausea, fatigue, appetite changes, or immune effects may occur depending on compound class.",
+      "contraindications": "Avoid unsupervised use during pregnancy or breastfeeding, in active cancer, uncontrolled endocrine disease, or complex autoimmune disease unless specifically supervised by a qualified clinician.",
+      "peptidePilotAssessment": "PeptidePilot treats MOTS-c as an educational profile rather than a default recommendation. It may be relevant for users whose goals align with anti-aging, metabolic-health, but evidence level and safety context should determine whether it belongs in a real protocol discussion.",
+      "quizMatchRate": "Emerging profile; not yet a primary PeptidePilot algorithm match for most users.",
+      "comparablePeptides": [
+        "nad-plus",
+        "metformin"
+      ],
+      "stackPartners": [
+        "nad-plus",
+        "metformin"
+      ],
+      "vendors": [
+        {
+          "name": "Core Peptides",
+          "url": "https://corepeptides.com"
+        },
+        {
+          "name": "Limitless Life",
+          "url": "https://limitlesslifenootropics.com"
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "What is MOTS-c used for?",
+          "a": "MOTS-c is mainly researched or discussed for longevity applications. The strength of evidence depends on the compound and should be reviewed carefully."
+        },
+        {
+          "q": "Is MOTS-c FDA-approved?",
+          "a": "Approval status varies by compound and indication. Many research peptides are not FDA-approved for human use."
+        },
+        {
+          "q": "How does MOTS-c compare with nad-plus?",
+          "a": "MOTS-c and nad-plus target different mechanisms and should be compared by goal fit, evidence, safety, and medical context."
+        }
+      ]
+    },
+  {
+      "slug": "ll-37",
+      "name": "LL-37",
+      "fullName": "Cathelicidin Antimicrobial Peptide LL-37",
+      "peptideClass": "Antimicrobial Host Defense Peptide",
+      "tagline": "LL-37 is an emerging peptide profile for immune health with an evidence-first safety frame.",
+      "metaDescription": "Independent guide to LL-37 peptide antimicrobial immune: mechanism, evidence, dosing context, safety, and comparisons. Science-backed, vendor-neutral.",
+      "categories": [
+        "Immune Health",
+        "Inflammation"
+      ],
+      "primaryGoals": [
+        "immune-support",
+        "inflammation"
+      ],
+      "secondaryGoals": [
+        "anti-aging",
+        "inflammation"
+      ],
+      "halfLife": "Variable; protocol-dependent",
+      "administration": [
+        "Subcutaneous injection",
+        "Oral or topical where applicable"
+      ],
+      "typicalDosage": "Protocol-dependent; discuss with a qualified clinician",
+      "cycleLength": "4-12 weeks depending on goal and supervision",
+      "evidenceLevel": "Moderate Preclinical / Emerging Human",
+      "legalStatus": "Research compound or prescription-only depending on jurisdiction and indication",
+      "approximateCost": "$50-$300/month depending on source and protocol",
+      "mechanismSummary": "LL-37 is discussed for immune health because its mechanism overlaps with immune-support, inflammation goals.",
+      "mechanism": "LL-37 works through pathways relevant to immune health, but it should not be treated as a universal shortcut. Research discussions focus on receptor signaling, mitochondrial function, inflammatory modulation, or metabolic regulation depending on the compound.",
+      "preclinicalEvidence": "Preclinical evidence suggests biologic plausibility, especially in models relevant to inflammation, metabolism, mitochondrial function, or tissue signaling.",
+      "humanEvidence": "Human evidence varies by compound. Some agents have clinical trial data or approved indications; others remain early-stage research tools with limited published human outcomes.",
+      "anecdotalEvidence": "Anecdotal reports around LL-37 often focus on immune health outcomes, but user reports are highly confounded by lifestyle, dosing, concurrent protocols, and product quality.",
+      "pubmedLinks": [
+        "https://pubmed.ncbi.nlm.nih.gov/?term=LL-37",
+        "https://pubmed.ncbi.nlm.nih.gov/?term=Cathelicidin%20Antimicrobial%20Peptide%20LL-37"
+      ],
+      "sideEffects": "Potential side effects depend on dose, route, sterility, product quality, and individual medical history. Injection-site irritation, nausea, fatigue, appetite changes, or immune effects may occur depending on compound class.",
+      "contraindications": "Avoid unsupervised use during pregnancy or breastfeeding, in active cancer, uncontrolled endocrine disease, or complex autoimmune disease unless specifically supervised by a qualified clinician.",
+      "peptidePilotAssessment": "PeptidePilot treats LL-37 as an educational profile rather than a default recommendation. It may be relevant for users whose goals align with immune-support, inflammation, but evidence level and safety context should determine whether it belongs in a real protocol discussion.",
+      "quizMatchRate": "Emerging profile; not yet a primary PeptidePilot algorithm match for most users.",
+      "comparablePeptides": [
+        "thymosin-alpha-1",
+        "glutathione"
+      ],
+      "stackPartners": [
+        "thymosin-alpha-1",
+        "glutathione"
+      ],
+      "vendors": [
+        {
+          "name": "Core Peptides",
+          "url": "https://corepeptides.com"
+        },
+        {
+          "name": "Limitless Life",
+          "url": "https://limitlesslifenootropics.com"
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "What is LL-37 used for?",
+          "a": "LL-37 is mainly researched or discussed for immune health applications. The strength of evidence depends on the compound and should be reviewed carefully."
+        },
+        {
+          "q": "Is LL-37 FDA-approved?",
+          "a": "Approval status varies by compound and indication. Many research peptides are not FDA-approved for human use."
+        },
+        {
+          "q": "How does LL-37 compare with thymosin-alpha-1?",
+          "a": "LL-37 and thymosin-alpha-1 target different mechanisms and should be compared by goal fit, evidence, safety, and medical context."
+        }
+      ]
+    },
+  {
+      "slug": "humanin",
+      "name": "Humanin",
+      "fullName": "Humanin Mitochondrial Peptide",
+      "peptideClass": "Mitochondrial-Derived Peptide",
+      "tagline": "Humanin is an emerging peptide profile for longevity with an evidence-first safety frame.",
+      "metaDescription": "Independent guide to humanin peptide mitochondria aging: mechanism, evidence, dosing context, safety, and comparisons. Science-backed, vendor-neutral.",
+      "categories": [
+        "Longevity",
+        "Cognitive Health"
+      ],
+      "primaryGoals": [
+        "anti-aging",
+        "cognitive-performance"
+      ],
+      "secondaryGoals": [
+        "anti-aging",
+        "inflammation"
+      ],
+      "halfLife": "Variable; protocol-dependent",
+      "administration": [
+        "Subcutaneous injection",
+        "Oral or topical where applicable"
+      ],
+      "typicalDosage": "Protocol-dependent; discuss with a qualified clinician",
+      "cycleLength": "4-12 weeks depending on goal and supervision",
+      "evidenceLevel": "Preclinical Only",
+      "legalStatus": "Research compound or prescription-only depending on jurisdiction and indication",
+      "approximateCost": "$50-$300/month depending on source and protocol",
+      "mechanismSummary": "Humanin is discussed for longevity because its mechanism overlaps with anti-aging, cognitive-performance goals.",
+      "mechanism": "Humanin works through pathways relevant to longevity, but it should not be treated as a universal shortcut. Research discussions focus on receptor signaling, mitochondrial function, inflammatory modulation, or metabolic regulation depending on the compound.",
+      "preclinicalEvidence": "Preclinical evidence suggests biologic plausibility, especially in models relevant to inflammation, metabolism, mitochondrial function, or tissue signaling.",
+      "humanEvidence": "Human evidence varies by compound. Some agents have clinical trial data or approved indications; others remain early-stage research tools with limited published human outcomes.",
+      "anecdotalEvidence": "Anecdotal reports around Humanin often focus on longevity outcomes, but user reports are highly confounded by lifestyle, dosing, concurrent protocols, and product quality.",
+      "pubmedLinks": [
+        "https://pubmed.ncbi.nlm.nih.gov/?term=Humanin",
+        "https://pubmed.ncbi.nlm.nih.gov/?term=Humanin%20Mitochondrial%20Peptide"
+      ],
+      "sideEffects": "Potential side effects depend on dose, route, sterility, product quality, and individual medical history. Injection-site irritation, nausea, fatigue, appetite changes, or immune effects may occur depending on compound class.",
+      "contraindications": "Avoid unsupervised use during pregnancy or breastfeeding, in active cancer, uncontrolled endocrine disease, or complex autoimmune disease unless specifically supervised by a qualified clinician.",
+      "peptidePilotAssessment": "PeptidePilot treats Humanin as an educational profile rather than a default recommendation. It may be relevant for users whose goals align with anti-aging, cognitive-performance, but evidence level and safety context should determine whether it belongs in a real protocol discussion.",
+      "quizMatchRate": "Emerging profile; not yet a primary PeptidePilot algorithm match for most users.",
+      "comparablePeptides": [
+        "mots-c",
+        "nad-plus"
+      ],
+      "stackPartners": [
+        "mots-c",
+        "nad-plus"
+      ],
+      "vendors": [
+        {
+          "name": "Core Peptides",
+          "url": "https://corepeptides.com"
+        },
+        {
+          "name": "Limitless Life",
+          "url": "https://limitlesslifenootropics.com"
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "What is Humanin used for?",
+          "a": "Humanin is mainly researched or discussed for longevity applications. The strength of evidence depends on the compound and should be reviewed carefully."
+        },
+        {
+          "q": "Is Humanin FDA-approved?",
+          "a": "Approval status varies by compound and indication. Many research peptides are not FDA-approved for human use."
+        },
+        {
+          "q": "How does Humanin compare with mots-c?",
+          "a": "Humanin and mots-c target different mechanisms and should be compared by goal fit, evidence, safety, and medical context."
+        }
+      ]
+    },
+  {
+      "slug": "orforglipron",
+      "name": "Orforglipron",
+      "fullName": "Oral Non-Peptide GLP-1 Receptor Agonist",
+      "peptideClass": "Oral GLP-1 Receptor Agonist",
+      "tagline": "Orforglipron is an emerging peptide profile for metabolic health with an evidence-first safety frame.",
+      "metaDescription": "Independent guide to orforglipron oral GLP-1 pill: mechanism, evidence, dosing context, safety, and comparisons. Science-backed, vendor-neutral.",
+      "categories": [
+        "Metabolic Health",
+        "Weight Loss"
+      ],
+      "primaryGoals": [
+        "fat-loss",
+        "metabolic-health"
+      ],
+      "secondaryGoals": [
+        "anti-aging",
+        "inflammation"
+      ],
+      "halfLife": "Variable; protocol-dependent",
+      "administration": [
+        "Subcutaneous injection",
+        "Oral or topical where applicable"
+      ],
+      "typicalDosage": "Protocol-dependent; discuss with a qualified clinician",
+      "cycleLength": "4-12 weeks depending on goal and supervision",
+      "evidenceLevel": "Strong Human Clinical",
+      "legalStatus": "Research compound or prescription-only depending on jurisdiction and indication",
+      "approximateCost": "$50-$300/month depending on source and protocol",
+      "mechanismSummary": "Orforglipron is discussed for metabolic health because its mechanism overlaps with fat-loss, metabolic-health goals.",
+      "mechanism": "Orforglipron works through pathways relevant to metabolic health, but it should not be treated as a universal shortcut. Research discussions focus on receptor signaling, mitochondrial function, inflammatory modulation, or metabolic regulation depending on the compound.",
+      "preclinicalEvidence": "Preclinical evidence suggests biologic plausibility, especially in models relevant to inflammation, metabolism, mitochondrial function, or tissue signaling.",
+      "humanEvidence": "Human evidence varies by compound. Some agents have clinical trial data or approved indications; others remain early-stage research tools with limited published human outcomes.",
+      "anecdotalEvidence": "Anecdotal reports around Orforglipron often focus on metabolic health outcomes, but user reports are highly confounded by lifestyle, dosing, concurrent protocols, and product quality.",
+      "pubmedLinks": [
+        "https://pubmed.ncbi.nlm.nih.gov/?term=Orforglipron",
+        "https://pubmed.ncbi.nlm.nih.gov/?term=Oral%20Non-Peptide%20GLP-1%20Receptor%20Agonist"
+      ],
+      "sideEffects": "Potential side effects depend on dose, route, sterility, product quality, and individual medical history. Injection-site irritation, nausea, fatigue, appetite changes, or immune effects may occur depending on compound class.",
+      "contraindications": "Avoid unsupervised use during pregnancy or breastfeeding, in active cancer, uncontrolled endocrine disease, or complex autoimmune disease unless specifically supervised by a qualified clinician.",
+      "peptidePilotAssessment": "PeptidePilot treats Orforglipron as an educational profile rather than a default recommendation. It may be relevant for users whose goals align with fat-loss, metabolic-health, but evidence level and safety context should determine whether it belongs in a real protocol discussion.",
+      "quizMatchRate": "Emerging profile; not yet a primary PeptidePilot algorithm match for most users.",
+      "comparablePeptides": [
+        "semaglutide",
+        "tirzepatide"
+      ],
+      "stackPartners": [
+        "semaglutide",
+        "tirzepatide"
+      ],
+      "vendors": [
+        {
+          "name": "Core Peptides",
+          "url": "https://corepeptides.com"
+        },
+        {
+          "name": "Limitless Life",
+          "url": "https://limitlesslifenootropics.com"
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "What is Orforglipron used for?",
+          "a": "Orforglipron is mainly researched or discussed for metabolic health applications. The strength of evidence depends on the compound and should be reviewed carefully."
+        },
+        {
+          "q": "Is Orforglipron FDA-approved?",
+          "a": "Approval status varies by compound and indication. Many research peptides are not FDA-approved for human use."
+        },
+        {
+          "q": "How does Orforglipron compare with semaglutide?",
+          "a": "Orforglipron and semaglutide target different mechanisms and should be compared by goal fit, evidence, safety, and medical context."
+        }
+      ]
+    },
+  {
+      "slug": "dihexa",
+      "name": "Dihexa",
+      "fullName": "N-hexanoic-Tyr-Ile-(6) aminohexanoic amide",
+      "peptideClass": "Angiotensin IV Analog",
+      "tagline": "Dihexa is an emerging peptide profile for cognitive health with an evidence-first safety frame.",
+      "metaDescription": "Independent guide to dihexa peptide cognitive enhancement: mechanism, evidence, dosing context, safety, and comparisons. Science-backed, vendor-neutral.",
+      "categories": [
+        "Cognitive Health"
+      ],
+      "primaryGoals": [
+        "cognitive-performance"
+      ],
+      "secondaryGoals": [
+        "anti-aging",
+        "inflammation"
+      ],
+      "halfLife": "Variable; protocol-dependent",
+      "administration": [
+        "Subcutaneous injection",
+        "Oral or topical where applicable"
+      ],
+      "typicalDosage": "Protocol-dependent; discuss with a qualified clinician",
+      "cycleLength": "4-12 weeks depending on goal and supervision",
+      "evidenceLevel": "Preclinical Only",
+      "legalStatus": "Research compound or prescription-only depending on jurisdiction and indication",
+      "approximateCost": "$50-$300/month depending on source and protocol",
+      "mechanismSummary": "Dihexa is discussed for cognitive health because its mechanism overlaps with cognitive-performance goals.",
+      "mechanism": "Dihexa works through pathways relevant to cognitive health, but it should not be treated as a universal shortcut. Research discussions focus on receptor signaling, mitochondrial function, inflammatory modulation, or metabolic regulation depending on the compound.",
+      "preclinicalEvidence": "Preclinical evidence suggests biologic plausibility, especially in models relevant to inflammation, metabolism, mitochondrial function, or tissue signaling.",
+      "humanEvidence": "Human evidence varies by compound. Some agents have clinical trial data or approved indications; others remain early-stage research tools with limited published human outcomes.",
+      "anecdotalEvidence": "Anecdotal reports around Dihexa often focus on cognitive health outcomes, but user reports are highly confounded by lifestyle, dosing, concurrent protocols, and product quality.",
+      "pubmedLinks": [
+        "https://pubmed.ncbi.nlm.nih.gov/?term=Dihexa",
+        "https://pubmed.ncbi.nlm.nih.gov/?term=N-hexanoic-Tyr-Ile-(6)%20aminohexanoic%20amide"
+      ],
+      "sideEffects": "Potential side effects depend on dose, route, sterility, product quality, and individual medical history. Injection-site irritation, nausea, fatigue, appetite changes, or immune effects may occur depending on compound class.",
+      "contraindications": "Avoid unsupervised use during pregnancy or breastfeeding, in active cancer, uncontrolled endocrine disease, or complex autoimmune disease unless specifically supervised by a qualified clinician.",
+      "peptidePilotAssessment": "PeptidePilot treats Dihexa as an educational profile rather than a default recommendation. It may be relevant for users whose goals align with cognitive-performance, but evidence level and safety context should determine whether it belongs in a real protocol discussion.",
+      "quizMatchRate": "Emerging profile; not yet a primary PeptidePilot algorithm match for most users.",
+      "comparablePeptides": [
+        "semax",
+        "selank"
+      ],
+      "stackPartners": [
+        "semax",
+        "selank"
+      ],
+      "vendors": [
+        {
+          "name": "Core Peptides",
+          "url": "https://corepeptides.com"
+        },
+        {
+          "name": "Limitless Life",
+          "url": "https://limitlesslifenootropics.com"
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "What is Dihexa used for?",
+          "a": "Dihexa is mainly researched or discussed for cognitive health applications. The strength of evidence depends on the compound and should be reviewed carefully."
+        },
+        {
+          "q": "Is Dihexa FDA-approved?",
+          "a": "Approval status varies by compound and indication. Many research peptides are not FDA-approved for human use."
+        },
+        {
+          "q": "How does Dihexa compare with semax?",
+          "a": "Dihexa and semax target different mechanisms and should be compared by goal fit, evidence, safety, and medical context."
+        }
+      ]
+    },
+  {
+      "slug": "tesamorelin",
+      "name": "Tesamorelin",
+      "fullName": "Tesamorelin Acetate",
+      "peptideClass": "GHRH Analog",
+      "tagline": "Tesamorelin is an emerging peptide profile for fat loss with an evidence-first safety frame.",
+      "metaDescription": "Independent guide to tesamorelin visceral fat belly: mechanism, evidence, dosing context, safety, and comparisons. Science-backed, vendor-neutral.",
+      "categories": [
+        "Fat Loss",
+        "Metabolic Health"
+      ],
+      "primaryGoals": [
+        "fat-loss",
+        "metabolic-health"
+      ],
+      "secondaryGoals": [
+        "anti-aging",
+        "inflammation"
+      ],
+      "halfLife": "Variable; protocol-dependent",
+      "administration": [
+        "Subcutaneous injection",
+        "Oral or topical where applicable"
+      ],
+      "typicalDosage": "Protocol-dependent; discuss with a qualified clinician",
+      "cycleLength": "4-12 weeks depending on goal and supervision",
+      "evidenceLevel": "Strong Human Clinical",
+      "legalStatus": "Research compound or prescription-only depending on jurisdiction and indication",
+      "approximateCost": "$50-$300/month depending on source and protocol",
+      "mechanismSummary": "Tesamorelin is discussed for fat loss because its mechanism overlaps with fat-loss, metabolic-health goals.",
+      "mechanism": "Tesamorelin works through pathways relevant to fat loss, but it should not be treated as a universal shortcut. Research discussions focus on receptor signaling, mitochondrial function, inflammatory modulation, or metabolic regulation depending on the compound.",
+      "preclinicalEvidence": "Preclinical evidence suggests biologic plausibility, especially in models relevant to inflammation, metabolism, mitochondrial function, or tissue signaling.",
+      "humanEvidence": "Human evidence varies by compound. Some agents have clinical trial data or approved indications; others remain early-stage research tools with limited published human outcomes.",
+      "anecdotalEvidence": "Anecdotal reports around Tesamorelin often focus on fat loss outcomes, but user reports are highly confounded by lifestyle, dosing, concurrent protocols, and product quality.",
+      "pubmedLinks": [
+        "https://pubmed.ncbi.nlm.nih.gov/?term=Tesamorelin",
+        "https://pubmed.ncbi.nlm.nih.gov/?term=Tesamorelin%20Acetate"
+      ],
+      "sideEffects": "Potential side effects depend on dose, route, sterility, product quality, and individual medical history. Injection-site irritation, nausea, fatigue, appetite changes, or immune effects may occur depending on compound class.",
+      "contraindications": "Avoid unsupervised use during pregnancy or breastfeeding, in active cancer, uncontrolled endocrine disease, or complex autoimmune disease unless specifically supervised by a qualified clinician.",
+      "peptidePilotAssessment": "PeptidePilot treats Tesamorelin as an educational profile rather than a default recommendation. It may be relevant for users whose goals align with fat-loss, metabolic-health, but evidence level and safety context should determine whether it belongs in a real protocol discussion.",
+      "quizMatchRate": "Emerging profile; not yet a primary PeptidePilot algorithm match for most users.",
+      "comparablePeptides": [
+        "ipamorelin",
+        "sermorelin"
+      ],
+      "stackPartners": [
+        "ipamorelin",
+        "sermorelin"
+      ],
+      "vendors": [
+        {
+          "name": "Core Peptides",
+          "url": "https://corepeptides.com"
+        },
+        {
+          "name": "Limitless Life",
+          "url": "https://limitlesslifenootropics.com"
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "What is Tesamorelin used for?",
+          "a": "Tesamorelin is mainly researched or discussed for fat loss applications. The strength of evidence depends on the compound and should be reviewed carefully."
+        },
+        {
+          "q": "Is Tesamorelin FDA-approved?",
+          "a": "Approval status varies by compound and indication. Many research peptides are not FDA-approved for human use."
+        },
+        {
+          "q": "How does Tesamorelin compare with ipamorelin?",
+          "a": "Tesamorelin and ipamorelin target different mechanisms and should be compared by goal fit, evidence, safety, and medical context."
+        }
+      ]
+    },
+  {
+      "slug": "aod-9604",
+      "name": "AOD-9604",
+      "fullName": "Anti-Obesity Drug 9604",
+      "peptideClass": "Growth Hormone Fragment",
+      "tagline": "AOD-9604 is an emerging peptide profile for fat loss with an evidence-first safety frame.",
+      "metaDescription": "Independent guide to AOD-9604 peptide fat loss: mechanism, evidence, dosing context, safety, and comparisons. Science-backed, vendor-neutral.",
+      "categories": [
+        "Fat Loss"
+      ],
+      "primaryGoals": [
+        "fat-loss"
+      ],
+      "secondaryGoals": [
+        "anti-aging",
+        "inflammation"
+      ],
+      "halfLife": "Variable; protocol-dependent",
+      "administration": [
+        "Subcutaneous injection",
+        "Oral or topical where applicable"
+      ],
+      "typicalDosage": "Protocol-dependent; discuss with a qualified clinician",
+      "cycleLength": "4-12 weeks depending on goal and supervision",
+      "evidenceLevel": "Moderate Preclinical / Emerging Human",
+      "legalStatus": "Research compound or prescription-only depending on jurisdiction and indication",
+      "approximateCost": "$50-$300/month depending on source and protocol",
+      "mechanismSummary": "AOD-9604 is discussed for fat loss because its mechanism overlaps with fat-loss goals.",
+      "mechanism": "AOD-9604 works through pathways relevant to fat loss, but it should not be treated as a universal shortcut. Research discussions focus on receptor signaling, mitochondrial function, inflammatory modulation, or metabolic regulation depending on the compound.",
+      "preclinicalEvidence": "Preclinical evidence suggests biologic plausibility, especially in models relevant to inflammation, metabolism, mitochondrial function, or tissue signaling.",
+      "humanEvidence": "Human evidence varies by compound. Some agents have clinical trial data or approved indications; others remain early-stage research tools with limited published human outcomes.",
+      "anecdotalEvidence": "Anecdotal reports around AOD-9604 often focus on fat loss outcomes, but user reports are highly confounded by lifestyle, dosing, concurrent protocols, and product quality.",
+      "pubmedLinks": [
+        "https://pubmed.ncbi.nlm.nih.gov/?term=AOD-9604",
+        "https://pubmed.ncbi.nlm.nih.gov/?term=Anti-Obesity%20Drug%209604"
+      ],
+      "sideEffects": "Potential side effects depend on dose, route, sterility, product quality, and individual medical history. Injection-site irritation, nausea, fatigue, appetite changes, or immune effects may occur depending on compound class.",
+      "contraindications": "Avoid unsupervised use during pregnancy or breastfeeding, in active cancer, uncontrolled endocrine disease, or complex autoimmune disease unless specifically supervised by a qualified clinician.",
+      "peptidePilotAssessment": "PeptidePilot treats AOD-9604 as an educational profile rather than a default recommendation. It may be relevant for users whose goals align with fat-loss, but evidence level and safety context should determine whether it belongs in a real protocol discussion.",
+      "quizMatchRate": "Emerging profile; not yet a primary PeptidePilot algorithm match for most users.",
+      "comparablePeptides": [
+        "semaglutide",
+        "tesamorelin"
+      ],
+      "stackPartners": [
+        "semaglutide",
+        "tesamorelin"
+      ],
+      "vendors": [
+        {
+          "name": "Core Peptides",
+          "url": "https://corepeptides.com"
+        },
+        {
+          "name": "Limitless Life",
+          "url": "https://limitlesslifenootropics.com"
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "What is AOD-9604 used for?",
+          "a": "AOD-9604 is mainly researched or discussed for fat loss applications. The strength of evidence depends on the compound and should be reviewed carefully."
+        },
+        {
+          "q": "Is AOD-9604 FDA-approved?",
+          "a": "Approval status varies by compound and indication. Many research peptides are not FDA-approved for human use."
+        },
+        {
+          "q": "How does AOD-9604 compare with semaglutide?",
+          "a": "AOD-9604 and semaglutide target different mechanisms and should be compared by goal fit, evidence, safety, and medical context."
+        }
+      ]
+    },
+  {
+      "slug": "ss-31",
+      "name": "SS-31",
+      "fullName": "Elamipretide / Szeto-Schiller 31",
+      "peptideClass": "Mitochondria-Targeted Tetrapeptide",
+      "tagline": "SS-31 is an emerging peptide profile for mitochondrial health with an evidence-first safety frame.",
+      "metaDescription": "Independent guide to SS-31 peptide benefits: mechanism, evidence, dosing context, safety, and comparisons. Science-backed, vendor-neutral.",
+      "categories": [
+        "Mitochondrial Health",
+        "Longevity"
+      ],
+      "primaryGoals": [
+        "anti-aging",
+        "metabolic-health"
+      ],
+      "secondaryGoals": [
+        "anti-aging",
+        "inflammation"
+      ],
+      "halfLife": "Variable; protocol-dependent",
+      "administration": [
+        "Subcutaneous injection",
+        "Oral or topical where applicable"
+      ],
+      "typicalDosage": "Protocol-dependent; discuss with a qualified clinician",
+      "cycleLength": "4-12 weeks depending on goal and supervision",
+      "evidenceLevel": "Moderate Preclinical / Emerging Human",
+      "legalStatus": "Research compound or prescription-only depending on jurisdiction and indication",
+      "approximateCost": "$50-$300/month depending on source and protocol",
+      "mechanismSummary": "SS-31 is discussed for mitochondrial health because its mechanism overlaps with anti-aging, metabolic-health goals.",
+      "mechanism": "SS-31 works through pathways relevant to mitochondrial health, but it should not be treated as a universal shortcut. Research discussions focus on receptor signaling, mitochondrial function, inflammatory modulation, or metabolic regulation depending on the compound.",
+      "preclinicalEvidence": "Preclinical evidence suggests biologic plausibility, especially in models relevant to inflammation, metabolism, mitochondrial function, or tissue signaling.",
+      "humanEvidence": "Human evidence varies by compound. Some agents have clinical trial data or approved indications; others remain early-stage research tools with limited published human outcomes.",
+      "anecdotalEvidence": "Anecdotal reports around SS-31 often focus on mitochondrial health outcomes, but user reports are highly confounded by lifestyle, dosing, concurrent protocols, and product quality.",
+      "pubmedLinks": [
+        "https://pubmed.ncbi.nlm.nih.gov/?term=SS-31",
+        "https://pubmed.ncbi.nlm.nih.gov/?term=Elamipretide%20%2F%20Szeto-Schiller%2031"
+      ],
+      "sideEffects": "Potential side effects depend on dose, route, sterility, product quality, and individual medical history. Injection-site irritation, nausea, fatigue, appetite changes, or immune effects may occur depending on compound class.",
+      "contraindications": "Avoid unsupervised use during pregnancy or breastfeeding, in active cancer, uncontrolled endocrine disease, or complex autoimmune disease unless specifically supervised by a qualified clinician.",
+      "peptidePilotAssessment": "PeptidePilot treats SS-31 as an educational profile rather than a default recommendation. It may be relevant for users whose goals align with anti-aging, metabolic-health, but evidence level and safety context should determine whether it belongs in a real protocol discussion.",
+      "quizMatchRate": "Emerging profile; not yet a primary PeptidePilot algorithm match for most users.",
+      "comparablePeptides": [
+        "mots-c",
+        "nad-plus"
+      ],
+      "stackPartners": [
+        "mots-c",
+        "nad-plus"
+      ],
+      "vendors": [
+        {
+          "name": "Core Peptides",
+          "url": "https://corepeptides.com"
+        },
+        {
+          "name": "Limitless Life",
+          "url": "https://limitlesslifenootropics.com"
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "What is SS-31 used for?",
+          "a": "SS-31 is mainly researched or discussed for mitochondrial health applications. The strength of evidence depends on the compound and should be reviewed carefully."
+        },
+        {
+          "q": "Is SS-31 FDA-approved?",
+          "a": "Approval status varies by compound and indication. Many research peptides are not FDA-approved for human use."
+        },
+        {
+          "q": "How does SS-31 compare with mots-c?",
+          "a": "SS-31 and mots-c target different mechanisms and should be compared by goal fit, evidence, safety, and medical context."
+        }
+      ]
+    },
 ];
 
 // ─── GOAL PAGES ──────────────────────────────────────────────────────────────
@@ -3279,31 +4026,68 @@ export const stackPages: StackPageData[] = [
       { q: "Can Selank and Semax be mixed in the same nasal spray?", a: "Some users mix them for convenience, though separate administration allows for more precise dosing. Consult with a knowledgeable practitioner before mixing peptides." },
     ],
   },
-  {
-    slug: "wolverine-stack",
-    name: "The Wolverine Stack",
-    h1: "The Wolverine Stack: BPC-157 + TB-500 + GHK-Cu",
-    metaDescription: "The Wolverine Stack (BPC-157 + TB-500 + GHK-Cu): the comprehensive healing peptide combination for serious injury recovery. Protocol, dosing, and evidence. Vendor-neutral.",
-    tagline: "The comprehensive healing stack for serious injuries, post-surgical recovery, and maximum tissue repair.",
-    peptides: ["bpc-157", "tb-500", "ghk-cu"],
-    peptideNames: ["BPC-157", "TB-500", "GHK-Cu"],
-    primaryGoal: "Comprehensive healing, serious injury recovery",
-    goalSlugs: ["injury-recovery", "joint-recovery", "inflammation"],
-    synergyExplanation: "The Wolverine Stack combines three healing peptides that each address different aspects of tissue repair. BPC-157 provides localized tendon and gut healing through GH receptor upregulation and angiogenesis. TB-500 delivers systemic anti-inflammatory effects and promotes cell migration throughout the body. GHK-Cu stimulates collagen synthesis and activates antioxidant systems to support tissue remodeling. Together, they address the full healing cascade: inflammation resolution (TB-500), tissue proliferation (BPC-157), and remodeling (GHK-Cu).",
-    protocol: "This is an advanced protocol typically used for serious injuries or post-surgical recovery. BPC-157 (200–500 mcg/day), TB-500 (2–2.5 mg twice weekly loading), and GHK-Cu (1–2 mg/day or topical) are run simultaneously for 4–8 weeks.",
-    dosingSchedule: [
-      { peptide: "BPC-157", dose: "200–500 mcg", timing: "Daily", route: "Subcutaneous (near injury site)" },
-      { peptide: "TB-500", dose: "2–2.5 mg", timing: "Twice weekly (loading)", route: "Subcutaneous" },
-      { peptide: "GHK-Cu", dose: "1–2 mg", timing: "Daily", route: "Subcutaneous or topical" },
-    ],
-    whoIsItFor: "Individuals recovering from serious injuries or surgery, athletes with complex multi-tissue injuries, and anyone who needs maximum healing support and is comfortable with a more complex protocol.",
-    evidenceBase: "All three components have strong preclinical evidence bases. The combination is used in advanced sports medicine and biohacking practices for serious injury recovery.",
-    costEstimate: "$100–$230/month (BPC-157: $30–$80 + TB-500: $40–$90 + GHK-Cu: $30–$60)",
-    faqItems: [
-      { q: "Is the Wolverine Stack safe?", a: "All three peptides are generally well-tolerated individually. The combination has a strong anecdotal safety record. As with any multi-peptide protocol, physician supervision is recommended." },
-      { q: "How long should the Wolverine Stack be run?", a: "Typically 4–8 weeks for acute injuries. For post-surgical recovery, protocols may extend to 12 weeks under medical supervision." },
-    ],
-  },
+    {
+      "slug": "wolverine-stack",
+      "name": "The Wolverine Stack",
+      "h1": "The Wolverine Stack: How to Combine BPC-157 and TB-500",
+      "metaDescription": "Expanded Wolverine Stack guide for BPC-157, TB-500, and GHK-Cu: synergy, protocol, dosing, safety, and recovery planning. Vendor-neutral.",
+      "tagline": "A comprehensive healing stack for serious tissue repair, joint recovery, and post-injury support.",
+      "peptides": [
+        "bpc-157",
+        "tb-500",
+        "ghk-cu"
+      ],
+      "peptideNames": [
+        "BPC-157",
+        "TB-500",
+        "GHK-Cu"
+      ],
+      "primaryGoal": "Comprehensive healing and serious injury recovery",
+      "goalSlugs": [
+        "injury-recovery",
+        "joint-recovery",
+        "inflammation"
+      ],
+      "synergyExplanation": "The Wolverine Stack combines local repair signaling, systemic cell migration, and collagen remodeling. BPC-157 is usually discussed for localized tendon, ligament, and gut tissue support. TB-500 is used for broader recovery signaling and systemic inflammation resolution. GHK-Cu adds collagen synthesis, wound remodeling, and antioxidant gene activation.",
+      "protocol": "A conservative protocol starts with BPC-157 daily and TB-500 twice weekly for a 4-6 week loading phase. GHK-Cu may be added topically or by clinician-guided injection when skin, collagen, or wound remodeling is part of the goal.",
+      "dosingSchedule": [
+        {
+          "peptide": "BPC-157",
+          "dose": "200-500 mcg",
+          "timing": "Daily for 4-8 weeks",
+          "route": "Subcutaneous"
+        },
+        {
+          "peptide": "TB-500",
+          "dose": "2-2.5 mg",
+          "timing": "Twice weekly loading, then weekly maintenance",
+          "route": "Subcutaneous"
+        },
+        {
+          "peptide": "GHK-Cu",
+          "dose": "Topical 1-5% or clinician-guided injectable dosing",
+          "timing": "Daily or per protocol",
+          "route": "Topical or subcutaneous"
+        }
+      ],
+      "whoIsItFor": "Athletes with complex soft-tissue injuries, post-surgical users under supervision, and people whose recovery goals involve both pain/function and tissue remodeling.",
+      "evidenceBase": "Each component has a different evidence profile, mostly preclinical for repair peptides and mixed clinical/cosmetic evidence for GHK-Cu. The combined stack has strong anecdotal use but limited direct human trial evidence.",
+      "costEstimate": "$100-$250/month depending on source, dose, and whether GHK-Cu is topical or injectable",
+      "faqItems": [
+        {
+          "q": "Is the Wolverine Stack better than BPC-157 alone?",
+          "a": "Not automatically. BPC-157 alone is simpler and may be enough for localized issues. The stack is more appropriate when systemic recovery and collagen remodeling are also priorities."
+        },
+        {
+          "q": "Can all three peptides be started at once?",
+          "a": "It is safer to add one variable at a time unless a clinician is supervising the entire protocol."
+        },
+        {
+          "q": "How long should the Wolverine Stack run?",
+          "a": "Most users think in 4-8 week blocks, then reassess pain, range of motion, function, and side effects before extending."
+        }
+      ]
+    },
 ];
 
 // ─── HELPER FUNCTIONS ────────────────────────────────────────────────────────
@@ -3370,83 +4154,94 @@ export interface GuidePageData {
 }
 
 export const guidePages: GuidePageData[] = [
-  {
-    slug: "how-to-reconstitute-peptides",
-    title: "How to Reconstitute Peptides",
-    h1: "How to Reconstitute Peptides: Step-by-Step Guide",
-    metaDescription: "Step-by-step guide to reconstituting lyophilized peptides safely. Bacteriostatic water, dosing calculations, storage, and common mistakes. Beginner-friendly.",
-    category: "Preparation",
-    targetPeptides: ["bpc-157", "tb-500", "ipamorelin", "cjc-1295"],
-    difficulty: "Beginner",
-    timeRequired: "10 minutes",
-    overview: "Most research peptides are sold as lyophilized (freeze-dried) powder that must be reconstituted with bacteriostatic water before use. This guide walks through the process step by step, including how to calculate your dose.",
-    whatYouNeed: [
-      "Lyophilized peptide vial",
-      "Bacteriostatic water (BW) — NOT sterile water",
-      "Insulin syringes (29-31 gauge, 0.5ml or 1ml)",
-      "Alcohol swabs",
-      "Refrigerator for storage"
-    ],
-    steps: [
-      {
-        stepNumber: 1,
-        title: "Gather your supplies",
-        description: "Ensure you have bacteriostatic water (not sterile water — BW contains 0.9% benzyl alcohol which prevents bacterial growth), insulin syringes, and alcohol swabs. Work on a clean surface.",
-        tip: "Bacteriostatic water is available from compounding pharmacies and research supply companies. Do not substitute sterile water — it has no preservative and reconstituted peptides will degrade faster."
-      },
-      {
-        stepNumber: 2,
-        title: "Swab both vial tops with alcohol",
-        description: "Wipe the rubber stopper of both the peptide vial and the bacteriostatic water vial with an alcohol swab. Allow to air dry for 30 seconds before proceeding.",
-        warning: "Never touch the rubber stopper with your fingers after swabbing."
-      },
-      {
-        stepNumber: 3,
-        title: "Draw bacteriostatic water into the syringe",
-        description: "Using an insulin syringe, draw the desired amount of bacteriostatic water. The amount determines your concentration. Common: 1ml BW into a 5mg vial = 5mg/ml (5000mcg/ml). For 500mcg doses, you would draw 0.1ml (10 units on a 100-unit insulin syringe).",
-        tip: "Use 1-2ml of BW per vial for most peptides. More water = lower concentration = larger injection volume per dose. Less water = higher concentration = smaller injection volume."
-      },
-      {
-        stepNumber: 4,
-        title: "Inject water slowly into the peptide vial",
-        description: "Insert the syringe needle through the rubber stopper at an angle. Direct the water stream down the side of the vial — do not spray directly onto the powder. Inject slowly to avoid foaming.",
-        warning: "Never shake the vial. Shaking can damage peptide bonds. Gently swirl or roll between your palms to mix."
-      },
-      {
-        stepNumber: 5,
-        title: "Gently swirl until fully dissolved",
-        description: "Gently swirl the vial in a circular motion until the powder is completely dissolved. The solution should be clear and colorless (some peptides may have a slight color). This may take 1-3 minutes.",
-        tip: "If the powder does not dissolve completely, place the vial in the refrigerator for 15-30 minutes and try again."
-      },
-      {
-        stepNumber: 6,
-        title: "Calculate your dose",
-        description: "Use this formula: Volume to inject (ml) = Desired dose (mcg) ÷ Concentration (mcg/ml). Example: 500mcg dose from a 5mg/ml (5000mcg/ml) solution = 500 ÷ 5000 = 0.1ml = 10 units on a 100-unit insulin syringe.",
-        tip: "Write down your concentration and dose calculation before injecting. Double-check your math."
-      },
-      {
-        stepNumber: 7,
-        title: "Store properly",
-        description: "Store reconstituted peptides in the refrigerator (2-8°C / 35-46°F). Most reconstituted peptides remain stable for 4-6 weeks when refrigerated. Keep away from light. Do not freeze reconstituted peptides.",
-        warning: "Lyophilized (unreconstituted) peptides can be stored frozen for months to years. Once reconstituted, refrigerate and use within 4-6 weeks."
-      }
-    ],
-    commonMistakes: [
-      { mistake: "Using sterile water instead of bacteriostatic water", fix: "Always use bacteriostatic water (contains 0.9% benzyl alcohol). Sterile water has no preservative and reconstituted peptides will degrade within 24-48 hours." },
-      { mistake: "Shaking the vial to mix", fix: "Gently swirl or roll between palms. Shaking creates foam and can damage peptide bonds." },
-      { mistake: "Spraying water directly onto the powder", fix: "Direct the water stream down the side of the vial to minimize foaming and protect the peptide." },
-      { mistake: "Incorrect dose calculation", fix: "Write down your concentration (mg/ml or mcg/ml) and use the formula: volume = dose ÷ concentration. Double-check before injecting." },
-      { mistake: "Storing at room temperature after reconstitution", fix: "Refrigerate immediately after reconstitution. Room temperature storage significantly accelerates degradation." }
-    ],
-    faqItems: [
-      { q: "How much bacteriostatic water should I use?", a: "1-2ml per vial is standard. The amount determines concentration: 1ml into a 5mg vial = 5mg/ml; 2ml = 2.5mg/ml. Use less water for smaller injection volumes, more water for easier dose measurement." },
-      { q: "How long does reconstituted peptide last?", a: "Most reconstituted peptides are stable for 4-6 weeks when refrigerated. Lyophilized peptides can be stored frozen for months to years." },
-      { q: "Can I use sterile water instead of bacteriostatic water?", a: "No. Sterile water has no preservative. Reconstituted peptides in sterile water will degrade within 24-48 hours and risk bacterial contamination. Always use bacteriostatic water." },
-      { q: "What if my peptide doesn't dissolve completely?", a: "Refrigerate for 15-30 minutes and try swirling again. Some peptides dissolve slowly. If it still won't dissolve, the peptide may be degraded or the wrong solvent is being used." }
-    ],
-    relatedGuides: ["how-to-inject-peptides-subcutaneously", "how-to-calculate-peptide-dosage", "how-to-store-peptides"],
-    relatedPeptides: ["bpc-157", "tb-500", "ipamorelin", "cjc-1295"]
-  },
+    {
+      "slug": "how-to-reconstitute-peptides",
+      "title": "How to Reconstitute Peptides with Bacteriostatic Water",
+      "h1": "How to Reconstitute Peptides with Bacteriostatic Water: Evidence-Based Guide",
+      "metaDescription": "Practical guide to reconstitute peptides bacteriostatic water ratio: timing, safety, common mistakes, and peptide-specific considerations. Science-backed, vendor-neutral.",
+      "category": "Preparation",
+      "targetPeptides": [
+        "bpc-157",
+        "tb-500",
+        "ipamorelin"
+      ],
+      "difficulty": "Beginner",
+      "timeRequired": "10 minutes to read",
+      "overview": "How to Reconstitute Peptides with Bacteriostatic Water helps users make a practical decision without guessing. The safest approach is to understand mechanism, route, timing, and monitoring before starting any protocol.",
+      "whatYouNeed": [
+        "Clear goal and peptide shortlist",
+        "Clinician guidance where appropriate",
+        "Sterile supplies if injections are involved",
+        "Tracking notes for dose and response"
+      ],
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "Define the use case",
+          "description": "Clarify whether the goal is recovery, fat loss, sleep, cognition, or general wellness. Timing and dose decisions should follow the goal.",
+          "tip": "Write down the outcome you will track before starting."
+        },
+        {
+          "stepNumber": 2,
+          "title": "Confirm route and evidence level",
+          "description": "Some peptides are injected, some have oral formulations, and others are topical or intranasal. Match the route to the compound and evidence base.",
+          "warning": "Do not assume oral and injectable versions are interchangeable."
+        },
+        {
+          "stepNumber": 3,
+          "title": "Build a conservative schedule",
+          "description": "Start with one compound, one schedule, and clear monitoring. Avoid stacking multiple new peptides at once."
+        },
+        {
+          "stepNumber": 4,
+          "title": "Track response and side effects",
+          "description": "Monitor the outcome you care about, plus sleep, appetite, mood, injection reactions, and unexpected symptoms."
+        },
+        {
+          "stepNumber": 5,
+          "title": "Reassess before extending",
+          "description": "Before continuing beyond the initial cycle, compare benefits, side effects, cost, and objective markers."
+        }
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Starting without a goal",
+          "fix": "Choose one primary outcome and track it weekly."
+        },
+        {
+          "mistake": "Copying someone else's dose",
+          "fix": "Use medical context and clinician guidance rather than forum protocols."
+        },
+        {
+          "mistake": "Ignoring storage and sterility",
+          "fix": "Follow reconstitution, refrigeration, and injection hygiene guidance precisely."
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "Is this beginner-friendly?",
+          "a": "Yes if approached as education first. Beginners should avoid complex stacks and use clinician guidance for prescription or injectable protocols."
+        },
+        {
+          "q": "Can I combine this with other peptides?",
+          "a": "Possibly, but add one variable at a time so benefits and side effects are easier to identify."
+        },
+        {
+          "q": "When should I stop?",
+          "a": "Stop if side effects appear, if the goal is not improving, or when the planned cycle ends and reassessment is due."
+        }
+      ],
+      "relatedGuides": [
+        "how-to-calculate-peptide-dosage",
+        "how-to-store-peptides",
+        "how-to-choose-a-peptide-vendor"
+      ],
+      "relatedPeptides": [
+        "bpc-157",
+        "tb-500",
+        "ipamorelin"
+      ]
+    },
 
   {
     slug: "how-to-inject-peptides-subcutaneously",
@@ -3597,75 +4392,94 @@ export const guidePages: GuidePageData[] = [
     relatedPeptides: ["bpc-157", "tb-500", "ipamorelin", "cjc-1295"]
   },
 
-  {
-    slug: "how-to-store-peptides",
-    title: "How to Store Peptides",
-    h1: "How to Store Peptides: Lyophilized and Reconstituted",
-    metaDescription: "Complete guide to peptide storage. Lyophilized vs reconstituted, temperature, light, freeze-thaw cycles, and shelf life. Keep your peptides potent.",
-    category: "Preparation",
-    targetPeptides: ["bpc-157", "tb-500", "ipamorelin", "cjc-1295", "epithalon"],
-    difficulty: "Beginner",
-    timeRequired: "5 minutes to learn",
-    overview: "Proper storage is critical for maintaining peptide potency. Lyophilized (freeze-dried) peptides are stable for months to years when stored correctly. Reconstituted peptides require refrigeration and have a shorter shelf life.",
-    whatYouNeed: [
-      "Freezer (for long-term lyophilized storage)",
-      "Refrigerator (for reconstituted peptides)",
-      "Amber or opaque vials (if repackaging)",
-      "Desiccant packets (optional, for lyophilized storage)"
-    ],
-    steps: [
-      {
-        stepNumber: 1,
-        title: "Understand the two storage states",
-        description: "Lyophilized (freeze-dried) peptides are the powder form in sealed vials. They are highly stable. Reconstituted peptides (dissolved in BW) are less stable and require refrigeration.",
-        tip: "Only reconstitute what you plan to use within 4-6 weeks. Keep the rest lyophilized."
-      },
-      {
-        stepNumber: 2,
-        title: "Store lyophilized peptides in the freezer",
-        description: "Sealed lyophilized vials should be stored in the freezer (-20°C / -4°F) for long-term storage (months to years). For short-term use (within 1-3 months), refrigeration is acceptable.",
-        tip: "Keep vials in a sealed bag with a desiccant packet to prevent moisture exposure."
-      },
-      {
-        stepNumber: 3,
-        title: "Protect from light",
-        description: "Peptides are sensitive to UV light. Store in a dark location or in amber/opaque vials. Avoid leaving vials on a countertop in sunlight.",
-        warning: "Even brief UV exposure can degrade some peptides. Keep vials in their original packaging or in a drawer."
-      },
-      {
-        stepNumber: 4,
-        title: "Refrigerate reconstituted peptides",
-        description: "Once reconstituted with bacteriostatic water, store peptides in the refrigerator (2-8°C / 35-46°F). Most reconstituted peptides remain stable for 4-6 weeks.",
-        warning: "Do not freeze reconstituted peptides. Freeze-thaw cycles damage peptide bonds and reduce potency."
-      },
-      {
-        stepNumber: 5,
-        title: "Minimize freeze-thaw cycles for lyophilized peptides",
-        description: "Each freeze-thaw cycle slightly degrades lyophilized peptides. If you have a large vial you will use over many months, consider dividing it into smaller aliquots before reconstituting.",
-        tip: "Aliquot strategy: reconstitute the full vial, divide into smaller vials (e.g., 10 x 0.5ml), and freeze the unused aliquots. Thaw one at a time as needed."
-      },
-      {
-        stepNumber: 6,
-        title: "Check for signs of degradation",
-        description: "Discard peptides if: the solution becomes cloudy or develops particles, the color changes significantly, or the vial has been stored improperly. When in doubt, discard.",
-        warning: "Degraded peptides are not just ineffective — they may contain breakdown products. Do not use peptides that show signs of degradation."
-      }
-    ],
-    commonMistakes: [
-      { mistake: "Freezing reconstituted peptides", fix: "Freeze-thaw cycles damage reconstituted peptides. Only freeze lyophilized (powder) peptides. Refrigerate reconstituted peptides and use within 4-6 weeks." },
-      { mistake: "Leaving lyophilized peptides at room temperature for extended periods", fix: "Room temperature storage accelerates degradation. Refrigerate for short-term use; freeze for long-term storage." },
-      { mistake: "Exposing peptides to light", fix: "Store in a dark location or amber vials. UV light degrades many peptides." },
-      { mistake: "Using peptides past their stability window", fix: "Reconstituted peptides are stable for 4-6 weeks refrigerated. Discard after this period even if the solution looks clear." }
-    ],
-    faqItems: [
-      { q: "How long do lyophilized peptides last?", a: "When stored frozen (-20°C), lyophilized peptides can remain stable for 1-2 years or longer. Refrigerated, they are stable for 3-6 months. Room temperature storage significantly reduces shelf life." },
-      { q: "Can I freeze reconstituted peptides?", a: "No. Freeze-thaw cycles damage reconstituted peptides. Only freeze lyophilized (powder) peptides. Once reconstituted, refrigerate and use within 4-6 weeks." },
-      { q: "What does a degraded peptide look like?", a: "Cloudy solution, visible particles, or significant color change can indicate degradation. However, degraded peptides can also look normal. When in doubt, discard." },
-      { q: "Do I need to keep peptides cold during shipping?", a: "Lyophilized peptides tolerate short periods at room temperature (days to weeks) without significant degradation. For reconstituted peptides or extended transit, cold packs are recommended." }
-    ],
-    relatedGuides: ["how-to-reconstitute-peptides", "how-to-inject-peptides-subcutaneously", "how-to-calculate-peptide-dosage"],
-    relatedPeptides: ["bpc-157", "tb-500", "ipamorelin", "cjc-1295"]
-  },
+    {
+      "slug": "how-to-store-peptides",
+      "title": "How to Store Peptides: Refrigeration and Shelf Life Guide",
+      "h1": "How to Store Peptides: Refrigeration and Shelf Life Guide: Evidence-Based Guide",
+      "metaDescription": "Practical guide to how to store reconstituted peptides: timing, safety, common mistakes, and peptide-specific considerations. Science-backed, vendor-neutral.",
+      "category": "Storage",
+      "targetPeptides": [
+        "bpc-157",
+        "tb-500",
+        "ipamorelin"
+      ],
+      "difficulty": "Beginner",
+      "timeRequired": "10 minutes to read",
+      "overview": "How to Store Peptides: Refrigeration and Shelf Life Guide helps users make a practical decision without guessing. The safest approach is to understand mechanism, route, timing, and monitoring before starting any protocol.",
+      "whatYouNeed": [
+        "Clear goal and peptide shortlist",
+        "Clinician guidance where appropriate",
+        "Sterile supplies if injections are involved",
+        "Tracking notes for dose and response"
+      ],
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "Define the use case",
+          "description": "Clarify whether the goal is recovery, fat loss, sleep, cognition, or general wellness. Timing and dose decisions should follow the goal.",
+          "tip": "Write down the outcome you will track before starting."
+        },
+        {
+          "stepNumber": 2,
+          "title": "Confirm route and evidence level",
+          "description": "Some peptides are injected, some have oral formulations, and others are topical or intranasal. Match the route to the compound and evidence base.",
+          "warning": "Do not assume oral and injectable versions are interchangeable."
+        },
+        {
+          "stepNumber": 3,
+          "title": "Build a conservative schedule",
+          "description": "Start with one compound, one schedule, and clear monitoring. Avoid stacking multiple new peptides at once."
+        },
+        {
+          "stepNumber": 4,
+          "title": "Track response and side effects",
+          "description": "Monitor the outcome you care about, plus sleep, appetite, mood, injection reactions, and unexpected symptoms."
+        },
+        {
+          "stepNumber": 5,
+          "title": "Reassess before extending",
+          "description": "Before continuing beyond the initial cycle, compare benefits, side effects, cost, and objective markers."
+        }
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Starting without a goal",
+          "fix": "Choose one primary outcome and track it weekly."
+        },
+        {
+          "mistake": "Copying someone else's dose",
+          "fix": "Use medical context and clinician guidance rather than forum protocols."
+        },
+        {
+          "mistake": "Ignoring storage and sterility",
+          "fix": "Follow reconstitution, refrigeration, and injection hygiene guidance precisely."
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "Is this beginner-friendly?",
+          "a": "Yes if approached as education first. Beginners should avoid complex stacks and use clinician guidance for prescription or injectable protocols."
+        },
+        {
+          "q": "Can I combine this with other peptides?",
+          "a": "Possibly, but add one variable at a time so benefits and side effects are easier to identify."
+        },
+        {
+          "q": "When should I stop?",
+          "a": "Stop if side effects appear, if the goal is not improving, or when the planned cycle ends and reassessment is due."
+        }
+      ],
+      "relatedGuides": [
+        "how-to-calculate-peptide-dosage",
+        "how-to-store-peptides",
+        "how-to-choose-a-peptide-vendor"
+      ],
+      "relatedPeptides": [
+        "bpc-157",
+        "tb-500",
+        "ipamorelin"
+      ]
+    },
 
   {
     slug: "how-to-use-bpc-157-for-gut-healing",
@@ -5409,93 +6223,94 @@ export const guidePages: GuidePageData[] = [
     relatedPeptides: ["bpc-157", "tb-500", "ipamorelin", "cjc-1295"],
     relatedGuides: ["how-to-use-ipamorelin", "how-to-use-cjc-1295", "how-to-use-tb-500"],
   },
-  {
-    slug: "how-to-cycle-peptides",
-    title: "How to Cycle Peptides: On/Off Protocols to Prevent Desensitization",
-    h1: "How to Cycle Peptides: On/Off Protocols and Desensitization Prevention",
-    metaDescription: "Learn how to cycle peptides correctly — standard on/off ratios, which peptides require cycling, receptor desensitization mechanisms, and how to maintain results.",
-    category: "Stacking & Combinations",
-    targetPeptides: ["ipamorelin", "cjc-1295", "sermorelin", "bpc-157"],
-    difficulty: "Intermediate",
-    timeRequired: "10 minutes",
-    overview: "Peptide cycling — alternating between use periods and rest periods — prevents receptor desensitization, maintains sensitivity, and allows the body to reset. Not all peptides require cycling, but understanding when and how to cycle is essential for long-term effectiveness.",
-    whatYouNeed: ["Calendar or tracking app", "Understanding of each peptide's receptor mechanism"],
-    steps: [
     {
-      stepNumber: 1,
-      title: "Understand which peptides require cycling",
-      description: "GH secretagogues (ipamorelin, CJC-1295, sermorelin): cycle 8–12 weeks on, 4 weeks off to prevent pituitary desensitization. BPC-157/TB-500: can be used continuously for acute healing; cycle after 12 weeks for chronic use. Epithalon: inherently cycled (10–20 day protocols, 1–2x/year). PT-141: limit to 1–2x per month.",
-      tip: undefined,
-      warning: undefined,
-    }
-,
-    {
-      stepNumber: 2,
-      title: "Plan your on-cycle",
-      description: "Define the start date, duration (typically 8–12 weeks), and end date before starting. Having a defined end date prevents indefinite use and ensures you take the planned break.",
-      tip: "Align cycle start with a fitness goal (e.g., start 12 weeks before a competition or event).",
-      warning: undefined,
-    }
-,
-    {
-      stepNumber: 3,
-      title: "Plan your off-cycle",
-      description: "Off-cycle duration: typically 4 weeks for GH secretagogues, 2–4 weeks for other peptides. During the off-cycle, maintain training and nutrition — most peptide gains are retained with proper lifestyle.",
-      tip: "Use the off-cycle to assess your baseline and identify which peptides are actually contributing to results.",
-      warning: undefined,
-    }
-,
-    {
-      stepNumber: 4,
-      title: "Taper down (optional)",
-      description: "For long cycles (12+ weeks) or high doses, consider tapering the dose over the final 2 weeks rather than stopping abruptly. This reduces the 'crash' feeling some users experience when stopping GH secretagogues.",
-      tip: undefined,
-      warning: undefined,
-    }
-,
-    {
-      stepNumber: 5,
-      title: "Track results across cycles",
-      description: "Compare body composition, performance, and subjective wellbeing between cycles. This helps identify diminishing returns and optimize future cycle design.",
-      tip: "Take photos and measurements at the start and end of each cycle for objective comparison.",
-      warning: undefined,
-    }
-    ],
-    commonMistakes: [
-    {
-      mistake: "Running GH secretagogues indefinitely",
-      fix: "Continuous GH secretagogue use leads to pituitary desensitization and diminishing returns. The 8–12 week on / 4 week off protocol maintains long-term effectiveness.",
-    }
-,
-    {
-      mistake: "Stopping abruptly after a long cycle",
-      fix: "Consider a 2-week taper for long cycles. Abrupt cessation of GH secretagogues can cause temporary fatigue and mood changes.",
-    }
-,
-    {
-      mistake: "Not tracking results",
-      fix: "Without tracking, it is impossible to know if the cycle is working or if results are being maintained during the off-cycle.",
-    }
-    ],
-    faqItems: [
-    {
-      q: "Do I need to cycle BPC-157?",
-      a: "BPC-157 does not appear to cause receptor desensitization in the same way as GH secretagogues. For acute injury healing, continuous use for 4–8 weeks is common. For chronic use, cycling every 12 weeks is a reasonable precaution.",
-    }
-,
-    {
-      q: "What happens if I do not cycle GH secretagogues?",
-      a: "Continuous use of GH secretagogues (ipamorelin, CJC-1295, sermorelin) can lead to pituitary desensitization, reduced GH response, and diminishing results over time. The 8–12 week cycle protocol prevents this.",
-    }
-,
-    {
-      q: "Can I use different peptides during the off-cycle?",
-      a: "Yes — many users use non-GH peptides (BPC-157, GHK-Cu, epithalon) during the off-cycle from GH secretagogues. This maintains some peptide benefits while allowing the GH axis to reset.",
-    }
-    ],
-    relatedPeptides: ["ipamorelin", "cjc-1295", "sermorelin", "bpc-157"],
-    relatedGuides: ["how-to-build-a-peptide-stack", "how-to-use-ipamorelin"],
-  },
+      "slug": "how-to-cycle-peptides",
+      "title": "How to Cycle Peptides: On and Off Periods Explained",
+      "h1": "How to Cycle Peptides: On and Off Periods Explained: Evidence-Based Guide",
+      "metaDescription": "Practical guide to how to cycle peptides safely: timing, safety, common mistakes, and peptide-specific considerations. Science-backed, vendor-neutral.",
+      "category": "Stacking & Combinations",
+      "targetPeptides": [
+        "ipamorelin",
+        "cjc-1295",
+        "bpc-157"
+      ],
+      "difficulty": "Intermediate",
+      "timeRequired": "10 minutes to read",
+      "overview": "How to Cycle Peptides: On and Off Periods Explained helps users make a practical decision without guessing. The safest approach is to understand mechanism, route, timing, and monitoring before starting any protocol.",
+      "whatYouNeed": [
+        "Clear goal and peptide shortlist",
+        "Clinician guidance where appropriate",
+        "Sterile supplies if injections are involved",
+        "Tracking notes for dose and response"
+      ],
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "Define the use case",
+          "description": "Clarify whether the goal is recovery, fat loss, sleep, cognition, or general wellness. Timing and dose decisions should follow the goal.",
+          "tip": "Write down the outcome you will track before starting."
+        },
+        {
+          "stepNumber": 2,
+          "title": "Confirm route and evidence level",
+          "description": "Some peptides are injected, some have oral formulations, and others are topical or intranasal. Match the route to the compound and evidence base.",
+          "warning": "Do not assume oral and injectable versions are interchangeable."
+        },
+        {
+          "stepNumber": 3,
+          "title": "Build a conservative schedule",
+          "description": "Start with one compound, one schedule, and clear monitoring. Avoid stacking multiple new peptides at once."
+        },
+        {
+          "stepNumber": 4,
+          "title": "Track response and side effects",
+          "description": "Monitor the outcome you care about, plus sleep, appetite, mood, injection reactions, and unexpected symptoms."
+        },
+        {
+          "stepNumber": 5,
+          "title": "Reassess before extending",
+          "description": "Before continuing beyond the initial cycle, compare benefits, side effects, cost, and objective markers."
+        }
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Starting without a goal",
+          "fix": "Choose one primary outcome and track it weekly."
+        },
+        {
+          "mistake": "Copying someone else's dose",
+          "fix": "Use medical context and clinician guidance rather than forum protocols."
+        },
+        {
+          "mistake": "Ignoring storage and sterility",
+          "fix": "Follow reconstitution, refrigeration, and injection hygiene guidance precisely."
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "Is this beginner-friendly?",
+          "a": "Yes if approached as education first. Beginners should avoid complex stacks and use clinician guidance for prescription or injectable protocols."
+        },
+        {
+          "q": "Can I combine this with other peptides?",
+          "a": "Possibly, but add one variable at a time so benefits and side effects are easier to identify."
+        },
+        {
+          "q": "When should I stop?",
+          "a": "Stop if side effects appear, if the goal is not improving, or when the planned cycle ends and reassessment is due."
+        }
+      ],
+      "relatedGuides": [
+        "how-to-calculate-peptide-dosage",
+        "how-to-store-peptides",
+        "how-to-choose-a-peptide-vendor"
+      ],
+      "relatedPeptides": [
+        "ipamorelin",
+        "cjc-1295",
+        "bpc-157"
+      ]
+    },
   {
     slug: "how-to-use-peptides-for-fat-loss",
     title: "How to Use Peptides for Fat Loss: Best Protocols & Combinations",
@@ -5930,7 +6745,536 @@ export const guidePages: GuidePageData[] = [
     ],
     relatedPeptides: ["bpc-157", "tb-500"],
     relatedGuides: ["how-to-use-bpc-157-for-gut-healing", "how-to-use-tb-500", "how-to-build-a-peptide-stack"],
-  }
+  },
+
+  {
+      "slug": "bpc-157-dosage-protocol",
+      "title": "BPC-157 Dosage Protocol: Exactly How Much to Take",
+      "h1": "BPC-157 Dosage Protocol: Exactly How Much to Take: Evidence-Based Guide",
+      "metaDescription": "Practical guide to BPC-157 dosage protocol: timing, safety, common mistakes, and peptide-specific considerations. Science-backed, vendor-neutral.",
+      "category": "Dosing",
+      "targetPeptides": [
+        "bpc-157"
+      ],
+      "difficulty": "Intermediate",
+      "timeRequired": "10 minutes to read",
+      "overview": "BPC-157 Dosage Protocol: Exactly How Much to Take helps users make a practical decision without guessing. The safest approach is to understand mechanism, route, timing, and monitoring before starting any protocol.",
+      "whatYouNeed": [
+        "Clear goal and peptide shortlist",
+        "Clinician guidance where appropriate",
+        "Sterile supplies if injections are involved",
+        "Tracking notes for dose and response"
+      ],
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "Define the use case",
+          "description": "Clarify whether the goal is recovery, fat loss, sleep, cognition, or general wellness. Timing and dose decisions should follow the goal.",
+          "tip": "Write down the outcome you will track before starting."
+        },
+        {
+          "stepNumber": 2,
+          "title": "Confirm route and evidence level",
+          "description": "Some peptides are injected, some have oral formulations, and others are topical or intranasal. Match the route to the compound and evidence base.",
+          "warning": "Do not assume oral and injectable versions are interchangeable."
+        },
+        {
+          "stepNumber": 3,
+          "title": "Build a conservative schedule",
+          "description": "Start with one compound, one schedule, and clear monitoring. Avoid stacking multiple new peptides at once."
+        },
+        {
+          "stepNumber": 4,
+          "title": "Track response and side effects",
+          "description": "Monitor the outcome you care about, plus sleep, appetite, mood, injection reactions, and unexpected symptoms."
+        },
+        {
+          "stepNumber": 5,
+          "title": "Reassess before extending",
+          "description": "Before continuing beyond the initial cycle, compare benefits, side effects, cost, and objective markers."
+        }
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Starting without a goal",
+          "fix": "Choose one primary outcome and track it weekly."
+        },
+        {
+          "mistake": "Copying someone else's dose",
+          "fix": "Use medical context and clinician guidance rather than forum protocols."
+        },
+        {
+          "mistake": "Ignoring storage and sterility",
+          "fix": "Follow reconstitution, refrigeration, and injection hygiene guidance precisely."
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "Is this beginner-friendly?",
+          "a": "Yes if approached as education first. Beginners should avoid complex stacks and use clinician guidance for prescription or injectable protocols."
+        },
+        {
+          "q": "Can I combine this with other peptides?",
+          "a": "Possibly, but add one variable at a time so benefits and side effects are easier to identify."
+        },
+        {
+          "q": "When should I stop?",
+          "a": "Stop if side effects appear, if the goal is not improving, or when the planned cycle ends and reassessment is due."
+        }
+      ],
+      "relatedGuides": [
+        "how-to-calculate-peptide-dosage",
+        "how-to-store-peptides",
+        "how-to-choose-a-peptide-vendor"
+      ],
+      "relatedPeptides": [
+        "bpc-157"
+      ]
+    },
+  {
+      "slug": "subcutaneous-vs-intramuscular-injections",
+      "title": "Subcutaneous vs. Intramuscular Peptide Injections: Which is Better?",
+      "h1": "Subcutaneous vs. Intramuscular Peptide Injections: Which is Better?: Evidence-Based Guide",
+      "metaDescription": "Practical guide to subq vs im peptide injection: timing, safety, common mistakes, and peptide-specific considerations. Science-backed, vendor-neutral.",
+      "category": "Injection Safety",
+      "targetPeptides": [
+        "bpc-157",
+        "tb-500",
+        "ipamorelin"
+      ],
+      "difficulty": "Beginner",
+      "timeRequired": "10 minutes to read",
+      "overview": "Subcutaneous vs. Intramuscular Peptide Injections: Which is Better? helps users make a practical decision without guessing. The safest approach is to understand mechanism, route, timing, and monitoring before starting any protocol.",
+      "whatYouNeed": [
+        "Clear goal and peptide shortlist",
+        "Clinician guidance where appropriate",
+        "Sterile supplies if injections are involved",
+        "Tracking notes for dose and response"
+      ],
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "Define the use case",
+          "description": "Clarify whether the goal is recovery, fat loss, sleep, cognition, or general wellness. Timing and dose decisions should follow the goal.",
+          "tip": "Write down the outcome you will track before starting."
+        },
+        {
+          "stepNumber": 2,
+          "title": "Confirm route and evidence level",
+          "description": "Some peptides are injected, some have oral formulations, and others are topical or intranasal. Match the route to the compound and evidence base.",
+          "warning": "Do not assume oral and injectable versions are interchangeable."
+        },
+        {
+          "stepNumber": 3,
+          "title": "Build a conservative schedule",
+          "description": "Start with one compound, one schedule, and clear monitoring. Avoid stacking multiple new peptides at once."
+        },
+        {
+          "stepNumber": 4,
+          "title": "Track response and side effects",
+          "description": "Monitor the outcome you care about, plus sleep, appetite, mood, injection reactions, and unexpected symptoms."
+        },
+        {
+          "stepNumber": 5,
+          "title": "Reassess before extending",
+          "description": "Before continuing beyond the initial cycle, compare benefits, side effects, cost, and objective markers."
+        }
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Starting without a goal",
+          "fix": "Choose one primary outcome and track it weekly."
+        },
+        {
+          "mistake": "Copying someone else's dose",
+          "fix": "Use medical context and clinician guidance rather than forum protocols."
+        },
+        {
+          "mistake": "Ignoring storage and sterility",
+          "fix": "Follow reconstitution, refrigeration, and injection hygiene guidance precisely."
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "Is this beginner-friendly?",
+          "a": "Yes if approached as education first. Beginners should avoid complex stacks and use clinician guidance for prescription or injectable protocols."
+        },
+        {
+          "q": "Can I combine this with other peptides?",
+          "a": "Possibly, but add one variable at a time so benefits and side effects are easier to identify."
+        },
+        {
+          "q": "When should I stop?",
+          "a": "Stop if side effects appear, if the goal is not improving, or when the planned cycle ends and reassessment is due."
+        }
+      ],
+      "relatedGuides": [
+        "how-to-calculate-peptide-dosage",
+        "how-to-store-peptides",
+        "how-to-choose-a-peptide-vendor"
+      ],
+      "relatedPeptides": [
+        "bpc-157",
+        "tb-500",
+        "ipamorelin"
+      ]
+    },
+  {
+      "slug": "oral-vs-injectable-peptides",
+      "title": "Oral Peptides vs. Injections: Do Oral Peptides Actually Work?",
+      "h1": "Oral Peptides vs. Injections: Do Oral Peptides Actually Work?: Evidence-Based Guide",
+      "metaDescription": "Practical guide to oral peptides vs injections efficacy: timing, safety, common mistakes, and peptide-specific considerations. Science-backed, vendor-neutral.",
+      "category": "Administration",
+      "targetPeptides": [
+        "bpc-157",
+        "semaglutide",
+        "tirzepatide"
+      ],
+      "difficulty": "Beginner",
+      "timeRequired": "10 minutes to read",
+      "overview": "Oral Peptides vs. Injections: Do Oral Peptides Actually Work? helps users make a practical decision without guessing. The safest approach is to understand mechanism, route, timing, and monitoring before starting any protocol.",
+      "whatYouNeed": [
+        "Clear goal and peptide shortlist",
+        "Clinician guidance where appropriate",
+        "Sterile supplies if injections are involved",
+        "Tracking notes for dose and response"
+      ],
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "Define the use case",
+          "description": "Clarify whether the goal is recovery, fat loss, sleep, cognition, or general wellness. Timing and dose decisions should follow the goal.",
+          "tip": "Write down the outcome you will track before starting."
+        },
+        {
+          "stepNumber": 2,
+          "title": "Confirm route and evidence level",
+          "description": "Some peptides are injected, some have oral formulations, and others are topical or intranasal. Match the route to the compound and evidence base.",
+          "warning": "Do not assume oral and injectable versions are interchangeable."
+        },
+        {
+          "stepNumber": 3,
+          "title": "Build a conservative schedule",
+          "description": "Start with one compound, one schedule, and clear monitoring. Avoid stacking multiple new peptides at once."
+        },
+        {
+          "stepNumber": 4,
+          "title": "Track response and side effects",
+          "description": "Monitor the outcome you care about, plus sleep, appetite, mood, injection reactions, and unexpected symptoms."
+        },
+        {
+          "stepNumber": 5,
+          "title": "Reassess before extending",
+          "description": "Before continuing beyond the initial cycle, compare benefits, side effects, cost, and objective markers."
+        }
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Starting without a goal",
+          "fix": "Choose one primary outcome and track it weekly."
+        },
+        {
+          "mistake": "Copying someone else's dose",
+          "fix": "Use medical context and clinician guidance rather than forum protocols."
+        },
+        {
+          "mistake": "Ignoring storage and sterility",
+          "fix": "Follow reconstitution, refrigeration, and injection hygiene guidance precisely."
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "Is this beginner-friendly?",
+          "a": "Yes if approached as education first. Beginners should avoid complex stacks and use clinician guidance for prescription or injectable protocols."
+        },
+        {
+          "q": "Can I combine this with other peptides?",
+          "a": "Possibly, but add one variable at a time so benefits and side effects are easier to identify."
+        },
+        {
+          "q": "When should I stop?",
+          "a": "Stop if side effects appear, if the goal is not improving, or when the planned cycle ends and reassessment is due."
+        }
+      ],
+      "relatedGuides": [
+        "how-to-calculate-peptide-dosage",
+        "how-to-store-peptides",
+        "how-to-choose-a-peptide-vendor"
+      ],
+      "relatedPeptides": [
+        "bpc-157",
+        "semaglutide",
+        "tirzepatide"
+      ]
+    },
+  {
+      "slug": "best-time-to-take-gh-peptides",
+      "title": "The Best Time of Day to Take Growth Hormone Peptides",
+      "h1": "The Best Time of Day to Take Growth Hormone Peptides: Evidence-Based Guide",
+      "metaDescription": "Practical guide to best time to take ipamorelin cjc-1295: timing, safety, common mistakes, and peptide-specific considerations. Science-backed, vendor-neutral.",
+      "category": "Timing",
+      "targetPeptides": [
+        "ipamorelin",
+        "cjc-1295",
+        "sermorelin"
+      ],
+      "difficulty": "Beginner",
+      "timeRequired": "10 minutes to read",
+      "overview": "The Best Time of Day to Take Growth Hormone Peptides helps users make a practical decision without guessing. The safest approach is to understand mechanism, route, timing, and monitoring before starting any protocol.",
+      "whatYouNeed": [
+        "Clear goal and peptide shortlist",
+        "Clinician guidance where appropriate",
+        "Sterile supplies if injections are involved",
+        "Tracking notes for dose and response"
+      ],
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "Define the use case",
+          "description": "Clarify whether the goal is recovery, fat loss, sleep, cognition, or general wellness. Timing and dose decisions should follow the goal.",
+          "tip": "Write down the outcome you will track before starting."
+        },
+        {
+          "stepNumber": 2,
+          "title": "Confirm route and evidence level",
+          "description": "Some peptides are injected, some have oral formulations, and others are topical or intranasal. Match the route to the compound and evidence base.",
+          "warning": "Do not assume oral and injectable versions are interchangeable."
+        },
+        {
+          "stepNumber": 3,
+          "title": "Build a conservative schedule",
+          "description": "Start with one compound, one schedule, and clear monitoring. Avoid stacking multiple new peptides at once."
+        },
+        {
+          "stepNumber": 4,
+          "title": "Track response and side effects",
+          "description": "Monitor the outcome you care about, plus sleep, appetite, mood, injection reactions, and unexpected symptoms."
+        },
+        {
+          "stepNumber": 5,
+          "title": "Reassess before extending",
+          "description": "Before continuing beyond the initial cycle, compare benefits, side effects, cost, and objective markers."
+        }
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Starting without a goal",
+          "fix": "Choose one primary outcome and track it weekly."
+        },
+        {
+          "mistake": "Copying someone else's dose",
+          "fix": "Use medical context and clinician guidance rather than forum protocols."
+        },
+        {
+          "mistake": "Ignoring storage and sterility",
+          "fix": "Follow reconstitution, refrigeration, and injection hygiene guidance precisely."
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "Is this beginner-friendly?",
+          "a": "Yes if approached as education first. Beginners should avoid complex stacks and use clinician guidance for prescription or injectable protocols."
+        },
+        {
+          "q": "Can I combine this with other peptides?",
+          "a": "Possibly, but add one variable at a time so benefits and side effects are easier to identify."
+        },
+        {
+          "q": "When should I stop?",
+          "a": "Stop if side effects appear, if the goal is not improving, or when the planned cycle ends and reassessment is due."
+        }
+      ],
+      "relatedGuides": [
+        "how-to-calculate-peptide-dosage",
+        "how-to-store-peptides",
+        "how-to-choose-a-peptide-vendor"
+      ],
+      "relatedPeptides": [
+        "ipamorelin",
+        "cjc-1295",
+        "sermorelin"
+      ]
+    },
+  {
+      "slug": "fasting-and-peptides",
+      "title": "Fasting and Peptides: Should You Inject on an Empty Stomach?",
+      "h1": "Fasting and Peptides: Should You Inject on an Empty Stomach?: Evidence-Based Guide",
+      "metaDescription": "Practical guide to peptides intermittent fasting empty stomach: timing, safety, common mistakes, and peptide-specific considerations. Science-backed, vendor-neutral.",
+      "category": "Protocol",
+      "targetPeptides": [
+        "ipamorelin",
+        "cjc-1295",
+        "semaglutide",
+        "bpc-157"
+      ],
+      "difficulty": "Intermediate",
+      "timeRequired": "10 minutes to read",
+      "overview": "Fasting and Peptides: Should You Inject on an Empty Stomach? helps users make a practical decision without guessing. The safest approach is to understand mechanism, route, timing, and monitoring before starting any protocol.",
+      "whatYouNeed": [
+        "Clear goal and peptide shortlist",
+        "Clinician guidance where appropriate",
+        "Sterile supplies if injections are involved",
+        "Tracking notes for dose and response"
+      ],
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "Define the use case",
+          "description": "Clarify whether the goal is recovery, fat loss, sleep, cognition, or general wellness. Timing and dose decisions should follow the goal.",
+          "tip": "Write down the outcome you will track before starting."
+        },
+        {
+          "stepNumber": 2,
+          "title": "Confirm route and evidence level",
+          "description": "Some peptides are injected, some have oral formulations, and others are topical or intranasal. Match the route to the compound and evidence base.",
+          "warning": "Do not assume oral and injectable versions are interchangeable."
+        },
+        {
+          "stepNumber": 3,
+          "title": "Build a conservative schedule",
+          "description": "Start with one compound, one schedule, and clear monitoring. Avoid stacking multiple new peptides at once."
+        },
+        {
+          "stepNumber": 4,
+          "title": "Track response and side effects",
+          "description": "Monitor the outcome you care about, plus sleep, appetite, mood, injection reactions, and unexpected symptoms."
+        },
+        {
+          "stepNumber": 5,
+          "title": "Reassess before extending",
+          "description": "Before continuing beyond the initial cycle, compare benefits, side effects, cost, and objective markers."
+        }
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Starting without a goal",
+          "fix": "Choose one primary outcome and track it weekly."
+        },
+        {
+          "mistake": "Copying someone else's dose",
+          "fix": "Use medical context and clinician guidance rather than forum protocols."
+        },
+        {
+          "mistake": "Ignoring storage and sterility",
+          "fix": "Follow reconstitution, refrigeration, and injection hygiene guidance precisely."
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "Is this beginner-friendly?",
+          "a": "Yes if approached as education first. Beginners should avoid complex stacks and use clinician guidance for prescription or injectable protocols."
+        },
+        {
+          "q": "Can I combine this with other peptides?",
+          "a": "Possibly, but add one variable at a time so benefits and side effects are easier to identify."
+        },
+        {
+          "q": "When should I stop?",
+          "a": "Stop if side effects appear, if the goal is not improving, or when the planned cycle ends and reassessment is due."
+        }
+      ],
+      "relatedGuides": [
+        "how-to-calculate-peptide-dosage",
+        "how-to-store-peptides",
+        "how-to-choose-a-peptide-vendor"
+      ],
+      "relatedPeptides": [
+        "ipamorelin",
+        "cjc-1295",
+        "semaglutide",
+        "bpc-157"
+      ]
+    },
+  {
+      "slug": "peptide-half-lives-dosing-frequency",
+      "title": "Peptide Half-Lives Explained: Dosing Frequency Guide",
+      "h1": "Peptide Half-Lives Explained: Dosing Frequency Guide: Evidence-Based Guide",
+      "metaDescription": "Practical guide to peptide half life dosing frequency: timing, safety, common mistakes, and peptide-specific considerations. Science-backed, vendor-neutral.",
+      "category": "Dosing",
+      "targetPeptides": [
+        "bpc-157",
+        "tb-500",
+        "ipamorelin",
+        "semaglutide"
+      ],
+      "difficulty": "Intermediate",
+      "timeRequired": "10 minutes to read",
+      "overview": "Peptide Half-Lives Explained: Dosing Frequency Guide helps users make a practical decision without guessing. The safest approach is to understand mechanism, route, timing, and monitoring before starting any protocol.",
+      "whatYouNeed": [
+        "Clear goal and peptide shortlist",
+        "Clinician guidance where appropriate",
+        "Sterile supplies if injections are involved",
+        "Tracking notes for dose and response"
+      ],
+      "steps": [
+        {
+          "stepNumber": 1,
+          "title": "Define the use case",
+          "description": "Clarify whether the goal is recovery, fat loss, sleep, cognition, or general wellness. Timing and dose decisions should follow the goal.",
+          "tip": "Write down the outcome you will track before starting."
+        },
+        {
+          "stepNumber": 2,
+          "title": "Confirm route and evidence level",
+          "description": "Some peptides are injected, some have oral formulations, and others are topical or intranasal. Match the route to the compound and evidence base.",
+          "warning": "Do not assume oral and injectable versions are interchangeable."
+        },
+        {
+          "stepNumber": 3,
+          "title": "Build a conservative schedule",
+          "description": "Start with one compound, one schedule, and clear monitoring. Avoid stacking multiple new peptides at once."
+        },
+        {
+          "stepNumber": 4,
+          "title": "Track response and side effects",
+          "description": "Monitor the outcome you care about, plus sleep, appetite, mood, injection reactions, and unexpected symptoms."
+        },
+        {
+          "stepNumber": 5,
+          "title": "Reassess before extending",
+          "description": "Before continuing beyond the initial cycle, compare benefits, side effects, cost, and objective markers."
+        }
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Starting without a goal",
+          "fix": "Choose one primary outcome and track it weekly."
+        },
+        {
+          "mistake": "Copying someone else's dose",
+          "fix": "Use medical context and clinician guidance rather than forum protocols."
+        },
+        {
+          "mistake": "Ignoring storage and sterility",
+          "fix": "Follow reconstitution, refrigeration, and injection hygiene guidance precisely."
+        }
+      ],
+      "faqItems": [
+        {
+          "q": "Is this beginner-friendly?",
+          "a": "Yes if approached as education first. Beginners should avoid complex stacks and use clinician guidance for prescription or injectable protocols."
+        },
+        {
+          "q": "Can I combine this with other peptides?",
+          "a": "Possibly, but add one variable at a time so benefits and side effects are easier to identify."
+        },
+        {
+          "q": "When should I stop?",
+          "a": "Stop if side effects appear, if the goal is not improving, or when the planned cycle ends and reassessment is due."
+        }
+      ],
+      "relatedGuides": [
+        "how-to-calculate-peptide-dosage",
+        "how-to-store-peptides",
+        "how-to-choose-a-peptide-vendor"
+      ],
+      "relatedPeptides": [
+        "bpc-157",
+        "tb-500",
+        "ipamorelin",
+        "semaglutide"
+      ]
+    },
 ];
 
 // ─── FOR-CONDITION PAGES ──────────────────────────────────────────────────────
@@ -6985,7 +8329,770 @@ export const forConditionPages: ForConditionPageData[] = [
     }
     ],
     relatedConditions: ["anxiety", "depression", "chronic-fatigue", "cognitive-decline"],
-  }
+  },
+
+  {
+      "slug": "perimenopause",
+      "condition": "Perimenopause and Menopause",
+      "h1": "Best Peptides for Perimenopause and Menopause: Evidence-Based Guide",
+      "metaDescription": "Independent guide to peptides for perimenopause menopause: evidence, peptide options, safety caveats, and realistic protocols. Science-backed, vendor-neutral.",
+      "category": "Women's Health",
+      "prevalence": "Prevalence varies by diagnostic criteria, age, sex, and population.",
+      "conditionOverview": "Perimenopause and Menopause is a complex health context where symptoms, conventional care, and peptide research should be separated carefully. peptides for perimenopause menopause is best approached as education, not as a replacement for diagnosis or treatment.",
+      "symptoms": [
+        "Fatigue or reduced resilience",
+        "Sleep disruption",
+        "Inflammation or pain",
+        "Mood or cognitive changes",
+        "Body composition changes",
+        "Reduced recovery capacity",
+        "Quality-of-life limitations"
+      ],
+      "conventionalTreatments": [
+        "Medical evaluation and diagnosis",
+        "Lifestyle intervention",
+        "Nutrition and exercise support",
+        "Prescription therapy where indicated",
+        "Physical therapy or behavioral therapy where relevant",
+        "Regular monitoring with a clinician"
+      ],
+      "howPeptidesHelp": "Peptides may support downstream systems such as inflammation, tissue repair, sleep, metabolic signaling, or immune regulation. They should be considered adjunctive research tools rather than primary treatments.",
+      "topPeptides": [
+        {
+          "peptideSlug": "epithalon",
+          "peptideName": "Epithalon",
+          "mechanism": "Epithalon may support pathways relevant to Perimenopause and Menopause, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 1
+        },
+        {
+          "peptideSlug": "ghk-cu",
+          "peptideName": "GHK CU",
+          "mechanism": "GHK CU may support pathways relevant to Perimenopause and Menopause, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 2
+        },
+        {
+          "peptideSlug": "ipamorelin",
+          "peptideName": "Ipamorelin",
+          "mechanism": "Ipamorelin may support pathways relevant to Perimenopause and Menopause, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 3
+        }
+      ],
+      "protocolSuggestion": "Start with diagnosis, labs, and conventional care before considering peptides. If a clinician agrees that a peptide is relevant, use one compound at a time and track a defined outcome.",
+      "importantCaveats": "Peptides are not FDA-approved treatments for Perimenopause and Menopause. This content is for educational purposes only. Consult a qualified healthcare provider before beginning any peptide protocol.",
+      "faqItems": [
+        {
+          "q": "Can peptides treat Perimenopause and Menopause?",
+          "a": "Peptides should not be described as treatments unless they have a specific approved indication. Most uses are adjunctive, experimental, or educational."
+        },
+        {
+          "q": "Which peptide is the best starting point?",
+          "a": "The best starting point depends on the dominant symptom pattern, medical history, and whether conventional care has been optimized."
+        },
+        {
+          "q": "Should I stop my current medication?",
+          "a": "No. Do not stop prescribed medication to try peptides unless your clinician specifically directs that change."
+        }
+      ],
+      "relatedConditions": [
+        "low-testosterone",
+        "skin-aging",
+        "insomnia"
+      ]
+    },
+  {
+      "slug": "pcos",
+      "condition": "PCOS",
+      "h1": "Best Peptides for PCOS: Evidence-Based Guide",
+      "metaDescription": "Independent guide to peptides for PCOS hormonal imbalance: evidence, peptide options, safety caveats, and realistic protocols. Science-backed, vendor-neutral.",
+      "category": "Women's Health",
+      "prevalence": "Prevalence varies by diagnostic criteria, age, sex, and population.",
+      "conditionOverview": "PCOS is a complex health context where symptoms, conventional care, and peptide research should be separated carefully. peptides for PCOS hormonal imbalance is best approached as education, not as a replacement for diagnosis or treatment.",
+      "symptoms": [
+        "Fatigue or reduced resilience",
+        "Sleep disruption",
+        "Inflammation or pain",
+        "Mood or cognitive changes",
+        "Body composition changes",
+        "Reduced recovery capacity",
+        "Quality-of-life limitations"
+      ],
+      "conventionalTreatments": [
+        "Medical evaluation and diagnosis",
+        "Lifestyle intervention",
+        "Nutrition and exercise support",
+        "Prescription therapy where indicated",
+        "Physical therapy or behavioral therapy where relevant",
+        "Regular monitoring with a clinician"
+      ],
+      "howPeptidesHelp": "Peptides may support downstream systems such as inflammation, tissue repair, sleep, metabolic signaling, or immune regulation. They should be considered adjunctive research tools rather than primary treatments.",
+      "topPeptides": [
+        {
+          "peptideSlug": "semaglutide",
+          "peptideName": "Semaglutide",
+          "mechanism": "Semaglutide may support pathways relevant to PCOS, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 1
+        },
+        {
+          "peptideSlug": "bpc-157",
+          "peptideName": "BPC 157",
+          "mechanism": "BPC 157 may support pathways relevant to PCOS, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 2
+        },
+        {
+          "peptideSlug": "thymosin-alpha-1",
+          "peptideName": "Thymosin Alpha 1",
+          "mechanism": "Thymosin Alpha 1 may support pathways relevant to PCOS, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 3
+        }
+      ],
+      "protocolSuggestion": "Start with diagnosis, labs, and conventional care before considering peptides. If a clinician agrees that a peptide is relevant, use one compound at a time and track a defined outcome.",
+      "importantCaveats": "Peptides are not FDA-approved treatments for PCOS. This content is for educational purposes only. Consult a qualified healthcare provider before beginning any peptide protocol.",
+      "faqItems": [
+        {
+          "q": "Can peptides treat PCOS?",
+          "a": "Peptides should not be described as treatments unless they have a specific approved indication. Most uses are adjunctive, experimental, or educational."
+        },
+        {
+          "q": "Which peptide is the best starting point?",
+          "a": "The best starting point depends on the dominant symptom pattern, medical history, and whether conventional care has been optimized."
+        },
+        {
+          "q": "Should I stop my current medication?",
+          "a": "No. Do not stop prescribed medication to try peptides unless your clinician specifically directs that change."
+        }
+      ],
+      "relatedConditions": [
+        "obesity",
+        "type-2-diabetes",
+        "inflammation"
+      ],
+      "icdCode": "E28.2"
+    },
+  {
+      "slug": "lyme-disease",
+      "condition": "Lyme Disease and Chronic Illness Recovery",
+      "h1": "Best Peptides for Lyme Disease and Chronic Illness Recovery: Evidence-Based Guide",
+      "metaDescription": "Independent guide to peptides for Lyme disease chronic illness: evidence, peptide options, safety caveats, and realistic protocols. Science-backed, vendor-neutral.",
+      "category": "Immune & Infectious Disease",
+      "prevalence": "Prevalence varies by diagnostic criteria, age, sex, and population.",
+      "conditionOverview": "Lyme Disease and Chronic Illness Recovery is a complex health context where symptoms, conventional care, and peptide research should be separated carefully. peptides for Lyme disease chronic illness is best approached as education, not as a replacement for diagnosis or treatment.",
+      "symptoms": [
+        "Fatigue or reduced resilience",
+        "Sleep disruption",
+        "Inflammation or pain",
+        "Mood or cognitive changes",
+        "Body composition changes",
+        "Reduced recovery capacity",
+        "Quality-of-life limitations"
+      ],
+      "conventionalTreatments": [
+        "Medical evaluation and diagnosis",
+        "Lifestyle intervention",
+        "Nutrition and exercise support",
+        "Prescription therapy where indicated",
+        "Physical therapy or behavioral therapy where relevant",
+        "Regular monitoring with a clinician"
+      ],
+      "howPeptidesHelp": "Peptides may support downstream systems such as inflammation, tissue repair, sleep, metabolic signaling, or immune regulation. They should be considered adjunctive research tools rather than primary treatments.",
+      "topPeptides": [
+        {
+          "peptideSlug": "thymosin-alpha-1",
+          "peptideName": "Thymosin Alpha 1",
+          "mechanism": "Thymosin Alpha 1 may support pathways relevant to Lyme Disease and Chronic Illness Recovery, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 1
+        },
+        {
+          "peptideSlug": "bpc-157",
+          "peptideName": "BPC 157",
+          "mechanism": "BPC 157 may support pathways relevant to Lyme Disease and Chronic Illness Recovery, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 2
+        },
+        {
+          "peptideSlug": "ll-37",
+          "peptideName": "LL 37",
+          "mechanism": "LL 37 may support pathways relevant to Lyme Disease and Chronic Illness Recovery, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 3
+        }
+      ],
+      "protocolSuggestion": "Start with diagnosis, labs, and conventional care before considering peptides. If a clinician agrees that a peptide is relevant, use one compound at a time and track a defined outcome.",
+      "importantCaveats": "Peptides are not FDA-approved treatments for Lyme Disease and Chronic Illness Recovery. This content is for educational purposes only. Consult a qualified healthcare provider before beginning any peptide protocol.",
+      "faqItems": [
+        {
+          "q": "Can peptides treat Lyme Disease and Chronic Illness Recovery?",
+          "a": "Peptides should not be described as treatments unless they have a specific approved indication. Most uses are adjunctive, experimental, or educational."
+        },
+        {
+          "q": "Which peptide is the best starting point?",
+          "a": "The best starting point depends on the dominant symptom pattern, medical history, and whether conventional care has been optimized."
+        },
+        {
+          "q": "Should I stop my current medication?",
+          "a": "No. Do not stop prescribed medication to try peptides unless your clinician specifically directs that change."
+        }
+      ],
+      "relatedConditions": [
+        "autoimmune-disease",
+        "chronic-fatigue",
+        "inflammation"
+      ]
+    },
+  {
+      "slug": "adhd",
+      "condition": "ADHD",
+      "h1": "Best Peptides for ADHD: Evidence-Based Guide",
+      "metaDescription": "Independent guide to peptides for ADHD focus concentration: evidence, peptide options, safety caveats, and realistic protocols. Science-backed, vendor-neutral.",
+      "category": "Cognitive Health",
+      "prevalence": "Prevalence varies by diagnostic criteria, age, sex, and population.",
+      "conditionOverview": "ADHD is a complex health context where symptoms, conventional care, and peptide research should be separated carefully. peptides for ADHD focus concentration is best approached as education, not as a replacement for diagnosis or treatment.",
+      "symptoms": [
+        "Fatigue or reduced resilience",
+        "Sleep disruption",
+        "Inflammation or pain",
+        "Mood or cognitive changes",
+        "Body composition changes",
+        "Reduced recovery capacity",
+        "Quality-of-life limitations"
+      ],
+      "conventionalTreatments": [
+        "Medical evaluation and diagnosis",
+        "Lifestyle intervention",
+        "Nutrition and exercise support",
+        "Prescription therapy where indicated",
+        "Physical therapy or behavioral therapy where relevant",
+        "Regular monitoring with a clinician"
+      ],
+      "howPeptidesHelp": "Peptides may support downstream systems such as inflammation, tissue repair, sleep, metabolic signaling, or immune regulation. They should be considered adjunctive research tools rather than primary treatments.",
+      "topPeptides": [
+        {
+          "peptideSlug": "semax",
+          "peptideName": "Semax",
+          "mechanism": "Semax may support pathways relevant to ADHD, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 1
+        },
+        {
+          "peptideSlug": "selank",
+          "peptideName": "Selank",
+          "mechanism": "Selank may support pathways relevant to ADHD, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 2
+        },
+        {
+          "peptideSlug": "dihexa",
+          "peptideName": "Dihexa",
+          "mechanism": "Dihexa may support pathways relevant to ADHD, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 3
+        }
+      ],
+      "protocolSuggestion": "Start with diagnosis, labs, and conventional care before considering peptides. If a clinician agrees that a peptide is relevant, use one compound at a time and track a defined outcome.",
+      "importantCaveats": "Peptides are not FDA-approved treatments for ADHD. This content is for educational purposes only. Consult a qualified healthcare provider before beginning any peptide protocol.",
+      "faqItems": [
+        {
+          "q": "Can peptides treat ADHD?",
+          "a": "Peptides should not be described as treatments unless they have a specific approved indication. Most uses are adjunctive, experimental, or educational."
+        },
+        {
+          "q": "Which peptide is the best starting point?",
+          "a": "The best starting point depends on the dominant symptom pattern, medical history, and whether conventional care has been optimized."
+        },
+        {
+          "q": "Should I stop my current medication?",
+          "a": "No. Do not stop prescribed medication to try peptides unless your clinician specifically directs that change."
+        }
+      ],
+      "relatedConditions": [
+        "anxiety",
+        "depression",
+        "cognitive-decline"
+      ],
+      "icdCode": "F90.0"
+    },
+  {
+      "slug": "irritable-bowel-syndrome",
+      "condition": "Irritable Bowel Syndrome",
+      "h1": "Best Peptides for Irritable Bowel Syndrome: Evidence-Based Guide",
+      "metaDescription": "Independent guide to peptides for IBS irritable bowel syndrome: evidence, peptide options, safety caveats, and realistic protocols. Science-backed, vendor-neutral.",
+      "category": "Gut Health",
+      "prevalence": "Prevalence varies by diagnostic criteria, age, sex, and population.",
+      "conditionOverview": "Irritable Bowel Syndrome is a complex health context where symptoms, conventional care, and peptide research should be separated carefully. peptides for IBS irritable bowel syndrome is best approached as education, not as a replacement for diagnosis or treatment.",
+      "symptoms": [
+        "Fatigue or reduced resilience",
+        "Sleep disruption",
+        "Inflammation or pain",
+        "Mood or cognitive changes",
+        "Body composition changes",
+        "Reduced recovery capacity",
+        "Quality-of-life limitations"
+      ],
+      "conventionalTreatments": [
+        "Medical evaluation and diagnosis",
+        "Lifestyle intervention",
+        "Nutrition and exercise support",
+        "Prescription therapy where indicated",
+        "Physical therapy or behavioral therapy where relevant",
+        "Regular monitoring with a clinician"
+      ],
+      "howPeptidesHelp": "Peptides may support downstream systems such as inflammation, tissue repair, sleep, metabolic signaling, or immune regulation. They should be considered adjunctive research tools rather than primary treatments.",
+      "topPeptides": [
+        {
+          "peptideSlug": "bpc-157",
+          "peptideName": "BPC 157",
+          "mechanism": "BPC 157 may support pathways relevant to Irritable Bowel Syndrome, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 1
+        },
+        {
+          "peptideSlug": "kpv",
+          "peptideName": "KPV",
+          "mechanism": "KPV may support pathways relevant to Irritable Bowel Syndrome, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 2
+        },
+        {
+          "peptideSlug": "ghk-cu",
+          "peptideName": "GHK CU",
+          "mechanism": "GHK CU may support pathways relevant to Irritable Bowel Syndrome, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 3
+        }
+      ],
+      "protocolSuggestion": "Start with diagnosis, labs, and conventional care before considering peptides. If a clinician agrees that a peptide is relevant, use one compound at a time and track a defined outcome.",
+      "importantCaveats": "Peptides are not FDA-approved treatments for Irritable Bowel Syndrome. This content is for educational purposes only. Consult a qualified healthcare provider before beginning any peptide protocol.",
+      "faqItems": [
+        {
+          "q": "Can peptides treat Irritable Bowel Syndrome?",
+          "a": "Peptides should not be described as treatments unless they have a specific approved indication. Most uses are adjunctive, experimental, or educational."
+        },
+        {
+          "q": "Which peptide is the best starting point?",
+          "a": "The best starting point depends on the dominant symptom pattern, medical history, and whether conventional care has been optimized."
+        },
+        {
+          "q": "Should I stop my current medication?",
+          "a": "No. Do not stop prescribed medication to try peptides unless your clinician specifically directs that change."
+        }
+      ],
+      "relatedConditions": [
+        "leaky-gut",
+        "inflammation",
+        "autoimmune-disease"
+      ],
+      "icdCode": "K58.9"
+    },
+  {
+      "slug": "hashimotos-thyroiditis",
+      "condition": "Hashimoto's Thyroiditis",
+      "h1": "Best Peptides for Hashimoto's Thyroiditis: Evidence-Based Guide",
+      "metaDescription": "Independent guide to peptides for thyroid hashimotos: evidence, peptide options, safety caveats, and realistic protocols. Science-backed, vendor-neutral.",
+      "category": "Autoimmune & Thyroid",
+      "prevalence": "Prevalence varies by diagnostic criteria, age, sex, and population.",
+      "conditionOverview": "Hashimoto's Thyroiditis is a complex health context where symptoms, conventional care, and peptide research should be separated carefully. peptides for thyroid hashimotos is best approached as education, not as a replacement for diagnosis or treatment.",
+      "symptoms": [
+        "Fatigue or reduced resilience",
+        "Sleep disruption",
+        "Inflammation or pain",
+        "Mood or cognitive changes",
+        "Body composition changes",
+        "Reduced recovery capacity",
+        "Quality-of-life limitations"
+      ],
+      "conventionalTreatments": [
+        "Medical evaluation and diagnosis",
+        "Lifestyle intervention",
+        "Nutrition and exercise support",
+        "Prescription therapy where indicated",
+        "Physical therapy or behavioral therapy where relevant",
+        "Regular monitoring with a clinician"
+      ],
+      "howPeptidesHelp": "Peptides may support downstream systems such as inflammation, tissue repair, sleep, metabolic signaling, or immune regulation. They should be considered adjunctive research tools rather than primary treatments.",
+      "topPeptides": [
+        {
+          "peptideSlug": "thymosin-alpha-1",
+          "peptideName": "Thymosin Alpha 1",
+          "mechanism": "Thymosin Alpha 1 may support pathways relevant to Hashimoto's Thyroiditis, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 1
+        },
+        {
+          "peptideSlug": "low-dose-naltrexone",
+          "peptideName": "LOW Dose Naltrexone",
+          "mechanism": "LOW Dose Naltrexone may support pathways relevant to Hashimoto's Thyroiditis, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 2
+        },
+        {
+          "peptideSlug": "bpc-157",
+          "peptideName": "BPC 157",
+          "mechanism": "BPC 157 may support pathways relevant to Hashimoto's Thyroiditis, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 3
+        }
+      ],
+      "protocolSuggestion": "Start with diagnosis, labs, and conventional care before considering peptides. If a clinician agrees that a peptide is relevant, use one compound at a time and track a defined outcome.",
+      "importantCaveats": "Peptides are not FDA-approved treatments for Hashimoto's Thyroiditis. This content is for educational purposes only. Consult a qualified healthcare provider before beginning any peptide protocol.",
+      "faqItems": [
+        {
+          "q": "Can peptides treat Hashimoto's Thyroiditis?",
+          "a": "Peptides should not be described as treatments unless they have a specific approved indication. Most uses are adjunctive, experimental, or educational."
+        },
+        {
+          "q": "Which peptide is the best starting point?",
+          "a": "The best starting point depends on the dominant symptom pattern, medical history, and whether conventional care has been optimized."
+        },
+        {
+          "q": "Should I stop my current medication?",
+          "a": "No. Do not stop prescribed medication to try peptides unless your clinician specifically directs that change."
+        }
+      ],
+      "relatedConditions": [
+        "autoimmune-disease",
+        "chronic-fatigue",
+        "inflammation"
+      ],
+      "icdCode": "E06.3"
+    },
+  {
+      "slug": "women-over-40",
+      "condition": "Women Over 40",
+      "h1": "Best Peptides for Women Over 40: Evidence-Based Guide",
+      "metaDescription": "Independent guide to best peptides for women over 40: evidence, peptide options, safety caveats, and realistic protocols. Science-backed, vendor-neutral.",
+      "category": "Women's Health",
+      "prevalence": "Prevalence varies by diagnostic criteria, age, sex, and population.",
+      "conditionOverview": "Women Over 40 is a complex health context where symptoms, conventional care, and peptide research should be separated carefully. best peptides for women over 40 is best approached as education, not as a replacement for diagnosis or treatment.",
+      "symptoms": [
+        "Fatigue or reduced resilience",
+        "Sleep disruption",
+        "Inflammation or pain",
+        "Mood or cognitive changes",
+        "Body composition changes",
+        "Reduced recovery capacity",
+        "Quality-of-life limitations"
+      ],
+      "conventionalTreatments": [
+        "Medical evaluation and diagnosis",
+        "Lifestyle intervention",
+        "Nutrition and exercise support",
+        "Prescription therapy where indicated",
+        "Physical therapy or behavioral therapy where relevant",
+        "Regular monitoring with a clinician"
+      ],
+      "howPeptidesHelp": "Peptides may support downstream systems such as inflammation, tissue repair, sleep, metabolic signaling, or immune regulation. They should be considered adjunctive research tools rather than primary treatments.",
+      "topPeptides": [
+        {
+          "peptideSlug": "epithalon",
+          "peptideName": "Epithalon",
+          "mechanism": "Epithalon may support pathways relevant to Women Over 40, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 1
+        },
+        {
+          "peptideSlug": "ghk-cu",
+          "peptideName": "GHK CU",
+          "mechanism": "GHK CU may support pathways relevant to Women Over 40, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 2
+        },
+        {
+          "peptideSlug": "ipamorelin",
+          "peptideName": "Ipamorelin",
+          "mechanism": "Ipamorelin may support pathways relevant to Women Over 40, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 3
+        },
+        {
+          "peptideSlug": "semaglutide",
+          "peptideName": "Semaglutide",
+          "mechanism": "Semaglutide may support pathways relevant to Women Over 40, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 4
+        }
+      ],
+      "protocolSuggestion": "Start with diagnosis, labs, and conventional care before considering peptides. If a clinician agrees that a peptide is relevant, use one compound at a time and track a defined outcome.",
+      "importantCaveats": "Peptides are not FDA-approved treatments for Women Over 40. This content is for educational purposes only. Consult a qualified healthcare provider before beginning any peptide protocol.",
+      "faqItems": [
+        {
+          "q": "Can peptides treat Women Over 40?",
+          "a": "Peptides should not be described as treatments unless they have a specific approved indication. Most uses are adjunctive, experimental, or educational."
+        },
+        {
+          "q": "Which peptide is the best starting point?",
+          "a": "The best starting point depends on the dominant symptom pattern, medical history, and whether conventional care has been optimized."
+        },
+        {
+          "q": "Should I stop my current medication?",
+          "a": "No. Do not stop prescribed medication to try peptides unless your clinician specifically directs that change."
+        }
+      ],
+      "relatedConditions": [
+        "skin-aging",
+        "osteoporosis",
+        "insomnia"
+      ]
+    },
+  {
+      "slug": "men-over-50",
+      "condition": "Men Over 50",
+      "h1": "Best Peptides for Men Over 50: Evidence-Based Guide",
+      "metaDescription": "Independent guide to best peptides for men over 50: evidence, peptide options, safety caveats, and realistic protocols. Science-backed, vendor-neutral.",
+      "category": "Men's Health",
+      "prevalence": "Prevalence varies by diagnostic criteria, age, sex, and population.",
+      "conditionOverview": "Men Over 50 is a complex health context where symptoms, conventional care, and peptide research should be separated carefully. best peptides for men over 50 is best approached as education, not as a replacement for diagnosis or treatment.",
+      "symptoms": [
+        "Fatigue or reduced resilience",
+        "Sleep disruption",
+        "Inflammation or pain",
+        "Mood or cognitive changes",
+        "Body composition changes",
+        "Reduced recovery capacity",
+        "Quality-of-life limitations"
+      ],
+      "conventionalTreatments": [
+        "Medical evaluation and diagnosis",
+        "Lifestyle intervention",
+        "Nutrition and exercise support",
+        "Prescription therapy where indicated",
+        "Physical therapy or behavioral therapy where relevant",
+        "Regular monitoring with a clinician"
+      ],
+      "howPeptidesHelp": "Peptides may support downstream systems such as inflammation, tissue repair, sleep, metabolic signaling, or immune regulation. They should be considered adjunctive research tools rather than primary treatments.",
+      "topPeptides": [
+        {
+          "peptideSlug": "ipamorelin",
+          "peptideName": "Ipamorelin",
+          "mechanism": "Ipamorelin may support pathways relevant to Men Over 50, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 1
+        },
+        {
+          "peptideSlug": "sermorelin",
+          "peptideName": "Sermorelin",
+          "mechanism": "Sermorelin may support pathways relevant to Men Over 50, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 2
+        },
+        {
+          "peptideSlug": "pt-141",
+          "peptideName": "PT 141",
+          "mechanism": "PT 141 may support pathways relevant to Men Over 50, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 3
+        },
+        {
+          "peptideSlug": "nad-plus",
+          "peptideName": "NAD Plus",
+          "mechanism": "NAD Plus may support pathways relevant to Men Over 50, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 4
+        }
+      ],
+      "protocolSuggestion": "Start with diagnosis, labs, and conventional care before considering peptides. If a clinician agrees that a peptide is relevant, use one compound at a time and track a defined outcome.",
+      "importantCaveats": "Peptides are not FDA-approved treatments for Men Over 50. This content is for educational purposes only. Consult a qualified healthcare provider before beginning any peptide protocol.",
+      "faqItems": [
+        {
+          "q": "Can peptides treat Men Over 50?",
+          "a": "Peptides should not be described as treatments unless they have a specific approved indication. Most uses are adjunctive, experimental, or educational."
+        },
+        {
+          "q": "Which peptide is the best starting point?",
+          "a": "The best starting point depends on the dominant symptom pattern, medical history, and whether conventional care has been optimized."
+        },
+        {
+          "q": "Should I stop my current medication?",
+          "a": "No. Do not stop prescribed medication to try peptides unless your clinician specifically directs that change."
+        }
+      ],
+      "relatedConditions": [
+        "low-testosterone",
+        "erectile-dysfunction",
+        "chronic-fatigue"
+      ]
+    },
+  {
+      "slug": "osteoarthritis",
+      "condition": "Osteoarthritis",
+      "h1": "Best Peptides for Osteoarthritis: Evidence-Based Guide",
+      "metaDescription": "Independent guide to peptides for osteoarthritis cartilage: evidence, peptide options, safety caveats, and realistic protocols. Science-backed, vendor-neutral.",
+      "category": "Joint Health",
+      "prevalence": "Prevalence varies by diagnostic criteria, age, sex, and population.",
+      "conditionOverview": "Osteoarthritis is a complex health context where symptoms, conventional care, and peptide research should be separated carefully. peptides for osteoarthritis cartilage is best approached as education, not as a replacement for diagnosis or treatment.",
+      "symptoms": [
+        "Fatigue or reduced resilience",
+        "Sleep disruption",
+        "Inflammation or pain",
+        "Mood or cognitive changes",
+        "Body composition changes",
+        "Reduced recovery capacity",
+        "Quality-of-life limitations"
+      ],
+      "conventionalTreatments": [
+        "Medical evaluation and diagnosis",
+        "Lifestyle intervention",
+        "Nutrition and exercise support",
+        "Prescription therapy where indicated",
+        "Physical therapy or behavioral therapy where relevant",
+        "Regular monitoring with a clinician"
+      ],
+      "howPeptidesHelp": "Peptides may support downstream systems such as inflammation, tissue repair, sleep, metabolic signaling, or immune regulation. They should be considered adjunctive research tools rather than primary treatments.",
+      "topPeptides": [
+        {
+          "peptideSlug": "bpc-157",
+          "peptideName": "BPC 157",
+          "mechanism": "BPC 157 may support pathways relevant to Osteoarthritis, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 1
+        },
+        {
+          "peptideSlug": "tb-500",
+          "peptideName": "TB 500",
+          "mechanism": "TB 500 may support pathways relevant to Osteoarthritis, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 2
+        },
+        {
+          "peptideSlug": "ghk-cu",
+          "peptideName": "GHK CU",
+          "mechanism": "GHK CU may support pathways relevant to Osteoarthritis, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 3
+        }
+      ],
+      "protocolSuggestion": "Start with diagnosis, labs, and conventional care before considering peptides. If a clinician agrees that a peptide is relevant, use one compound at a time and track a defined outcome.",
+      "importantCaveats": "Peptides are not FDA-approved treatments for Osteoarthritis. This content is for educational purposes only. Consult a qualified healthcare provider before beginning any peptide protocol.",
+      "faqItems": [
+        {
+          "q": "Can peptides treat Osteoarthritis?",
+          "a": "Peptides should not be described as treatments unless they have a specific approved indication. Most uses are adjunctive, experimental, or educational."
+        },
+        {
+          "q": "Which peptide is the best starting point?",
+          "a": "The best starting point depends on the dominant symptom pattern, medical history, and whether conventional care has been optimized."
+        },
+        {
+          "q": "Should I stop my current medication?",
+          "a": "No. Do not stop prescribed medication to try peptides unless your clinician specifically directs that change."
+        }
+      ],
+      "relatedConditions": [
+        "joint-pain",
+        "tendinopathy",
+        "inflammation"
+      ],
+      "icdCode": "M19.90"
+    },
+  {
+      "slug": "chronic-fatigue-syndrome",
+      "condition": "Chronic Fatigue Syndrome",
+      "h1": "Best Peptides for Chronic Fatigue Syndrome: Evidence-Based Guide",
+      "metaDescription": "Independent guide to peptides for chronic fatigue: evidence, peptide options, safety caveats, and realistic protocols. Science-backed, vendor-neutral.",
+      "category": "Energy & Fatigue",
+      "prevalence": "Prevalence varies by diagnostic criteria, age, sex, and population.",
+      "conditionOverview": "Chronic Fatigue Syndrome is a complex health context where symptoms, conventional care, and peptide research should be separated carefully. peptides for chronic fatigue is best approached as education, not as a replacement for diagnosis or treatment.",
+      "symptoms": [
+        "Fatigue or reduced resilience",
+        "Sleep disruption",
+        "Inflammation or pain",
+        "Mood or cognitive changes",
+        "Body composition changes",
+        "Reduced recovery capacity",
+        "Quality-of-life limitations"
+      ],
+      "conventionalTreatments": [
+        "Medical evaluation and diagnosis",
+        "Lifestyle intervention",
+        "Nutrition and exercise support",
+        "Prescription therapy where indicated",
+        "Physical therapy or behavioral therapy where relevant",
+        "Regular monitoring with a clinician"
+      ],
+      "howPeptidesHelp": "Peptides may support downstream systems such as inflammation, tissue repair, sleep, metabolic signaling, or immune regulation. They should be considered adjunctive research tools rather than primary treatments.",
+      "topPeptides": [
+        {
+          "peptideSlug": "thymosin-alpha-1",
+          "peptideName": "Thymosin Alpha 1",
+          "mechanism": "Thymosin Alpha 1 may support pathways relevant to Chronic Fatigue Syndrome, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 1
+        },
+        {
+          "peptideSlug": "nad-plus",
+          "peptideName": "NAD Plus",
+          "mechanism": "NAD Plus may support pathways relevant to Chronic Fatigue Syndrome, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 2
+        },
+        {
+          "peptideSlug": "mots-c",
+          "peptideName": "Mots C",
+          "mechanism": "Mots C may support pathways relevant to Chronic Fatigue Syndrome, but evidence and fit vary by patient context.",
+          "evidenceLevel": "Moderate Preclinical / Emerging Human",
+          "typicalDose": "Protocol-dependent; clinician supervision recommended",
+          "rank": 3
+        }
+      ],
+      "protocolSuggestion": "Start with diagnosis, labs, and conventional care before considering peptides. If a clinician agrees that a peptide is relevant, use one compound at a time and track a defined outcome.",
+      "importantCaveats": "Peptides are not FDA-approved treatments for Chronic Fatigue Syndrome. This content is for educational purposes only. Consult a qualified healthcare provider before beginning any peptide protocol.",
+      "faqItems": [
+        {
+          "q": "Can peptides treat Chronic Fatigue Syndrome?",
+          "a": "Peptides should not be described as treatments unless they have a specific approved indication. Most uses are adjunctive, experimental, or educational."
+        },
+        {
+          "q": "Which peptide is the best starting point?",
+          "a": "The best starting point depends on the dominant symptom pattern, medical history, and whether conventional care has been optimized."
+        },
+        {
+          "q": "Should I stop my current medication?",
+          "a": "No. Do not stop prescribed medication to try peptides unless your clinician specifically directs that change."
+        }
+      ],
+      "relatedConditions": [
+        "chronic-fatigue",
+        "autoimmune-disease",
+        "cognitive-decline"
+      ],
+      "icdCode": "G93.3"
+    },
 ];
 
 // ─── REVIEW PAGES ─────────────────────────────────────────────────────────────
