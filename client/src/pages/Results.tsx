@@ -34,7 +34,9 @@ import {
   createMetaEventId,
   getMetaBrowserIdentifiers,
   trackMetaEvent,
+  trackMetaCustomEvent,
 } from "@/lib/metaPixel";
+import { getFacebookTrackingParams } from "@/utils/facebookUtils";
 
 const LIBRARY_BACKED_PROFILE_IDS = new Set<string>(libraryBackedPeptideProfileIds);
 
@@ -274,10 +276,12 @@ function PeptideCard({
   result,
   rank,
   leadId,
+  userEmail,
 }: {
   result: ReturningMatchSummary;
   rank: number;
   leadId: string;
+  userEmail?: string;
 }) {
   const { peptideId, name, description, categories, matchPercent } = result;
   const isTop = rank === 1;
@@ -291,9 +295,56 @@ function PeptideCard({
   );
   const vendors = (activeLinks.data ?? []).map((link) => ({ name: link.label, url: link.url }));
 
-  const handleVendorClick = (vendor: string) => {
+  /**
+   * Intercepts an affiliate link click to:
+   * 1. Record the click in the internal database via tRPC (existing behaviour).
+   * 2. Fire a browser-side Meta Pixel "AffiliateClick" custom event.
+   * 3. Send a server-side CAPI event to Facebook for improved match quality.
+   *
+   * fetch() is called with keepalive:true so the request survives page
+   * unload. Navigation is always triggered in the finally block so a
+   * tracking failure never blocks the user from reaching the affiliate site.
+   */
+  const handleVendorClick = async (e: React.MouseEvent<HTMLAnchorElement>, vendorName: string, vendorUrl: string) => {
+    e.preventDefault();
+
+    // Fire the existing internal click-tracking mutation (non-blocking).
     if (leadId) {
-      trackClick.mutate({ leadId, peptideId, vendor });
+      trackClick.mutate({ leadId, peptideId, vendor: vendorName });
+    }
+
+    // Generate a shared event ID for Pixel + CAPI deduplication.
+    const eventId = createMetaEventId("affiliate_click");
+
+    // Fire the browser-side Pixel custom event first (synchronous).
+    trackMetaCustomEvent("AffiliateClick", { supplier: vendorName, peptide: name }, eventId);
+
+    // Gather Facebook tracking parameters from cookies / URL.
+    const { fbc, fbp } = getFacebookTrackingParams();
+
+    try {
+      // keepalive:true ensures the request completes even after page unload.
+      await fetch("/api/capi/track-affiliate-click", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: userEmail ?? null,
+          eventUrl: window.location.href,
+          fbc: fbc ?? null,
+          fbp: fbp ?? null,
+          userAgent: navigator.userAgent,
+          supplierName: vendorName,
+          peptideName: name,
+          eventId,
+        }),
+        keepalive: true,
+      });
+    } catch (err) {
+      // Silently fail — never block navigation due to a tracking error.
+      console.warn("[CAPI] Affiliate click tracking failed:", err);
+    } finally {
+      // Always navigate to the affiliate site regardless of tracking outcome.
+      window.open(vendorUrl, "_blank", "noopener,noreferrer");
     }
   };
 
@@ -386,9 +437,8 @@ function PeptideCard({
               <a
                 key={vendor.name}
                 href={vendor.url}
-                target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => handleVendorClick(vendor.name)}
+                onClick={(e) => handleVendorClick(e, vendor.name, vendor.url)}
                 className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2.5 sm:py-2 rounded-lg border border-accent/30 text-accent hover:bg-accent hover:text-white transition-all sm:text-xs sm:px-3"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -408,12 +458,14 @@ function ResultsDisplay({
   sessionId,
   onRetake,
   isReturningUser,
+  userEmail,
 }: {
   matches: ReturningMatchSummary[];
   leadId: string;
   sessionId: string;
   onRetake: () => void;
   isReturningUser: boolean;
+  userEmail?: string;
 }) {
   const topMatch = matches[0];
   const secondaryMatches = matches.slice(1, 5);
@@ -466,7 +518,7 @@ function ResultsDisplay({
 
           {topMatch && (
             <div className="mb-5 sm:mb-6 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-              <PeptideCard result={topMatch} rank={1} leadId={leadId} />
+              <PeptideCard result={topMatch} rank={1} leadId={leadId} userEmail={userEmail} />
               <div className="mt-4 rounded-2xl border border-border/70 bg-white px-4 py-4 sm:px-5">
                 <div className="text-xs font-semibold uppercase tracking-[0.12em] text-accent mb-2">
                   Why this rose to the top
@@ -496,7 +548,7 @@ function ResultsDisplay({
                     className="animate-fade-in-up"
                     style={{ animationDelay: `${0.15 + idx * 0.07}s` }}
                   >
-                    <PeptideCard result={result} rank={idx + 2} leadId={leadId} />
+                    <PeptideCard result={result} rank={idx + 2} leadId={leadId} userEmail={userEmail} />
                   </div>
                 ))}
               </div>
@@ -675,6 +727,7 @@ export default function Results() {
         sessionId={sessionId}
         onRetake={handleRetake}
         isReturningUser={isReturningUser}
+        userEmail={submittedEmail || undefined}
       />
     );
   }
