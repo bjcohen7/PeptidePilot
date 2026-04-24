@@ -19,6 +19,7 @@ import { eq, sql } from "drizzle-orm";
 import { sendMetaServerEvents } from "../_core/meta";
 import { ENV } from "../_core/env";
 import { randomBytes } from "crypto";
+import { sendTelegramMessage } from "../_core/telegram";
 
 const TIER1_WEBHOOK = process.env.WEBHOOK_TIER1_URL;
 const TIER2_WEBHOOK = process.env.WEBHOOK_TIER2_URL;
@@ -386,6 +387,42 @@ export const quizRouter = router({
           vendor: input.vendor,
         });
       }
+
+      // Fire-and-forget Telegram notification — never blocks the response
+      (async () => {
+        try {
+          // Look up the lead's email for a richer alert
+          let email = "unknown";
+          if (db) {
+            const rows = await db
+              .select({ email: leads.email })
+              .from(leads)
+              .where(eq(leads.id, input.leadId))
+              .limit(1);
+            if (rows[0]?.email) email = rows[0].email;
+          }
+
+          const now = new Date().toLocaleString("en-US", {
+            timeZone: "America/New_York",
+            dateStyle: "medium",
+            timeStyle: "short",
+          });
+
+          const message = [
+            `\u{1F517} <b>AFFILIATE CLICK</b>`,
+            ``,
+            `\u{1F48A} <b>${input.peptideId}</b> — ${input.vendor}`,
+            `\u{1F464} ${email}`,
+            `\u{1F4CD} Results page`,
+            `\u{1F552} ${now} ET`,
+          ].join("\n");
+
+          await sendTelegramMessage(message);
+        } catch (err) {
+          console.error("[Telegram] Affiliate click notification failed:", err);
+        }
+      })();
+
       return { status: "ok" as const };
     }),
 });
