@@ -10,6 +10,7 @@ import { createContext } from "./context";
 import { ENV } from "./env";
 import { recordClickEvent, recordPageView, startVisitorSession } from "../routers/analytics";
 import { serveStatic, setupVite } from "./vite";
+import capiRouter from "../routes/capi";
 import { prerenderRoutes, SITE_URL } from "../../scripts/prerender-routes";
 
 const STATIC_SITEMAP_PATHS = [
@@ -192,6 +193,9 @@ async function startServer() {
       .type("text/plain")
       .send(["User-agent: *", "Allow: /", `Sitemap: ${siteUrl}/sitemap.xml`, ""].join("\n"));
   });
+  // Facebook Conversions API — server-side affiliate click tracking
+  app.use("/api/capi", capiRouter);
+
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // tRPC API
