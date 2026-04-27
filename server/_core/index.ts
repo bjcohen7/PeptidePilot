@@ -12,9 +12,9 @@ import { recordClickEvent, recordPageView, startVisitorSession } from "../router
 import { serveStatic, setupVite } from "./vite";
 import { prerenderRoutes, SITE_URL } from "../../scripts/prerender-routes";
 
-const STATIC_SITEMAP_PATHS = [
-  "/quiz",
-];
+// Previously /quiz was listed here as a static sitemap path, but it is now a
+// prerendered noindex route and is therefore excluded from the sitemap automatically.
+const STATIC_SITEMAP_PATHS: string[] = [];
 
 function getSiteUrl() {
   return (
@@ -34,13 +34,12 @@ function getPriorityForPath(path: string) {
   if (path.startsWith("/guides/") || path.startsWith("/reviews/") || path.startsWith("/stacks/") || path.startsWith("/blog/")) {
     return "0.75";
   }
-  if (path === "/quiz") return "0.7";
   if (path === "/privacy" || path === "/terms" || path === "/disclaimer") return "0.3";
   return "0.6";
 }
 
 function getChangefreqForPath(path: string) {
-  if (path === "/" || path === "/quiz" || path === "/learn" || path === "/blog") return "weekly";
+  if (path === "/" || path === "/learn" || path === "/blog") return "weekly";
   if (path.startsWith("/blog/")) return "monthly";
   return "monthly";
 }

@@ -77,7 +77,25 @@ export function serveStatic(app: Express) {
 
   app.use(express.static(distPath, { redirect: false }));
 
-  // fall through to index.html if the file doesn't exist
+  // Fall through handler: serve the prerendered file if it exists, otherwise
+  // serve the SPA shell (index.html) for client-side routing.
+  //
+  // IMPORTANT: For known path prefixes that only have prerendered pages
+  // (e.g. /peptides/:slug, /compare/:slug), if no prerendered file exists
+  // we return a 404 with the NotFound page rather than silently serving the
+  // home page HTML. This prevents Google from seeing the home page content
+  // at unknown URLs (soft 404s / canonical pollution).
+  const PSEO_PREFIXES = [
+    "/peptides/",
+    "/compare/",
+    "/goals/",
+    "/stacks/",
+    "/guides/",
+    "/for/",
+    "/reviews/",
+    "/blog/",
+  ];
+
   app.use("*", (req, res) => {
     const normalizedPath = req.path.length > 1 ? req.path.replace(/\/+$/, "") : req.path;
     const prerenderedFile =
@@ -87,6 +105,17 @@ export function serveStatic(app: Express) {
 
     if (fs.existsSync(prerenderedFile)) {
       return res.sendFile(prerenderedFile);
+    }
+
+    // For pseo path prefixes with no prerendered file, return 404 instead of
+    // the home page HTML to avoid soft 404s and canonical pollution.
+    const isPseoPath = PSEO_PREFIXES.some((prefix) => normalizedPath.startsWith(prefix));
+    if (isPseoPath) {
+      const notFoundFile = path.resolve(distPath, "404", "index.html");
+      if (fs.existsSync(notFoundFile)) {
+        return res.status(404).sendFile(notFoundFile);
+      }
+      return res.status(404).send("Not Found");
     }
 
     return res.sendFile(path.resolve(distPath, "index.html"));
