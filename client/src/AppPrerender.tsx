@@ -16,6 +16,7 @@ import StackPage from "./pages/pseo/StackPage";
 import GuidePage from "./pages/pseo/GuidePage";
 import ForConditionPage from "./pages/pseo/ForConditionPage";
 import ReviewPage from "./pages/pseo/ReviewPage";
+import QuizEntry from "./pages/QuizEntry";
 
 function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -177,6 +178,26 @@ export default function AppPrerender({ path }: { path: string }) {
           <PublicLayout>
             <FAQPage />
           </PublicLayout>
+        </Route>
+
+        {/* Noindex routes: prerendered so they get their own HTML with correct
+            noindex/canonical tags instead of falling back to the home page */}
+        <Route path="/quiz">
+          <QuizEntry />
+        </Route>
+
+        <Route path="/processing">
+          <div className="min-h-screen bg-background" />
+        </Route>
+
+        <Route path="/results">
+          <div className="min-h-screen bg-background" />
+        </Route>
+
+        {/* Explicit /404 route so the prerender script can generate a 404/index.html
+            that the server serves with HTTP 404 status for unknown pseo paths */}
+        <Route path="/404">
+          <NotFound />
         </Route>
 
         <Route component={NotFound} />

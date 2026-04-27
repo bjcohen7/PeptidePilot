@@ -75,6 +75,38 @@ const staticRoutes: PrerenderRoute[] = [
     description: "Read the full PeptidePilot medical disclaimer and educational-use framing.",
     type: "website",
   },
+  // Noindex routes: prerendered so they get their own HTML with correct noindex/canonical
+  // instead of falling back to the home page index.html
+  {
+    path: "/quiz",
+    title: "Personalized Peptide Quiz | PeptidePilot",
+    description: "Take the free 5-minute PeptidePilot quiz to get personalized peptide recommendations.",
+    type: "website",
+    noindex: true,
+  },
+  {
+    path: "/processing",
+    title: "Processing | PeptidePilot",
+    description: "PeptidePilot is processing your quiz responses.",
+    type: "website",
+    noindex: true,
+  },
+  {
+    path: "/results",
+    title: "Your Results | PeptidePilot",
+    description: "Your personalized PeptidePilot peptide recommendations.",
+    type: "website",
+    noindex: true,
+  },
+  // Custom 404 page — prerendered so the server can serve it with status 404
+  // for unknown pseo paths (prevents soft 404s / canonical pollution).
+  {
+    path: "/404",
+    title: "Page Not Found | PeptidePilot",
+    description: "The page you are looking for could not be found.",
+    type: "website",
+    noindex: true,
+  },
 ];
 
 const sectionRoutes: PrerenderRoute[] = pseoSections.map((section) => ({
