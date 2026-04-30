@@ -11,9 +11,7 @@ import {
   Brain,
   Dumbbell,
   Moon,
-  Zap,
   Heart,
-  Sparkles,
   Activity,
   Clock,
 } from "lucide-react";
@@ -33,12 +31,12 @@ const HOW_IT_WORKS = [
   {
     step: "01",
     title: "Take the Quiz",
-    description: "Answer 20 targeted questions about your goals, body, and lifestyle. Takes just 5 minutes.",
+    description: "Answer 10 targeted questions about weight loss, appetite, recovery, and real-world fit. Takes just a few minutes.",
   },
   {
     step: "02",
     title: "Get Your Profile",
-    description: "Our algorithm evaluates your responses across 8 biological domains to find your optimal peptide matches.",
+    description: "Our algorithm weighs metabolic, body-composition, hormone, and recovery signals to find your strongest peptide matches.",
   },
   {
     step: "03",
@@ -48,14 +46,12 @@ const HOW_IT_WORKS = [
 ];
 
 const SCIENCE_AREAS = [
-  { icon: Dumbbell, label: "Goals & Performance", description: "Muscle, fat loss, endurance, and athletic output." },
-  { icon: Activity, label: "Body & Fitness", description: "Training type, recovery, and body composition." },
-  { icon: Heart, label: "Hormones & Aging", description: "Hormonal balance, libido, and longevity markers." },
-  { icon: Moon, label: "Sleep & Recovery", description: "Sleep architecture, restoration, and circadian health." },
-  { icon: Zap, label: "Pain & Injury", description: "Joint health, tissue repair, and gut integrity." },
-  { icon: Brain, label: "Cognition & Mood", description: "Focus, memory, anxiety, and neuroprotection." },
-  { icon: Sparkles, label: "Skin, Hair & Appearance", description: "Collagen synthesis, elasticity, and hair health." },
-  { icon: Clock, label: "Lifestyle & Preferences", description: "Budget, experience, administration, and routine." },
+  { icon: Dumbbell, label: "Body Composition", description: "Weight-loss goals, recomposition, and muscle-preservation priorities." },
+  { icon: Activity, label: "Activity & Training", description: "Current training volume and how hard your body needs to work." },
+  { icon: Heart, label: "Hormones & Metabolism", description: "Insulin resistance, menopause, testosterone, and stress-related friction." },
+  { icon: Moon, label: "Recovery", description: "Sleep quality, fatigue, and how well your system bounces back." },
+  { icon: Brain, label: "Appetite & Cravings", description: "Food noise, hunger, cravings, and day-to-day consistency." },
+  { icon: Clock, label: "Practical Fit", description: "Budget, approach preference, and what you can realistically sustain." },
 ];
 
 export default function Home() {
@@ -166,7 +162,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-10 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-accent flex-shrink-0" />
-              <span><strong className="text-foreground">20 questions</strong> across 8 biological domains</span>
+              <span><strong className="text-foreground">10 questions</strong> built for weight-loss and metabolic fit</span>
             </div>
             <div className="hidden sm:block w-px h-4 bg-border" />
             <div className="flex items-center gap-2">
@@ -191,7 +187,7 @@ export default function Home() {
               Your Personalized Protocol in 3 Steps
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base px-2">
-              No guesswork. No bias. Just a rigorous analysis of your biology matched to the most relevant peptide research.
+              No guesswork. No bias. Just a faster analysis of your biology matched to the most relevant peptide research.
             </p>
           </div>
 
@@ -237,7 +233,7 @@ export default function Home() {
               The Science Behind Your Profile
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base px-2">
-              Our quiz evaluates 8 thematic areas across 20 targeted questions to build a complete biological picture — not a generic recommendation.
+              Our quiz focuses on the signals that matter most for weight loss, appetite, recovery, hormone context, and practical fit — not a generic recommendation.
             </p>
           </div>
 

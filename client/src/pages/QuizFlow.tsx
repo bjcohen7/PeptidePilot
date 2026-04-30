@@ -6,71 +6,45 @@ import { useQuiz } from "@/contexts/QuizContext";
 import { useSwipe } from "@/hooks/useSwipe";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import {
-  PRIMARY_GOAL_OPTIONS,
-  QUIZ_INDEX,
   QUIZ_QUESTIONS,
 } from "../../../shared/scoring";
-
 type Direction = "forward" | "backward";
-
-const WEIGHT_LOSS_GOAL_INDEX = PRIMARY_GOAL_OPTIONS.indexOf(
-  "Lose body fat and improve body composition",
-);
 
 const SECTION_BREATHERS: Record<
   string,
   { label: string; headline: string; body: string }
 > = {
   "Body & Fitness": {
-    label: "Body Composition",
-    headline: "Individual biology determines individual outcomes.",
-    body: "The same peptide protocol can produce meaningfully different results across individuals. This assessment evaluates your goals, physiology, and lifestyle in combination — not any single factor in isolation.",
+    label: "Activity & Training",
+    headline: "Body composition is never just about calories on paper.",
+    body: "Activity level, recovery capacity, and how much muscle you want to keep all change what a smart recommendation should look like.",
   },
-  "Metabolic Health": {
-    label: "Metabolic Health",
-    headline: "Prescription GLP-1 fit depends on more than just weight-loss interest.",
-    body: "For weight-loss users, we add a short eligibility layer so your results can better distinguish metabolic-health candidates from general fat-loss support options.",
+  "Body Composition": {
+    label: "Weight-Loss Goals",
+    headline: "The right plan depends on what kind of weight-loss problem you’re actually solving.",
+    body: "Wanting to lose 10 pounds is different from dealing with major appetite friction, metabolic resistance, or a muscle-preservation problem. We want to separate those early.",
   },
-  "Age & Hormones": {
-    label: "Endocrine Health",
-    headline: "Hormones govern nearly every physiological process.",
-    body: "Peptides interact directly with the endocrine system. Accurately mapping your hormonal profile is essential to identifying protocols with the highest probability of clinical relevance for your specific situation.",
+  "Appetite & Cravings": {
+    label: "Appetite Signals",
+    headline: "Food noise tells us something important.",
+    body: "Appetite control, cravings, and metabolic friction are some of the strongest clues for whether a GLP-style path makes sense or whether another route is more appropriate.",
   },
-  "Sleep & Recovery": {
+  "Recovery": {
     label: "Recovery & Regeneration",
-    headline: "Restorative sleep is a primary driver of tissue repair.",
-    body: "Sleep quality influences growth hormone secretion, inflammatory regulation, and cellular regeneration. Targeted peptide support can meaningfully improve the depth and efficiency of your recovery cycles.",
+    headline: "Sleep quality changes the whole fat-loss picture.",
+    body: "Poor sleep makes appetite harder to regulate, recovery less efficient, and body-composition change slower. It’s one of the fastest ways to make this feel personalized instead of generic.",
   },
-  "Pain & Injury": {
-    label: "Musculoskeletal Health",
-    headline: "Regenerative peptides operate at the cellular level.",
-    body: "Compounds such as BPC-157 and TB-500 have demonstrated tissue-repair and anti-inflammatory properties in preclinical and clinical research. Understanding the nature and history of your injury guides accurate protocol selection.",
+  "Hormones & Metabolism": {
+    label: "Metabolic Context",
+    headline: "Not every weight-loss struggle is the same struggle.",
+    body: "Insulin resistance, perimenopause, testosterone shifts, and stress-driven weight gain can all look similar on the surface while needing different recommendation logic underneath.",
   },
-  "Cognition & Mood": {
-    label: "Neurological Function",
-    headline: "Cognitive performance is a measurable, trainable variable.",
-    body: "Select peptides support neuroplasticity, neurotransmitter regulation, and cerebral blood flow. This section establishes your cognitive baseline so the algorithm can weight neuroprotective compounds appropriately.",
-  },
-  "Skin, Hair & Appearance": {
-    label: "Dermal & Aesthetic Health",
-    headline: "Biological aging is a process that can be modulated.",
-    body: "Collagen-stimulating peptides and growth-factor analogs have demonstrated measurable effects on dermal thickness, hair follicle cycling, and tissue elasticity. Your responses here refine the aesthetic component of your match.",
-  },
-  "Lifestyle & Preferences": {
+  "Practical Fit": {
     label: "Final Section",
-    headline: "Practical factors determine long-term adherence.",
-    body: "Protocol compliance is as important as protocol selection. This final section captures your lifestyle context and preferences so your matches reflect what you will realistically sustain — not just what is theoretically optimal.",
+    headline: "Practical fit matters as much as theoretical fit.",
+    body: "Budget and approach preference shape adherence. A strong recommendation has to feel realistic, not just biologically interesting.",
   },
 };
-
-function getVisibleQuestionIndices(isWeightLossGoal: boolean): number[] {
-  return QUIZ_QUESTIONS.map((_, index) => index).filter((index) => {
-    if (isWeightLossGoal) return true;
-    return (
-      index !== QUIZ_INDEX.GLP1_BMI && index !== QUIZ_INDEX.GLP1_INSURANCE
-    );
-  });
-}
 
 function getBreatherIndices(questionIndices: number[]): Set<number> {
   const indices = new Set<number>();
@@ -96,10 +70,9 @@ export default function QuizFlow() {
   } = useQuiz();
 
   const { currentIndex, answers, isComplete } = state;
-  const isWeightLossGoal = answers[QUIZ_INDEX.PRIMARY_GOAL] === WEIGHT_LOSS_GOAL_INDEX;
   const visibleQuestionIndices = useMemo(
-    () => getVisibleQuestionIndices(isWeightLossGoal),
-    [isWeightLossGoal],
+    () => QUIZ_QUESTIONS.map((_, index) => index),
+    [],
   );
   const breatherIndices = useMemo(
     () => getBreatherIndices(visibleQuestionIndices),
