@@ -10,54 +10,12 @@ import {
 } from "../../../shared/scoring";
 type Direction = "forward" | "backward";
 
-const SECTION_BREATHERS: Record<
-  string,
-  { label: string; headline: string; body: string }
-> = {
-  "Activity & Training": {
-    label: "Activity & Training",
-    headline: "Body composition is never just about calories on paper.",
-    body: "Activity level, recovery capacity, and how much muscle you want to keep all change what a smart recommendation should look like.",
-  },
-  "Body Composition": {
-    label: "Weight-Loss Goals",
-    headline: "The right plan depends on what kind of weight-loss problem you’re actually solving.",
-    body: "Wanting to lose 10 pounds is different from dealing with major appetite friction, metabolic resistance, or a muscle-preservation problem. We want to separate those early.",
-  },
-  "Appetite & Cravings": {
-    label: "Appetite Signals",
-    headline: "Food noise tells us something important.",
-    body: "Appetite control, cravings, and metabolic friction are some of the strongest clues for whether a GLP-style path makes sense or whether another route is more appropriate.",
-  },
-  "Recovery": {
-    label: "Recovery & Regeneration",
-    headline: "Sleep quality changes the whole fat-loss picture.",
-    body: "Poor sleep makes appetite harder to regulate, recovery less efficient, and body-composition change slower. It’s one of the fastest ways to make this feel personalized instead of generic.",
-  },
-  "Hormones & Metabolism": {
-    label: "Metabolic Context",
-    headline: "Not every weight-loss struggle is the same struggle.",
-    body: "Insulin resistance, perimenopause, testosterone shifts, and stress-driven weight gain can all look similar on the surface while needing different recommendation logic underneath.",
-  },
-  "Practical Fit": {
-    label: "Final Section",
-    headline: "Practical fit matters as much as theoretical fit.",
-    body: "Budget and approach preference shape adherence. A strong recommendation has to feel realistic, not just biologically interesting.",
-  },
+const MIDPOINT_BREATHER_AFTER_INDEX = 4;
+const MIDPOINT_BREATHER = {
+  label: "Quick Checkpoint",
+  headline: "We’ve got the shape of your weight-loss profile now.",
+  body: "The last few questions help us separate appetite-driven GLP fits from muscle-preserving or budget-sensitive paths, so the final recommendation feels genuinely useful.",
 };
-
-function getBreatherIndices(questionIndices: number[]): Set<number> {
-  const indices = new Set<number>();
-  let lastSection = QUIZ_QUESTIONS[questionIndices[0] ?? 0]?.section ?? "";
-  for (let i = 1; i < questionIndices.length; i++) {
-    const section = QUIZ_QUESTIONS[questionIndices[i] ?? 0]?.section ?? "";
-    if (section !== lastSection) {
-      indices.add(i);
-      lastSection = section;
-    }
-  }
-  return indices;
-}
 
 export default function QuizFlow() {
   const [, navigate] = useLocation();
@@ -73,10 +31,6 @@ export default function QuizFlow() {
   const visibleQuestionIndices = useMemo(
     () => QUIZ_QUESTIONS.map((_, index) => index),
     [],
-  );
-  const breatherIndices = useMemo(
-    () => getBreatherIndices(visibleQuestionIndices),
-    [visibleQuestionIndices],
   );
   const totalQuestions = visibleQuestionIndices.length;
   const currentVisibleIndex = Math.max(
@@ -98,7 +52,6 @@ export default function QuizFlow() {
   const previousQuestionIndex = visibleQuestionIndices[currentVisibleIndex - 1];
 
   const [showBreather, setShowBreather] = useState(false);
-  const [breatherSection, setBreatherSection] = useState<string>("");
 
   const [animClass, setAnimClass] = useState<string>("quiz-slide-enter-forward");
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -164,17 +117,9 @@ export default function QuizFlow() {
 
       if (
         typeof nextQuestionIndex === "number" &&
-        breatherIndices.has(currentVisibleIndex + 1)
+        currentVisibleIndex === MIDPOINT_BREATHER_AFTER_INDEX
       ) {
-        const nextSection = QUIZ_QUESTIONS[nextQuestionIndex]?.section ?? "";
-        if (!SECTION_BREATHERS[nextSection]) {
-          setTimeout(() => {
-            triggerAdvance("forward", moveForward);
-          }, 320);
-          return;
-        }
         setTimeout(() => {
-          setBreatherSection(nextSection);
           setShowBreather(true);
           setIsTransitioning(false);
         }, 320);
@@ -190,7 +135,6 @@ export default function QuizFlow() {
       selectedAnswer,
       selectAnswer,
       nextQuestionIndex,
-      breatherIndices,
       currentVisibleIndex,
       triggerAdvance,
       moveForward,
@@ -239,7 +183,6 @@ export default function QuizFlow() {
 
   if (!currentQuestion) return null;
 
-  const breatherData = SECTION_BREATHERS[breatherSection];
   const effectiveProgress = Math.round(
     ((currentVisibleIndex + (showBreather ? 0.5 : 0)) / totalQuestions) * 100,
   );
@@ -263,7 +206,7 @@ export default function QuizFlow() {
             )}
             {showBreather && (
               <span className="text-xs sm:text-sm text-muted-foreground font-medium">
-                New section
+                Quick checkpoint
               </span>
             )}
           </div>
@@ -277,7 +220,7 @@ export default function QuizFlow() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4 overflow-hidden">
-        {showBreather && breatherData && (
+        {showBreather && (
           <div className="w-full max-w-lg quiz-slide-enter-forward">
             <div
               className="rounded-2xl p-8 sm:p-10 text-center text-white shadow-2xl"
@@ -295,7 +238,7 @@ export default function QuizFlow() {
                     border: "1px solid rgba(56,189,248,0.25)",
                   }}
                 >
-                  {breatherData.label}
+                  {MIDPOINT_BREATHER.label}
                 </span>
               </div>
 
@@ -308,10 +251,10 @@ export default function QuizFlow() {
                 className="text-2xl sm:text-3xl font-normal mb-4 leading-snug"
                 style={{ fontFamily: "'DM Serif Display', serif" }}
               >
-                {breatherData.headline}
+                {MIDPOINT_BREATHER.headline}
               </h2>
               <p className="text-slate-300 text-base sm:text-lg leading-relaxed mb-8">
-                {breatherData.body}
+                {MIDPOINT_BREATHER.body}
               </p>
               <button
                 onClick={handleBreatherContinue}
