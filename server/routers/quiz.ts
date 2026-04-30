@@ -4,7 +4,6 @@ import { publicProcedure, router } from "../_core/trpc";
 import { ensureAffiliateWorkspaceSchema, getDb } from "../db";
 import { leads, affiliateClicks, visitorSessions } from "../../drizzle/schema";
 import {
-  AGE_RANGE_OPTIONS,
   BUDGET_OPTIONS,
   calculateMatches,
   determineTier,
@@ -166,6 +165,9 @@ export const quizRouter = router({
             typeof value === "number" && Number.isFinite(value) ? value : -1,
           )
         : [];
+      if (answers.length !== QUIZ_QUESTIONS.length) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Returning session not found." });
+      }
       const topMatches = calculateMatches(answers)
         .slice(0, 5)
         .map(toReturningMatchSummary);
@@ -213,7 +215,7 @@ export const quizRouter = router({
       const topPeptideMatch = topMatches[0] ?? "unknown";
       const tier = determineTier(answers);
 
-      const ageRange = AGE_RANGE_OPTIONS[answers[QUIZ_INDEX.AGE_RANGE] ?? -1] ?? "unknown";
+      const ageRange = "not-captured";
       const primaryGoal =
         PRIMARY_GOAL_OPTIONS[answers[QUIZ_INDEX.PRIMARY_GOAL] ?? -1] ?? "unknown";
       const budget = BUDGET_OPTIONS[answers[QUIZ_INDEX.BUDGET] ?? -1] ?? "unknown";

@@ -16,7 +16,6 @@ import { toast } from "sonner";
 import { useQuiz } from "@/contexts/QuizContext";
 import { useReturningSession } from "@/contexts/UserSessionContext";
 import {
-  AGE_RANGE_OPTIONS,
   BUDGET_OPTIONS,
   calculateMatches,
   libraryBackedPeptideProfileIds,
@@ -133,7 +132,7 @@ function LeadCaptureGate({
               Your peptide profile is ready.
             </h1>
             <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "clamp(0.9rem, 2.5vw, 1rem)", lineHeight: 1.7 }}>
-              We matched your biology across 8 domains. Enter your email to unlock your full personalized protocol.
+              We matched your goals, appetite signals, recovery profile, and practical fit. Enter your email to unlock your full personalized protocol.
             </p>
           </div>
 
@@ -639,7 +638,7 @@ export default function Results() {
           leadId: data.leadId,
           topMatch: data.returningResults[0]?.peptideId ?? null,
           budget: BUDGET_OPTIONS[state.answers[QUIZ_INDEX.BUDGET] ?? -1] ?? null,
-          ageRange: AGE_RANGE_OPTIONS[state.answers[QUIZ_INDEX.AGE_RANGE] ?? -1] ?? null,
+          ageRange: null,
           primaryGoal:
             PRIMARY_GOAL_OPTIONS[state.answers[QUIZ_INDEX.PRIMARY_GOAL] ?? -1] ?? null,
         });

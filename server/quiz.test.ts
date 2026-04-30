@@ -13,12 +13,12 @@ import type { TrpcContext } from "./_core/context";
 // ── Scoring Engine Tests ───────────────────────────────────────────────────────
 
 describe("scoring engine", () => {
-  it("QUIZ_QUESTIONS has exactly 20 questions", () => {
-    expect(QUIZ_QUESTIONS).toHaveLength(20);
+  it("QUIZ_QUESTIONS has exactly 10 questions", () => {
+    expect(QUIZ_QUESTIONS).toHaveLength(10);
   });
 
-  it("scoreMaps has exactly 20 entries", () => {
-    expect(scoreMaps).toHaveLength(20);
+  it("scoreMaps has exactly 10 entries", () => {
+    expect(scoreMaps).toHaveLength(10);
   });
 
   it("each question has at least 2 options", () => {
@@ -53,7 +53,7 @@ describe("scoring engine", () => {
   });
 
   it("calculateMatches returns all 12 peptides sorted by score descending", () => {
-    const answers = new Array(20).fill(0);
+    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
     const results = calculateMatches(answers);
     expect(results).toHaveLength(12);
     for (let i = 1; i < results.length; i++) {
@@ -62,7 +62,7 @@ describe("scoring engine", () => {
   });
 
   it("calculateMatches returns matchPercent between 0 and 100", () => {
-    const answers = new Array(20).fill(0);
+    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
     const results = calculateMatches(answers);
     for (const r of results) {
       expect(r.matchPercent).toBeGreaterThanOrEqual(0);
@@ -71,24 +71,25 @@ describe("scoring engine", () => {
   });
 
   it("top match has matchPercent of 100", () => {
-    const answers = new Array(20).fill(0);
+    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
     const results = calculateMatches(answers);
     expect(results[0].matchPercent).toBe(100);
   });
 
-  it("muscle-focused answers boost muscle-related peptides", () => {
-    // Q0 = primary goal, Q5 = activity level, Q6 = training type
-    const answers = new Array(20).fill(0);
-    answers[0] = 0; // Build muscle
+  it("muscle-preserving answers keep muscle-support peptides near the top", () => {
+    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
+    answers[0] = 3; // Preserve muscle while leaning out
+    answers[4] = 3; // 5+ workouts
+    answers[5] = 4; // recomposition focus
     const results = calculateMatches(answers);
-    const topId = results[0].peptide.id;
-    const muscleIds = ["ipamorelin_cjc1295", "bpc157", "tb500", "sermorelin"];
-    expect(muscleIds).toContain(topId);
+    const topFive = results.slice(0, 5).map((r) => r.peptide.id);
+    const muscleIds = ["ipamorelin_cjc1295", "sermorelin", "bpc157", "tb500"];
+    expect(topFive.some((id) => muscleIds.includes(id))).toBe(true);
   });
 
-  it("sleep-focused answers boost sleep-related peptides", () => {
-    const answers = new Array(20).fill(0);
-    answers[0] = 5; // Improve sleep
+  it("poor sleep signals boost sleep-related peptides", () => {
+    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
+    answers[6] = 0; // poor sleep
     const results = calculateMatches(answers);
     const sleepIds = ["dsip", "sermorelin", "epithalon"];
     const topFive = results.slice(0, 5).map((r) => r.peptide.id);
@@ -97,8 +98,10 @@ describe("scoring engine", () => {
   });
 
   it("fat-loss answers boost metabolic peptides", () => {
-    const answers = new Array(20).fill(0);
-    answers[0] = 1; // Lose body fat
+    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
+    answers[0] = 0; // Lose body fat
+    answers[2] = 1; // food noise
+    answers[3] = 0; // appetite / portion control
     const results = calculateMatches(answers);
     const metabolicIds = ["semaglutide", "mots_c"];
     const topFive = results.slice(0, 5).map((r) => r.peptide.id);
@@ -117,32 +120,34 @@ describe("scoring engine", () => {
 // ── Tier Determination Tests ───────────────────────────────────────────────────
 
 describe("determineTier", () => {
-  it("returns tier 1 for premium profile: older age, hormonal issues, high budget, premium peptide match", () => {
-    const answers = new Array(20).fill(0);
-    answers[0] = 7;  // libido goal
+  it("returns tier 1 for older, hormone-context, premium-budget users when premium matches win", () => {
+    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
+    answers[0] = 4; // long-term health
+    answers[7] = 1; // menopause / hormone context
+    answers[8] = 4; // flexible budget
     const tier = determineTier(answers);
-    expect([1, 2, 3]).toContain(tier);
+    expect([1, 2]).toContain(tier);
   });
 
-  it("returns tier 2 for standard budget ($50+)", () => {
-    const answers = new Array(20).fill(0);
-    // budget is last question (index 19) — answer 1 = $50-100
-    answers[19] = 1;
+  it("returns tier 2 for standard budget", () => {
+    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
+    answers[8] = 1;
     const tier = determineTier(answers);
-    expect([1, 2, 3]).toContain(tier);
+    expect(tier).toBe(2);
   });
 
-  it("returns tier 3 for under-$50 budget", () => {
-    const answers = new Array(20).fill(0);
-    // budget is last question (index 19) — answer 0 = Under $50
-    answers[19] = 0;
+  it("returns tier 3 for lowest budget tier", () => {
+    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
+    answers[8] = 0;
     const tier = determineTier(answers);
     expect(tier).toBe(3);
   });
 
   it("always returns 1, 2, or 3", () => {
     for (let i = 0; i < 10; i++) {
-      const answers = Array.from({ length: 20 }, () => Math.floor(Math.random() * 3));
+      const answers = QUIZ_QUESTIONS.map((question) =>
+        Math.floor(Math.random() * question.options.length),
+      );
       const tier = determineTier(answers);
       expect([1, 2, 3]).toContain(tier);
     }
@@ -189,7 +194,7 @@ describe("quiz.submitQuiz", () => {
       caller.quiz.submitQuiz({
         email: "test@example.com",
         consentGiven: false,
-        answers: new Array(20).fill(0),
+        answers: new Array(QUIZ_QUESTIONS.length).fill(0),
       })
     ).rejects.toThrow();
   });
@@ -202,7 +207,7 @@ describe("quiz.submitQuiz", () => {
       caller.quiz.submitQuiz({
         email: "not-an-email",
         consentGiven: true,
-        answers: new Array(20).fill(0),
+        answers: new Array(QUIZ_QUESTIONS.length).fill(0),
       })
     ).rejects.toThrow();
   });
@@ -215,7 +220,7 @@ describe("quiz.submitQuiz", () => {
       caller.quiz.submitQuiz({
         email: "test@example.com",
         consentGiven: true,
-        answers: new Array(19).fill(0), // wrong length — must be exactly 20
+        answers: new Array(QUIZ_QUESTIONS.length - 1).fill(0),
       })
     ).rejects.toThrow();
   });
@@ -227,7 +232,7 @@ describe("quiz.submitQuiz", () => {
     const result = await caller.quiz.submitQuiz({
       email: "test@example.com",
       consentGiven: true,
-      answers: new Array(20).fill(0),
+      answers: new Array(QUIZ_QUESTIONS.length).fill(0),
     });
 
     expect(result.status).toBe("success");

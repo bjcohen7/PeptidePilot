@@ -7,7 +7,7 @@ import { QUIZ_QUESTIONS, peptideProfiles } from "../../../shared/scoring";
 import { preloadQuizFlow } from "@/lib/preloadQuiz";
 
 const STEPS = [
-  { number: "01", label: `Answer ${QUIZ_QUESTIONS.length} targeted questions`, sub: "Across 8 biological domains" },
+  { number: "01", label: `Answer ${QUIZ_QUESTIONS.length} targeted questions`, sub: "Built around weight loss, appetite, recovery, and fit" },
   { number: "02", label: "We analyze your biology", sub: `Matched against ${peptideProfiles.length} peptide profiles` },
   { number: "03", label: "Receive your personalized protocol", sub: "Ranked by compatibility with your goals" },
 ];
@@ -80,7 +80,7 @@ export default function QuizEntry() {
               lineHeight: 1.75,
             }}
           >
-            20 questions. 8 biological domains. A personalized protocol built around your unique biology, goals, and lifestyle.
+            10 questions. A sharper weight-loss and metabolic read on your biology, goals, and lifestyle.
           </p>
 
           {/* Steps */}
