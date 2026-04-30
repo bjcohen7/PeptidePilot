@@ -14,7 +14,7 @@ const SECTION_BREATHERS: Record<
   string,
   { label: string; headline: string; body: string }
 > = {
-  "Body & Fitness": {
+  "Activity & Training": {
     label: "Activity & Training",
     headline: "Body composition is never just about calories on paper.",
     body: "Activity level, recovery capacity, and how much muscle you want to keep all change what a smart recommendation should look like.",
@@ -167,6 +167,12 @@ export default function QuizFlow() {
         breatherIndices.has(currentVisibleIndex + 1)
       ) {
         const nextSection = QUIZ_QUESTIONS[nextQuestionIndex]?.section ?? "";
+        if (!SECTION_BREATHERS[nextSection]) {
+          setTimeout(() => {
+            triggerAdvance("forward", moveForward);
+          }, 320);
+          return;
+        }
         setTimeout(() => {
           setBreatherSection(nextSection);
           setShowBreather(true);
