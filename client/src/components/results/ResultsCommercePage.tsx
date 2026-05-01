@@ -20,6 +20,7 @@ export type ResultsVendorCard = {
   headlineValue: string;
   headlineUnit: string;
   promoText?: string | null;
+  couponCode?: string | null;
   planName: string;
   planDetail: string;
   supplyTag: string;
@@ -114,6 +115,11 @@ function VendorCard({
           {vendor.promoText ? (
             <div className="mt-2 inline-flex rounded-full bg-white/18 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.05em] text-white/95">
               {vendor.promoText}
+            </div>
+          ) : null}
+          {vendor.couponCode ? (
+            <div className="mt-2 inline-flex rounded-full border border-white/25 bg-transparent px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.05em] text-white/95">
+              Code {vendor.couponCode}
             </div>
           ) : null}
         </div>

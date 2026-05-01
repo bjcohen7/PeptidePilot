@@ -75,6 +75,44 @@ function textareaClass() {
   return "min-h-24 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-accent";
 }
 
+function summarizeLinkCoverage(link: {
+  cardHeadlineValue?: string | null;
+  cardHeadlineUnit?: string | null;
+  cardPromoText?: string | null;
+  cardCouponCode?: string | null;
+  cardBadge?: string | null;
+}) {
+  const hasPrice = Boolean(link.cardHeadlineValue?.trim());
+  const hasPromo = Boolean(link.cardPromoText?.trim());
+  const hasCoupon = Boolean(link.cardCouponCode?.trim());
+  const hasBadge = Boolean(link.cardBadge?.trim());
+  const isOfferReady = hasPrice && hasBadge;
+
+  let statusLabel = "Needs pricing";
+  let statusClass = "bg-amber-50 text-amber-800 border-amber-200";
+
+  if (isOfferReady) {
+    statusLabel = hasCoupon || hasPromo ? "Offer ready" : "Needs promo";
+    statusClass =
+      hasCoupon || hasPromo
+        ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+        : "bg-sky-50 text-sky-800 border-sky-200";
+  } else if (hasPrice) {
+    statusLabel = "Needs badge";
+    statusClass = "bg-sky-50 text-sky-800 border-sky-200";
+  }
+
+  return {
+    hasPrice,
+    hasPromo,
+    hasCoupon,
+    hasBadge,
+    isOfferReady: isOfferReady && (hasPromo || hasCoupon),
+    statusLabel,
+    statusClass,
+  };
+}
+
 export default function AffiliatePartnersAdmin() {
   const utils = trpc.useUtils();
   const [partnerForm, setPartnerForm] = useState<PartnerForm>(emptyPartner);
@@ -177,6 +215,62 @@ export default function AffiliatePartnersAdmin() {
   const numericPartners = useMemo(
     () => rows.filter((partner): partner is Extract<typeof partner, { id: number }> => typeof partner.id === "number"),
     [rows]
+  );
+  const linkCoverage = useMemo(
+    () => linkRows.map((link) => ({ linkId: link.id, ...summarizeLinkCoverage(link) })),
+    [linkRows],
+  );
+  const coverageByLinkId = useMemo(
+    () => new Map(linkCoverage.map((entry) => [entry.linkId, entry])),
+    [linkCoverage],
+  );
+  const partnerCoverage = useMemo(() => {
+    return new Map(
+      rows
+        .filter((partner): partner is Extract<typeof partner, { id: number }> => typeof partner.id === "number")
+        .map((partner) => {
+          const partnerLinks = linkRows.filter((link) => link.partnerId === partner.id);
+          const offerReadyCount = partnerLinks.filter(
+            (link) => coverageByLinkId.get(link.id)?.isOfferReady,
+          ).length;
+          const couponCount = partnerLinks.filter(
+            (link) => coverageByLinkId.get(link.id)?.hasCoupon,
+          ).length;
+          const missingPricingCount = partnerLinks.filter(
+            (link) => !coverageByLinkId.get(link.id)?.hasPrice,
+          ).length;
+
+          return [
+            partner.id,
+            {
+              totalLinks: partnerLinks.length,
+              offerReadyCount,
+              couponCount,
+              missingPricingCount,
+            },
+          ] as const;
+        }),
+    );
+  }, [rows, linkRows, coverageByLinkId]);
+  const activeLinksCount = useMemo(
+    () => linkRows.filter((link) => link.status === "active").length,
+    [linkRows],
+  );
+  const offerReadyCount = useMemo(
+    () => linkCoverage.filter((entry) => entry.isOfferReady).length,
+    [linkCoverage],
+  );
+  const needsPricingCount = useMemo(
+    () => linkCoverage.filter((entry) => !entry.hasPrice).length,
+    [linkCoverage],
+  );
+  const couponsLiveCount = useMemo(
+    () => linkCoverage.filter((entry) => entry.hasCoupon).length,
+    [linkCoverage],
+  );
+  const promosLiveCount = useMemo(
+    () => linkCoverage.filter((entry) => entry.hasPromo).length,
+    [linkCoverage],
   );
 
   const savePartner = (event: React.FormEvent) => {
@@ -297,11 +391,14 @@ export default function AffiliatePartnersAdmin() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4">
         {[
           { label: "Partners", value: rows.length.toString() },
-          { label: "Active", value: rows.filter((row) => row.status === "active").length.toString() },
-          { label: "Tracked links", value: linkRows.length.toString() },
+          { label: "Active links", value: activeLinksCount.toString() },
+          { label: "Offer ready", value: offerReadyCount.toString() },
+          { label: "Needs pricing", value: needsPricingCount.toString() },
+          { label: "Promos live", value: promosLiveCount.toString() },
+          { label: "Coupons live", value: couponsLiveCount.toString() },
         ].map((metric) => (
           <div key={metric.label} className="rounded-xl border border-border bg-white p-5">
             <p className="text-sm text-muted-foreground">{metric.label}</p>
@@ -503,8 +600,29 @@ export default function AffiliatePartnersAdmin() {
                   <h3 className="font-semibold text-foreground">{partner.name}</h3>
                   <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">{partner.status}</span>
                   <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">{partner.category}</span>
+                  {typeof partner.id === "number" && partnerCoverage.get(partner.id)?.offerReadyCount ? (
+                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
+                      {partnerCoverage.get(partner.id)?.offerReadyCount} offer-ready
+                    </span>
+                  ) : null}
+                  {typeof partner.id === "number" && partnerCoverage.get(partner.id)?.couponCount ? (
+                    <span className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-800">
+                      {partnerCoverage.get(partner.id)?.couponCount} coupon live
+                    </span>
+                  ) : null}
+                  {typeof partner.id === "number" && partnerCoverage.get(partner.id)?.missingPricingCount ? (
+                    <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
+                      {partnerCoverage.get(partner.id)?.missingPricingCount} need pricing
+                    </span>
+                  ) : null}
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-3">{partner.notes || "No notes yet."}</p>
+                {typeof partner.id === "number" && partnerCoverage.get(partner.id)?.totalLinks ? (
+                  <p className="mb-3 text-xs text-muted-foreground">
+                    {partnerCoverage.get(partner.id)?.totalLinks} tracked link
+                    {partnerCoverage.get(partner.id)?.totalLinks === 1 ? "" : "s"} · {partnerCoverage.get(partner.id)?.offerReadyCount ?? 0} ready · {partnerCoverage.get(partner.id)?.missingPricingCount ?? 0} still missing pricing
+                  </p>
+                ) : null}
                 <a href={partner.primaryUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline">
                   <ExternalLink className="w-4 h-4" />
                   {partner.primaryUrl}
@@ -544,7 +662,7 @@ export default function AffiliatePartnersAdmin() {
           <div>
             <h2 className="font-semibold">Tracked links</h2>
             <p className="text-sm text-muted-foreground">
-              Active links are sorted by order on result cards.
+              Active links are sorted by order on result cards. Enter price first, then badge, then promo/coupon so the card is fully merchandised.
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={() => links.refetch()}>
@@ -559,6 +677,36 @@ export default function AffiliatePartnersAdmin() {
             {linkRows.map((link) => (
               <div key={link.id} className="p-5 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
                 <div>
+                  {(() => {
+                    const coverage = coverageByLinkId.get(link.id);
+                    return coverage ? (
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
+                        <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${coverage.statusClass}`}>
+                          {coverage.statusLabel}
+                        </span>
+                        {coverage.hasPrice ? (
+                          <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                            Price entered
+                          </span>
+                        ) : null}
+                        {coverage.hasBadge ? (
+                          <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                            Ribbon ready
+                          </span>
+                        ) : null}
+                        {coverage.hasPromo ? (
+                          <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                            Promo text live
+                          </span>
+                        ) : null}
+                        {coverage.hasCoupon ? (
+                          <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                            Coupon live
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null;
+                  })()}
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <h3 className="font-semibold text-foreground">{link.label}</h3>
                     <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">

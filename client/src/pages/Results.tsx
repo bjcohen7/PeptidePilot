@@ -156,6 +156,8 @@ export default function Results() {
   const vendorCards = useMemo<ResultsVendorCard[]>(() => {
     if (!selectedMatch) return [];
 
+    let visibleBadgeCount = 0;
+
     return (activeLinks.data ?? []).map((link, index) => {
       const presentation = findResultsVendorPresentation(link.label);
       const category = presentation?.category ?? "research-peptides";
@@ -174,15 +176,19 @@ export default function Results() {
         link.cardHeadlineUnit?.trim() ||
         offer?.headlineUnit ||
         "pricing varies";
+      const couponCode = link.cardCouponCode?.trim() || null;
       const promoText =
         link.cardPromoText?.trim() ||
-        (link.cardCouponCode?.trim() ? `Code ${link.cardCouponCode.trim()}` : null) ||
         offer?.promoText ||
         null;
-      const badge =
+      const requestedBadge =
         link.cardBadge?.trim() ||
         presentation?.cardBadge ||
         (index === 0 ? "Recommended" : null);
+      const badge =
+        requestedBadge && visibleBadgeCount < 3
+          ? (visibleBadgeCount += 1, requestedBadge)
+          : null;
 
       return {
         id: presentation?.id ?? `${selectedMatch.peptideId}-${index}`,
@@ -197,6 +203,7 @@ export default function Results() {
         headlineValue,
         headlineUnit,
         promoText,
+        couponCode,
         planName: selectedMatch.name,
         planDetail:
           selectedMatch.categories.length > 0
