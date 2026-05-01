@@ -75,16 +75,22 @@ function VendorLogo({
 
   if (logoUrl && !broken) {
     return (
-      <img
-        src={logoUrl}
-        alt={logoAlt ?? fallback}
-        onError={() => setBroken(true)}
-        className="max-w-full max-h-full object-contain"
-      />
+      <div className="flex h-full w-full items-center justify-center rounded-[12px] bg-white p-2 shadow-[inset_0_0_0_1px_rgba(14,31,28,0.05)]">
+        <img
+          src={logoUrl}
+          alt={logoAlt ?? fallback}
+          onError={() => setBroken(true)}
+          className="max-h-full max-w-full object-contain"
+        />
+      </div>
     );
   }
 
-  return <span>{fallback}</span>;
+  return (
+    <div className="flex h-full w-full items-center justify-center rounded-[12px] bg-white text-[15px] font-bold tracking-tight text-[#0e1f1c] shadow-[inset_0_0_0_1px_rgba(14,31,28,0.05)]">
+      <span>{fallback}</span>
+    </div>
+  );
 }
 
 function VendorCard({
@@ -104,7 +110,7 @@ function VendorCard({
       data-vendor-card
     >
       <div style={{ background: gradient }} className="flex items-start justify-between gap-4 px-[18px] pb-[8px] pt-[14px] md:px-5 md:pb-[10px] md:pt-[18px]">
-        <div className="flex h-14 w-14 items-center justify-center rounded-[14px] bg-white/20 text-[17px] font-bold tracking-tight text-white backdrop-blur-md">
+        <div className="flex h-14 w-14 items-center justify-center rounded-[14px] bg-white/12 text-[17px] font-bold tracking-tight text-white backdrop-blur-md">
           <VendorLogo logoUrl={vendor.logoUrl} logoAlt={vendor.logoAlt} fallback={vendor.logoMarkFallback} />
         </div>
         <div className="text-right">
