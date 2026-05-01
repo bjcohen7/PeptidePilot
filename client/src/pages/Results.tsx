@@ -20,6 +20,7 @@ import {
 import { findResultsVendorPresentation } from "../../../shared/resultsVendorPresentation";
 
 const LIBRARY_BACKED_PROFILE_IDS = new Set<string>(libraryBackedPeptideProfileIds);
+const DEFAULT_COMMERCE_FALLBACK_IDS = new Set(["semaglutide", "sermorelin", "bpc157"]);
 
 function toReturningMatchSummary(result: ReturnType<typeof calculateMatches>[number]): ReturningMatchSummary {
   return {
@@ -109,12 +110,22 @@ export default function Results() {
 
   const displayMatches = useMemo(() => {
     if (!activeMatches.length) return [];
-    if (!availablePeptideIds.data?.length) return activeMatches;
+    if (!availablePeptideIds.data?.length) {
+      const fallbackCommerceMatches = activeMatches.filter((match) =>
+        DEFAULT_COMMERCE_FALLBACK_IDS.has(match.peptideId),
+      );
+      return fallbackCommerceMatches.length > 0 ? fallbackCommerceMatches : activeMatches;
+    }
 
     const coveredIds = new Set(availablePeptideIds.data);
     const coveredMatches = activeMatches.filter((match) => coveredIds.has(match.peptideId));
 
-    return coveredMatches.length > 0 ? coveredMatches : activeMatches;
+    if (coveredMatches.length > 0) return coveredMatches;
+
+    const fallbackCommerceMatches = activeMatches.filter((match) =>
+      DEFAULT_COMMERCE_FALLBACK_IDS.has(match.peptideId),
+    );
+    return fallbackCommerceMatches.length > 0 ? fallbackCommerceMatches : activeMatches;
   }, [activeMatches, availablePeptideIds.data]);
 
   const focusOptions = useMemo(() => {
@@ -150,15 +161,6 @@ export default function Results() {
       setActiveFocus(selectedMatch.categories[0] ?? focusOptions[0] ?? "");
     }
   }, [activeFocus, focusOptions, selectedMatch]);
-
-  useEffect(() => {
-    if (!activeFocus || !displayMatches.length) return;
-
-    const nextMatch = displayMatches.find((match) => match.categories.includes(activeFocus));
-    if (nextMatch && nextMatch.peptideId !== selectedPeptideId) {
-      setSelectedPeptideId(nextMatch.peptideId);
-    }
-  }, [activeFocus, displayMatches, selectedPeptideId]);
 
   const activeLinks = trpc.affiliates.activeLinksByPeptide.useQuery(
     { peptideId: selectedMatch?.peptideId ?? "" },
@@ -241,6 +243,15 @@ export default function Results() {
     navigate("/quiz");
   };
 
+  const handleFocusChange = (focus: string) => {
+    setActiveFocus(focus);
+
+    const nextMatch = displayMatches.find((match) => match.categories.includes(focus));
+    if (nextMatch && nextMatch.peptideId !== selectedPeptideId) {
+      setSelectedPeptideId(nextMatch.peptideId);
+    }
+  };
+
   const handleVendorClick = (vendor: ResultsVendorCard) => {
     if (!selectedMatch) return;
 
@@ -298,7 +309,7 @@ export default function Results() {
       selectedMatch={selectedMatch}
       focusOptions={focusOptions}
       activeFocus={activeFocus}
-      onFocusChange={setActiveFocus}
+      onFocusChange={handleFocusChange}
       vendorFilter={vendorFilter}
       onVendorFilterChange={setVendorFilter}
       vendors={vendorCards}
