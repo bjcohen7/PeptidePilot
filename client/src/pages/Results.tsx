@@ -164,12 +164,7 @@ export default function Results() {
         category,
       });
 
-      const badge =
-        index === 0
-          ? "Recommended"
-          : category === "telehealth"
-            ? "Telehealth"
-            : null;
+      const badge = presentation?.cardBadge ?? (index === 0 ? "Recommended" : null);
 
       return {
         id: presentation?.id ?? `${selectedMatch.peptideId}-${index}`,
