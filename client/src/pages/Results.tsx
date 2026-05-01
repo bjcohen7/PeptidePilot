@@ -90,6 +90,14 @@ export default function Results() {
   const activeMatches = hasFreshQuizState ? previewMatches : restoredMatches;
   const isReturningUser = !hasFreshQuizState && Boolean(session && !session.justCompletedQuiz);
   const activeLeadId = session?.leadId ?? "";
+  const availablePeptideIds = trpc.affiliates.availablePeptideIds.useQuery(
+    { peptideIds: activeMatches.map((match) => match.peptideId) },
+    {
+      enabled: activeMatches.length > 0,
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  );
 
   useEffect(() => {
     if (hasFreshQuizState) return;
@@ -99,31 +107,41 @@ export default function Results() {
     navigate("/quiz");
   }, [hasFreshQuizState, navigate, sessionStatus]);
 
+  const displayMatches = useMemo(() => {
+    if (!activeMatches.length) return [];
+    if (!availablePeptideIds.data?.length) return activeMatches;
+
+    const coveredIds = new Set(availablePeptideIds.data);
+    const coveredMatches = activeMatches.filter((match) => coveredIds.has(match.peptideId));
+
+    return coveredMatches.length > 0 ? coveredMatches : activeMatches;
+  }, [activeMatches, availablePeptideIds.data]);
+
   const focusOptions = useMemo(() => {
     const ordered = new Set<string>();
 
-    for (const match of activeMatches) {
+    for (const match of displayMatches) {
       for (const category of match.categories) {
         ordered.add(category);
       }
     }
 
     return Array.from(ordered).slice(0, 5);
-  }, [activeMatches]);
+  }, [displayMatches]);
 
   useEffect(() => {
-    if (!activeMatches.length) return;
+    if (!displayMatches.length) return;
 
     setSelectedPeptideId((current) => {
-      if (current && activeMatches.some((match) => match.peptideId === current)) {
+      if (current && displayMatches.some((match) => match.peptideId === current)) {
         return current;
       }
-      return activeMatches[0]?.peptideId ?? "";
+      return displayMatches[0]?.peptideId ?? "";
     });
-  }, [activeMatches]);
+  }, [displayMatches]);
 
   const selectedMatch =
-    activeMatches.find((match) => match.peptideId === selectedPeptideId) ?? activeMatches[0] ?? null;
+    displayMatches.find((match) => match.peptideId === selectedPeptideId) ?? displayMatches[0] ?? null;
 
   useEffect(() => {
     if (!selectedMatch) return;
@@ -134,13 +152,13 @@ export default function Results() {
   }, [activeFocus, focusOptions, selectedMatch]);
 
   useEffect(() => {
-    if (!activeFocus || !activeMatches.length) return;
+    if (!activeFocus || !displayMatches.length) return;
 
-    const nextMatch = activeMatches.find((match) => match.categories.includes(activeFocus));
+    const nextMatch = displayMatches.find((match) => match.categories.includes(activeFocus));
     if (nextMatch && nextMatch.peptideId !== selectedPeptideId) {
       setSelectedPeptideId(nextMatch.peptideId);
     }
-  }, [activeFocus, activeMatches, selectedPeptideId]);
+  }, [activeFocus, displayMatches, selectedPeptideId]);
 
   const activeLinks = trpc.affiliates.activeLinksByPeptide.useQuery(
     { peptideId: selectedMatch?.peptideId ?? "" },
@@ -276,7 +294,7 @@ export default function Results() {
 
   return (
     <ResultsCommercePage
-      matches={activeMatches}
+      matches={displayMatches}
       selectedMatch={selectedMatch}
       focusOptions={focusOptions}
       activeFocus={activeFocus}
@@ -289,7 +307,7 @@ export default function Results() {
       onRetake={handleRetake}
       onSelectMatch={setSelectedPeptideId}
       onVendorClick={handleVendorClick}
-      vendorLoading={activeLinks.isLoading}
+      vendorLoading={activeLinks.isLoading || availablePeptideIds.isLoading}
     />
   );
 }
