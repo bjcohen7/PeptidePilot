@@ -269,6 +269,15 @@ export default function ResultsCommercePage({
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const vendorSectionRef = useRef<HTMLElement | null>(null);
 
+  const handleSelectMatchAndShowVendors = (peptideId: string) => {
+    onVendorFilterChange("all");
+    onSelectMatch(peptideId);
+    setShowAllMatches(false);
+    requestAnimationFrame(() => {
+      vendorSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
   const filteredVendors = useMemo(() => {
     if (vendorFilter === "all") return vendors;
     return vendors.filter((vendor) => vendor.category === vendorFilter);
@@ -400,7 +409,7 @@ export default function ResultsCommercePage({
       <section ref={vendorSectionRef} className="pb-2">
         <div className="mb-2 flex items-center justify-between px-5 md:mx-auto md:max-w-[760px] md:px-10">
           <h2
-            className="hidden text-[22px] italic md:block"
+            className="text-[22px] italic"
             style={{ fontFamily: "'Crimson Pro', Georgia, serif", fontWeight: 700 }}
           >
             Your Top Picks
@@ -473,11 +482,7 @@ export default function ResultsCommercePage({
               {compareMatches.map((match) => (
                 <button
                   key={match.peptideId}
-                  onClick={() => {
-                    onSelectMatch(match.peptideId);
-                    setShowAllMatches(false);
-                    vendorSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }}
+                  onClick={() => handleSelectMatchAndShowVendors(match.peptideId)}
                   className="rounded-2xl border border-[#e2e8e5] bg-[#f6f8f7] p-4 text-left transition hover:border-[#0fb88a]/40 hover:bg-white"
                 >
                   <div className="mb-1 flex items-baseline justify-between gap-2">
@@ -523,10 +528,12 @@ export default function ResultsCommercePage({
           </div>
           <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-5 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-auto md:max-w-[1080px] md:px-10">
             {compareMatches.slice(0, 3).map((match, index) => (
-              <CompareCard key={match.peptideId} match={match} index={index} onSelect={(peptideId) => {
-                onSelectMatch(peptideId);
-                vendorSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }} />
+              <CompareCard
+                key={match.peptideId}
+                match={match}
+                index={index}
+                onSelect={handleSelectMatchAndShowVendors}
+              />
             ))}
           </div>
         </section>
