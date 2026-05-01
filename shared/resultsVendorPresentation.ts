@@ -118,3 +118,22 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
 export const resultsVendorPresentationById = Object.fromEntries(
   resultsVendorPresentation.map((vendor) => [vendor.id, vendor]),
 ) as Record<string, ResultsVendorPresentation>;
+
+function normalizeVendorKey(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+export function findResultsVendorPresentation(nameOrAlias: string) {
+  const needle = normalizeVendorKey(nameOrAlias);
+
+  return (
+    resultsVendorPresentation.find((vendor) => {
+      if (normalizeVendorKey(vendor.name) === needle) return true;
+      return (vendor.aliases ?? []).some((alias) => normalizeVendorKey(alias) === needle);
+    }) ?? null
+  );
+}
