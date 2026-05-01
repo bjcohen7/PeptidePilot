@@ -159,6 +159,9 @@ export default function Results() {
     return (activeLinks.data ?? []).map((link, index) => {
       const presentation = findResultsVendorPresentation(link.label);
       const category = presentation?.category ?? "research-peptides";
+      const offer =
+        (selectedMatch ? presentation?.offersByPeptideId?.[selectedMatch.peptideId] : undefined) ??
+        presentation?.defaultOffer;
       const features = buildVendorFeatures({
         explicitFeatures: presentation?.cardFeatures,
         category,
@@ -176,8 +179,9 @@ export default function Results() {
         logoAlt: presentation?.logoAlt,
         logoMarkFallback: presentation?.logoMarkFallback ?? link.label.slice(0, 2).toUpperCase(),
         badge,
-        headlineValue: category === "telehealth" ? "Guided" : "Direct",
-        headlineUnit: category === "telehealth" ? "clinical access" : "vendor access",
+        headlineValue: offer?.headlineValue ?? (category === "telehealth" ? "Provider" : "Shop now"),
+        headlineUnit: offer?.headlineUnit ?? (category === "telehealth" ? "pricing varies" : "pricing varies"),
+        promoText: offer?.promoText ?? null,
         planName: selectedMatch.name,
         planDetail:
           selectedMatch.categories.length > 0
@@ -188,10 +192,6 @@ export default function Results() {
             : "Matched from your quiz profile",
         supplyTag: `${selectedMatch.matchPercent}% fit`,
         features,
-        trustNote:
-          presentation?.sourceStatus === "manual-review"
-            ? "Brand card is live with fallback styling while we finish logo and offer normalization."
-            : null,
       };
     });
   }, [activeLinks.data, selectedMatch]);

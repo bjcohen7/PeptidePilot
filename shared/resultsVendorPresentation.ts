@@ -11,6 +11,19 @@ export type ResultsVendorPresentation = {
   logoMarkFallback: string;
   cardBadge?: string;
   cardFeatures?: string[];
+  defaultOffer?: {
+    headlineValue: string;
+    headlineUnit: string;
+    promoText?: string;
+  };
+  offersByPeptideId?: Record<
+    string,
+    {
+      headlineValue: string;
+      headlineUnit: string;
+      promoText?: string;
+    }
+  >;
   sourceStatus: "verified-public-asset" | "fallback-only" | "manual-review";
   notes?: string;
 };
@@ -46,6 +59,10 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     logoMarkFallback: "HH",
     cardBadge: "Doctor Guided",
     cardFeatures: ["Video Visits", "Dedicated Care Team", "Prescription Support", "Lab Review"],
+    defaultOffer: {
+      headlineValue: "Provider",
+      headlineUnit: "pricing varies",
+    },
     sourceStatus: "verified-public-asset",
     notes: "Verified public logo asset surfaced from the live site JSON-LD and localized into the repo.",
   },
@@ -57,8 +74,12 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     logoUrl: "/partner-logos/lifemd.svg",
     logoAlt: "LifeMD",
     logoMarkFallback: "LM",
-    cardBadge: "Best Overall",
+    cardBadge: "All-Inclusive",
     cardFeatures: ["Video Visits", "Secure Messaging", "Prescription Support", "Lab Review"],
+    defaultOffer: {
+      headlineValue: "Provider",
+      headlineUnit: "pricing varies",
+    },
     sourceStatus: "verified-public-asset",
     notes: "Verified public logo asset surfaced from the live site and localized into the repo.",
   },
@@ -68,9 +89,17 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     aliases: ["Limitless Biotech", "Limitless Life Nootropics"],
     category: "research-peptides",
     officialUrl: "https://limitlesslifenootropics.com",
+    logoUrl: "/partner-logos/limitless.png",
     logoAlt: "Limitless Life",
     logoMarkFallback: "LL",
-    cardBadge: "Best Value",
+    cardBadge: "10% Off",
+    offersByPeptideId: {
+      sermorelin: {
+        headlineValue: "$47.99",
+        headlineUnit: "5mg vial",
+        promoText: "10% off first order",
+      },
+    },
     sourceStatus: "manual-review",
     notes: "Public storefront exposes a usable official logo asset, but the exact CDN path needs a clean follow-up capture before localization. Brand naming differs slightly across sources, so aliases are included for matching.",
   },
@@ -89,7 +118,7 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     category: "telehealth",
     officialUrl: "https://defymedical.com",
     logoMarkFallback: "DM",
-    cardBadge: "Most Support",
+    cardBadge: "Care Team",
     cardFeatures: ["Video Visits", "Dedicated Care Team", "Secure Messaging", "Lab Review"],
     sourceStatus: "fallback-only",
     notes: "Brand is active, but logo asset sourcing is not yet clean enough for automatic inclusion.",
@@ -118,9 +147,16 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     aliases: ["Tonik Wellness"],
     category: "telehealth",
     officialUrl: "https://www.tonikwellness.com/",
+    logoUrl: "/partner-logos/tonik.png",
     logoMarkFallback: "TN",
-    cardBadge: "Fastest Start",
+    cardBadge: "From $149",
     cardFeatures: ["Secure Messaging", "Prescription Support", "Ongoing Check-Ins"],
+    offersByPeptideId: {
+      sermorelin: {
+        headlineValue: "As low as $149",
+        headlineUnit: "per month",
+      },
+    },
     sourceStatus: "manual-review",
     notes: "Public site and pricing pages are live. Brand should be normalized separately from tracked RevOffers destination URLs.",
   },
@@ -129,9 +165,15 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     name: "Medvi",
     category: "telehealth",
     officialUrl: "https://glp.medvi.org/",
+    logoUrl: "/partner-logos/medvi.png",
     logoMarkFallback: "MV",
-    cardBadge: "Best Overall",
+    cardBadge: "From $179",
     cardFeatures: ["Video Visits", "Dedicated Care Team", "Prescription Support", "Lab Review"],
+    defaultOffer: {
+      headlineValue: "From $179",
+      headlineUnit: "first month",
+      promoText: "Refills locked at $299",
+    },
     sourceStatus: "manual-review",
     notes: "Live GLP results-card affiliate. Logo and pricing normalization still pending.",
   },
@@ -141,9 +183,14 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     aliases: ["Skinny Rx"],
     category: "telehealth",
     officialUrl: "https://skinnyrx.com/",
+    logoUrl: "/partner-logos/skinnyrx.png",
     logoMarkFallback: "SR",
-    cardBadge: "Lowest Price",
+    cardBadge: "Quick Assessment",
     cardFeatures: ["Prescription Support", "Secure Messaging", "Monthly Plan"],
+    defaultOffer: {
+      headlineValue: "Check current",
+      headlineUnit: "GLP-1 pricing",
+    },
     sourceStatus: "manual-review",
     notes: "Live GLP affiliate sourced through RevOffers. Logo and pricing normalization still pending.",
   },
@@ -152,9 +199,15 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     name: "Gala",
     category: "telehealth",
     officialUrl: "https://galaglp1.com/",
+    logoUrl: "/partner-logos/gala.png",
     logoMarkFallback: "GA",
-    cardBadge: "Insurance Friendly",
+    cardBadge: "No Hidden Fees",
     cardFeatures: ["Video Visits", "Prescription Support", "Ongoing Check-Ins"],
+    defaultOffer: {
+      headlineValue: "From $179",
+      headlineUnit: "per month",
+      promoText: "No hidden fees",
+    },
     sourceStatus: "manual-review",
     notes: "Live GLP affiliate. Logo and pricing normalization still pending.",
   },
@@ -163,9 +216,15 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     name: "Direct Meds",
     category: "telehealth",
     officialUrl: "https://www.directmeds.com/",
+    logoUrl: "/partner-logos/direct-meds.png",
     logoMarkFallback: "DM",
-    cardBadge: "Fastest Start",
+    cardBadge: "Current Promo",
     cardFeatures: ["Secure Messaging", "Prescription Support", "Monthly Plan"],
+    defaultOffer: {
+      headlineValue: "From $147",
+      headlineUnit: "current promo",
+      promoText: "Up to $150 off",
+    },
     sourceStatus: "manual-review",
     notes: "Live GLP affiliate sourced through RevOffers. Logo and pricing normalization still pending.",
   },
@@ -173,10 +232,16 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     id: "sprout",
     name: "Sprout",
     category: "telehealth",
-    officialUrl: "https://www.sprouthealthgroup.com/",
+    officialUrl: "https://joinsprouthealth.com/weightloss-semaglutide/",
+    logoUrl: "/partner-logos/sprout.ico",
     logoMarkFallback: "SP",
-    cardBadge: "Most Support",
+    cardBadge: "First-Month Offer",
     cardFeatures: ["Dedicated Care Team", "Secure Messaging", "Ongoing Check-Ins"],
+    defaultOffer: {
+      headlineValue: "From $199",
+      headlineUnit: "first month",
+      promoText: "Standard $249/mo",
+    },
     sourceStatus: "manual-review",
     notes: "Live GLP affiliate sourced through RevOffers. Logo and pricing normalization still pending.",
   },
@@ -185,9 +250,14 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     name: "PeterMD",
     category: "telehealth",
     officialUrl: "https://petermd.com/",
+    logoUrl: "/partner-logos/petermd.png",
     logoMarkFallback: "PM",
     cardBadge: "Doctor Guided",
     cardFeatures: ["Video Visits", "Prescription Support", "Lab Review"],
+    defaultOffer: {
+      headlineValue: "Provider",
+      headlineUnit: "pricing varies",
+    },
     sourceStatus: "manual-review",
     notes: "Live Sermorelin affiliate sourced through RevOffers. Logo and pricing normalization still pending.",
   },
@@ -197,9 +267,17 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     aliases: ["TruLab", "Trulab Peptides"],
     category: "research-peptides",
     officialUrl: "https://trulabpeptides.com/",
+    logoUrl: "/partner-logos/trulab.ico",
     logoMarkFallback: "TL",
     cardBadge: "Fast Shipping",
     cardFeatures: ["COA Available", "Fast Shipping", "Research-Use Focus"],
+    offersByPeptideId: {
+      bpc157: {
+        headlineValue: "$35",
+        headlineUnit: "5mg vial",
+        promoText: "Buy 2 save 12%",
+      },
+    },
     sourceStatus: "manual-review",
     notes: "Live BPC-157 affiliate. Logo and pricing normalization still pending.",
   },

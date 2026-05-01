@@ -19,6 +19,7 @@ export type ResultsVendorCard = {
   badge?: string | null;
   headlineValue: string;
   headlineUnit: string;
+  promoText?: string | null;
   planName: string;
   planDetail: string;
   supplyTag: string;
@@ -110,6 +111,11 @@ function VendorCard({
             {vendor.headlineValue}
           </div>
           <div className="mt-1 text-[12px] text-white/80">{vendor.headlineUnit}</div>
+          {vendor.promoText ? (
+            <div className="mt-2 inline-flex rounded-full bg-white/18 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.05em] text-white/95">
+              {vendor.promoText}
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -160,12 +166,6 @@ function VendorCard({
                 </span>
               ))}
             </div>
-          </div>
-        ) : null}
-
-        {vendor.trustNote ? (
-          <div className="rounded-[14px] border border-dashed border-white/20 bg-white/5 px-3 py-2 text-center text-[12px] text-white/75">
-            {vendor.trustNote}
           </div>
         ) : null}
       </div>
