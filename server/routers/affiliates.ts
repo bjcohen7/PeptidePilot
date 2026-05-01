@@ -2,7 +2,7 @@ import { z } from "zod";
 import { and, asc, eq, inArray, ne, or } from "drizzle-orm";
 import { affiliatePartnerSeeds } from "../../shared/affiliatePartners";
 import { affiliateAuditEvents, affiliateLinks, affiliatePartners } from "../../drizzle/schema";
-import { getDb } from "../db";
+import { ensureAffiliateWorkspaceSchema, getDb } from "../db";
 import { adminProcedure, publicProcedure, router } from "../_core/trpc";
 import { peptideProfiles } from "../../shared/scoring";
 import type { TrpcContext } from "../_core/context";
@@ -200,11 +200,16 @@ async function findDuplicateLink(
   );
 }
 
+async function getAffiliateDb() {
+  await ensureAffiliateWorkspaceSchema();
+  return getDb();
+}
+
 export const affiliatesRouter = router({
   activeLinksByPeptide: publicProcedure
     .input(z.object({ peptideId: z.string().min(1).max(64) }))
     .query(async ({ input }) => {
-      const db = await getDb();
+      const db = await getAffiliateDb();
       if (!db) return [];
 
       const normalizedPeptideId = normalizePeptideId(input.peptideId) ?? input.peptideId;
@@ -234,7 +239,7 @@ export const affiliatesRouter = router({
   availablePeptideIds: publicProcedure
     .input(z.object({ peptideIds: z.array(z.string().min(1).max(64)).max(50) }))
     .query(async ({ input }) => {
-      const db = await getDb();
+      const db = await getAffiliateDb();
       if (!db || input.peptideIds.length === 0) return [];
 
       const normalizedIds = Array.from(
@@ -280,7 +285,7 @@ export const affiliatesRouter = router({
     }),
 
   listPartners: adminProcedure.query(async () => {
-    const db = await getDb();
+    const db = await getAffiliateDb();
     if (!db) {
       return affiliatePartnerSeeds;
     }
@@ -289,7 +294,7 @@ export const affiliatesRouter = router({
   }),
 
   createPartner: adminProcedure.input(partnerInput).mutation(async ({ input, ctx }) => {
-    const db = await getDb();
+    const db = await getAffiliateDb();
     if (!db) {
       throw new Error("Database is required to create affiliate partners.");
     }
@@ -319,7 +324,7 @@ export const affiliatesRouter = router({
   updatePartner: adminProcedure
     .input(partnerInput.extend({ id: z.number().int().positive() }))
     .mutation(async ({ input, ctx }) => {
-      const db = await getDb();
+      const db = await getAffiliateDb();
       if (!db) {
         throw new Error("Database is required to update affiliate partners.");
       }
@@ -359,7 +364,7 @@ export const affiliatesRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const db = await getDb();
+      const db = await getAffiliateDb();
       if (!db) {
         throw new Error("Database is required to update affiliate partners.");
       }
@@ -402,7 +407,7 @@ export const affiliatesRouter = router({
     }),
 
   createLink: adminProcedure.input(linkInput).mutation(async ({ input, ctx }) => {
-    const db = await getDb();
+    const db = await getAffiliateDb();
     if (!db) {
       throw new Error("Database is required to create affiliate links.");
     }
@@ -437,7 +442,7 @@ export const affiliatesRouter = router({
   updateLink: adminProcedure
     .input(linkInput.extend({ id: z.number().int().positive() }))
     .mutation(async ({ input, ctx }) => {
-      const db = await getDb();
+      const db = await getAffiliateDb();
       if (!db) {
         throw new Error("Database is required to update affiliate links.");
       }
@@ -478,7 +483,7 @@ export const affiliatesRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const db = await getDb();
+      const db = await getAffiliateDb();
       if (!db) {
         throw new Error("Database is required to update affiliate links.");
       }
@@ -514,7 +519,7 @@ export const affiliatesRouter = router({
     .input(z.object({ command: z.string().min(5).max(2000) }))
     .mutation(async ({ input }) => {
       const parsed = parseAssistantCommand(input.command);
-      const db = await getDb();
+      const db = await getAffiliateDb();
       const existing =
         db &&
         (await findDuplicateLink(db, {
@@ -536,7 +541,7 @@ export const affiliatesRouter = router({
   runAssistantCommand: adminProcedure
     .input(z.object({ command: z.string().min(5).max(2000) }))
     .mutation(async ({ input, ctx }) => {
-      const db = await getDb();
+      const db = await getAffiliateDb();
       if (!db) {
         throw new Error("Database is required to run affiliate assistant commands.");
       }
@@ -633,7 +638,7 @@ export const affiliatesRouter = router({
     }),
 
   listLinks: adminProcedure.query(async () => {
-    const db = await getDb();
+    const db = await getAffiliateDb();
     if (!db) return [];
 
     const [links, partners] = await Promise.all([
@@ -649,7 +654,7 @@ export const affiliatesRouter = router({
   }),
 
   listAuditEvents: adminProcedure.query(async () => {
-    const db = await getDb();
+    const db = await getAffiliateDb();
     if (!db) return [];
 
     return db.select().from(affiliateAuditEvents).orderBy(asc(affiliateAuditEvents.createdAt));
