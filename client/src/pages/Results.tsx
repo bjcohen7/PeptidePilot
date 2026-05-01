@@ -166,8 +166,23 @@ export default function Results() {
         explicitFeatures: presentation?.cardFeatures,
         category,
       });
-
-      const badge = presentation?.cardBadge ?? (index === 0 ? "Recommended" : null);
+      const headlineValue =
+        link.cardHeadlineValue?.trim() ||
+        offer?.headlineValue ||
+        (category === "telehealth" ? "Provider" : "Shop now");
+      const headlineUnit =
+        link.cardHeadlineUnit?.trim() ||
+        offer?.headlineUnit ||
+        "pricing varies";
+      const promoText =
+        link.cardPromoText?.trim() ||
+        (link.cardCouponCode?.trim() ? `Code ${link.cardCouponCode.trim()}` : null) ||
+        offer?.promoText ||
+        null;
+      const badge =
+        link.cardBadge?.trim() ||
+        presentation?.cardBadge ||
+        (index === 0 ? "Recommended" : null);
 
       return {
         id: presentation?.id ?? `${selectedMatch.peptideId}-${index}`,
@@ -179,9 +194,9 @@ export default function Results() {
         logoAlt: presentation?.logoAlt,
         logoMarkFallback: presentation?.logoMarkFallback ?? link.label.slice(0, 2).toUpperCase(),
         badge,
-        headlineValue: offer?.headlineValue ?? (category === "telehealth" ? "Provider" : "Shop now"),
-        headlineUnit: offer?.headlineUnit ?? (category === "telehealth" ? "pricing varies" : "pricing varies"),
-        promoText: offer?.promoText ?? null,
+        headlineValue,
+        headlineUnit,
+        promoText,
         planName: selectedMatch.name,
         planDetail:
           selectedMatch.categories.length > 0

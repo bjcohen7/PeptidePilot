@@ -142,6 +142,11 @@ export async function ensureAffiliateWorkspaceSchema() {
           \`peptideId\` varchar(64),
           \`isGlobal\` boolean NOT NULL DEFAULT false,
           \`sortOrder\` int NOT NULL DEFAULT 100,
+          \`cardHeadlineValue\` varchar(128),
+          \`cardHeadlineUnit\` varchar(128),
+          \`cardPromoText\` varchar(255),
+          \`cardCouponCode\` varchar(64),
+          \`cardBadge\` varchar(64),
           \`status\` enum('active','draft','paused') NOT NULL DEFAULT 'draft',
           \`lastTestedAt\` timestamp,
           \`lastTestStatus\` int,
@@ -222,6 +227,41 @@ export async function ensureAffiliateWorkspaceSchema() {
       if (!(await hasColumn(db, "affiliate_links", "sortOrder"))) {
         await db.execute(sql.raw("ALTER TABLE `affiliate_links` ADD COLUMN `sortOrder` int NOT NULL DEFAULT 100"));
       }
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "cardHeadlineValue",
+        "`cardHeadlineValue` varchar(128)",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "cardHeadlineUnit",
+        "`cardHeadlineUnit` varchar(128)",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "cardPromoText",
+        "`cardPromoText` varchar(255)",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "cardCouponCode",
+        "`cardCouponCode` varchar(64)",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "cardBadge",
+        "`cardBadge` varchar(64)",
+      );
 
       if (!(await hasColumn(db, "leads", "sessionId"))) {
         await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `sessionId` varchar(64)"));

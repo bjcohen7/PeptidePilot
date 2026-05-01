@@ -23,6 +23,11 @@ const linkInput = z.object({
   peptideId: z.string().max(64).optional().nullable(),
   isGlobal: z.boolean().default(false),
   sortOrder: z.number().int().min(1).max(999).default(100),
+  cardHeadlineValue: z.string().max(128).optional().nullable(),
+  cardHeadlineUnit: z.string().max(128).optional().nullable(),
+  cardPromoText: z.string().max(255).optional().nullable(),
+  cardCouponCode: z.string().max(64).optional().nullable(),
+  cardBadge: z.string().max(64).optional().nullable(),
   status: z.enum(["active", "draft", "paused"]).default("draft"),
 });
 

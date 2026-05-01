@@ -23,6 +23,11 @@ type LinkForm = {
   peptideId: string;
   isGlobal: boolean;
   sortOrder: string;
+  cardHeadlineValue: string;
+  cardHeadlineUnit: string;
+  cardPromoText: string;
+  cardCouponCode: string;
+  cardBadge: string;
   status: "active" | "draft" | "paused";
 };
 
@@ -54,6 +59,11 @@ const emptyLink: LinkForm = {
   peptideId: "",
   isGlobal: false,
   sortOrder: "100",
+  cardHeadlineValue: "",
+  cardHeadlineUnit: "",
+  cardPromoText: "",
+  cardCouponCode: "",
+  cardBadge: "",
   status: "draft",
 };
 
@@ -194,6 +204,11 @@ export default function AffiliatePartnersAdmin() {
       peptideId: linkForm.peptideId || null,
       isGlobal: linkForm.isGlobal,
       sortOrder: Number(linkForm.sortOrder) || 100,
+      cardHeadlineValue: linkForm.cardHeadlineValue || null,
+      cardHeadlineUnit: linkForm.cardHeadlineUnit || null,
+      cardPromoText: linkForm.cardPromoText || null,
+      cardCouponCode: linkForm.cardCouponCode || null,
+      cardBadge: linkForm.cardBadge || null,
       status: linkForm.status,
     };
 
@@ -220,6 +235,11 @@ export default function AffiliatePartnersAdmin() {
       peptideId: link.peptideId ?? "",
       isGlobal: link.isGlobal,
       sortOrder: String(link.sortOrder),
+      cardHeadlineValue: link.cardHeadlineValue ?? "",
+      cardHeadlineUnit: link.cardHeadlineUnit ?? "",
+      cardPromoText: link.cardPromoText ?? "",
+      cardCouponCode: link.cardCouponCode ?? "",
+      cardBadge: link.cardBadge ?? "",
       status: link.status,
     });
   };
@@ -397,6 +417,46 @@ export default function AffiliatePartnersAdmin() {
               <option value="paused">Paused</option>
             </select>
           </div>
+          <div className="rounded-lg border border-border/70 bg-secondary/30 p-4 space-y-3">
+            <div>
+              <h3 className="text-sm font-semibold">Results card display</h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                These fields control the live price/promo surface on the results cards. Leave blank to fall back to the shared default metadata.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input
+                className={inputClass()}
+                placeholder='Headline value, e.g. "$179"'
+                value={linkForm.cardHeadlineValue}
+                onChange={(e) => setLinkForm({ ...linkForm, cardHeadlineValue: e.target.value })}
+              />
+              <input
+                className={inputClass()}
+                placeholder='Headline unit, e.g. "first month"'
+                value={linkForm.cardHeadlineUnit}
+                onChange={(e) => setLinkForm({ ...linkForm, cardHeadlineUnit: e.target.value })}
+              />
+              <input
+                className={inputClass()}
+                placeholder='Promo text, e.g. "Refills locked at $299"'
+                value={linkForm.cardPromoText}
+                onChange={(e) => setLinkForm({ ...linkForm, cardPromoText: e.target.value })}
+              />
+              <input
+                className={inputClass()}
+                placeholder='Coupon code, e.g. "PEPTIDEPILOT10"'
+                value={linkForm.cardCouponCode}
+                onChange={(e) => setLinkForm({ ...linkForm, cardCouponCode: e.target.value })}
+              />
+              <input
+                className={inputClass()}
+                placeholder='Card badge, e.g. "Lowest Price"'
+                value={linkForm.cardBadge}
+                onChange={(e) => setLinkForm({ ...linkForm, cardBadge: e.target.value })}
+              />
+            </div>
+          </div>
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
             <input
               type="checkbox"
@@ -518,6 +578,30 @@ export default function AffiliatePartnersAdmin() {
                     Placement: {link.placement}
                     {typeof link.lastTestStatus === "number" ? ` · Last test ${link.lastTestStatus}` : ""}
                   </p>
+                  {(link.cardHeadlineValue || link.cardPromoText || link.cardCouponCode || link.cardBadge) ? (
+                    <div className="mb-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                      {link.cardBadge ? (
+                        <span className="rounded-full border border-border px-2.5 py-1">
+                          Badge: {link.cardBadge}
+                        </span>
+                      ) : null}
+                      {link.cardHeadlineValue || link.cardHeadlineUnit ? (
+                        <span className="rounded-full border border-border px-2.5 py-1">
+                          Price: {[link.cardHeadlineValue, link.cardHeadlineUnit].filter(Boolean).join(" ")}
+                        </span>
+                      ) : null}
+                      {link.cardPromoText ? (
+                        <span className="rounded-full border border-border px-2.5 py-1">
+                          Promo: {link.cardPromoText}
+                        </span>
+                      ) : null}
+                      {link.cardCouponCode ? (
+                        <span className="rounded-full border border-border px-2.5 py-1">
+                          Code: {link.cardCouponCode}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
                   <a href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline">
                     <ExternalLink className="w-4 h-4" />
                     {link.url}
