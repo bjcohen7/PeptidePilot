@@ -15,6 +15,7 @@ import { getFacebookTrackingParams } from "@/utils/facebookUtils";
 import {
   calculateMatches,
   libraryBackedPeptideProfileIds,
+  peptideProfiles,
   type ReturningMatchSummary,
 } from "../../../shared/scoring";
 import { findResultsVendorPresentation } from "../../../shared/resultsVendorPresentation";
@@ -176,9 +177,31 @@ export default function Results() {
   const vendorCards = useMemo<ResultsVendorCard[]>(() => {
     if (!selectedMatch) return [];
 
+    const profile = peptideProfiles.find((entry) => entry.id === selectedMatch.peptideId);
+    const sourceLinks =
+      (activeLinks.data ?? []).length > 0
+        ? (activeLinks.data ?? []).map((link) => ({
+            label: link.label,
+            url: link.url,
+            cardHeadlineValue: link.cardHeadlineValue,
+            cardHeadlineUnit: link.cardHeadlineUnit,
+            cardPromoText: link.cardPromoText,
+            cardCouponCode: link.cardCouponCode,
+            cardBadge: link.cardBadge,
+          }))
+        : (profile?.vendors ?? []).map((vendor) => ({
+            label: vendor.name,
+            url: vendor.url,
+            cardHeadlineValue: null,
+            cardHeadlineUnit: null,
+            cardPromoText: null,
+            cardCouponCode: null,
+            cardBadge: null,
+          }));
+
     let visibleBadgeCount = 0;
 
-    return (activeLinks.data ?? []).map((link, index) => {
+    return sourceLinks.map((link, index) => {
       const presentation = findResultsVendorPresentation(link.label);
       const category = presentation?.category ?? "research-peptides";
       const offer =
