@@ -9,6 +9,7 @@ export type ResultsVendorPresentation = {
   logoUrl?: string;
   logoAlt?: string;
   logoMarkFallback: string;
+  cardFeatures?: string[];
   sourceStatus: "verified-public-asset" | "fallback-only" | "manual-review";
   notes?: string;
 };
@@ -42,6 +43,7 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     logoUrl: "/partner-logos/hone-health.png",
     logoAlt: "Hone Health",
     logoMarkFallback: "HH",
+    cardFeatures: ["Video Visits", "Dedicated Care Team", "Prescription Support", "Lab Review"],
     sourceStatus: "verified-public-asset",
     notes: "Verified public logo asset surfaced from the live site JSON-LD and localized into the repo.",
   },
@@ -53,6 +55,7 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     logoUrl: "/partner-logos/lifemd.svg",
     logoAlt: "LifeMD",
     logoMarkFallback: "LM",
+    cardFeatures: ["Video Visits", "Secure Messaging", "Prescription Support", "Lab Review"],
     sourceStatus: "verified-public-asset",
     notes: "Verified public logo asset surfaced from the live site and localized into the repo.",
   },
@@ -82,6 +85,7 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     category: "telehealth",
     officialUrl: "https://defymedical.com",
     logoMarkFallback: "DM",
+    cardFeatures: ["Video Visits", "Dedicated Care Team", "Secure Messaging", "Lab Review"],
     sourceStatus: "fallback-only",
     notes: "Brand is active, but logo asset sourcing is not yet clean enough for automatic inclusion.",
   },
@@ -110,6 +114,7 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     category: "telehealth",
     officialUrl: "https://www.tonikwellness.com/",
     logoMarkFallback: "TN",
+    cardFeatures: ["Secure Messaging", "Prescription Support", "Ongoing Check-Ins"],
     sourceStatus: "manual-review",
     notes: "Public site and pricing pages are live. Brand should be normalized separately from tracked RevOffers destination URLs.",
   },

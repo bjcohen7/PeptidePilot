@@ -353,12 +353,6 @@ export default function ResultsCommercePage({
               {selectedMatch.matchPercent}% match
             </span>
           </div>
-          <p
-            className="mb-2 mt-1 hidden text-[22px] italic text-[#4a5b58] md:block"
-            style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
-          >
-            {selectedMatch.description}
-          </p>
           <div className="hidden flex-wrap items-baseline gap-2 text-[13px] text-[#4a5b58] md:flex">
             <span className="text-[22px] font-extrabold tracking-[-0.02em] text-[#0e1f1c]">
               {filteredVendors.length}

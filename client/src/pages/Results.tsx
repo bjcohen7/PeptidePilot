@@ -44,38 +44,25 @@ function prettyFocusLabel(value: string) {
 }
 
 function buildVendorFeatures({
+  explicitFeatures,
   category,
-  isGlobal,
-  lastTestStatus,
-  selectedMatch,
-  hasVerifiedLogo,
 }: {
+  explicitFeatures?: string[];
   category: ResultsVendorCategoryFilter;
-  isGlobal: boolean;
-  lastTestStatus: number | null | undefined;
-  selectedMatch: ReturningMatchSummary;
-  hasVerifiedLogo: boolean;
 }) {
+  if (explicitFeatures?.length) {
+    return explicitFeatures.slice(0, 4);
+  }
+
   const features: string[] = [];
 
   if (category === "telehealth") {
-    features.push("Clinician-guided");
-    features.push("Prescription path");
+    features.push("Video Visits");
+    features.push("Prescription Support");
+    features.push("Secure Messaging");
   } else if (category === "research-peptides") {
     features.push("Research catalog");
     features.push("Direct checkout");
-  }
-
-  if (!isGlobal) {
-    features.push(`${selectedMatch.name} match`);
-  }
-
-  if (hasVerifiedLogo) {
-    features.push("Verified brand");
-  }
-
-  if (typeof lastTestStatus === "number" && lastTestStatus >= 200 && lastTestStatus < 400) {
-    features.push("Tracked link tested");
   }
 
   return features.slice(0, 4);
@@ -172,15 +159,9 @@ export default function Results() {
     return (activeLinks.data ?? []).map((link, index) => {
       const presentation = findResultsVendorPresentation(link.label);
       const category = presentation?.category ?? "research-peptides";
-      const hasVerifiedLogo = Boolean(
-        presentation?.sourceStatus === "verified-public-asset" && presentation.logoUrl,
-      );
       const features = buildVendorFeatures({
+        explicitFeatures: presentation?.cardFeatures,
         category,
-        isGlobal: Boolean(link.isGlobal),
-        lastTestStatus: link.lastTestStatus,
-        selectedMatch,
-        hasVerifiedLogo,
       });
 
       const badge =
