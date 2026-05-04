@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, asc, eq, getTableColumns, inArray, ne, or } from "drizzle-orm";
+import { and, asc, eq, inArray, ne, or } from "drizzle-orm";
 import { affiliatePartnerSeeds } from "../../shared/affiliatePartners";
 import { affiliateAuditEvents, affiliateLinks, affiliatePartners } from "../../drizzle/schema";
 import { ensureAffiliateWorkspaceSchema, getDb } from "../db";
@@ -222,7 +222,24 @@ export const affiliatesRouter = router({
       );
 
       return db
-        .select({ ...getTableColumns(affiliateLinks) })
+        .select({
+          id: affiliateLinks.id,
+          partnerId: affiliateLinks.partnerId,
+          label: affiliateLinks.label,
+          url: affiliateLinks.url,
+          placement: affiliateLinks.placement,
+          peptideId: affiliateLinks.peptideId,
+          isGlobal: affiliateLinks.isGlobal,
+          sortOrder: affiliateLinks.sortOrder,
+          cardHeadlineValue: affiliateLinks.cardHeadlineValue,
+          cardHeadlineUnit: affiliateLinks.cardHeadlineUnit,
+          cardPromoText: affiliateLinks.cardPromoText,
+          cardCouponCode: affiliateLinks.cardCouponCode,
+          cardBadge: affiliateLinks.cardBadge,
+          status: affiliateLinks.status,
+          createdAt: affiliateLinks.createdAt,
+          updatedAt: affiliateLinks.updatedAt,
+        })
         .from(affiliateLinks)
         .innerJoin(affiliatePartners, eq(affiliateLinks.partnerId, affiliatePartners.id))
         .where(
@@ -646,7 +663,27 @@ export const affiliatesRouter = router({
     if (!db) return [];
 
     const [links, partners] = await Promise.all([
-      db.select().from(affiliateLinks).orderBy(asc(affiliateLinks.sortOrder), asc(affiliateLinks.createdAt)),
+      db
+        .select({
+          id: affiliateLinks.id,
+          partnerId: affiliateLinks.partnerId,
+          label: affiliateLinks.label,
+          url: affiliateLinks.url,
+          placement: affiliateLinks.placement,
+          peptideId: affiliateLinks.peptideId,
+          isGlobal: affiliateLinks.isGlobal,
+          sortOrder: affiliateLinks.sortOrder,
+          cardHeadlineValue: affiliateLinks.cardHeadlineValue,
+          cardHeadlineUnit: affiliateLinks.cardHeadlineUnit,
+          cardPromoText: affiliateLinks.cardPromoText,
+          cardCouponCode: affiliateLinks.cardCouponCode,
+          cardBadge: affiliateLinks.cardBadge,
+          status: affiliateLinks.status,
+          createdAt: affiliateLinks.createdAt,
+          updatedAt: affiliateLinks.updatedAt,
+        })
+        .from(affiliateLinks)
+        .orderBy(asc(affiliateLinks.sortOrder), asc(affiliateLinks.createdAt)),
       db.select().from(affiliatePartners),
     ]);
     const partnerMap = new Map(partners.map((partner) => [partner.id, partner.name]));

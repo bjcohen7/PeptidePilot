@@ -724,7 +724,6 @@ export default function AffiliatePartnersAdmin() {
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">
                     Placement: {link.placement}
-                    {typeof link.lastTestStatus === "number" ? ` · Last test ${link.lastTestStatus}` : ""}
                   </p>
                   {(link.cardHeadlineValue || link.cardPromoText || link.cardCouponCode || link.cardBadge) ? (
                     <div className="mb-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
