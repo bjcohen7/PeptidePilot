@@ -1,3 +1,4 @@
+import type { MouseEvent } from "react";
 import { Link } from "wouter";
 import { ArrowRight, RotateCcw } from "lucide-react";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
@@ -33,7 +34,7 @@ type ResultsCommercePageProps = {
   vendors: ResultsVendorCard[];
   onRetake: () => void;
   onSelectMatch: (peptideId: string) => void;
-  onVendorClick: (vendor: ResultsVendorCard) => void;
+  onVendorClick: (vendor: ResultsVendorCard, event?: MouseEvent<HTMLAnchorElement>) => void;
   vendorLoading?: boolean;
 };
 
@@ -90,10 +91,11 @@ function VendorCard({
   onClick,
 }: {
   vendor: ResultsVendorCard;
-  onClick: (vendor: ResultsVendorCard) => void;
+  onClick: (vendor: ResultsVendorCard, event?: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   return (
-    <article className="flex h-full flex-col rounded-[22px] border border-[#e2e8e5] bg-white p-5 shadow-[0_1px_2px_rgba(14,31,28,0.04),0_12px_28px_rgba(14,31,28,0.08)]">
+    <article className="flex h-full flex-col overflow-hidden rounded-[22px] border border-[#dce7e2] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbfa_100%)] p-5 shadow-[0_1px_2px_rgba(14,31,28,0.04),0_16px_34px_rgba(14,31,28,0.10)]">
+      <div className="mb-5 h-1 w-16 rounded-full bg-[linear-gradient(90deg,#0fb88a_0%,#22d3ee_100%)]" />
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <VendorLogo logoUrl={vendor.logoUrl} logoAlt={vendor.logoAlt} fallback={vendor.logoMarkFallback} />
@@ -152,8 +154,8 @@ function VendorCard({
       <div className="mt-auto pt-5">
         <a
           href={vendor.affiliateUrl}
-          onClick={() => onClick(vendor)}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0e1f1c] px-5 py-3 text-[14px] font-semibold text-white transition hover:opacity-92"
+          onClick={(event) => onClick(vendor, event)}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#0fb88a_0%,#0a8f73_100%)] px-5 py-3 text-[14px] font-semibold text-white shadow-[0_10px_24px_rgba(15,184,138,0.24)] transition hover:brightness-105"
         >
           Get Started <ArrowRight className="h-4 w-4" />
         </a>
@@ -213,7 +215,7 @@ export default function ResultsCommercePage({
         </button>
       </header>
 
-      <main className="mx-auto max-w-[1120px] px-5 pb-12 pt-6 md:px-10 md:pt-10">
+      <main className="mx-auto max-w-[1120px] px-5 pb-0 pt-6 md:px-10 md:pt-10">
         <section className="mx-auto max-w-[760px] text-center">
           <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#4a5b58]">
             Your Top Match
@@ -227,7 +229,7 @@ export default function ResultsCommercePage({
           <p className="mx-auto mt-4 max-w-[620px] text-[15px] leading-7 text-[#4a5b58]">
             {heroReason}
           </p>
-          <div className="mt-4 inline-flex items-center rounded-full bg-[#e6f7f1] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.05em] text-[#0fb88a]">
+          <div className="mt-4 inline-flex items-center rounded-full bg-[linear-gradient(135deg,#0fb88a_0%,#22d3ee_100%)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.05em] text-white shadow-[0_8px_20px_rgba(15,184,138,0.22)]">
             {selectedMatch.matchPercent}% match
           </div>
         </section>
@@ -285,19 +287,27 @@ export default function ResultsCommercePage({
           </section>
         ) : null}
 
-        <div className="mx-auto max-w-[760px] px-1 pb-2 pt-10 text-center">
-          <p className="mb-5 text-[11px] leading-6 text-[#7c8b88]">
-            Educational guidance only. PeptidePilot does not provide medical advice, diagnosis, or treatment. Research and prescription compounds vary by jurisdiction and clinical suitability.{" "}
-            <Link href="/disclaimer" className="text-[#4a5b58] underline">
-              Full disclaimer
-            </Link>
-          </p>
+        <div className="mx-auto max-w-[760px] px-1 pb-10 pt-10 text-center">
           <Button variant="outline" onClick={onRetake} className="gap-2 border-[#e2e8e5] text-[#4a5b58]">
             <RotateCcw className="h-4 w-4" />
             Retake the quiz
           </Button>
         </div>
       </main>
+
+      <footer className="mt-4 bg-[#0e1f1c]">
+        <div className="mx-auto max-w-[1120px] px-5 py-8 text-[11px] leading-6 text-white/68 md:px-10">
+          <p>
+            PeptidePilot may collect fees from some providers to be listed on our platform, and may receive compensation for impressions, sending traffic, or potential customers to such providers. We strive to ensure that such financial relationships do not affect the order in which providers are displayed and maintain our commitment to providing unbiased information. Providers and other third parties cannot pay to be listed higher in search results, matches, or listings unless such listings are clearly marked as &quot;sponsored&quot; and disclosed to you as paid placements.
+          </p>
+          <p className="mt-4">
+            Tool for informational purposes only. Nothing should be considered medical advice or recommendations. Medication must be prescribed by a clinician, serious side effects may occur, and results are not guaranteed. Compounded medication is not FDA approved.{" "}
+            <Link href="/disclaimer" className="text-white/85 underline">
+              Full disclaimer
+            </Link>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

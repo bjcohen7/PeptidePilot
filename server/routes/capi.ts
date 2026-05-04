@@ -26,6 +26,7 @@ const router = Router();
 router.post("/track-affiliate-click", async (req: Request, res: Response) => {
   const {
     email,
+    eventName,
     eventUrl,
     fbc,
     fbp,
@@ -35,6 +36,7 @@ router.post("/track-affiliate-click", async (req: Request, res: Response) => {
     eventId,
   } = req.body as {
     email?: string;
+    eventName?: "AffiliateClick" | "Lead" | "InitiateCheckout";
     eventUrl?: string;
     fbc?: string | null;
     fbp?: string | null;
@@ -92,7 +94,7 @@ router.post("/track-affiliate-click", async (req: Request, res: Response) => {
   const payload: Record<string, unknown> = {
     data: [
       {
-        event_name: "AffiliateClick",
+        event_name: eventName || "AffiliateClick",
         event_id: dedupeEventId,
         event_time: Math.floor(Date.now() / 1000),
         action_source: "website",

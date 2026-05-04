@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, asc, eq, inArray, ne, or } from "drizzle-orm";
+import { and, asc, eq, getTableColumns, inArray, ne, or } from "drizzle-orm";
 import { affiliatePartnerSeeds } from "../../shared/affiliatePartners";
 import { affiliateAuditEvents, affiliateLinks, affiliatePartners } from "../../drizzle/schema";
 import { ensureAffiliateWorkspaceSchema, getDb } from "../db";
@@ -222,15 +222,17 @@ export const affiliatesRouter = router({
       );
 
       return db
-        .select()
+        .select({ ...getTableColumns(affiliateLinks) })
         .from(affiliateLinks)
+        .innerJoin(affiliatePartners, eq(affiliateLinks.partnerId, affiliatePartners.id))
         .where(
           and(
             or(
               ...peptideAliases.map((peptideId) => eq(affiliateLinks.peptideId, peptideId)),
               eq(affiliateLinks.isGlobal, true),
             ),
-            eq(affiliateLinks.status, "active")
+            eq(affiliateLinks.status, "active"),
+            eq(affiliatePartners.status, "active"),
           )
         )
         .orderBy(asc(affiliateLinks.sortOrder), asc(affiliateLinks.createdAt));
@@ -262,9 +264,11 @@ export const affiliatesRouter = router({
           isGlobal: affiliateLinks.isGlobal,
         })
         .from(affiliateLinks)
+        .innerJoin(affiliatePartners, eq(affiliateLinks.partnerId, affiliatePartners.id))
         .where(
           and(
             eq(affiliateLinks.status, "active"),
+            eq(affiliatePartners.status, "active"),
             or(
               eq(affiliateLinks.isGlobal, true),
               inArray(affiliateLinks.peptideId, aliasPool),

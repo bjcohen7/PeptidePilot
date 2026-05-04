@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { useLocation } from "wouter";
 import { useQuiz } from "@/contexts/QuizContext";
 import { useReturningSession } from "@/contexts/UserSessionContext";
@@ -9,7 +9,7 @@ import ResultsCommercePage, {
 } from "@/components/results/ResultsCommercePage";
 import {
   createMetaEventId,
-  trackMetaCustomEvent,
+  trackMetaEvent,
 } from "@/lib/metaPixel";
 import { getFacebookTrackingParams } from "@/utils/facebookUtils";
 import {
@@ -21,8 +21,6 @@ import {
 import { findResultsVendorPresentation } from "../../../shared/resultsVendorPresentation";
 
 const LIBRARY_BACKED_PROFILE_IDS = new Set<string>(libraryBackedPeptideProfileIds);
-const DEFAULT_COMMERCE_FALLBACK_IDS = new Set(["semaglutide", "sermorelin", "bpc157"]);
-
 function toReturningMatchSummary(result: ReturnType<typeof calculateMatches>[number]): ReturningMatchSummary {
   return {
     peptideId: result.peptide.id,
@@ -108,22 +106,15 @@ export default function Results() {
 
   const displayMatches = useMemo(() => {
     if (!activeMatches.length) return [];
-    if (!availablePeptideIds.data?.length) {
-      const fallbackCommerceMatches = activeMatches.filter((match) =>
-        DEFAULT_COMMERCE_FALLBACK_IDS.has(match.peptideId),
-      );
-      return fallbackCommerceMatches.length > 0 ? fallbackCommerceMatches : activeMatches;
+    if (!availablePeptideIds.data) {
+      return activeMatches;
     }
 
     const coveredIds = new Set(availablePeptideIds.data);
     const coveredMatches = activeMatches.filter((match) => coveredIds.has(match.peptideId));
 
     if (coveredMatches.length > 0) return coveredMatches;
-
-    const fallbackCommerceMatches = activeMatches.filter((match) =>
-      DEFAULT_COMMERCE_FALLBACK_IDS.has(match.peptideId),
-    );
-    return fallbackCommerceMatches.length > 0 ? fallbackCommerceMatches : activeMatches;
+    return activeMatches;
   }, [activeMatches, availablePeptideIds.data]);
 
   useEffect(() => {
@@ -154,27 +145,15 @@ export default function Results() {
   const vendorCards = useMemo<ResultsVendorCard[]>(() => {
     if (!selectedMatch) return [];
 
-    const profile = peptideProfiles.find((entry) => entry.id === selectedMatch.peptideId);
-    const sourceLinks =
-      (activeLinks.data ?? []).length > 0
-        ? (activeLinks.data ?? []).map((link) => ({
-            label: link.label,
-            url: link.url,
-            cardHeadlineValue: link.cardHeadlineValue,
-            cardHeadlineUnit: link.cardHeadlineUnit,
-            cardPromoText: link.cardPromoText,
-            cardCouponCode: link.cardCouponCode,
-            cardBadge: link.cardBadge,
-          }))
-        : (profile?.vendors ?? []).map((vendor) => ({
-            label: vendor.name,
-            url: vendor.url,
-            cardHeadlineValue: null,
-            cardHeadlineUnit: null,
-            cardPromoText: null,
-            cardCouponCode: null,
-            cardBadge: null,
-          }));
+    const sourceLinks = (activeLinks.data ?? []).map((link) => ({
+      label: link.label,
+      url: link.url,
+      cardHeadlineValue: link.cardHeadlineValue,
+      cardHeadlineUnit: link.cardHeadlineUnit,
+      cardPromoText: link.cardPromoText,
+      cardCouponCode: link.cardCouponCode,
+      cardBadge: link.cardBadge,
+    }));
 
     let visibleBadgeCount = 0;
 
@@ -243,8 +222,20 @@ export default function Results() {
     navigate("/quiz");
   };
 
-  const handleVendorClick = (vendor: ResultsVendorCard) => {
+  const handleVendorClick = (vendor: ResultsVendorCard, event?: MouseEvent<HTMLAnchorElement>) => {
     if (!selectedMatch) return;
+
+    const shouldLetBrowserHandle =
+      !event ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey;
+
+    if (!shouldLetBrowserHandle) {
+      event.preventDefault();
+    }
 
     if (activeLeadId) {
       trackClick.mutate({
@@ -255,31 +246,64 @@ export default function Results() {
     }
 
     const eventId = createMetaEventId("affiliate_click");
-    trackMetaCustomEvent(
-      "AffiliateClick",
-      { supplier: vendor.name, peptide: selectedMatch.name },
+    trackMetaEvent(
+      "Lead",
+      {
+        content_name: vendor.name,
+        content_category: selectedMatch.name,
+      },
       eventId,
     );
 
     const { fbc, fbp } = getFacebookTrackingParams();
+    const capiPayload = {
+      email: null,
+      eventName: "Lead",
+      eventUrl: typeof window !== "undefined" ? window.location.href : null,
+      fbc: fbc ?? null,
+      fbp: fbp ?? null,
+      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+      supplierName: vendor.name,
+      peptideName: selectedMatch.name,
+      eventId,
+    };
 
-    void fetch("/api/capi/track-affiliate-click", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: null,
-        eventUrl: typeof window !== "undefined" ? window.location.href : null,
-        fbc: fbc ?? null,
-        fbp: fbp ?? null,
-        userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
-        supplierName: vendor.name,
-        peptideName: selectedMatch.name,
-        eventId,
-      }),
-      keepalive: true,
-    }).catch((error) => {
-      console.warn("[CAPI] Affiliate click tracking failed:", error);
-    });
+    const payload = JSON.stringify(capiPayload);
+
+    if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+      const sent = navigator.sendBeacon(
+        "/api/capi/track-affiliate-click",
+        new Blob([payload], { type: "application/json" }),
+      );
+
+      if (!sent) {
+        void fetch("/api/capi/track-affiliate-click", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload,
+          keepalive: true,
+        }).catch((error) => {
+          console.warn("[CAPI] Affiliate click tracking failed:", error);
+        });
+      }
+    } else {
+      void fetch("/api/capi/track-affiliate-click", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+        keepalive: true,
+      }).catch((error) => {
+        console.warn("[CAPI] Affiliate click tracking failed:", error);
+      });
+    }
+
+    if (shouldLetBrowserHandle || typeof window === "undefined") {
+      return;
+    }
+
+    window.setTimeout(() => {
+      window.location.assign(vendor.affiliateUrl);
+    }, 180);
   };
 
   if (!hasFreshQuizState && sessionStatus === "pending" && isReturningSessionLoading) {
