@@ -263,6 +263,20 @@ export async function ensureAffiliateWorkspaceSchema() {
         "`cardBadge` varchar(64)",
       );
 
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "lastTestedAt",
+        "`lastTestedAt` timestamp NULL",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "lastTestStatus",
+        "`lastTestStatus` int",
+      );
+
       if (!(await hasColumn(db, "leads", "sessionId"))) {
         await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `sessionId` varchar(64)"));
       }
