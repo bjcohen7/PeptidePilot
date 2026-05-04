@@ -75,8 +75,6 @@ export default function Results() {
   const { state, reset } = useQuiz();
   const { session, isLoading: isReturningSessionLoading, sessionStatus } = useReturningSession();
   const [selectedPeptideId, setSelectedPeptideId] = useState<string>("");
-  const [activeFocus, setActiveFocus] = useState<string>("");
-  const [vendorFilter, setVendorFilter] = useState<ResultsVendorCategoryFilter>("all");
 
   const hasFreshQuizState = state.isComplete || state.answers.some((answer) => answer !== null);
 
@@ -90,7 +88,6 @@ export default function Results() {
 
   const restoredMatches = !hasFreshQuizState ? session?.topMatches ?? [] : [];
   const activeMatches = hasFreshQuizState ? previewMatches : restoredMatches;
-  const isReturningUser = !hasFreshQuizState && Boolean(session && !session.justCompletedQuiz);
   const activeLeadId = session?.leadId ?? "";
   const availablePeptideIds = trpc.affiliates.availablePeptideIds.useQuery(
     { peptideIds: activeMatches.map((match) => match.peptideId) },
@@ -129,18 +126,6 @@ export default function Results() {
     return fallbackCommerceMatches.length > 0 ? fallbackCommerceMatches : activeMatches;
   }, [activeMatches, availablePeptideIds.data]);
 
-  const focusOptions = useMemo(() => {
-    const ordered = new Set<string>();
-
-    for (const match of displayMatches) {
-      for (const category of match.categories) {
-        ordered.add(category);
-      }
-    }
-
-    return Array.from(ordered).slice(0, 5);
-  }, [displayMatches]);
-
   useEffect(() => {
     if (!displayMatches.length) return;
 
@@ -154,14 +139,6 @@ export default function Results() {
 
   const selectedMatch =
     displayMatches.find((match) => match.peptideId === selectedPeptideId) ?? displayMatches[0] ?? null;
-
-  useEffect(() => {
-    if (!selectedMatch) return;
-
-    if (!activeFocus || !selectedMatch.categories.includes(activeFocus)) {
-      setActiveFocus(selectedMatch.categories[0] ?? focusOptions[0] ?? "");
-    }
-  }, [activeFocus, focusOptions, selectedMatch]);
 
   const activeLinks = trpc.affiliates.activeLinksByPeptide.useQuery(
     { peptideId: selectedMatch?.peptideId ?? "" },
@@ -266,15 +243,6 @@ export default function Results() {
     navigate("/quiz");
   };
 
-  const handleFocusChange = (focus: string) => {
-    setActiveFocus(focus);
-
-    const nextMatch = displayMatches.find((match) => match.categories.includes(focus));
-    if (nextMatch && nextMatch.peptideId !== selectedPeptideId) {
-      setSelectedPeptideId(nextMatch.peptideId);
-    }
-  };
-
   const handleVendorClick = (vendor: ResultsVendorCard) => {
     if (!selectedMatch) return;
 
@@ -330,14 +298,7 @@ export default function Results() {
     <ResultsCommercePage
       matches={displayMatches}
       selectedMatch={selectedMatch}
-      focusOptions={focusOptions}
-      activeFocus={activeFocus}
-      onFocusChange={handleFocusChange}
-      vendorFilter={vendorFilter}
-      onVendorFilterChange={setVendorFilter}
       vendors={vendorCards}
-      leadId={activeLeadId}
-      isReturningUser={isReturningUser}
       onRetake={handleRetake}
       onSelectMatch={setSelectedPeptideId}
       onVendorClick={handleVendorClick}
