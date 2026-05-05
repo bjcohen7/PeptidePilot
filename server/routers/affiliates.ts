@@ -213,13 +213,27 @@ async function getAffiliateDb() {
   return getDb();
 }
 
+function extractMysqlRows<T>(result: unknown): T[] {
+  if (Array.isArray(result)) {
+    if (Array.isArray(result[0])) {
+      return result[0] as T[];
+    }
+    return result as T[];
+  }
+
+  if (result && typeof result === "object" && "rows" in result) {
+    const rows = (result as { rows?: T[] }).rows;
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  return [];
+}
+
 async function listAffiliateLinksSafely(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
 ) {
   const columnsResult = await db.execute(sql.raw("SHOW COLUMNS FROM `affiliate_links`"));
-  const columnRows = Array.isArray(columnsResult)
-    ? columnsResult
-    : ((columnsResult as { rows?: Array<{ Field?: string; field?: string }> }).rows ?? []);
+  const columnRows = extractMysqlRows<{ Field?: string; field?: string }>(columnsResult);
   const columnNames = new Set(
     columnRows
       .map((row) =>
@@ -267,9 +281,7 @@ async function listAffiliateLinksSafely(
   `;
 
   const result = await db.execute(sql.raw(query));
-  const rows = Array.isArray(result)
-    ? result
-    : ((result as { rows?: Array<Record<string, unknown>> }).rows ?? []);
+  const rows = extractMysqlRows<Record<string, unknown>>(result);
 
   return rows.map((row) => ({
     id: Number(row.id ?? 0),
