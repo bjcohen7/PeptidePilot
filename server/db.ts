@@ -231,6 +231,13 @@ export async function ensureAffiliateWorkspaceSchema() {
       await addColumnIfMissing(
         db,
         "affiliate_links",
+        "status",
+        "`status` enum('active','draft','paused') NOT NULL DEFAULT 'active'",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
         "createdAt",
         "`createdAt` timestamp NOT NULL DEFAULT (now())",
       );
@@ -241,6 +248,19 @@ export async function ensureAffiliateWorkspaceSchema() {
         "updatedAt",
         "`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP",
       );
+
+      try {
+        await db.execute(
+          sql.raw(
+            "UPDATE `affiliate_links` SET `status` = 'active' WHERE `status` IS NULL OR `status` = ''",
+          ),
+        );
+      } catch (error) {
+        const code = findMysqlErrorCode(error);
+        if (code !== "ER_BAD_FIELD_ERROR") {
+          throw error;
+        }
+      }
 
       await addColumnIfMissing(
         db,
