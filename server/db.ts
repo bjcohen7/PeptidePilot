@@ -231,6 +231,20 @@ export async function ensureAffiliateWorkspaceSchema() {
       await addColumnIfMissing(
         db,
         "affiliate_links",
+        "createdAt",
+        "`createdAt` timestamp NOT NULL DEFAULT (now())",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "updatedAt",
+        "`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
         "cardHeadlineValue",
         "`cardHeadlineValue` varchar(128)",
       );

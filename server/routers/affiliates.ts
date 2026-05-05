@@ -245,8 +245,6 @@ export const affiliatesRouter = router({
           cardCouponCode: affiliateLinks.cardCouponCode,
           cardBadge: affiliateLinks.cardBadge,
           status: affiliateLinks.status,
-          createdAt: affiliateLinks.createdAt,
-          updatedAt: affiliateLinks.updatedAt,
         })
         .from(affiliateLinks)
         .innerJoin(affiliatePartners, eq(affiliateLinks.partnerId, affiliatePartners.id))
@@ -260,7 +258,7 @@ export const affiliatesRouter = router({
             eq(affiliatePartners.status, "active"),
           )
         )
-        .orderBy(asc(affiliateLinks.sortOrder), asc(affiliateLinks.createdAt));
+        .orderBy(asc(affiliateLinks.sortOrder), asc(affiliateLinks.id));
     }),
 
   availablePeptideIds: publicProcedure
@@ -690,11 +688,9 @@ export const affiliatesRouter = router({
           cardCouponCode: affiliateLinks.cardCouponCode,
           cardBadge: affiliateLinks.cardBadge,
           status: affiliateLinks.status,
-          createdAt: affiliateLinks.createdAt,
-          updatedAt: affiliateLinks.updatedAt,
         })
         .from(affiliateLinks)
-        .orderBy(asc(affiliateLinks.sortOrder), asc(affiliateLinks.createdAt)),
+        .orderBy(asc(affiliateLinks.sortOrder), asc(affiliateLinks.id)),
       db.select().from(affiliatePartners),
     ]);
     const partnerMap = new Map(partners.map((partner) => [partner.id, partner.name]));
