@@ -191,7 +191,15 @@ async function findDuplicateLink(
     excludeId?: number;
   }
 ) {
-  const rows = await db.select().from(affiliateLinks);
+  const rows = await db
+    .select({
+      id: affiliateLinks.id,
+      placement: affiliateLinks.placement,
+      peptideId: affiliateLinks.peptideId,
+      isGlobal: affiliateLinks.isGlobal,
+      url: affiliateLinks.url,
+    })
+    .from(affiliateLinks);
   return (
     rows.find((row) => {
       if (input.excludeId && row.id === input.excludeId) return false;
@@ -510,7 +518,10 @@ export const affiliatesRouter = router({
       }
 
       const existing = await db
-        .select()
+        .select({
+          id: affiliateLinks.id,
+          label: affiliateLinks.label,
+        })
         .from(affiliateLinks)
         .where(eq(affiliateLinks.id, input.id))
         .limit(1);
