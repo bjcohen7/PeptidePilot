@@ -219,34 +219,50 @@ async function listAffiliateLinksSafely(
   const columnsResult = await db.execute(sql.raw("SHOW COLUMNS FROM `affiliate_links`"));
   const columnRows = Array.isArray(columnsResult)
     ? columnsResult
-    : ((columnsResult as { rows?: Array<{ Field?: string }> }).rows ?? []);
+    : ((columnsResult as { rows?: Array<{ Field?: string; field?: string }> }).rows ?? []);
   const columnNames = new Set(
     columnRows
-      .map((row) => (typeof row?.Field === "string" ? row.Field : null))
+      .map((row) =>
+        typeof row?.Field === "string"
+          ? row.Field.toLowerCase()
+          : typeof row?.field === "string"
+            ? row.field.toLowerCase()
+            : null,
+      )
       .filter((value): value is string => Boolean(value)),
   );
 
-  const selectExpr = (column: string, fallbackSql: string) =>
-    columnNames.has(column) ? `\`${column}\` AS \`${column}\`` : `${fallbackSql} AS \`${column}\``;
+  const resolveColumn = (...candidates: string[]) => {
+    const match = candidates.find((candidate) => columnNames.has(candidate.toLowerCase()));
+    return match ?? null;
+  };
 
-  const orderExpr = columnNames.has("sortOrder") ? "`sortOrder`, `id`" : "`id`";
+  const selectExpr = (alias: string, candidates: string[], fallbackSql: string) => {
+    const resolved = resolveColumn(...candidates);
+    return resolved ? `l.\`${resolved}\` AS \`${alias}\`` : `${fallbackSql} AS \`${alias}\``;
+  };
+
+  const orderColumn = resolveColumn("sortOrder", "sort_order");
+  const orderExpr = orderColumn ? `l.\`${orderColumn}\`, l.\`id\`` : "l.`id`";
   const query = `
     SELECT
-      ${selectExpr("id", "0")},
-      ${selectExpr("partnerId", "0")},
-      ${selectExpr("label", "''")},
-      ${selectExpr("url", "''")},
-      ${selectExpr("placement", "''")},
-      ${selectExpr("peptideId", "NULL")},
-      ${selectExpr("isGlobal", "0")},
-      ${selectExpr("sortOrder", "100")},
-      ${selectExpr("cardHeadlineValue", "NULL")},
-      ${selectExpr("cardHeadlineUnit", "NULL")},
-      ${selectExpr("cardPromoText", "NULL")},
-      ${selectExpr("cardCouponCode", "NULL")},
-      ${selectExpr("cardBadge", "NULL")},
-      ${selectExpr("status", "'draft'")}
-    FROM \`affiliate_links\`
+      ${selectExpr("id", ["id"], "0")},
+      ${selectExpr("partnerId", ["partnerId", "partner_id"], "0")},
+      ${selectExpr("label", ["label"], "''")},
+      ${selectExpr("url", ["url"], "''")},
+      ${selectExpr("placement", ["placement"], "''")},
+      ${selectExpr("peptideId", ["peptideId", "peptide_id"], "NULL")},
+      ${selectExpr("isGlobal", ["isGlobal", "is_global"], "0")},
+      ${selectExpr("sortOrder", ["sortOrder", "sort_order"], "100")},
+      ${selectExpr("cardHeadlineValue", ["cardHeadlineValue", "card_headline_value"], "NULL")},
+      ${selectExpr("cardHeadlineUnit", ["cardHeadlineUnit", "card_headline_unit"], "NULL")},
+      ${selectExpr("cardPromoText", ["cardPromoText", "card_promo_text"], "NULL")},
+      ${selectExpr("cardCouponCode", ["cardCouponCode", "card_coupon_code"], "NULL")},
+      ${selectExpr("cardBadge", ["cardBadge", "card_badge"], "NULL")},
+      ${selectExpr("status", ["status"], "'draft'")},
+      p.\`name\` AS \`partnerName\`
+    FROM \`affiliate_links\` l
+    LEFT JOIN \`affiliate_partners\` p ON p.\`id\` = ${selectExpr("partnerIdJoin", ["partnerId", "partner_id"], "0").replace(" AS `partnerIdJoin`", "")}
     ORDER BY ${orderExpr}
   `;
 
@@ -273,6 +289,7 @@ async function listAffiliateLinksSafely(
       row.status === "active" || row.status === "paused" || row.status === "draft"
         ? row.status
         : "draft",
+    partnerName: typeof row.partnerName === "string" ? row.partnerName : "Unknown partner",
   }));
 }
 
@@ -947,7 +964,7 @@ export const affiliatesRouter = router({
 
     return links.map((link) => ({
       ...link,
-      partnerName: partnerMap.get(link.partnerId) ?? "Unknown partner",
+      partnerName: link.partnerName || partnerMap.get(link.partnerId) || "Unknown partner",
     }));
   }),
 
