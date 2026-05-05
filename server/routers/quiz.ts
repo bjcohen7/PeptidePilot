@@ -381,6 +381,7 @@ export const quizRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      await ensureAffiliateWorkspaceSchema();
       const db = await getDb();
       if (db) {
         await db.insert(affiliateClicks).values({

@@ -236,6 +236,17 @@ export async function ensureAffiliateWorkspaceSchema() {
         )
       `));
 
+      await db.execute(sql.raw(`
+        CREATE TABLE IF NOT EXISTS \`affiliate_clicks\` (
+          \`id\` int AUTO_INCREMENT NOT NULL,
+          \`leadId\` varchar(36) NOT NULL,
+          \`peptideId\` varchar(64) NOT NULL,
+          \`vendor\` varchar(128) NOT NULL,
+          \`clickedAt\` timestamp NOT NULL DEFAULT (now()),
+          CONSTRAINT \`affiliate_clicks_id\` PRIMARY KEY(\`id\`)
+        )
+      `));
+
       if (!(await hasColumn(db, "affiliate_links", "isGlobal"))) {
         await db.execute(sql.raw("ALTER TABLE `affiliate_links` ADD COLUMN `isGlobal` boolean NOT NULL DEFAULT false"));
       }
