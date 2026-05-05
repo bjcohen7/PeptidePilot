@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, asc, eq, inArray, ne, or } from "drizzle-orm";
+import { and, asc, eq, inArray, ne, or, sql } from "drizzle-orm";
 import { affiliatePartnerSeeds } from "../../shared/affiliatePartners";
 import { affiliateAuditEvents, affiliateLinks, affiliatePartners } from "../../drizzle/schema";
 import { ensureAffiliateWorkspaceSchema, getDb } from "../db";
@@ -211,6 +211,69 @@ async function findDuplicateLink(
 async function getAffiliateDb() {
   await ensureAffiliateWorkspaceSchema();
   return getDb();
+}
+
+async function listAffiliateLinksSafely(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+) {
+  const columnsResult = await db.execute(sql.raw("SHOW COLUMNS FROM `affiliate_links`"));
+  const columnRows = Array.isArray(columnsResult)
+    ? columnsResult
+    : ((columnsResult as { rows?: Array<{ Field?: string }> }).rows ?? []);
+  const columnNames = new Set(
+    columnRows
+      .map((row) => (typeof row?.Field === "string" ? row.Field : null))
+      .filter((value): value is string => Boolean(value)),
+  );
+
+  const selectExpr = (column: string, fallbackSql: string) =>
+    columnNames.has(column) ? `\`${column}\` AS \`${column}\`` : `${fallbackSql} AS \`${column}\``;
+
+  const orderExpr = columnNames.has("sortOrder") ? "`sortOrder`, `id`" : "`id`";
+  const query = `
+    SELECT
+      ${selectExpr("id", "0")},
+      ${selectExpr("partnerId", "0")},
+      ${selectExpr("label", "''")},
+      ${selectExpr("url", "''")},
+      ${selectExpr("placement", "''")},
+      ${selectExpr("peptideId", "NULL")},
+      ${selectExpr("isGlobal", "0")},
+      ${selectExpr("sortOrder", "100")},
+      ${selectExpr("cardHeadlineValue", "NULL")},
+      ${selectExpr("cardHeadlineUnit", "NULL")},
+      ${selectExpr("cardPromoText", "NULL")},
+      ${selectExpr("cardCouponCode", "NULL")},
+      ${selectExpr("cardBadge", "NULL")},
+      ${selectExpr("status", "'draft'")}
+    FROM \`affiliate_links\`
+    ORDER BY ${orderExpr}
+  `;
+
+  const result = await db.execute(sql.raw(query));
+  const rows = Array.isArray(result)
+    ? result
+    : ((result as { rows?: Array<Record<string, unknown>> }).rows ?? []);
+
+  return rows.map((row) => ({
+    id: Number(row.id ?? 0),
+    partnerId: Number(row.partnerId ?? 0),
+    label: typeof row.label === "string" ? row.label : "",
+    url: typeof row.url === "string" ? row.url : "",
+    placement: typeof row.placement === "string" ? row.placement : "",
+    peptideId: typeof row.peptideId === "string" ? row.peptideId : null,
+    isGlobal: Boolean(Number(row.isGlobal ?? 0)),
+    sortOrder: Number(row.sortOrder ?? 100),
+    cardHeadlineValue: typeof row.cardHeadlineValue === "string" ? row.cardHeadlineValue : null,
+    cardHeadlineUnit: typeof row.cardHeadlineUnit === "string" ? row.cardHeadlineUnit : null,
+    cardPromoText: typeof row.cardPromoText === "string" ? row.cardPromoText : null,
+    cardCouponCode: typeof row.cardCouponCode === "string" ? row.cardCouponCode : null,
+    cardBadge: typeof row.cardBadge === "string" ? row.cardBadge : null,
+    status:
+      row.status === "active" || row.status === "paused" || row.status === "draft"
+        ? row.status
+        : "draft",
+  }));
 }
 
 type LegacyLinkSeed = {
@@ -877,25 +940,7 @@ export const affiliatesRouter = router({
     if (!db) return [];
 
     const [links, partners] = await Promise.all([
-      db
-        .select({
-          id: affiliateLinks.id,
-          partnerId: affiliateLinks.partnerId,
-          label: affiliateLinks.label,
-          url: affiliateLinks.url,
-          placement: affiliateLinks.placement,
-          peptideId: affiliateLinks.peptideId,
-          isGlobal: affiliateLinks.isGlobal,
-          sortOrder: affiliateLinks.sortOrder,
-          cardHeadlineValue: affiliateLinks.cardHeadlineValue,
-          cardHeadlineUnit: affiliateLinks.cardHeadlineUnit,
-          cardPromoText: affiliateLinks.cardPromoText,
-          cardCouponCode: affiliateLinks.cardCouponCode,
-          cardBadge: affiliateLinks.cardBadge,
-          status: affiliateLinks.status,
-        })
-        .from(affiliateLinks)
-        .orderBy(asc(affiliateLinks.sortOrder), asc(affiliateLinks.id)),
+      listAffiliateLinksSafely(db),
       db.select().from(affiliatePartners),
     ]);
     const partnerMap = new Map(partners.map((partner) => [partner.id, partner.name]));

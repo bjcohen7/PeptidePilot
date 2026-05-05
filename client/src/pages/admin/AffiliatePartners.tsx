@@ -697,6 +697,11 @@ export default function AffiliatePartnersAdmin() {
             Refresh
           </Button>
         </div>
+        {links.error ? (
+          <div className="border-b border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-800">
+            Couldn&apos;t load tracked links: {links.error.message}
+          </div>
+        ) : null}
         {linkRows.length === 0 ? (
           <div className="p-5 text-sm text-muted-foreground">No tracked links yet.</div>
         ) : (
