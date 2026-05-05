@@ -6,6 +6,22 @@ import { ENV } from './_core/env';
 let _db: ReturnType<typeof drizzle> | null = null;
 let affiliateWorkspaceBootstrap: Promise<void> | null = null;
 
+function extractMysqlRows<T>(result: unknown): T[] {
+  if (Array.isArray(result)) {
+    if (Array.isArray(result[0])) {
+      return result[0] as T[];
+    }
+    return result as T[];
+  }
+
+  if (result && typeof result === "object" && "rows" in result) {
+    const rows = (result as { rows?: T[] }).rows;
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  return [];
+}
+
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
@@ -25,7 +41,7 @@ async function hasColumn(
   column: string
 ) {
   const result = await db.execute(sql.raw(`SHOW COLUMNS FROM \`${table}\` LIKE '${column}'`));
-  const rows = Array.isArray(result) ? result : ((result as any).rows ?? []);
+  const rows = extractMysqlRows(result);
   return rows.length > 0;
 }
 
@@ -35,7 +51,7 @@ async function hasIndex(
   index: string,
 ) {
   const result = await db.execute(sql.raw(`SHOW INDEX FROM \`${table}\` WHERE Key_name = '${index}'`));
-  const rows = Array.isArray(result) ? result : ((result as any).rows ?? []);
+  const rows = extractMysqlRows(result);
   return rows.length > 0;
 }
 
