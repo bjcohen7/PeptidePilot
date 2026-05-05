@@ -197,6 +197,17 @@ export default function AffiliatePartnersAdmin() {
     onSuccess: (result) => setAssistantPreview(result as AssistantPreview),
     onError: (error) => toast.error(error.message),
   });
+  const seedLegacyLinks = trpc.affiliates.seedLegacyLinks.useMutation({
+    onSuccess: async (result) => {
+      toast.success(result.message);
+      await Promise.all([
+        utils.affiliates.listPartners.invalidate(),
+        utils.affiliates.listLinks.invalidate(),
+        utils.affiliates.listAuditEvents.invalidate(),
+      ]);
+    },
+    onError: (error) => toast.error(error.message),
+  });
   const assistant = trpc.affiliates.runAssistantCommand.useMutation({
     onSuccess: async (result) => {
       toast.success(result.message);
@@ -373,6 +384,14 @@ export default function AffiliatePartnersAdmin() {
     setLinkStatus.mutate({ id: link.id, status: nextStatus });
   };
 
+  const restoreLegacyLinks = () => {
+    const confirmed = window.confirm(
+      "Restore legacy affiliate links from the original results-page vendor definitions? This will reactivate matching legacy partners/links and create any missing managed rows without duplicating exact scope+URL matches.",
+    );
+    if (!confirmed) return;
+    seedLegacyLinks.mutate();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -384,6 +403,14 @@ export default function AffiliatePartnersAdmin() {
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            variant="outline"
+            onClick={restoreLegacyLinks}
+            disabled={seedLegacyLinks.isPending}
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Restore Legacy Links
+          </Button>
           <Button className="bg-brand-gradient text-white hover:opacity-90" onClick={() => setPartnerForm(emptyPartner)}>
             <Plus className="w-4 h-4 mr-2" />
             New Partner

@@ -213,6 +213,111 @@ async function getAffiliateDb() {
   return getDb();
 }
 
+type LegacyLinkSeed = {
+  partnerName: string;
+  label: string;
+  url: string;
+  placement: "results-card";
+  peptideId: string;
+  isGlobal: false;
+  sortOrder: number;
+};
+
+function inferLegacyPartnerCategory(partnerName: string) {
+  const telehealthPartners = new Set(["Hone Health", "LifeMD", "Defy Medical"]);
+  return telehealthPartners.has(partnerName) ? "Telehealth" : "Research peptides";
+}
+
+function inferLegacyPartnerNotes(partnerName: string) {
+  const seededPartner = affiliatePartnerSeeds.find((partner) => partner.name === partnerName);
+  if (seededPartner?.notes) return seededPartner.notes;
+  return "Restored from legacy hard-coded result card vendor definitions.";
+}
+
+const legacyLinkSeeds: LegacyLinkSeed[] = Array.from(
+  new Map(
+    peptideProfiles.flatMap((profile) =>
+      profile.vendors.map((vendor, index) => {
+        const seed: LegacyLinkSeed = {
+          partnerName: vendor.name,
+          label: vendor.name,
+          url: vendor.url,
+          placement: "results-card",
+          peptideId: profile.id,
+          isGlobal: false,
+          sortOrder: index + 1,
+        };
+
+        return [`${seed.placement}::${seed.peptideId}::${seed.url}`, seed] as const;
+      }),
+    ),
+  ).values(),
+);
+
+async function findOrRestoreLegacyPartner(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  input: { name: string; url: string },
+) {
+  const existingPartner = await db
+    .select({
+      id: affiliatePartners.id,
+      status: affiliatePartners.status,
+      primaryUrl: affiliatePartners.primaryUrl,
+      notes: affiliatePartners.notes,
+    })
+    .from(affiliatePartners)
+    .where(eq(affiliatePartners.name, input.name))
+    .limit(1);
+
+  const existing = existingPartner[0];
+  const category =
+    affiliatePartnerSeeds.find((partner) => partner.name === input.name)?.category ??
+    inferLegacyPartnerCategory(input.name);
+  const notes = inferLegacyPartnerNotes(input.name);
+
+  if (existing) {
+    const updates: Partial<{
+      status: "active";
+      primaryUrl: string;
+      notes: string;
+    }> = {};
+
+    if (existing.status !== "active") {
+      updates.status = "active";
+    }
+    if (!existing.primaryUrl?.trim()) {
+      updates.primaryUrl = input.url;
+    }
+    if (!existing.notes?.trim()) {
+      updates.notes = notes;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await db.update(affiliatePartners).set(updates).where(eq(affiliatePartners.id, existing.id));
+    }
+
+    return {
+      id: existing.id,
+      created: false,
+      reactivated: Boolean(updates.status),
+    };
+  }
+
+  const result = await db.insert(affiliatePartners).values({
+    name: input.name,
+    category,
+    status: "active",
+    primaryUrl: input.url,
+    notes,
+  });
+
+  return {
+    id: Number(result[0].insertId),
+    created: true,
+    reactivated: false,
+  };
+}
+
 export const affiliatesRouter = router({
   activeLinksByPeptide: publicProcedure
     .input(z.object({ peptideId: z.string().min(1).max(64) }))
@@ -646,6 +751,106 @@ export const affiliatesRouter = router({
         },
       };
     }),
+
+  seedLegacyLinks: adminProcedure.mutation(async ({ ctx }) => {
+    const db = await getAffiliateDb();
+    if (!db) {
+      throw new Error("Database is required to restore legacy affiliate links.");
+    }
+
+    const counts = {
+      partnersCreated: 0,
+      partnersReactivated: 0,
+      linksCreated: 0,
+      linksReactivated: 0,
+      linksSkipped: 0,
+    };
+
+    for (const seed of legacyLinkSeeds) {
+      const partner = await findOrRestoreLegacyPartner(db, {
+        name: seed.partnerName,
+        url: seed.url,
+      });
+
+      if (partner.created) counts.partnersCreated += 1;
+      if (partner.reactivated) counts.partnersReactivated += 1;
+
+      const existing = await findDuplicateLink(db, {
+        placement: seed.placement,
+        peptideId: seed.peptideId,
+        isGlobal: seed.isGlobal,
+        url: seed.url,
+      });
+
+      if (existing) {
+        const current = await db
+          .select({
+            id: affiliateLinks.id,
+            partnerId: affiliateLinks.partnerId,
+            label: affiliateLinks.label,
+            sortOrder: affiliateLinks.sortOrder,
+            status: affiliateLinks.status,
+          })
+          .from(affiliateLinks)
+          .where(eq(affiliateLinks.id, existing.id))
+          .limit(1);
+
+        const currentLink = current[0];
+        if (!currentLink) {
+          counts.linksSkipped += 1;
+          continue;
+        }
+
+        const needsUpdate =
+          currentLink.partnerId !== partner.id ||
+          currentLink.label !== seed.label ||
+          currentLink.sortOrder !== seed.sortOrder ||
+          currentLink.status !== "active";
+
+        if (needsUpdate) {
+          await db
+            .update(affiliateLinks)
+            .set({
+              partnerId: partner.id,
+              label: seed.label,
+              sortOrder: seed.sortOrder,
+              status: "active",
+            })
+            .where(eq(affiliateLinks.id, currentLink.id));
+          counts.linksReactivated += 1;
+        } else {
+          counts.linksSkipped += 1;
+        }
+
+        continue;
+      }
+
+      await db.insert(affiliateLinks).values({
+        partnerId: partner.id,
+        label: seed.label,
+        url: seed.url,
+        placement: seed.placement,
+        peptideId: seed.peptideId,
+        isGlobal: false,
+        sortOrder: seed.sortOrder,
+        status: "active",
+      });
+      counts.linksCreated += 1;
+    }
+
+    await logAffiliateAudit(db, ctx, {
+      action: "seed_legacy",
+      entityType: "affiliate_link",
+      summary: `Restored legacy affiliate links (${counts.linksCreated} created, ${counts.linksReactivated} reactivated, ${counts.linksSkipped} unchanged).`,
+      metadata: counts,
+    });
+
+    return {
+      status: "ok" as const,
+      ...counts,
+      message: `Legacy affiliate restore complete: ${counts.linksCreated} links created, ${counts.linksReactivated} reactivated, ${counts.linksSkipped} already current.`,
+    };
+  }),
 
   testLink: adminProcedure
     .input(z.object({ url: z.string().url() }))
