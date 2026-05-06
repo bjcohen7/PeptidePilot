@@ -12,7 +12,6 @@ export type ResultsVendorCard = {
   name: string;
   category: ResultsVendorCategoryFilter;
   affiliateUrl: string;
-  learnMoreUrl: string;
   logoUrl?: string;
   logoAlt?: string;
   logoMarkFallback: string;
@@ -109,9 +108,8 @@ function VendorCard({
           </div>
         </div>
         <a
-          href={vendor.learnMoreUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+          href={vendor.affiliateUrl}
+          onClick={(event) => onClick(vendor, event)}
           className="whitespace-nowrap text-[13px] text-[#4a5b58] hover:underline"
         >
           Learn more

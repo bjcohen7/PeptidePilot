@@ -194,7 +194,6 @@ export default function Results() {
         name: presentation?.name ?? link.label,
         category,
         affiliateUrl: link.url,
-        learnMoreUrl: presentation?.officialUrl ?? link.url,
         logoUrl: presentation?.logoUrl,
         logoAlt: presentation?.logoAlt,
         logoMarkFallback: presentation?.logoMarkFallback ?? link.label.slice(0, 2).toUpperCase(),
