@@ -1,33 +1,18 @@
-import { useEffect, useState } from "react";
-import { useLocation, Link } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import {
-  ExternalLink,
-  AlertTriangle,
-  RotateCcw,
-  Star,
-  ArrowRight,
-  CheckCircle2,
-} from "lucide-react";
+import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { Link, useLocation } from "wouter";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import PeptidePilotLogo from "@/components/PeptidePilotLogo";
+import ResultsCommercePage, {
+  type ResultsVendorCard,
+  type ResultsVendorCategoryFilter,
+} from "@/components/results/ResultsCommercePage";
+import { getVisitorSessionId } from "@/components/SessionTracker";
 import { useQuiz } from "@/contexts/QuizContext";
 import { useReturningSession } from "@/contexts/UserSessionContext";
-import {
-  AGE_RANGE_OPTIONS,
-  BUDGET_OPTIONS,
-  calculateMatches,
-  libraryBackedPeptideProfileIds,
-  PRIMARY_GOAL_OPTIONS,
-  QUIZ_INDEX,
-  type ReturningMatchSummary,
-} from "../../../shared/scoring";
-import { trpc } from "@/lib/trpc";
-import PeptidePilotLogo from "@/components/PeptidePilotLogo";
-import { GLP1PromoBox } from "@/components/GLP1PromoBox";
-import { getVisitorSessionId } from "@/components/SessionTracker";
 import { identifyLogRocketUser } from "@/lib/logrocket";
 import {
   applyMetaAdvancedMatching,
@@ -35,23 +20,111 @@ import {
   getMetaBrowserIdentifiers,
   trackMetaEvent,
 } from "@/lib/metaPixel";
+import { trpc } from "@/lib/trpc";
+import {
+  AGE_RANGE_OPTIONS,
+  BUDGET_OPTIONS,
+  calculateMatches,
+  libraryBackedPeptideProfileIds,
+  peptideProfiles,
+  PRIMARY_GOAL_OPTIONS,
+  QUIZ_INDEX,
+  toReturningMatchSummary,
+  type ReturningMatchSummary,
+} from "../../../shared/scoring";
 
 const LIBRARY_BACKED_PROFILE_IDS = new Set<string>(libraryBackedPeptideProfileIds);
 
-function toReturningMatchSummary(result: ReturnType<typeof calculateMatches>[number]): ReturningMatchSummary {
-  return {
-    peptideId: result.peptide.id,
-    name: result.peptide.name,
-    description: result.peptide.description,
-    categories: result.peptide.categories,
-    matchPercent: result.matchPercent,
-  };
-}
+type VendorPresentation = {
+  category: ResultsVendorCategoryFilter;
+  logoMarkFallback: string;
+  headlineValue: string;
+  headlineUnit: string;
+  promoText?: string | null;
+  couponCode?: string | null;
+  trustSignals: string[];
+  features: string[];
+};
+
+const VENDOR_PRESENTATION_OVERRIDES: Record<string, Partial<VendorPresentation>> = {
+  "Peptide Sciences": {
+    category: "research-peptides",
+    logoMarkFallback: "PS",
+  },
+  "Core Peptides": {
+    category: "research-peptides",
+    logoMarkFallback: "CP",
+  },
+  "Limitless Life": {
+    category: "telehealth",
+    logoMarkFallback: "LL",
+  },
+  "Defy Medical": {
+    category: "telehealth",
+    logoMarkFallback: "DM",
+  },
+  "Hone Health": {
+    category: "telehealth",
+    logoMarkFallback: "HH",
+  },
+  LifeMD: {
+    category: "telehealth",
+    logoMarkFallback: "LM",
+  },
+  PeterMD: {
+    category: "telehealth",
+    logoMarkFallback: "PM",
+  },
+};
 
 function getLibraryBackedMatches(answers: number[]) {
   return calculateMatches(answers).filter((result) =>
     LIBRARY_BACKED_PROFILE_IDS.has(result.peptide.id),
   );
+}
+
+function buildLogoFallback(name: string) {
+  const tokens = name
+    .split(/[\s-]+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
+
+  if (tokens.length === 0) return "PP";
+  if (tokens.length === 1) return tokens[0]!.slice(0, 2).toUpperCase();
+
+  return `${tokens[0]![0] ?? ""}${tokens[1]![0] ?? ""}`.toUpperCase();
+}
+
+function buildVendorPresentation(name: string): VendorPresentation {
+  const override = VENDOR_PRESENTATION_OVERRIDES[name] ?? {};
+  const isTelehealth =
+    override.category === "telehealth" ||
+    /(?:\bmd\b|medical|health|clinic|care|wellness|life)/i.test(name);
+  const category: ResultsVendorCategoryFilter = isTelehealth
+    ? "telehealth"
+    : "research-peptides";
+
+  return {
+    category,
+    logoMarkFallback: override.logoMarkFallback ?? buildLogoFallback(name),
+    headlineValue:
+      override.headlineValue ?? (category === "telehealth" ? "Pricing varies" : "Pricing varies"),
+    headlineUnit:
+      override.headlineUnit ??
+      (category === "telehealth" ? "telehealth intake" : "research catalog"),
+    promoText: override.promoText ?? null,
+    couponCode: override.couponCode ?? null,
+    trustSignals:
+      override.trustSignals ??
+      (category === "telehealth"
+        ? ["Doctor-guided", "Prescription included", "US-licensed"]
+        : ["Research-use catalog", "Direct checkout", "Independent vendor"]),
+    features:
+      override.features ??
+      (category === "telehealth"
+        ? ["Clinician intake", "Prescription support", "Ongoing follow-up"]
+        : ["Research-use catalog", "Multiple peptide options", "Direct checkout"]),
+  };
 }
 
 function LeadCaptureGate({
@@ -67,22 +140,25 @@ function LeadCaptureGate({
   const [consent, setConsent] = useState(false);
   const [emailError, setEmailError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const topThree = previewMatches.slice(0, 3);
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
     setEmailError("");
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setEmailError("Please enter a valid email address.");
       return;
     }
+
     if (!consent) {
       toast.error("Please check the consent box to continue.");
       return;
     }
+
     onReveal(email, consent);
   };
-
-  const topThree = previewMatches.slice(0, 3);
 
   return (
     <div
@@ -93,14 +169,20 @@ function LeadCaptureGate({
         <div
           className="absolute rounded-full blur-3xl"
           style={{
-            width: 500, height: 500, top: "-10%", left: "-5%",
+            width: 500,
+            height: 500,
+            top: "-10%",
+            left: "-5%",
             background: "radial-gradient(circle, #38bdf81a, transparent 70%)",
           }}
         />
         <div
           className="absolute rounded-full blur-3xl"
           style={{
-            width: 400, height: 400, bottom: "-10%", right: "-5%",
+            width: 400,
+            height: 400,
+            bottom: "-10%",
+            right: "-5%",
             background: "radial-gradient(circle, #a855f71a, transparent 70%)",
           }}
         />
@@ -112,16 +194,22 @@ function LeadCaptureGate({
         </Link>
       </header>
 
-      <main className="relative z-10 flex-1 flex items-center justify-center py-6 sm:py-10 px-4">
+      <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-6 sm:py-10">
         <div className="w-full max-w-lg">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-5 text-xs font-semibold tracking-widest uppercase"
-              style={{ background: "rgba(56,189,248,0.12)", color: "#38bdf8", border: "1px solid rgba(56,189,248,0.25)" }}>
-              <CheckCircle2 className="w-3.5 h-3.5" />
+          <div className="mb-8 text-center">
+            <div
+              className="mb-5 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-widest"
+              style={{
+                background: "rgba(56,189,248,0.12)",
+                color: "#38bdf8",
+                border: "1px solid rgba(56,189,248,0.25)",
+              }}
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" />
               Analysis Complete
             </div>
             <h1
-              className="text-white mb-3 leading-snug"
+              className="mb-3 text-white leading-snug"
               style={{
                 fontSize: "clamp(1.7rem, 4.5vw, 2.4rem)",
                 fontFamily: "'DM Serif Display', Georgia, serif",
@@ -130,56 +218,64 @@ function LeadCaptureGate({
             >
               Your peptide profile is ready.
             </h1>
-            <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "clamp(0.9rem, 2.5vw, 1rem)", lineHeight: 1.7 }}>
+            <p
+              style={{
+                color: "rgba(255,255,255,0.55)",
+                fontSize: "clamp(0.9rem, 2.5vw, 1rem)",
+                lineHeight: 1.7,
+              }}
+            >
               We matched your biology across 8 domains. Enter your email to unlock your full personalized protocol.
             </p>
           </div>
 
-          {topThree.length > 0 && (
-            <div className="mb-7 relative">
+          {topThree.length > 0 ? (
+            <div className="relative mb-7">
               <div className="space-y-2.5">
-                {topThree.map((m, i) => (
+                {topThree.map((match, index) => (
                   <div
-                    key={m.peptideId}
+                    key={match.peptideId}
                     className="flex items-center gap-3 rounded-xl px-4 py-3"
                     style={{
                       background: "rgba(255,255,255,0.05)",
                       border: "1px solid rgba(255,255,255,0.09)",
-                      filter: i === 0 ? "none" : `blur(${i * 2}px)`,
-                      opacity: i === 0 ? 1 : 0.5,
+                      filter: index === 0 ? "none" : `blur(${index * 2}px)`,
+                      opacity: index === 0 ? 1 : 0.5,
                     }}
                   >
-                    {i === 0 && (
-                      <Star className="w-4 h-4 flex-shrink-0" style={{ color: "#38bdf8" }} />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span
-                          className="font-semibold text-white text-sm"
-                          style={i > 0 ? { filter: "blur(5px)", userSelect: "none" } : {}}
+                          className="text-sm font-semibold text-white"
+                          style={index > 0 ? { filter: "blur(5px)", userSelect: "none" } : {}}
                         >
-                          {i === 0 ? m.name : "████████"}
+                          {index === 0 ? match.name : "████████"}
                         </span>
-                        {i === 0 && m.categories.slice(0, 2).map((c) => (
-                          <span
-                            key={c}
-                            className="text-xs px-2 py-0.5 rounded-full"
-                            style={{ background: "rgba(56,189,248,0.15)", color: "#38bdf8" }}
-                          >
-                            {c}
-                          </span>
-                        ))}
+                        {index === 0
+                          ? match.categories.slice(0, 2).map((category) => (
+                              <span
+                                key={category}
+                                className="rounded-full px-2 py-0.5 text-xs"
+                                style={{
+                                  background: "rgba(56,189,248,0.15)",
+                                  color: "#38bdf8",
+                                }}
+                              >
+                                {category}
+                              </span>
+                            ))
+                          : null}
                       </div>
                     </div>
                     <span
-                      className="font-bold text-lg flex-shrink-0"
+                      className="flex-shrink-0 text-lg font-bold"
                       style={{
-                        color: i === 0 ? "#38bdf8" : "rgba(255,255,255,0.3)",
-                        filter: i > 0 ? "blur(4px)" : "none",
+                        color: index === 0 ? "#38bdf8" : "rgba(255,255,255,0.3)",
+                        filter: index > 0 ? "blur(4px)" : "none",
                         fontFamily: "'DM Serif Display', serif",
                       }}
                     >
-                      {m.matchPercent}%
+                      {match.matchPercent}%
                     </span>
                   </div>
                 ))}
@@ -189,7 +285,7 @@ function LeadCaptureGate({
                 style={{ background: "linear-gradient(to bottom, transparent, #0f172a)" }}
               />
             </div>
-          )}
+          ) : null}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -197,11 +293,11 @@ function LeadCaptureGate({
                 type="email"
                 placeholder="Enter your email address"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
+                onChange={(event) => {
+                  setEmail(event.target.value);
                   setEmailError("");
                 }}
-                className="rounded-xl text-base border-0"
+                className="rounded-xl border-0 text-base"
                 style={{
                   height: "52px",
                   background: "rgba(255,255,255,0.08)",
@@ -210,24 +306,33 @@ function LeadCaptureGate({
                 }}
                 required
               />
-              {emailError && (
-                <p className="text-red-400 text-xs mt-1.5">{emailError}</p>
-              )}
+              {emailError ? <p className="mt-1.5 text-xs text-red-400">{emailError}</p> : null}
             </div>
 
             <div
-              className="flex items-start gap-3 p-4 rounded-xl"
-              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+              className="flex items-start gap-3 rounded-xl p-4"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
             >
               <Checkbox
                 id="consent"
                 checked={consent}
-                onCheckedChange={(val) => setConsent(val === true)}
-                className="mt-0.5 flex-shrink-0 w-5 h-5 border-white/30 data-[state=checked]:bg-cyan-500 data-[state=checked]:border-cyan-500"
+                onCheckedChange={(value) => setConsent(value === true)}
+                className="mt-0.5 h-5 w-5 flex-shrink-0 border-white/30 data-[state=checked]:bg-cyan-500 data-[state=checked]:border-cyan-500"
               />
-              <label htmlFor="consent" className="text-xs leading-relaxed cursor-pointer" style={{ color: "rgba(255,255,255,0.55)" }}>
+              <label
+                htmlFor="consent"
+                className="cursor-pointer text-xs leading-relaxed"
+                style={{ color: "rgba(255,255,255,0.55)" }}
+              >
                 I agree to receive my personalized peptide report and understand that PeptidePilot may connect me with vetted telehealth and wellness providers relevant to my profile. I can withdraw consent at any time.{" "}
-                <Link href="/privacy" className="underline underline-offset-2" style={{ color: "rgba(255,255,255,0.75)" }}>
+                <Link
+                  href="/privacy"
+                  className="underline underline-offset-2"
+                  style={{ color: "rgba(255,255,255,0.75)" }}
+                >
                   Privacy Policy
                 </Link>
               </label>
@@ -237,7 +342,7 @@ function LeadCaptureGate({
               type="submit"
               size="lg"
               disabled={isLoading || !consent}
-              className="w-full rounded-xl font-semibold text-base text-white transition-all hover:opacity-90 active:scale-[0.99] border-0"
+              className="w-full rounded-xl border-0 text-base font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99]"
               style={{
                 height: "52px",
                 background: consent
@@ -249,285 +354,21 @@ function LeadCaptureGate({
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                   Preparing your report…
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
                   Unlock My Full Results
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="h-4 w-4" />
                 </span>
               )}
             </Button>
           </form>
 
-          <p className="text-center mt-4 text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+          <p className="mt-4 text-center text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
             Free, always. No credit card required. Unsubscribe anytime.
           </p>
-        </div>
-      </main>
-    </div>
-  );
-}
-
-function PeptideCard({
-  result,
-  rank,
-  leadId,
-}: {
-  result: ReturningMatchSummary;
-  rank: number;
-  leadId: string;
-}) {
-  const { peptideId, name, description, categories, matchPercent } = result;
-  const isTop = rank === 1;
-  const [isExpanded, setIsExpanded] = useState(false);
-  const isGlp1Match = peptideId === "semaglutide";
-
-  const trackClick = trpc.quiz.trackAffiliateClick.useMutation();
-  const activeLinks = trpc.affiliates.activeLinksByPeptide.useQuery(
-    { peptideId },
-    { retry: false, refetchOnWindowFocus: false }
-  );
-  const vendors = (activeLinks.data ?? []).map((link) => ({ name: link.label, url: link.url }));
-
-  const handleVendorClick = (vendor: string) => {
-    if (leadId) {
-      trackClick.mutate({ leadId, peptideId, vendor });
-    }
-  };
-
-  return (
-    <div
-      className={`bg-white rounded-2xl border overflow-hidden transition-all ${
-        isTop
-          ? "border-accent/40 shadow-lg shadow-accent/10 ring-1 ring-accent/20"
-          : "border-border/60 shadow-sm"
-      }`}
-    >
-      {isTop && (
-        <div className="px-4 sm:px-5 py-2.5 flex items-center gap-2"
-          style={{ background: "linear-gradient(135deg, #0d9488, #0891b2)" }}>
-          <Star className="w-4 h-4 text-white fill-white flex-shrink-0" />
-          <span className="text-sm font-semibold text-white">Top Match</span>
-        </div>
-      )}
-
-      <div className="p-4 sm:p-6">
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="text-xs font-semibold text-muted-foreground">#{rank}</span>
-              <h3
-                className={`font-normal text-foreground leading-tight ${isTop ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"}`}
-                style={{ fontFamily: "'DM Serif Display', serif" }}
-              >
-                {name}
-              </h3>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {categories.map((cat) => (
-                <Badge
-                  key={cat}
-                  variant="secondary"
-                  className="text-xs font-medium bg-secondary text-secondary-foreground rounded-full px-2.5 py-0.5"
-                >
-                  {cat}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          <div className="text-right flex-shrink-0">
-            <div
-              className={`font-bold leading-none ${isTop ? "text-3xl sm:text-4xl text-accent" : "text-2xl sm:text-3xl text-muted-foreground"}`}
-              style={{ fontFamily: "'DM Serif Display', serif" }}
-            >
-              {matchPercent}%
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">match</div>
-          </div>
-        </div>
-
-        <div className="h-2 bg-muted rounded-full overflow-hidden mb-4">
-          <div
-            className="match-bar-fill h-full rounded-full transition-all duration-1000 ease-out"
-            style={{ width: `${matchPercent}%` }}
-          />
-        </div>
-
-        <p
-          className={`text-sm text-muted-foreground leading-relaxed ${vendors.length > 0 ? "mb-4 sm:mb-5" : "mb-3"} ${
-            isTop || isExpanded ? "" : "line-clamp-3"
-          }`}
-        >
-          {description}
-        </p>
-
-        {!isTop && (
-          <button
-            type="button"
-            onClick={() => setIsExpanded((current) => !current)}
-            className="mb-4 text-sm font-semibold text-accent transition-opacity hover:opacity-80"
-          >
-            {isExpanded ? "Show less" : "Read more"}
-          </button>
-        )}
-
-        {isGlp1Match && (
-          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
-            GLP-1 medications require clinician review, prescription eligibility, and individualized medical guidance.
-          </div>
-        )}
-
-        {vendors.length > 0 ? (
-          <div className="flex flex-col sm:flex-row flex-wrap gap-2">
-            {vendors.map((vendor) => (
-              <a
-                key={vendor.name}
-                href={vendor.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => handleVendorClick(vendor.name)}
-                className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2.5 sm:py-2 rounded-lg border border-accent/30 text-accent hover:bg-accent hover:text-white transition-all sm:text-xs sm:px-3"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                {isGlp1Match ? `Check Eligibility with ${vendor.name}` : vendor.name}
-              </a>
-            ))}
-          </div>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function ResultsDisplay({
-  matches,
-  leadId,
-  sessionId,
-  onRetake,
-  isReturningUser,
-}: {
-  matches: ReturningMatchSummary[];
-  leadId: string;
-  sessionId: string;
-  onRetake: () => void;
-  isReturningUser: boolean;
-}) {
-  const topMatch = matches[0];
-  const secondaryMatches = matches.slice(1, 5);
-  const topCategories = topMatch?.categories.slice(0, 3) ?? [];
-
-  return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border/60 bg-white/95 backdrop-blur-md sticky top-0 z-40">
-        <div className="container">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/">
-              <PeptidePilotLogo height={28} variant="dark" />
-            </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onRetake}
-              className="text-muted-foreground gap-1.5 text-xs h-8 px-2 sm:px-3"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Retake Quiz</span>
-              <span className="sm:hidden">Retake</span>
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="py-8 sm:py-12">
-        <div className="container max-w-3xl">
-          <div className="text-center mb-8 sm:mb-10 animate-fade-in-up">
-            {isReturningUser ? (
-              <div className="mb-3 text-sm font-medium text-accent">
-                Welcome back. We saved your peptide profile.
-              </div>
-            ) : null}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4 text-xs font-semibold tracking-widest uppercase bg-accent/10 text-accent border border-accent/20">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              Analysis Complete
-            </div>
-            <h1
-              className="text-2xl sm:text-3xl md:text-4xl font-normal text-foreground mb-3 leading-snug"
-              style={{ fontFamily: "'DM Serif Display', serif" }}
-            >
-              Your Personalized Peptide Profile
-            </h1>
-            <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto">
-              Based on your responses, here are the peptides most aligned with your biology and goals.
-            </p>
-          </div>
-
-          {topMatch && (
-            <div className="mb-5 sm:mb-6 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-              <PeptideCard result={topMatch} rank={1} leadId={leadId} />
-              <div className="mt-4 rounded-2xl border border-border/70 bg-white px-4 py-4 sm:px-5">
-                <div className="text-xs font-semibold uppercase tracking-[0.12em] text-accent mb-2">
-                  Why this rose to the top
-                </div>
-                <p className="text-sm leading-7 text-muted-foreground">
-                  Your responses lined up most strongly with{" "}
-                  <span className="font-semibold text-foreground">{topMatch.name}</span>
-                  {topCategories.length
-                    ? ` across ${topCategories.join(", ").toLowerCase()}`
-                    : ""}.
-                  {" "}That doesn&apos;t mean it&apos;s the only relevant option, but it does mean it had the strongest overall fit against your goals, symptoms, and lifestyle inputs.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {secondaryMatches.length > 0 && (
-            <div className="mb-7 sm:mb-8">
-              <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4 flex flex-wrap items-center gap-2">
-                Additional Matches
-                <span className="text-xs font-normal text-muted-foreground">(ranked by compatibility)</span>
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                {secondaryMatches.map((result, idx) => (
-                  <div
-                    key={result.peptideId}
-                    className="animate-fade-in-up"
-                    style={{ animationDelay: `${0.15 + idx * 0.07}s` }}
-                  >
-                    <PeptideCard result={result} rank={idx + 2} leadId={leadId} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 sm:p-5 mb-7 sm:mb-8 flex gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <h3 className="font-semibold text-amber-900 text-sm mb-1">Medical Disclaimer</h3>
-              <p className="text-xs text-amber-800 leading-relaxed">
-                The information above is for educational purposes only and does not constitute medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider before beginning any peptide protocol. Peptide compounds vary in regulatory status by jurisdiction.{" "}
-                <Link href="/disclaimer" className="underline underline-offset-2">
-                  Read our full disclaimer.
-                </Link>
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center pb-6">
-            <Button
-              variant="outline"
-              onClick={onRetake}
-              className="gap-2 text-muted-foreground border-border/60 w-full sm:w-auto"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Retake the Quiz
-            </Button>
-          </div>
-
-          <GLP1PromoBox leadId={leadId} sessionId={sessionId} />
         </div>
       </main>
     </div>
@@ -537,50 +378,62 @@ function ResultsDisplay({
 export default function Results() {
   const [, navigate] = useLocation();
   const { state, reset } = useQuiz();
-  const {
-    session,
-    isLoading: isReturningSessionLoading,
-    sessionStatus,
-    seedReturningSession,
-  } =
+  const { session, isLoading: isReturningSessionLoading, seedReturningSession } =
     useReturningSession();
   const [revealed, setRevealed] = useState(false);
   const [leadId, setLeadId] = useState("");
   const [matches, setMatches] = useState<ReturningMatchSummary[]>([]);
   const [submittedEmail, setSubmittedEmail] = useState("");
-  const sessionId = getVisitorSessionId();
+  const [selectedPeptideId, setSelectedPeptideId] = useState("");
   const [pendingMetaEventIds, setPendingMetaEventIds] = useState<{
     lead: string;
     completeRegistration: string;
     viewContent: string;
   } | null>(null);
 
+  const sessionId = getVisitorSessionId();
   const submitQuiz = trpc.quiz.submitQuiz.useMutation({
     onSuccess: (data) => {
       setLeadId(data.leadId);
       setMatches(data.returningResults);
       setRevealed(true);
+
       if (submittedEmail) {
         applyMetaAdvancedMatching(submittedEmail);
       }
+
       const isGlp1Lead = data.returningResults[0]?.peptideId === "semaglutide";
-      trackMetaEvent("CompleteRegistration", {
-        content_name: "Peptide Quiz",
-        status: "completed",
-      }, pendingMetaEventIds?.completeRegistration);
-      trackMetaEvent("Lead", {
-        content_name: data.returningResults[0]?.name ?? "Peptide Results",
-        content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
-        value: isGlp1Lead ? 50 : 10,
-        currency: "USD",
-      }, pendingMetaEventIds?.lead);
-      trackMetaEvent("ViewContent", {
-        content_name: data.returningResults[0]?.name ?? "Peptide Results",
-        content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
-        content_ids: data.returningResults[0]?.peptideId
-          ? [data.returningResults[0].peptideId]
-          : undefined,
-      }, pendingMetaEventIds?.viewContent);
+
+      trackMetaEvent(
+        "CompleteRegistration",
+        {
+          content_name: "Peptide Quiz",
+          status: "completed",
+        },
+        pendingMetaEventIds?.completeRegistration,
+      );
+      trackMetaEvent(
+        "Lead",
+        {
+          content_name: data.returningResults[0]?.name ?? "Peptide Results",
+          content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+          value: isGlp1Lead ? 50 : 10,
+          currency: "USD",
+        },
+        pendingMetaEventIds?.lead,
+      );
+      trackMetaEvent(
+        "ViewContent",
+        {
+          content_name: data.returningResults[0]?.name ?? "Peptide Results",
+          content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+          content_ids: data.returningResults[0]?.peptideId
+            ? [data.returningResults[0].peptideId]
+            : undefined,
+        },
+        pendingMetaEventIds?.viewContent,
+      );
+
       if (submittedEmail) {
         void identifyLogRocketUser(submittedEmail, {
           email: submittedEmail,
@@ -592,43 +445,130 @@ export default function Results() {
             PRIMARY_GOAL_OPTIONS[state.answers[QUIZ_INDEX.PRIMARY_GOAL] ?? -1] ?? null,
         });
       }
+
       if (data.returningToken) {
-        try {
-          seedReturningSession({
-            token: data.returningToken,
-            leadId: data.leadId,
-            createdAt: new Date(),
-            topMatches: data.returningResults,
-            justCompletedQuiz: true,
-          });
-        } catch (error) {
-          console.error("[ReturningUser] Failed to seed session:", error);
-        }
+        seedReturningSession({
+          token: data.returningToken,
+          leadId: data.leadId,
+          createdAt: new Date(),
+          topMatches: data.returningResults,
+          justCompletedQuiz: true,
+        });
       }
     },
-    onError: (err) => {
+    onError: (error) => {
       toast.error("Something went wrong. Please try again.");
-      console.error(err);
+      console.error(error);
     },
   });
 
-  // Pre-compute matches for the preview
+  const trackAffiliateClick = trpc.quiz.trackAffiliateClick.useMutation();
+
   const hasFreshQuizState = state.isComplete || state.answers.some((answer) => answer !== null);
-  const previewMatches = getLibraryBackedMatches(state.answers.map((a) => a ?? -1)).map(
-    toReturningMatchSummary,
+  const previewMatches = useMemo(
+    () =>
+      getLibraryBackedMatches(state.answers.map((answer) => answer ?? -1)).map(
+        toReturningMatchSummary,
+      ),
+    [state.answers],
   );
-  const restoredMatches = !hasFreshQuizState ? session?.topMatches ?? [] : [];
-  const activeLeadId = revealed ? leadId : session?.leadId ?? "";
+  const restoredMatches = session?.topMatches ?? [];
   const activeMatches = revealed ? matches : restoredMatches;
-  const isReturningUser = !revealed && Boolean(session && !session.justCompletedQuiz);
+  const activeLeadId = revealed ? leadId : session?.leadId ?? "";
+
+  const availablePeptideIds = trpc.affiliates.availablePeptideIds.useQuery(
+    { peptideIds: activeMatches.map((match) => match.peptideId) },
+    {
+      enabled: activeMatches.length > 0,
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  );
 
   useEffect(() => {
-    if (hasFreshQuizState) return;
-    if (sessionStatus === "pending") return;
-    if (sessionStatus === "restored") return;
+    if (!hasFreshQuizState && !session && !isReturningSessionLoading) {
+      navigate("/quiz");
+    }
+  }, [hasFreshQuizState, isReturningSessionLoading, navigate, session]);
 
-    navigate("/quiz");
-  }, [hasFreshQuizState, navigate, sessionStatus]);
+  const displayMatches = useMemo(() => {
+    if (!activeMatches.length) return [];
+    if (!availablePeptideIds.data) return activeMatches;
+
+    const coveredIds = new Set(availablePeptideIds.data);
+    const coveredMatches = activeMatches.filter((match) => coveredIds.has(match.peptideId));
+
+    return coveredMatches.length > 0 ? coveredMatches : activeMatches;
+  }, [activeMatches, availablePeptideIds.data]);
+
+  useEffect(() => {
+    if (!displayMatches.length) return;
+
+    setSelectedPeptideId((current) => {
+      if (current && displayMatches.some((match) => match.peptideId === current)) {
+        return current;
+      }
+      return displayMatches[0]!.peptideId;
+    });
+  }, [displayMatches]);
+
+  const selectedMatch =
+    displayMatches.find((match) => match.peptideId === selectedPeptideId) ?? displayMatches[0] ?? null;
+
+  const activeLinks = trpc.affiliates.activeLinksByPeptide.useQuery(
+    { peptideId: selectedMatch?.peptideId ?? "" },
+    {
+      enabled: Boolean(selectedMatch?.peptideId),
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  );
+
+  const vendorCards = useMemo<ResultsVendorCard[]>(() => {
+    if (!selectedMatch) return [];
+
+    const affiliateVendors = (activeLinks.data ?? []).map((link) => ({
+      label: link.label,
+      url: link.url,
+    }));
+
+    const profile = peptideProfiles.find((candidate) => candidate.id === selectedMatch.peptideId);
+    const fallbackVendors =
+      affiliateVendors.length === 0 ? (profile?.vendors ?? []).map((vendor) => ({
+        label: vendor.name,
+        url: vendor.url,
+      })) : [];
+
+    const sourceVendors = [...affiliateVendors, ...fallbackVendors];
+    const deduped = new Map<string, { label: string; url: string }>();
+    sourceVendors.forEach((vendor) => {
+      const key = `${vendor.label}::${vendor.url}`;
+      if (!deduped.has(key)) {
+        deduped.set(key, vendor);
+      }
+    });
+
+    return Array.from(deduped.values())
+      .slice(0, 4)
+      .map((vendor, index) => {
+        const presentation = buildVendorPresentation(vendor.label);
+
+        return {
+          id: `${selectedMatch.peptideId}-${index}-${vendor.label}`,
+          name: vendor.label,
+          category: presentation.category,
+          affiliateUrl: vendor.url,
+          logoMarkFallback: presentation.logoMarkFallback,
+          badge: index === 0 ? "Recommended" : null,
+          headlineValue: presentation.headlineValue,
+          headlineUnit: presentation.headlineUnit,
+          promoText: presentation.promoText ?? null,
+          couponCode: presentation.couponCode ?? null,
+          features: presentation.features,
+          trustSignals: presentation.trustSignals,
+        };
+      });
+  }, [activeLinks.data, selectedMatch]);
 
   const handleReveal = (email: string, consent: boolean) => {
     const eventIds = {
@@ -637,13 +577,15 @@ export default function Results() {
       viewContent: createMetaEventId("view_content"),
     };
     const browserIds = getMetaBrowserIdentifiers();
+
     setSubmittedEmail(email);
     setPendingMetaEventIds(eventIds);
+
     submitQuiz.mutate({
       email,
       consentGiven: consent,
-      answers: state.answers.map((a) => a ?? -1),
-      sessionId: getVisitorSessionId(),
+      answers: state.answers.map((answer) => answer ?? -1),
+      sessionId,
       meta: {
         sourceUrl: typeof window !== "undefined" ? window.location.href : undefined,
         leadEventId: eventIds.lead,
@@ -659,22 +601,59 @@ export default function Results() {
     navigate("/quiz");
   };
 
-  if (!hasFreshQuizState && sessionStatus === "pending" && isReturningSessionLoading) {
+  const handleVendorClick = (vendor: ResultsVendorCard, event?: MouseEvent<HTMLAnchorElement>) => {
+    if (!selectedMatch) return;
+
+    const allowDefaultBrowserBehavior =
+      !event ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey;
+
+    if (!allowDefaultBrowserBehavior) {
+      event.preventDefault();
+    }
+
+    if (activeLeadId) {
+      trackAffiliateClick.mutate({
+        leadId: activeLeadId,
+        peptideId: selectedMatch.peptideId,
+        vendor: vendor.name,
+      });
+    }
+
+    trackMetaEvent("Lead", {
+      content_name: vendor.name,
+      content_category: selectedMatch.name,
+    });
+
+    if (!allowDefaultBrowserBehavior && typeof window !== "undefined") {
+      window.setTimeout(() => {
+        window.location.assign(vendor.affiliateUrl);
+      }, 120);
+    }
+  };
+
+  if (!hasFreshQuizState && isReturningSessionLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="text-sm text-muted-foreground">Loading your saved results…</div>
+      <div className="flex min-h-screen items-center justify-center bg-[#f6f8f7] px-6 text-center text-[#4a5b58]">
+        Loading your saved results…
       </div>
     );
   }
 
-  if (activeMatches.length > 0) {
+  if (selectedMatch && displayMatches.length > 0) {
     return (
-      <ResultsDisplay
-        matches={activeMatches}
-        leadId={activeLeadId}
-        sessionId={sessionId}
+      <ResultsCommercePage
+        matches={displayMatches}
+        selectedMatch={selectedMatch}
+        vendors={vendorCards}
         onRetake={handleRetake}
-        isReturningUser={isReturningUser}
+        onSelectMatch={setSelectedPeptideId}
+        onVendorClick={handleVendorClick}
+        vendorLoading={activeLinks.isLoading}
       />
     );
   }
