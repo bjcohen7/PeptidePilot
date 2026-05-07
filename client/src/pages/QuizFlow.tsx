@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useQuiz } from "@/contexts/QuizContext";
 import { useSwipe } from "@/hooks/useSwipe";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
+import { preloadProcessing, preloadResults } from "@/lib/preloadQuiz";
 import {
   QUIZ_QUESTIONS,
 } from "../../../shared/scoring";
@@ -68,7 +69,8 @@ export default function QuizFlow() {
   }, [currentIndex]);
 
   useEffect(() => {
-    void import("./Processing");
+    void preloadProcessing();
+    void preloadResults();
   }, []);
 
   useEffect(() => {

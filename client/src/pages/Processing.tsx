@@ -4,6 +4,7 @@ import { useQuiz } from "@/contexts/QuizContext";
 import { calculateMatches } from "../../../shared/scoring";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
+import { preloadResults } from "@/lib/preloadQuiz";
 
 const SLIDE_DURATION = 4200;
 
@@ -185,6 +186,7 @@ export default function Processing() {
 
   // Bootstrap
   useEffect(() => {
+    void preloadResults();
     setTestimonialVisible(false);
     testimonialRef.current = setTimeout(() => setTestimonialVisible(true), 500);
     autoRef.current = setTimeout(() => goToSlide(1), SLIDE_DURATION);

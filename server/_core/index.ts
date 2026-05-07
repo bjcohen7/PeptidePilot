@@ -1,4 +1,5 @@
 import "dotenv/config";
+import compression from "compression";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -102,6 +103,11 @@ async function startServer() {
 
   const app = express();
   const server = createServer(app);
+  app.use(
+    compression({
+      threshold: 1024,
+    })
+  );
   app.use((req, res, next) => {
     if (process.env.NODE_ENV !== "development" && req.hostname === "peptidepilot.me") {
       return res.redirect(301, `https://www.peptidepilot.me${req.originalUrl}`);

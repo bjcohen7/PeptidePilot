@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock, ShieldCheck, Zap } from "lucide-react";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { QUIZ_QUESTIONS, peptideProfiles } from "../../../shared/scoring";
-import { preloadQuizFlow } from "@/lib/preloadQuiz";
+import { preloadQuizCompletionExperience, preloadQuizFlow } from "@/lib/preloadQuiz";
 
 const STEPS = [
   { number: "01", label: `Answer ${QUIZ_QUESTIONS.length} targeted questions`, sub: "Built around weight loss, appetite, recovery, and fit" },
@@ -15,6 +15,7 @@ const STEPS = [
 export default function QuizEntry() {
   useEffect(() => {
     void preloadQuizFlow();
+    void preloadQuizCompletionExperience();
   }, []);
 
   return (
