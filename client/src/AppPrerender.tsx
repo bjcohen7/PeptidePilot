@@ -6,17 +6,11 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
-import BlogArticle from "./pages/BlogArticle";
+import { BlogArticleView } from "./pages/BlogArticle";
 import { PrivacyPolicy, TermsOfService, MedicalDisclaimer } from "./pages/Legal";
-import { PseoHub, PseoSectionPage, FAQPage } from "./pages/PseoPages";
-import PeptideProfile from "./pages/pseo/PeptideProfile";
-import GoalPage from "./pages/pseo/GoalPage";
-import ComparisonPage from "./pages/pseo/ComparisonPage";
-import StackPage from "./pages/pseo/StackPage";
-import GuidePage from "./pages/pseo/GuidePage";
-import ForConditionPage from "./pages/pseo/ForConditionPage";
-import ReviewPage from "./pages/pseo/ReviewPage";
+import { PseoHub, PseoSectionPage, PseoDetailPage, FAQPage } from "./pages/PseoPages";
 import QuizEntry from "./pages/QuizEntry";
+import { getBlogPost } from "../../shared/blog-content";
 
 function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -51,11 +45,19 @@ export default function AppPrerender({ path }: { path: string }) {
         </Route>
 
         <Route path="/blog/:slug">
-          {(params) => (
-            <PublicLayout>
-              <BlogArticle params={params} />
-            </PublicLayout>
-          )}
+          {(params) => {
+            const article = getBlogPost(params.slug);
+
+            return (
+              <PublicLayout>
+                {article ? (
+                  <BlogArticleView article={article} />
+                ) : (
+                  <NotFound />
+                )}
+              </PublicLayout>
+            );
+          }}
         </Route>
 
         <Route path="/learn">
@@ -73,7 +75,7 @@ export default function AppPrerender({ path }: { path: string }) {
         <Route path="/peptides/:slug">
           {(params) => (
             <PublicLayout>
-              <PeptideProfile params={params} />
+              <PseoDetailPage sectionKey="peptides" slug={params.slug} />
             </PublicLayout>
           )}
         </Route>
@@ -87,7 +89,7 @@ export default function AppPrerender({ path }: { path: string }) {
         <Route path="/goals/:slug">
           {(params) => (
             <PublicLayout>
-              <GoalPage params={params} />
+              <PseoDetailPage sectionKey="goals" slug={params.slug} />
             </PublicLayout>
           )}
         </Route>
@@ -101,7 +103,7 @@ export default function AppPrerender({ path }: { path: string }) {
         <Route path="/compare/:slug">
           {(params) => (
             <PublicLayout>
-              <ComparisonPage params={params} />
+              <PseoDetailPage sectionKey="compare" slug={params.slug} />
             </PublicLayout>
           )}
         </Route>
@@ -115,7 +117,7 @@ export default function AppPrerender({ path }: { path: string }) {
         <Route path="/stacks/:slug">
           {(params) => (
             <PublicLayout>
-              <StackPage params={params} />
+              <PseoDetailPage sectionKey="stacks" slug={params.slug} />
             </PublicLayout>
           )}
         </Route>
@@ -127,9 +129,11 @@ export default function AppPrerender({ path }: { path: string }) {
         </Route>
 
         <Route path="/guides/:slug">
-          <PublicLayout>
-            <GuidePage />
-          </PublicLayout>
+          {(params) => (
+            <PublicLayout>
+              <PseoDetailPage sectionKey="guides" slug={params.slug} />
+            </PublicLayout>
+          )}
         </Route>
 
         <Route path="/for">
@@ -139,9 +143,11 @@ export default function AppPrerender({ path }: { path: string }) {
         </Route>
 
         <Route path="/for/:slug">
-          <PublicLayout>
-            <ForConditionPage />
-          </PublicLayout>
+          {(params) => (
+            <PublicLayout>
+              <PseoDetailPage sectionKey="for" slug={params.slug} />
+            </PublicLayout>
+          )}
         </Route>
 
         <Route path="/reviews">
@@ -151,9 +157,11 @@ export default function AppPrerender({ path }: { path: string }) {
         </Route>
 
         <Route path="/reviews/:slug">
-          <PublicLayout>
-            <ReviewPage />
-          </PublicLayout>
+          {(params) => (
+            <PublicLayout>
+              <PseoDetailPage sectionKey="reviews" slug={params.slug} />
+            </PublicLayout>
+          )}
         </Route>
 
         <Route path="/privacy">

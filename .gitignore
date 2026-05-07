@@ -4,6 +4,7 @@
 
 # Build outputs
 dist/
+client/public/data/
 build/
 *.dist
 

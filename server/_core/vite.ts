@@ -91,6 +91,11 @@ export function serveStatic(app: Express) {
           return;
         }
 
+        if (normalizedPath.includes("/data/") && normalizedPath.endsWith(".json")) {
+          res.setHeader("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
+          return;
+        }
+
         if (/\.(?:png|jpe?g|gif|svg|webp|ico|woff2?)$/i.test(normalizedPath)) {
           res.setHeader("Cache-Control", "public, max-age=604800, stale-while-revalidate=86400");
         }

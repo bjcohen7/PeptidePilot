@@ -2,7 +2,8 @@ import { Link } from "wouter";
 import { ArrowLeft, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
-import { getBlogPost } from "../../../shared/blog-content";
+import { useStaticBlogPost } from "@/lib/staticContent";
+import { getBlogPostSummary, type BlogPost } from "../../../shared/blog";
 
 interface BlogArticleProps {
   params: { slug: string };
@@ -10,24 +11,24 @@ interface BlogArticleProps {
 
 const SITE_URL = "https://www.peptidepilot.me";
 
-export default function BlogArticle({ params }: BlogArticleProps) {
-  const article = getBlogPost(params.slug);
-
-  if (!article) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
-            Article Not Found
-          </h1>
-          <p className="text-muted-foreground mb-6">This article doesn't exist or has been moved.</p>
-          <Link href="/blog">
-            <Button variant="outline">Back to Learn</Button>
-          </Link>
-        </div>
+function ArticleNotFound() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          Article Not Found
+        </h1>
+        <p className="text-muted-foreground mb-6">This article doesn't exist or has been moved.</p>
+        <Link href="/blog">
+          <Button variant="outline">Back to Learn</Button>
+        </Link>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
+export function BlogArticleView({ article }: { article: BlogPost }) {
+  const summary = article;
 
   return (
     <div className="min-h-screen bg-background">
@@ -70,17 +71,17 @@ export default function BlogArticle({ params }: BlogArticleProps) {
             </button>
           </Link>
           <div className="section-badge mb-4" style={{ background: "oklch(1 0 0 / 0.1)", color: "white" }}>
-            {article.category}
+            {summary.category}
           </div>
           <h1 className="text-3xl md:text-4xl font-normal mb-4 leading-snug" style={{ fontFamily: "'DM Serif Display', serif" }}>
-            {article.title}
+            {summary.title}
           </h1>
           <div className="flex items-center gap-4 text-white/60 text-sm">
             <div className="flex items-center gap-1.5">
               <Clock className="w-4 h-4" />
-              {article.readTime}
+              {summary.readTime}
             </div>
-            <span>{article.date}</span>
+            <span>{summary.date}</span>
           </div>
         </div>
       </section>
@@ -126,6 +127,89 @@ export default function BlogArticle({ params }: BlogArticleProps) {
                 Take the Free Quiz
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export default function BlogArticle({ params }: BlogArticleProps) {
+  const summary = getBlogPostSummary(params.slug);
+  const { article, isLoading } = useStaticBlogPost(params.slug);
+  const resolvedArticle = article ?? null;
+
+  if (!summary && !resolvedArticle && !isLoading) {
+    return <ArticleNotFound />;
+  }
+
+  if (resolvedArticle) {
+    return <BlogArticleView article={resolvedArticle} />;
+  }
+
+  if (!summary) {
+    return <ArticleNotFound />;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Seo
+        title={summary.title}
+        description={summary.excerpt}
+        path={`/blog/${summary.slug}`}
+        type="article"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            headline: summary.title,
+            description: summary.excerpt,
+            datePublished: summary.publishedAt,
+            author: {
+              "@type": "Organization",
+              name: "PeptidePilot",
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "PeptidePilot",
+            },
+            mainEntityOfPage: `${SITE_URL}/blog/${summary.slug}`,
+          },
+          buildBreadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Learn", path: "/blog" },
+            { name: summary.title, path: `/blog/${summary.slug}` },
+          ]),
+        ]}
+      />
+      <section className="bg-brand-gradient text-white py-14">
+        <div className="container max-w-3xl">
+          <Link href="/blog">
+            <button className="flex items-center gap-1.5 text-white/60 hover:text-white text-sm mb-6 transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Learn
+            </button>
+          </Link>
+          <div className="section-badge mb-4" style={{ background: "oklch(1 0 0 / 0.1)", color: "white" }}>
+            {summary.category}
+          </div>
+          <h1 className="text-3xl md:text-4xl font-normal mb-4 leading-snug" style={{ fontFamily: "'DM Serif Display', serif" }}>
+            {summary.title}
+          </h1>
+          <div className="flex items-center gap-4 text-white/60 text-sm">
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-4 h-4" />
+              {summary.readTime}
+            </div>
+            <span>{summary.date}</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-14">
+        <div className="container max-w-3xl">
+          <div className="rounded-2xl border border-border/60 bg-secondary/30 p-6 text-sm text-muted-foreground">
+            Loading article...
           </div>
         </div>
       </section>

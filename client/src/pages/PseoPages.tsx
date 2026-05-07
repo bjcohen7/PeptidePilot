@@ -2,10 +2,11 @@ import { Link } from "wouter";
 import { ArrowRight, CheckCircle2, FlaskConical, ShieldAlert, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useStaticPseoContent } from "@/lib/staticContent";
 import { cn } from "@/lib/utils";
 import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
 import { getPseoEntry, getPseoSection, pseoSections, type PseoSectionKey } from "@/data/pseo";
-import { getPseoContent } from "../../../shared/pseoContent";
+import type { PseoContentRecord } from "@shared/pseoContent";
 import { peptideProfiles } from "../../../shared/scoring";
 
 const SECTION_COPY: Record<
@@ -302,7 +303,7 @@ function inferEstimatedCost(sectionKey: PseoSectionKey, peptides: ReturnType<typ
 function buildGoalRankings(
   sectionKey: PseoSectionKey,
   peptides: ReturnType<typeof relatedPeptides>,
-  content: ReturnType<typeof getPseoContent>,
+  content: PseoContentRecord | undefined,
 ) {
   return peptides.slice(0, 3).map((profile, index) => ({
     rank: index + 1,
@@ -346,7 +347,7 @@ function compareCriteria(sectionKey: PseoSectionKey) {
   return defaults[sectionKey];
 }
 
-function cautionCopy(sectionKey: PseoSectionKey, content: ReturnType<typeof getPseoContent>) {
+function cautionCopy(sectionKey: PseoSectionKey, content: PseoContentRecord | undefined) {
   if (sectionKey === "stacks") {
     return "Multi-peptide stacks require careful consideration of interactions and individual health factors. Physician supervision is recommended.";
   }
@@ -683,7 +684,7 @@ export function PseoDetailPage({
 
   const { section, entry } = result;
   const copy = SECTION_COPY[sectionKey];
-  const content = getPseoContent(entry.path);
+  const { content } = useStaticPseoContent(entry.path);
   const peptides = relatedPeptides(entry.title, entry.slug);
   const primaryProfile = peptides[0];
   const siblingLinks = section.entries.filter((item) => item.slug !== slug).slice(0, 6);

@@ -40,16 +40,12 @@ const PseoHub = lazy(() =>
 const PseoSectionPage = lazy(() =>
   import("./pages/PseoPages").then((module) => ({ default: module.PseoSectionPage })),
 );
+const PseoDetailPage = lazy(() =>
+  import("./pages/PseoPages").then((module) => ({ default: module.PseoDetailPage })),
+);
 const FAQPage = lazy(() =>
   import("./pages/PseoPages").then((module) => ({ default: module.FAQPage })),
 );
-const PeptideProfile = lazy(() => import("./pages/pseo/PeptideProfile"));
-const GoalPage = lazy(() => import("./pages/pseo/GoalPage"));
-const ComparisonPage = lazy(() => import("./pages/pseo/ComparisonPage"));
-const StackPage = lazy(() => import("./pages/pseo/StackPage"));
-const GuidePage = lazy(() => import("./pages/pseo/GuidePage"));
-const ForConditionPage = lazy(() => import("./pages/pseo/ForConditionPage"));
-const ReviewPage = lazy(() => import("./pages/pseo/ReviewPage"));
 const AffiliatePartnersAdmin = lazy(() => import("./pages/admin/AffiliatePartners"));
 const InsightsOverview = lazy(() => import("./pages/admin/InsightsOverview"));
 const SessionDetail = lazy(() => import("./pages/admin/SessionDetail"));
@@ -253,7 +249,7 @@ function Router() {
           {(params) => (
             <PublicLayout>
               <Suspense fallback={<RouteFallback />}>
-                <PeptideProfile params={params} />
+                <PseoDetailPage sectionKey="peptides" slug={params.slug} />
               </Suspense>
             </PublicLayout>
           )}
@@ -271,7 +267,7 @@ function Router() {
           {(params) => (
             <PublicLayout>
               <Suspense fallback={<RouteFallback />}>
-                <GoalPage params={params} />
+                <PseoDetailPage sectionKey="goals" slug={params.slug} />
               </Suspense>
             </PublicLayout>
           )}
@@ -289,7 +285,7 @@ function Router() {
           {(params) => (
             <PublicLayout>
               <Suspense fallback={<RouteFallback />}>
-                <ComparisonPage params={params} />
+                <PseoDetailPage sectionKey="compare" slug={params.slug} />
               </Suspense>
             </PublicLayout>
           )}
@@ -307,7 +303,7 @@ function Router() {
           {(params) => (
             <PublicLayout>
               <Suspense fallback={<RouteFallback />}>
-                <StackPage params={params} />
+                <PseoDetailPage sectionKey="stacks" slug={params.slug} />
               </Suspense>
             </PublicLayout>
           )}
@@ -322,11 +318,13 @@ function Router() {
         </Route>
 
         <Route path="/guides/:slug">
-          <PublicLayout>
-            <Suspense fallback={<RouteFallback />}>
-              <GuidePage />
-            </Suspense>
-          </PublicLayout>
+          {(params) => (
+            <PublicLayout>
+              <Suspense fallback={<RouteFallback />}>
+                <PseoDetailPage sectionKey="guides" slug={params.slug} />
+              </Suspense>
+            </PublicLayout>
+          )}
         </Route>
 
         <Route path="/for">
@@ -338,11 +336,13 @@ function Router() {
         </Route>
 
         <Route path="/for/:slug">
-          <PublicLayout>
-            <Suspense fallback={<RouteFallback />}>
-              <ForConditionPage />
-            </Suspense>
-          </PublicLayout>
+          {(params) => (
+            <PublicLayout>
+              <Suspense fallback={<RouteFallback />}>
+                <PseoDetailPage sectionKey="for" slug={params.slug} />
+              </Suspense>
+            </PublicLayout>
+          )}
         </Route>
 
         <Route path="/reviews">
@@ -354,11 +354,13 @@ function Router() {
         </Route>
 
         <Route path="/reviews/:slug">
-          <PublicLayout>
-            <Suspense fallback={<RouteFallback />}>
-              <ReviewPage />
-            </Suspense>
-          </PublicLayout>
+          {(params) => (
+            <PublicLayout>
+              <Suspense fallback={<RouteFallback />}>
+                <PseoDetailPage sectionKey="reviews" slug={params.slug} />
+              </Suspense>
+            </PublicLayout>
+          )}
         </Route>
 
         <Route path="/privacy">
