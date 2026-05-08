@@ -1,4 +1,4 @@
-import { useMemo, useState, type MouseEvent } from "react";
+import { useState, type MouseEvent } from "react";
 import { Link } from "wouter";
 import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
@@ -37,11 +37,6 @@ function prettyLabel(value: string) {
   return value
     .replace(/[_-]+/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-function firstSentence(text: string) {
-  const sentence = text.match(/.*?[.!?](?:\s|$)/)?.[0]?.trim();
-  return sentence || text;
 }
 
 function buildMatchReason(match: ReturningMatchSummary) {
@@ -140,17 +135,7 @@ export default function ResultsCommercePage({
   onVendorClick,
   vendorLoading = false,
 }: ResultsCommercePageProps) {
-  const [showFullDescription, setShowFullDescription] = useState(false);
   const [showSecondaryMatches, setShowSecondaryMatches] = useState(false);
-
-  const descriptionLead = useMemo(
-    () => firstSentence(selectedMatch.description),
-    [selectedMatch.description],
-  );
-  const descriptionRest = useMemo(() => {
-    if (descriptionLead.length >= selectedMatch.description.length) return "";
-    return selectedMatch.description.slice(descriptionLead.length).trim();
-  }, [descriptionLead, selectedMatch.description]);
 
   const primaryVendor = vendors[0] ?? null;
   const alternateVendors = vendors.slice(1, 4);
@@ -212,30 +197,6 @@ export default function ResultsCommercePage({
           </div>
         </section>
 
-        <section className="mx-auto mt-8 max-w-[760px] rounded-[22px] border border-[#dce7e2] bg-white p-6 shadow-[0_2px_4px_rgba(14,31,28,0.04),0_12px_30px_rgba(14,31,28,0.05)] md:p-8">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#4a5b58]">
-            What it is
-          </div>
-          <p className="mt-3 text-[15px] leading-7 text-[#2a3935]">
-            {descriptionLead}
-          </p>
-          {showFullDescription && descriptionRest ? (
-            <p className="mt-3 text-[15px] leading-7 text-[#2a3935]">
-              {descriptionRest}
-            </p>
-          ) : null}
-          {descriptionRest ? (
-            <button
-              type="button"
-              onClick={() => setShowFullDescription((current) => !current)}
-              className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#0a8f73]"
-            >
-              {showFullDescription ? "Hide full description" : "Read full description"}
-              {showFullDescription ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </button>
-          ) : null}
-        </section>
-
         <section className="mx-auto mt-4 max-w-[760px] rounded-[22px] border border-[#cfe7df] bg-[linear-gradient(180deg,#f4fbf8_0%,#eaf6f1_100%)] p-6 md:p-8">
           <div className="flex items-center gap-2">
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[linear-gradient(135deg,#0fb88a_0%,#22d3ee_100%)] text-xs text-white">
@@ -247,6 +208,15 @@ export default function ResultsCommercePage({
           </div>
           <p className="mt-3 text-[15px] leading-7 text-[#0e1f1c]">
             {personalizedReason}
+          </p>
+        </section>
+
+        <section className="mx-auto mt-4 max-w-[760px] rounded-[22px] border border-[#dce7e2] bg-white p-6 shadow-[0_2px_4px_rgba(14,31,28,0.04),0_12px_30px_rgba(14,31,28,0.05)] md:p-8">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#4a5b58]">
+            What it is
+          </div>
+          <p className="mt-3 text-[15px] leading-7 text-[#2a3935]">
+            {selectedMatch.description}
           </p>
         </section>
 
@@ -417,7 +387,6 @@ export default function ResultsCommercePage({
                     onSelect={(peptideId) => {
                       onSelectMatch(peptideId);
                       setShowSecondaryMatches(false);
-                      setShowFullDescription(false);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                   />
