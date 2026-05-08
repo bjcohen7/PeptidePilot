@@ -1,6 +1,6 @@
 /**
  * PeptidePilot Scoring Engine
- * 10-question weight-loss-forward quiz.
+ * 22-question quiz with conditional GLP-1 branching for weight-loss users.
  * Maps quiz answers to health aspect scores, then ranks peptide profiles.
  */
 
@@ -29,75 +29,219 @@ export function initAspects(): AspectScores {
 export type ScoreMap = Array<Partial<AspectScores>>;
 
 export const scoreMaps: ScoreMap[] = [
+  // ─── SECTION 1: Goals & Priorities ───────────────────────────────────────
+
+  // Q1: What is your single most important health goal right now?
   [
-    { fatloss: 2, metabolic: 1, energy: 1 },
-    { fatloss: 3, metabolic: 2, appetite: 2, bmi_qualifies: 3, glp1_budget: 1 },
-    { metabolic: 2, energy: 2, appetite: 1 },
-    { muscle: 2, recovery: 2, endurance: 1, fatloss: 1 },
-    { antiaging: 2, longevity: 2, energy: 1 },
+    { muscle: 2, energy: 1 },                          // Build muscle and increase strength
+    { fatloss: 2, metabolic: 1 },                      // Lose body fat and improve body composition
+    { energy: 2, cognitive: 1, focus: 1 },             // Boost daily energy and mental clarity
+    { antiaging: 2, longevity: 2 },                    // Slow aging and optimize longevity
+    { sleep: 2, recovery: 1 },                         // Improve sleep quality and depth
+    { injury: 2, healing: 2, joints: 1 },              // Heal an injury or chronic pain
+    { libido: 2, hormone: 1, confidence: 1 },          // Enhance libido and sexual vitality
+    { recovery: 2, inflammation: 1 },                  // Speed up recovery and reduce soreness
   ],
+
+  // Q2: If you could change one thing about how your body feels day-to-day?
   [
-    { fatloss: 1, appetite: 1 },
-    { fatloss: 2, metabolic: 1, appetite: 1 },
-    { fatloss: 3, metabolic: 2, appetite: 2, bmi_qualifies: 3, glp1_budget: 1 },
-    { fatloss: 3, metabolic: 3, appetite: 2, bmi_qualifies: 5, glp1_budget: 2, insurance: 1 },
-    { muscle: 2, fatloss: 2, recovery: 1 },
+    { energy: 2 },                                     // More energy from morning to night
+    { joints: 1, inflammation: 1, injury: 1 },         // Less pain or physical discomfort
+    { cognitive: 2, focus: 2 },                        // Sharper focus and mental performance
+    { mood: 2, anxiety: 1 },                           // Better mood and emotional balance
+    { antiaging: 2, longevity: 1 },                    // Feeling younger and more vital
+    { sleep: 2 },                                      // Deeper, more restorative sleep
+    { confidence: 2, hormone: 1 },                     // Greater confidence in my body
+    { muscle: 1, fatloss: 1, recovery: 1 },            // Faster physical results from my efforts
   ],
+
+  // ─── SECTION 2: Body & Fitness ───────────────────────────────────────────
+
+  // Q3: How would you describe your current activity level?
   [
-    { appetite: 2, fatloss: 1 },
-    { appetite: 3, fatloss: 2, metabolic: 1, bmi_qualifies: 2 },
-    { metabolic: 3, fatloss: 2, energy: 1, bmi_qualifies: 2 },
-    { metabolic: 2, energy: 2, appetite: 1 },
-    { confidence: 1, recovery: 1 },
+    { fatloss: 1, metabolic: 1 },                      // Sedentary
+    { energy: 1, fatloss: 1 },                         // Lightly active
+    { muscle: 1, recovery: 1 },                        // Moderately active
+    { muscle: 2, recovery: 2, endurance: 1 },          // Very active
+    { muscle: 2, recovery: 2, endurance: 2 },          // Competitive athlete
   ],
+
+  // Q4: How would you describe your current body composition?
   [
-    { appetite: 2, fatloss: 1 },
-    { appetite: 3, mood: 1, anxiety: 1, fatloss: 1 },
-    { recovery: 2, energy: 2, sleep: 1 },
-    { metabolic: 3, fatloss: 2, appetite: 1, bmi_qualifies: 2 },
-    { muscle: 3, recovery: 2, fatloss: 1, endurance: 1 },
+    { muscle: 1, recovery: 1 },                        // Lean and muscular
+    { fatloss: 1, muscle: 1 },                         // Average build
+    { fatloss: 2, metabolic: 2, appetite: 1 },         // Carrying extra body fat
+    { muscle: 2 },                                     // Underweight or struggling to gain
+    { recovery: 2, injury: 2, healing: 1 },            // Post-injury or post-illness
   ],
+
+  // Q5: How often do you experience muscle soreness or delayed recovery?
   [
-    { fatloss: 1 },
-    { fatloss: 2, energy: 1 },
-    { muscle: 2, recovery: 1 },
-    { muscle: 3, recovery: 2, endurance: 1 },
-    { muscle: 3, recovery: 2, endurance: 2, confidence: 1 },
+    {},                                                // Rarely — recover quickly
+    { recovery: 1 },                                   // Sometimes — usually fine
+    { recovery: 2, inflammation: 1 },                  // Often — soreness lasts 2–3 days
+    { recovery: 3, inflammation: 2, injury: 1 },       // Almost always — major limiting factor
   ],
+
+  // ─── SECTION 2B: Metabolic Health ────────────────────────────────────────
+
+  // Q6: What is your current BMI range?
   [
-    { appetite: 1, fatloss: 1 },
-    { appetite: 1, fatloss: 1, muscle: 1 },
-    { fatloss: 1, muscle: 2, recovery: 2 },
-    { muscle: 2, recovery: 2, confidence: 1 },
-    { muscle: 3, recovery: 2, endurance: 1 },
+    {},                                                // BMI under 25
+    { fatloss: 1 },                                    // BMI 25–27
+    { bmi_qualifies: 3, fatloss: 2, metabolic: 1 },    // BMI 27–30
+    { bmi_qualifies: 5, fatloss: 3, metabolic: 2 },    // BMI over 30
   ],
+
+  // Q7: Do you have health insurance that could help cover prescription care?
   [
-    { sleep: 3, energy: 2, recovery: 1, anxiety: 1 },
-    { sleep: 2, energy: 1, recovery: 1 },
-    { sleep: 1, recovery: 1 },
-    { energy: 1 },
-    {},
+    { insurance: 2, glp1_budget: 1 },                  // Commercial / ACA
+    { insurance: 1 },                                  // Medicare / Medicaid
+    { glp1_budget: 1 },                                // Self-pay / uninsured
   ],
+
+  // ─── SECTION 3: Age & Hormones ───────────────────────────────────────────
+
+  // Q6: What is your age range?
   [
-    { metabolic: 3, appetite: 2, energy: 1, bmi_qualifies: 2 },
-    { hormone: 3, fatloss: 2, antiaging: 1, longevity: 1 },
-    { hormone: 3, libido: 1, muscle: 1, recovery: 1 },
-    { anxiety: 2, mood: 2, sleep: 1, fatloss: 1 },
-    {},
+    {},                                                // 18–25
+    { hormone: 1 },                                    // 26–35
+    { antiaging: 1, hormone: 1 },                      // 36–45
+    { antiaging: 2, hormone: 2, longevity: 1 },        // 46–55
+    { antiaging: 2, hormone: 2, longevity: 2 },        // 56–65
+    { antiaging: 3, hormone: 2, longevity: 3 },        // 65+
   ],
+
+  // Q7: Do you have any known hormonal imbalances?
   [
-    { glp1_budget: 0 },
-    { glp1_budget: 1 },
-    { glp1_budget: 2 },
-    { glp1_budget: 3, insurance: 1 },
-    { glp1_budget: 3, insurance: 1 },
+    {},                                                // No — levels normal
+    { hormone: 1 },                                    // Possibly — symptoms but untested
+    { hormone: 3, libido: 1 },                         // Yes — low testosterone or estrogen
+    { hormone: 2, metabolic: 1 },                      // Yes — thyroid or other
+    { hormone: 2 },                                    // Currently on HRT or TRT
   ],
+
+  // Q8: How is your libido compared to where you'd like it to be?
   [
-    { insurance: 2, glp1_budget: 2, metabolic: 1 },
-    { metabolic: 1, fatloss: 1, appetite: 1 },
-    { muscle: 2, recovery: 2, fatloss: 1 },
-    { sleep: 1, anxiety: 1, recovery: 1 },
-    { insurance: 1, glp1_budget: 1, metabolic: 1, fatloss: 1 },
+    {},                                                // Great — no concerns
+    { libido: 1 },                                     // Slightly lower
+    { libido: 2, hormone: 1, mood: 1 },                // Noticeably reduced — bothers me
+    { libido: 3, hormone: 2, confidence: 1 },          // Very low — priority issue
+    {},                                                // Prefer not to say
+  ],
+
+  // ─── SECTION 4: Sleep & Recovery ─────────────────────────────────────────
+
+  // Q9: How would you rate your overall sleep quality?
+  [
+    {},                                                // Excellent
+    { sleep: 1 },                                      // Good — mostly fine
+    { sleep: 2, energy: 1 },                           // Fair — often tired
+    { sleep: 3, energy: 2, recovery: 1 },              // Poor — struggle to fall/stay asleep
+    { sleep: 3, energy: 2, recovery: 2, anxiety: 1 }, // Very poor — significant daily problem
+  ],
+
+  // Q10: Do you wake up feeling rested and ready for the day?
+  [
+    {},                                                // Yes — almost every morning
+    { sleep: 1 },                                      // Usually — most days fine
+    { sleep: 2, energy: 2 },                           // Rarely — almost always groggy
+    { sleep: 3, energy: 3, recovery: 1 },              // Never — fatigue constant
+  ],
+
+  // ─── SECTION 5: Pain & Injury ─────────────────────────────────────────────
+
+  // Q11: Do you currently have any joint, tendon, or ligament pain?
+  [
+    {},                                                // No — completely pain free
+    { joints: 1, inflammation: 1 },                    // Minor occasional discomfort
+    { joints: 2, inflammation: 2, recovery: 1 },       // Moderate — affects training
+    { joints: 3, inflammation: 2, injury: 2 },         // Significant — recurring and limiting
+    { injury: 3, joints: 2, healing: 2 },              // Currently recovering from specific injury
+  ],
+
+  // Q12: Do you experience gut issues such as IBS, leaky gut, or digestive discomfort?
+  [
+    {},                                                // No gut issues
+    { gut: 1, inflammation: 1 },                       // Mild occasional bloating
+    { gut: 2, inflammation: 2 },                       // Moderate — regular digestive issues
+    { gut: 3, inflammation: 2, healing: 1 },           // Significant — major concern
+    { gut: 3, inflammation: 3, healing: 2 },           // Diagnosed gut condition
+  ],
+
+  // ─── SECTION 6: Cognition & Mood ─────────────────────────────────────────
+
+  // Q13: How would you rate your day-to-day mental clarity and focus?
+  [
+    {},                                                // Sharp — focused and clear
+    { cognitive: 1, focus: 1 },                        // Average — manageable with some fog
+    { cognitive: 2, focus: 2, neuroprotection: 1 },    // Below average — struggle
+    { cognitive: 3, focus: 3, neuroprotection: 2 },    // Poor — significantly impacts life
+  ],
+
+  // Q14: Do you experience anxiety, chronic stress, or difficulty managing emotions?
+  [
+    {},                                                // No — generally calm
+    { anxiety: 1, mood: 1 },                           // Mild anxiety or stress occasionally
+    { anxiety: 2, mood: 2, neuroprotection: 1 },       // Moderate — regular issue
+    { anxiety: 3, mood: 2, neuroprotection: 2 },       // Significant — impacts quality of life
+  ],
+
+  // ─── SECTION 7: Skin, Hair & Appearance ──────────────────────────────────
+
+  // Q15: How would you describe your current skin condition?
+  [
+    {},                                                // Great — healthy and youthful
+    { skin: 1, collagen: 1 },                          // Minor concerns — fine lines
+    { skin: 2, collagen: 2, antiaging: 1 },            // Moderate concerns — visible aging
+    { skin: 3, collagen: 2, antiaging: 2 },            // Significant — skin health priority
+  ],
+
+  // Q16: Are you experiencing hair thinning or hair loss?
+  [
+    {},                                                // No — full and healthy
+    { hair: 1 },                                       // Slight thinning noticed
+    { hair: 2, hormone: 1 },                           // Moderate thinning — bothers me
+    { hair: 3, hormone: 2 },                           // Significant hair loss — major concern
+    { hair: 2, hormone: 1 },                           // Already using treatments
+  ],
+
+  // ─── SECTION 8: Lifestyle & Preferences ──────────────────────────────────
+
+  // Q17: How experienced are you with peptides or biohacking?
+  [
+    {},                                                // Complete beginner
+    { cognitive: 1 },                                  // Familiar — researched but not used
+    { muscle: 1, recovery: 1 },                        // Intermediate — used some
+    { muscle: 1, recovery: 1, longevity: 1 },          // Advanced — active protocols
+  ],
+
+  // Q18: What is your monthly budget for peptide supplementation?
+  [
+    {},                                                // Under $50
+    { fatloss: 1, energy: 1 },                         // $50–$100
+    { muscle: 1, recovery: 1, hormone: 1 },            // $100–$200
+    { hormone: 2, antiaging: 1, longevity: 1 },        // $200–$500
+    { hormone: 2, antiaging: 2, longevity: 2 },        // $500 or more
+  ],
+
+  // Q19: Do you currently work with a doctor or health coach?
+  [
+    { hormone: 1, longevity: 1 },                      // Yes — professional medical guidance
+    {},                                                // Sometimes — consult occasionally
+    {},                                                // No — self-direct protocols
+    {},                                                // No — but would like to find one
+  ],
+
+  // Q20: What outcome would make this quiz feel like a total success?
+  [
+    { fatloss: 2, metabolic: 1 },                      // Visible body composition changes
+    { muscle: 2, recovery: 2 },                        // Feeling stronger and recovering faster
+    { skin: 2, antiaging: 2, collagen: 1 },            // Looking noticeably younger
+    { cognitive: 2, anxiety: 1, focus: 2 },            // Thinking more clearly with less stress
+    { sleep: 2, energy: 2 },                           // Sleeping better with sustained energy
+    { injury: 2, healing: 2, joints: 1 },              // Healing injury or resolving chronic pain
+    { confidence: 2, hormone: 1, energy: 1 },          // Feeling more confident and vital
   ],
 ];
 
@@ -311,6 +455,7 @@ export function calculateAspectScores(answers: number[]): AspectScores {
 export function calculateMatches(answers: number[]): MatchResult[] {
   const aspects = calculateAspectScores(answers);
 
+  // Score each peptide
   const scored = peptideProfiles.map((peptide) => {
     let score = 0;
     for (const [aspect, weight] of Object.entries(peptide.weights)) {
@@ -319,8 +464,10 @@ export function calculateMatches(answers: number[]): MatchResult[] {
     return { peptide, score };
   });
 
+  // Find max score for normalization
   const maxScore = Math.max(...scored.map((s) => s.score), 1);
 
+  // Sort descending and compute match percent
   return scored
     .sort((a, b) => b.score - a.score)
     .map(({ peptide, score }) => ({
@@ -332,41 +479,57 @@ export function calculateMatches(answers: number[]): MatchResult[] {
 
 export const QUIZ_INDEX = {
   PRIMARY_GOAL: 0,
-  HORMONE: 7,
-  BUDGET: 8,
-  APPROACH: 9,
+  GLP1_BMI: 5,
+  GLP1_INSURANCE: 6,
+  AGE_RANGE: 7,
+  HORMONE: 8,
+  LIBIDO: 9,
+  BUDGET: 19,
 } as const;
 
+export const AGE_RANGE_OPTIONS = ["18–25", "26–35", "36–45", "46–55", "56–65", "65+"] as const;
+
 export const PRIMARY_GOAL_OPTIONS = [
+  "Build muscle and increase strength",
   "Lose body fat and improve body composition",
-  "Reduce appetite and feel more in control around food",
-  "Improve energy and metabolic health",
-  "Preserve muscle while leaning out",
-  "Improve long-term health and aging markers",
+  "Boost daily energy and mental clarity",
+  "Slow aging and optimize longevity",
+  "Improve sleep quality and depth",
+  "Heal an injury or chronic pain",
+  "Enhance libido and sexual vitality",
+  "Speed up recovery and reduce soreness",
 ] as const;
 
 export const BUDGET_OPTIONS = [
-  "Under $100/month",
-  "$100–$250/month",
-  "$250–$500/month",
-  "$500–$1,000/month",
-  "Flexible if the fit is strong",
+  "Under $50/month",
+  "$50–$100/month",
+  "$100–$200/month",
+  "$200–$500/month",
+  "$500+/month",
 ] as const;
 
+/**
+ * Determine lead tier based on quiz answers.
+ */
 export function determineTier(answers: number[]): 1 | 2 | 3 {
+  const ageIdx = answers[QUIZ_INDEX.AGE_RANGE] ?? -1;
+  const isOlderAge = ageIdx >= 3;           // 46-55, 56-65, 65+
+
   const hormoneIdx = answers[QUIZ_INDEX.HORMONE] ?? -1;
-  const hasHormonalIssues = hormoneIdx >= 0 && hormoneIdx <= 3;
+  const hasHormonalIssues = hormoneIdx >= 2;
+
+  const libidoIdx = answers[QUIZ_INDEX.LIBIDO] ?? -1;
+  const hasLowLibido = libidoIdx >= 2;
 
   const budgetIdx = answers[QUIZ_INDEX.BUDGET] ?? -1;
-  const isPremiumBudget = budgetIdx >= 3;
-  const isStandardBudget = budgetIdx >= 1;
+  const isPremiumBudget = budgetIdx >= 3;   // $200+
+  const isStandardBudget = budgetIdx >= 1;  // $50+
 
   const matches = calculateMatches(answers);
   const topMatch = matches[0]?.peptide.id ?? "";
-  const isPremiumPeptide =
-    topMatch === "semaglutide" || topMatch === "sermorelin" || topMatch === "ipamorelin_cjc1295";
+  const isPremiumPeptide = topMatch === "pt141" || topMatch === "sermorelin";
 
-  if (hasHormonalIssues && isPremiumBudget && isPremiumPeptide) {
+  if (isOlderAge && (hasHormonalIssues || hasLowLibido) && isPremiumBudget && isPremiumPeptide) {
     return 1;
   }
   if (isStandardBudget) {
@@ -375,109 +538,258 @@ export function determineTier(answers: number[]): 1 | 2 | 3 {
   return 3;
 }
 
+// ─── QUIZ QUESTIONS (22 total, with GLP-1 branching for weight-loss users) ──
+
 export const QUIZ_QUESTIONS = [
+  // ── Section 1: Goals & Priorities ──────────────────────────────────────────
   {
-    section: "Body Composition",
-    question: "What’s your main goal right now?",
+    section: "Goals & Priorities",
+    question: "What is your single most important health goal right now?",
     options: [
+      "Build muscle and increase strength",
       "Lose body fat and improve body composition",
-      "Reduce appetite and feel more in control around food",
-      "Improve energy and metabolic health",
-      "Preserve muscle while leaning out",
-      "Improve long-term health and aging markers",
+      "Boost daily energy and mental clarity",
+      "Slow aging and optimize longevity",
+      "Improve sleep quality and depth",
+      "Heal an injury or chronic pain",
+      "Enhance libido and sexual vitality",
+      "Speed up recovery and reduce soreness",
     ],
   },
   {
-    section: "Body Composition",
-    question: "How much weight or body fat are you realistically trying to lose?",
+    section: "Goals & Priorities",
+    question: "If you could change one thing about how your body feels day-to-day, what would it be?",
     options: [
-      "5–10 pounds",
-      "10–25 pounds",
-      "25–50 pounds",
-      "50+ pounds",
-      "I care more about recomposition than scale weight",
+      "More energy from morning to night",
+      "Less pain or physical discomfort",
+      "Sharper focus and mental performance",
+      "Better mood and emotional balance",
+      "Feeling younger and more vital",
+      "Deeper, more restorative sleep",
+      "Greater confidence in my body",
+      "Faster physical results from my efforts",
+    ],
+  },
+
+  // ── Section 2: Body & Fitness ───────────────────────────────────────────────
+  {
+    section: "Body & Fitness",
+    question: "How would you describe your current activity level?",
+    options: [
+      "Sedentary — mostly desk work, little exercise",
+      "Lightly active — walks or gym once or twice a week",
+      "Moderately active — exercise 3 to 4 times per week",
+      "Very active — train 5 or more days per week",
+      "Competitive athlete or daily high-performance training",
     ],
   },
   {
-    section: "Appetite & Cravings",
-    question: "Which feels most true for you right now?",
+    section: "Body & Fitness",
+    question: "How would you describe your current body composition?",
     options: [
-      "I’m hungry more often than I should be",
-      "I deal with cravings or food noise daily",
-      "I eat reasonably well but still struggle to lose weight",
-      "My energy and metabolism feel inconsistent",
-      "My challenge is staying consistent, not hunger",
+      "Lean and muscular — looking to optimize",
+      "Average build — want to improve tone",
+      "Carrying extra body fat — weight loss is needed",
+      "Underweight or struggling to gain mass",
+      "Post-injury or post-illness, rebuilding",
     ],
   },
   {
-    section: "Appetite & Cravings",
-    question: "When you try to lose weight, what usually gets in the way?",
+    section: "Body & Fitness",
+    question: "How often do you experience muscle soreness or delayed recovery after training?",
     options: [
-      "Appetite and portion control",
-      "Cravings, snacking, or emotional eating",
-      "Low energy or poor recovery",
-      "Slow progress despite effort",
-      "Losing muscle or looking flat",
+      "Rarely — I recover quickly",
+      "Sometimes — usually fine within a day or two",
+      "Often — soreness lasts 2 to 3 days",
+      "Almost always — recovery is a major limiting factor",
+    ],
+  },
+
+  // ── Section 2B: Metabolic Health ──────────────────────────────────────────
+  {
+    section: "Metabolic Health",
+    question: "What is your current BMI range?",
+    options: [
+      "Under 25 (normal weight)",
+      "25 to 27 (overweight)",
+      "27 to 30 (overweight with risk factors)",
+      "Over 30 (obesity range)",
     ],
   },
   {
-    section: "Activity & Training",
-    question: "How active are you currently?",
+    section: "Metabolic Health",
+    question: "Do you have health insurance that could help cover prescription care?",
     options: [
-      "Mostly sedentary",
-      "Light walking or occasional workouts",
-      "3–4 workouts per week",
-      "5+ workouts per week",
-      "Very active and trying to optimize body composition",
+      "Yes — commercial insurance or ACA plan",
+      "Yes — Medicare or Medicaid",
+      "No — uninsured or self-pay",
+    ],
+  },
+
+  // ── Section 3: Age & Hormones ───────────────────────────────────────────────
+  {
+    section: "Age & Hormones",
+    question: "What is your age range?",
+    options: ["18–25", "26–35", "36–45", "46–55", "56–65", "65+"],
+  },
+  {
+    section: "Age & Hormones",
+    question: "Do you have any known hormonal imbalances or have you been told your hormones are low?",
+    options: [
+      "No — levels are normal as far as I know",
+      "Possibly — I have symptoms but haven't been tested",
+      "Yes — diagnosed with low testosterone or low estrogen",
+      "Yes — thyroid or other hormonal issues",
+      "I'm currently on HRT or TRT",
     ],
   },
   {
-    section: "Activity & Training",
-    question: "How important is muscle retention while losing weight?",
+    section: "Age & Hormones",
+    question: "How is your libido compared to where you'd like it to be?",
     options: [
-      "Not very important right now",
-      "Somewhat important",
-      "Very important",
-      "It’s one of my top priorities",
-      "I care more about recomposition than weight loss alone",
+      "Great — no concerns",
+      "Slightly lower than I'd like",
+      "Noticeably reduced — it bothers me",
+      "Very low — this is a priority issue",
+      "Prefer not to say",
+    ],
+  },
+
+  // ── Section 4: Sleep & Recovery ─────────────────────────────────────────────
+  {
+    section: "Sleep & Recovery",
+    question: "How would you rate your overall sleep quality?",
+    options: [
+      "Excellent — I sleep deeply and wake refreshed",
+      "Good — mostly fine with occasional bad nights",
+      "Fair — I often feel tired despite sleeping 7 to 8 hours",
+      "Poor — I struggle to fall or stay asleep",
+      "Very poor — sleep is a significant daily problem",
     ],
   },
   {
-    section: "Recovery",
-    question: "How well are you sleeping lately?",
+    section: "Sleep & Recovery",
+    question: "Do you wake up feeling rested and ready for the day?",
     options: [
-      "Poorly",
-      "Inconsistently",
-      "Decently, but not great",
-      "Pretty well",
-      "Very well",
+      "Yes — almost every morning",
+      "Usually — most days are fine",
+      "Rarely — I almost always feel groggy",
+      "Never — fatigue is constant regardless of sleep",
+    ],
+  },
+
+  // ── Section 5: Pain & Injury ────────────────────────────────────────────────
+  {
+    section: "Pain & Injury",
+    question: "Do you currently have any joint, tendon, or ligament pain?",
+    options: [
+      "No — completely pain free",
+      "Minor occasional discomfort",
+      "Moderate — affects my training sometimes",
+      "Significant — a recurring and limiting problem",
+      "Currently recovering from a specific injury",
     ],
   },
   {
-    section: "Hormones & Metabolism",
-    question: "Which best describes your current metabolic or hormone context?",
+    section: "Pain & Injury",
+    question: "Do you experience gut issues such as IBS, leaky gut, or digestive discomfort?",
     options: [
-      "I suspect insulin resistance or blood sugar issues",
-      "Perimenopause or menopause may be affecting weight",
-      "Low testosterone or hormone imbalance may be affecting me",
-      "High stress or cortisol seems like a major factor",
-      "None of these really stand out",
+      "No gut issues at all",
+      "Mild occasional bloating or discomfort",
+      "Moderate — regular digestive issues",
+      "Significant — gut health is a major concern",
+      "Diagnosed with a gut condition (Crohn's, IBS, etc.)",
+    ],
+  },
+
+  // ── Section 6: Cognition & Mood ─────────────────────────────────────────────
+  {
+    section: "Cognition & Mood",
+    question: "How would you rate your day-to-day mental clarity and focus?",
+    options: [
+      "Sharp — focused and clear most of the time",
+      "Average — manageable with some brain fog",
+      "Below average — focus and memory are a struggle",
+      "Poor — cognitive performance significantly impacts my life",
     ],
   },
   {
-    section: "Practical Fit",
-    question: "What monthly budget feels realistic for your plan?",
-    options: [...BUDGET_OPTIONS],
+    section: "Cognition & Mood",
+    question: "Do you experience anxiety, chronic stress, or difficulty managing emotions?",
+    options: [
+      "No — generally calm and resilient",
+      "Mild anxiety or stress occasionally",
+      "Moderate — anxiety or stress is a regular issue",
+      "Significant — it meaningfully impacts my quality of life",
+    ],
+  },
+
+  // ── Section 7: Skin, Hair & Appearance ──────────────────────────────────────
+  {
+    section: "Skin, Hair & Appearance",
+    question: "How would you describe your current skin condition?",
+    options: [
+      "Great — healthy, firm, and youthful looking",
+      "Minor concerns — some fine lines or dullness",
+      "Moderate concerns — visible aging or skin issues",
+      "Significant concerns — skin health is a priority for me",
+    ],
   },
   {
-    section: "Practical Fit",
-    question: "Which approach are you most open to?",
+    section: "Skin, Hair & Appearance",
+    question: "Are you experiencing hair thinning or hair loss?",
     options: [
-      "Prescription-based support if it works best",
-      "Peptides or non-GLP options first",
-      "A muscle-preserving fat-loss approach",
-      "The gentlest, lowest-side-effect option",
-      "I’m open, but want the most effective fit",
+      "No — hair is full and healthy",
+      "Slight thinning I've noticed recently",
+      "Moderate thinning — it bothers me",
+      "Significant hair loss — a major concern",
+      "Already using treatments for hair loss",
+    ],
+  },
+
+  // ── Section 8: Lifestyle & Preferences ──────────────────────────────────────
+  {
+    section: "Lifestyle & Preferences",
+    question: "How experienced are you with peptides or biohacking in general?",
+    options: [
+      "Complete beginner — never tried anything like this",
+      "Familiar — I've researched but haven't used peptides yet",
+      "Intermediate — I've used some peptides or advanced supplements",
+      "Advanced — I actively run peptide protocols and track results",
+    ],
+  },
+  {
+    section: "Lifestyle & Preferences",
+    question: "What is your monthly budget for peptide supplementation?",
+    options: [
+      "Under $50 per month",
+      "$50 to $100 per month",
+      "$100 to $200 per month",
+      "$200 to $500 per month",
+      "$500 or more — I invest heavily in my health",
+    ],
+  },
+  {
+    section: "Lifestyle & Preferences",
+    question: "Do you currently work with a doctor, functional medicine practitioner, or health coach?",
+    options: [
+      "Yes — I have professional medical guidance",
+      "Sometimes — I consult occasionally",
+      "No — I self-direct my health protocols",
+      "No — but I'd like to find one",
+    ],
+  },
+  {
+    section: "Lifestyle & Preferences",
+    question: "What outcome would make this quiz feel like a total success for you?",
+    options: [
+      "Visible body composition changes within 3 months",
+      "Feeling stronger and recovering faster from training",
+      "Looking noticeably younger and healthier",
+      "Thinking more clearly with less stress",
+      "Sleeping better and having sustained daily energy",
+      "Healing a specific injury or resolving chronic pain",
+      "Feeling more confident, vital, and motivated overall",
     ],
   },
 ];

@@ -7,16 +7,84 @@ import { useSwipe } from "@/hooks/useSwipe";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { preloadProcessing, preloadResults } from "@/lib/preloadQuiz";
 import {
+  PRIMARY_GOAL_OPTIONS,
+  QUIZ_INDEX,
   QUIZ_QUESTIONS,
 } from "../../../shared/scoring";
+
 type Direction = "forward" | "backward";
 
-const MIDPOINT_BREATHER_AFTER_INDEX = 4;
-const MIDPOINT_BREATHER = {
-  label: "Quick Checkpoint",
-  headline: "We’ve got the shape of your weight-loss profile now.",
-  body: "The last few questions help us separate appetite-driven GLP fits from muscle-preserving or budget-sensitive paths, so the final recommendation feels genuinely useful.",
+const WEIGHT_LOSS_GOAL_INDEX = PRIMARY_GOAL_OPTIONS.indexOf(
+  "Lose body fat and improve body composition",
+);
+
+const SECTION_BREATHERS: Record<
+  string,
+  { label: string; headline: string; body: string }
+> = {
+  "Body & Fitness": {
+    label: "Body Composition",
+    headline: "Individual biology determines individual outcomes.",
+    body: "The same peptide protocol can produce meaningfully different results across individuals. This assessment evaluates your goals, physiology, and lifestyle in combination — not any single factor in isolation.",
+  },
+  "Metabolic Health": {
+    label: "Metabolic Health",
+    headline: "Prescription GLP-1 fit depends on more than just weight-loss interest.",
+    body: "For weight-loss users, we add a short eligibility layer so your results can better distinguish metabolic-health candidates from general fat-loss support options.",
+  },
+  "Age & Hormones": {
+    label: "Endocrine Health",
+    headline: "Hormones govern nearly every physiological process.",
+    body: "Peptides interact directly with the endocrine system. Accurately mapping your hormonal profile is essential to identifying protocols with the highest probability of clinical relevance for your specific situation.",
+  },
+  "Sleep & Recovery": {
+    label: "Recovery & Regeneration",
+    headline: "Restorative sleep is a primary driver of tissue repair.",
+    body: "Sleep quality influences growth hormone secretion, inflammatory regulation, and cellular regeneration. Targeted peptide support can meaningfully improve the depth and efficiency of your recovery cycles.",
+  },
+  "Pain & Injury": {
+    label: "Musculoskeletal Health",
+    headline: "Regenerative peptides operate at the cellular level.",
+    body: "Compounds such as BPC-157 and TB-500 have demonstrated tissue-repair and anti-inflammatory properties in preclinical and clinical research. Understanding the nature and history of your injury guides accurate protocol selection.",
+  },
+  "Cognition & Mood": {
+    label: "Neurological Function",
+    headline: "Cognitive performance is a measurable, trainable variable.",
+    body: "Select peptides support neuroplasticity, neurotransmitter regulation, and cerebral blood flow. This section establishes your cognitive baseline so the algorithm can weight neuroprotective compounds appropriately.",
+  },
+  "Skin, Hair & Appearance": {
+    label: "Dermal & Aesthetic Health",
+    headline: "Biological aging is a process that can be modulated.",
+    body: "Collagen-stimulating peptides and growth-factor analogs have demonstrated measurable effects on dermal thickness, hair follicle cycling, and tissue elasticity. Your responses here refine the aesthetic component of your match.",
+  },
+  "Lifestyle & Preferences": {
+    label: "Final Section",
+    headline: "Practical factors determine long-term adherence.",
+    body: "Protocol compliance is as important as protocol selection. This final section captures your lifestyle context and preferences so your matches reflect what you will realistically sustain — not just what is theoretically optimal.",
+  },
 };
+
+function getVisibleQuestionIndices(isWeightLossGoal: boolean): number[] {
+  return QUIZ_QUESTIONS.map((_, index) => index).filter((index) => {
+    if (isWeightLossGoal) return true;
+    return (
+      index !== QUIZ_INDEX.GLP1_BMI && index !== QUIZ_INDEX.GLP1_INSURANCE
+    );
+  });
+}
+
+function getBreatherIndices(questionIndices: number[]): Set<number> {
+  const indices = new Set<number>();
+  let lastSection = QUIZ_QUESTIONS[questionIndices[0] ?? 0]?.section ?? "";
+  for (let i = 1; i < questionIndices.length; i++) {
+    const section = QUIZ_QUESTIONS[questionIndices[i] ?? 0]?.section ?? "";
+    if (section !== lastSection) {
+      indices.add(i);
+      lastSection = section;
+    }
+  }
+  return indices;
+}
 
 export default function QuizFlow() {
   const [, navigate] = useLocation();
@@ -29,9 +97,14 @@ export default function QuizFlow() {
   } = useQuiz();
 
   const { currentIndex, answers, isComplete } = state;
+  const isWeightLossGoal = answers[QUIZ_INDEX.PRIMARY_GOAL] === WEIGHT_LOSS_GOAL_INDEX;
   const visibleQuestionIndices = useMemo(
-    () => QUIZ_QUESTIONS.map((_, index) => index),
-    [],
+    () => getVisibleQuestionIndices(isWeightLossGoal),
+    [isWeightLossGoal],
+  );
+  const breatherIndices = useMemo(
+    () => getBreatherIndices(visibleQuestionIndices),
+    [visibleQuestionIndices],
   );
   const totalQuestions = visibleQuestionIndices.length;
   const currentVisibleIndex = Math.max(
@@ -53,6 +126,7 @@ export default function QuizFlow() {
   const previousQuestionIndex = visibleQuestionIndices[currentVisibleIndex - 1];
 
   const [showBreather, setShowBreather] = useState(false);
+  const [breatherSection, setBreatherSection] = useState<string>("");
 
   const [animClass, setAnimClass] = useState<string>("quiz-slide-enter-forward");
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -119,9 +193,11 @@ export default function QuizFlow() {
 
       if (
         typeof nextQuestionIndex === "number" &&
-        currentVisibleIndex === MIDPOINT_BREATHER_AFTER_INDEX
+        breatherIndices.has(currentVisibleIndex + 1)
       ) {
+        const nextSection = QUIZ_QUESTIONS[nextQuestionIndex]?.section ?? "";
         setTimeout(() => {
+          setBreatherSection(nextSection);
           setShowBreather(true);
           setIsTransitioning(false);
         }, 320);
@@ -137,6 +213,7 @@ export default function QuizFlow() {
       selectedAnswer,
       selectAnswer,
       nextQuestionIndex,
+      breatherIndices,
       currentVisibleIndex,
       triggerAdvance,
       moveForward,
@@ -185,6 +262,7 @@ export default function QuizFlow() {
 
   if (!currentQuestion) return null;
 
+  const breatherData = SECTION_BREATHERS[breatherSection];
   const effectiveProgress = Math.round(
     ((currentVisibleIndex + (showBreather ? 0.5 : 0)) / totalQuestions) * 100,
   );
@@ -208,7 +286,7 @@ export default function QuizFlow() {
             )}
             {showBreather && (
               <span className="text-xs sm:text-sm text-muted-foreground font-medium">
-                Quick checkpoint
+                New section
               </span>
             )}
           </div>
@@ -222,7 +300,7 @@ export default function QuizFlow() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4 overflow-hidden">
-        {showBreather && (
+        {showBreather && breatherData && (
           <div className="w-full max-w-lg quiz-slide-enter-forward">
             <div
               className="rounded-2xl p-8 sm:p-10 text-center text-white shadow-2xl"
@@ -240,7 +318,7 @@ export default function QuizFlow() {
                     border: "1px solid rgba(56,189,248,0.25)",
                   }}
                 >
-                  {MIDPOINT_BREATHER.label}
+                  {breatherData.label}
                 </span>
               </div>
 
@@ -253,10 +331,10 @@ export default function QuizFlow() {
                 className="text-2xl sm:text-3xl font-normal mb-4 leading-snug"
                 style={{ fontFamily: "'DM Serif Display', serif" }}
               >
-                {MIDPOINT_BREATHER.headline}
+                {breatherData.headline}
               </h2>
               <p className="text-slate-300 text-base sm:text-lg leading-relaxed mb-8">
-                {MIDPOINT_BREATHER.body}
+                {breatherData.body}
               </p>
               <button
                 onClick={handleBreatherContinue}
