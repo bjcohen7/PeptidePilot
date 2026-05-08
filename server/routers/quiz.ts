@@ -182,8 +182,8 @@ export const quizRouter = router({
   submitQuiz: publicProcedure
     .input(
       z.object({
-        email: z.string().email(),
-        consentGiven: z.boolean(),
+        email: z.string().email().optional().nullable(),
+        consentGiven: z.boolean().optional().default(false),
         answers: z.array(z.number().int().min(-1)).length(QUIZ_QUESTIONS.length),
         sessionId: z.string().min(8).max(64).optional().nullable(),
         meta: z
@@ -203,8 +203,10 @@ export const quizRouter = router({
       await ensureAffiliateWorkspaceSchema();
 
       const { email, consentGiven, answers, sessionId, meta } = input;
+      const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+      const hasProvidedEmail = normalizedEmail.length > 0;
 
-      if (!consentGiven) {
+      if (hasProvidedEmail && !consentGiven) {
         throw new Error("Consent is required to submit.");
       }
 
@@ -227,19 +229,22 @@ export const quizRouter = router({
         "unknown";
 
       const leadId = nanoid();
+      const leadEmail = hasProvidedEmail
+        ? normalizedEmail
+        : `anonymous+${leadId}@peptidepilot.local`;
       const consentTimestamp = new Date();
 
       const db = await getDb();
       if (db) {
         await insertLead({
           id: leadId,
-          email,
+          email: leadEmail,
           ageRange,
           primaryGoal,
           budget,
           topPeptideMatch,
           tier,
-          consentGiven,
+          consentGiven: hasProvidedEmail ? consentGiven : false,
           consentTimestamp,
           ipAddress,
           rawQuizData: answers,
@@ -290,7 +295,7 @@ export const quizRouter = router({
 
       const webhookPayload = {
         leadId,
-        email,
+        email: leadEmail,
         returningToken,
         ageRange,
         primaryGoal,
@@ -302,66 +307,68 @@ export const quizRouter = router({
         ipAddress,
       };
 
-      await sendMetaServerEvents(ctx.req, [
-        {
-          eventName: "CompleteRegistration",
-          eventId: meta?.completeRegistrationEventId,
-          email,
-          clientIpAddress: ipAddress,
-          clientUserAgent: ctx.req.headers["user-agent"] ?? null,
-          sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
-          fbp: meta?.fbp ?? null,
-          fbc: meta?.fbc ?? null,
-          customData: {
-            content_name: "Peptide Quiz",
-            status: "completed",
+      if (hasProvidedEmail) {
+        await sendMetaServerEvents(ctx.req, [
+          {
+            eventName: "CompleteRegistration",
+            eventId: meta?.completeRegistrationEventId,
+            email: leadEmail,
+            clientIpAddress: ipAddress,
+            clientUserAgent: ctx.req.headers["user-agent"] ?? null,
+            sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
+            fbp: meta?.fbp ?? null,
+            fbc: meta?.fbc ?? null,
+            customData: {
+              content_name: "Peptide Quiz",
+              status: "completed",
+            },
           },
-        },
-        {
-          eventName: "Lead",
-          eventId: meta?.leadEventId,
-          email,
-          clientIpAddress: ipAddress,
-          clientUserAgent: ctx.req.headers["user-agent"] ?? null,
-          sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
-          fbp: meta?.fbp ?? null,
-          fbc: meta?.fbc ?? null,
-          customData: {
-            content_name: matches[0]?.peptide.name ?? "Peptide Results",
-            content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
-            value: isGlp1Lead ? 50 : 10,
-            currency: "USD",
+          {
+            eventName: "Lead",
+            eventId: meta?.leadEventId,
+            email: leadEmail,
+            clientIpAddress: ipAddress,
+            clientUserAgent: ctx.req.headers["user-agent"] ?? null,
+            sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
+            fbp: meta?.fbp ?? null,
+            fbc: meta?.fbc ?? null,
+            customData: {
+              content_name: matches[0]?.peptide.name ?? "Peptide Results",
+              content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+              value: isGlp1Lead ? 50 : 10,
+              currency: "USD",
+            },
           },
-        },
-        {
-          eventName: "ViewContent",
-          eventId: meta?.viewContentEventId,
-          email,
-          clientIpAddress: ipAddress,
-          clientUserAgent: ctx.req.headers["user-agent"] ?? null,
-          sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
-          fbp: meta?.fbp ?? null,
-          fbc: meta?.fbc ?? null,
-          customData: {
-            content_name: matches[0]?.peptide.name ?? "Peptide Results",
-            content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
-            content_ids: matches[0]?.peptide.id ? [matches[0].peptide.id] : undefined,
+          {
+            eventName: "ViewContent",
+            eventId: meta?.viewContentEventId,
+            email: leadEmail,
+            clientIpAddress: ipAddress,
+            clientUserAgent: ctx.req.headers["user-agent"] ?? null,
+            sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
+            fbp: meta?.fbp ?? null,
+            fbc: meta?.fbc ?? null,
+            customData: {
+              content_name: matches[0]?.peptide.name ?? "Peptide Results",
+              content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+              content_ids: matches[0]?.peptide.id ? [matches[0].peptide.id] : undefined,
+            },
           },
-        },
-      ]);
+        ]);
 
-      if (tier === 1) {
-        await sendWebhook(TIER1_WEBHOOK, webhookPayload);
-      } else if (tier === 2) {
-        await sendWebhook(TIER2_WEBHOOK, webhookPayload);
-      } else {
-        await sendWebhook(TIER3_WEBHOOK, webhookPayload);
+        if (tier === 1) {
+          await sendWebhook(TIER1_WEBHOOK, webhookPayload);
+        } else if (tier === 2) {
+          await sendWebhook(TIER2_WEBHOOK, webhookPayload);
+        } else {
+          await sendWebhook(TIER3_WEBHOOK, webhookPayload);
+        }
+
+        await notifyOwner({
+          title: `New PeptidePilot Lead — Tier ${tier}`,
+          content: `Email: ${leadEmail}\nTop Match: ${topPeptideMatch}\nBudget: ${budget}\nAge: ${ageRange}`,
+        });
       }
-
-      await notifyOwner({
-        title: `New PeptidePilot Lead — Tier ${tier}`,
-        content: `Email: ${email}\nTop Match: ${topPeptideMatch}\nBudget: ${budget}\nAge: ${ageRange}`,
-      });
 
       return {
         status: "success" as const,

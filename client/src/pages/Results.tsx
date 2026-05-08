@@ -1,11 +1,6 @@
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
-import { Link, useLocation } from "wouter";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { useLocation } from "wouter";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import ResultsCommercePage, {
   type ResultsVendorCard,
   type ResultsVendorCategoryFilter,
@@ -13,13 +8,7 @@ import ResultsCommercePage, {
 import { getVisitorSessionId } from "@/components/SessionTracker";
 import { useQuiz } from "@/contexts/QuizContext";
 import { useReturningSession } from "@/contexts/UserSessionContext";
-import { identifyLogRocketUser } from "@/lib/logrocket";
-import {
-  applyMetaAdvancedMatching,
-  createMetaEventId,
-  getMetaBrowserIdentifiers,
-  trackMetaEvent,
-} from "@/lib/metaPixel";
+import { trackMetaEvent } from "@/lib/metaPixel";
 import { trpc } from "@/lib/trpc";
 import {
   BUDGET_OPTIONS,
@@ -126,254 +115,6 @@ function buildVendorPresentation(name: string): VendorPresentation {
   };
 }
 
-function LeadCaptureGate({
-  onReveal,
-  isLoading,
-  previewMatches,
-}: {
-  onReveal: (email: string, consent: boolean) => void;
-  isLoading: boolean;
-  previewMatches: ReturningMatchSummary[];
-}) {
-  const [email, setEmail] = useState("");
-  const [consent, setConsent] = useState(false);
-  const [emailError, setEmailError] = useState("");
-
-  const topThree = previewMatches.slice(0, 3);
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    setEmailError("");
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setEmailError("Please enter a valid email address.");
-      return;
-    }
-
-    if (!consent) {
-      toast.error("Please check the consent box to continue.");
-      return;
-    }
-
-    onReveal(email, consent);
-  };
-
-  return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ background: "linear-gradient(160deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)" }}
-    >
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div
-          className="absolute rounded-full blur-3xl"
-          style={{
-            width: 500,
-            height: 500,
-            top: "-10%",
-            left: "-5%",
-            background: "radial-gradient(circle, #38bdf81a, transparent 70%)",
-          }}
-        />
-        <div
-          className="absolute rounded-full blur-3xl"
-          style={{
-            width: 400,
-            height: 400,
-            bottom: "-10%",
-            right: "-5%",
-            background: "radial-gradient(circle, #a855f71a, transparent 70%)",
-          }}
-        />
-      </div>
-
-      <header className="relative z-10 flex items-center justify-center px-4 pt-5 pb-4">
-        <Link href="/">
-          <PeptidePilotLogo height={30} variant="light" />
-        </Link>
-      </header>
-
-      <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-6 sm:py-10">
-        <div className="w-full max-w-lg">
-          <div className="mb-8 text-center">
-            <div
-              className="mb-5 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-widest"
-              style={{
-                background: "rgba(56,189,248,0.12)",
-                color: "#38bdf8",
-                border: "1px solid rgba(56,189,248,0.25)",
-              }}
-            >
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              Analysis Complete
-            </div>
-            <h1
-              className="mb-3 text-white leading-snug"
-              style={{
-                fontSize: "clamp(1.7rem, 4.5vw, 2.4rem)",
-                fontFamily: "'DM Serif Display', Georgia, serif",
-                letterSpacing: "-0.02em",
-              }}
-            >
-              Your peptide profile is ready.
-            </h1>
-            <p
-              style={{
-                color: "rgba(255,255,255,0.55)",
-                fontSize: "clamp(0.9rem, 2.5vw, 1rem)",
-                lineHeight: 1.7,
-              }}
-            >
-              We matched your biology across 8 domains. Enter your email to unlock your full personalized protocol.
-            </p>
-          </div>
-
-          {topThree.length > 0 ? (
-            <div className="relative mb-7">
-              <div className="space-y-2.5">
-                {topThree.map((match, index) => (
-                  <div
-                    key={match.peptideId}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3"
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.09)",
-                      filter: index === 0 ? "none" : `blur(${index * 2}px)`,
-                      opacity: index === 0 ? 1 : 0.5,
-                    }}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span
-                          className="text-sm font-semibold text-white"
-                          style={index > 0 ? { filter: "blur(5px)", userSelect: "none" } : {}}
-                        >
-                          {index === 0 ? match.name : "████████"}
-                        </span>
-                        {index === 0
-                          ? match.categories.slice(0, 2).map((category) => (
-                              <span
-                                key={category}
-                                className="rounded-full px-2 py-0.5 text-xs"
-                                style={{
-                                  background: "rgba(56,189,248,0.15)",
-                                  color: "#38bdf8",
-                                }}
-                              >
-                                {category}
-                              </span>
-                            ))
-                          : null}
-                      </div>
-                    </div>
-                    <span
-                      className="flex-shrink-0 text-lg font-bold"
-                      style={{
-                        color: index === 0 ? "#38bdf8" : "rgba(255,255,255,0.3)",
-                        filter: index > 0 ? "blur(4px)" : "none",
-                        fontFamily: "'DM Serif Display', serif",
-                      }}
-                    >
-                      {match.matchPercent}%
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <div
-                className="absolute bottom-0 left-0 right-0 h-20 rounded-b-xl"
-                style={{ background: "linear-gradient(to bottom, transparent, #0f172a)" }}
-              />
-            </div>
-          ) : null}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Input
-                type="email"
-                placeholder="Enter your email address"
-                value={email}
-                onChange={(event) => {
-                  setEmail(event.target.value);
-                  setEmailError("");
-                }}
-                className="rounded-xl border-0 text-base"
-                style={{
-                  height: "52px",
-                  background: "rgba(255,255,255,0.08)",
-                  color: "white",
-                  outline: "1px solid rgba(255,255,255,0.15)",
-                }}
-                required
-              />
-              {emailError ? <p className="mt-1.5 text-xs text-red-400">{emailError}</p> : null}
-            </div>
-
-            <div
-              className="flex items-start gap-3 rounded-xl p-4"
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.1)",
-              }}
-            >
-              <Checkbox
-                id="consent"
-                checked={consent}
-                onCheckedChange={(value) => setConsent(value === true)}
-                className="mt-0.5 h-5 w-5 flex-shrink-0 border-white/30 data-[state=checked]:bg-cyan-500 data-[state=checked]:border-cyan-500"
-              />
-              <label
-                htmlFor="consent"
-                className="cursor-pointer text-xs leading-relaxed"
-                style={{ color: "rgba(255,255,255,0.55)" }}
-              >
-                I agree to receive my personalized peptide report and understand that PeptidePilot may connect me with vetted telehealth and wellness providers relevant to my profile. I can withdraw consent at any time.{" "}
-                <Link
-                  href="/privacy"
-                  className="underline underline-offset-2"
-                  style={{ color: "rgba(255,255,255,0.75)" }}
-                >
-                  Privacy Policy
-                </Link>
-              </label>
-            </div>
-
-            <Button
-              type="submit"
-              size="lg"
-              disabled={isLoading || !consent}
-              className="w-full rounded-xl border-0 text-base font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99]"
-              style={{
-                height: "52px",
-                background: consent
-                  ? "linear-gradient(135deg, #38bdf8, #a855f7)"
-                  : "rgba(255,255,255,0.1)",
-                color: consent ? "white" : "rgba(255,255,255,0.35)",
-                cursor: consent ? "pointer" : "not-allowed",
-              }}
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                  Preparing your report…
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  Unlock My Full Results
-                  <ArrowRight className="h-4 w-4" />
-                </span>
-              )}
-            </Button>
-          </form>
-
-          <p className="mt-4 text-center text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
-            Free, always. No credit card required. Unsubscribe anytime.
-          </p>
-        </div>
-      </main>
-    </div>
-  );
-}
-
 export default function Results() {
   const [, navigate] = useLocation();
   const { state, reset } = useQuiz();
@@ -384,16 +125,11 @@ export default function Results() {
     seedReturningSession,
   } =
     useReturningSession();
+  const hasBootstrappedLeadRef = useRef(false);
   const [revealed, setRevealed] = useState(false);
   const [leadId, setLeadId] = useState("");
   const [matches, setMatches] = useState<ReturningMatchSummary[]>([]);
-  const [submittedEmail, setSubmittedEmail] = useState("");
   const [selectedPeptideId, setSelectedPeptideId] = useState("");
-  const [pendingMetaEventIds, setPendingMetaEventIds] = useState<{
-    lead: string;
-    completeRegistration: string;
-    viewContent: string;
-  } | null>(null);
 
   const sessionId = getVisitorSessionId();
   const submitQuiz = trpc.quiz.submitQuiz.useMutation({
@@ -401,53 +137,6 @@ export default function Results() {
       setLeadId(data.leadId);
       setMatches(data.returningResults);
       setRevealed(true);
-
-      if (submittedEmail) {
-        applyMetaAdvancedMatching(submittedEmail);
-      }
-
-      const isGlp1Lead = data.returningResults[0]?.peptideId === "semaglutide";
-
-      trackMetaEvent(
-        "CompleteRegistration",
-        {
-          content_name: "Peptide Quiz",
-          status: "completed",
-        },
-        pendingMetaEventIds?.completeRegistration,
-      );
-      trackMetaEvent(
-        "Lead",
-        {
-          content_name: data.returningResults[0]?.name ?? "Peptide Results",
-          content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
-          value: isGlp1Lead ? 50 : 10,
-          currency: "USD",
-        },
-        pendingMetaEventIds?.lead,
-      );
-      trackMetaEvent(
-        "ViewContent",
-        {
-          content_name: data.returningResults[0]?.name ?? "Peptide Results",
-          content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
-          content_ids: data.returningResults[0]?.peptideId
-            ? [data.returningResults[0].peptideId]
-            : undefined,
-        },
-        pendingMetaEventIds?.viewContent,
-      );
-
-      if (submittedEmail) {
-        void identifyLogRocketUser(submittedEmail, {
-          email: submittedEmail,
-          leadId: data.leadId,
-          topMatch: data.returningResults[0]?.peptideId ?? null,
-          budget: BUDGET_OPTIONS[state.answers[QUIZ_INDEX.BUDGET] ?? -1] ?? null,
-          primaryGoal:
-            PRIMARY_GOAL_OPTIONS[state.answers[QUIZ_INDEX.PRIMARY_GOAL] ?? -1] ?? null,
-        });
-      }
 
       if (data.returningToken) {
         seedReturningSession({
@@ -476,8 +165,13 @@ export default function Results() {
     [state.answers],
   );
   const restoredMatches = session?.topMatches ?? [];
-  const activeMatches = revealed ? matches : restoredMatches;
-  const activeLeadId = revealed ? leadId : session?.leadId ?? "";
+  const activeMatches =
+    revealed && matches.length > 0
+      ? matches
+      : restoredMatches.length > 0
+        ? restoredMatches
+        : previewMatches;
+  const activeLeadId = leadId || session?.leadId || "";
 
   const availablePeptideIds = trpc.affiliates.availablePeptideIds.useQuery(
     { peptideIds: activeMatches.map((match) => match.peptideId) },
@@ -495,6 +189,37 @@ export default function Results() {
 
     navigate("/quiz");
   }, [hasFreshQuizState, navigate, sessionStatus]);
+
+  useEffect(() => {
+    if (
+      hasBootstrappedLeadRef.current ||
+      submitQuiz.isPending ||
+      !hasFreshQuizState ||
+      sessionStatus === "pending" ||
+      sessionStatus === "restored" ||
+      previewMatches.length === 0
+    ) {
+      return;
+    }
+
+    hasBootstrappedLeadRef.current = true;
+    submitQuiz.mutate({
+      email: null,
+      consentGiven: false,
+      answers: state.answers.map((answer) => answer ?? -1),
+      sessionId,
+      meta: {
+        sourceUrl: typeof window !== "undefined" ? window.location.href : undefined,
+      },
+    });
+  }, [
+    hasFreshQuizState,
+    previewMatches.length,
+    sessionId,
+    sessionStatus,
+    state.answers,
+    submitQuiz,
+  ]);
 
   const displayMatches = useMemo(() => {
     if (!activeMatches.length) return [];
@@ -575,32 +300,6 @@ export default function Results() {
       });
   }, [activeLinks.data, selectedMatch]);
 
-  const handleReveal = (email: string, consent: boolean) => {
-    const eventIds = {
-      lead: createMetaEventId("lead"),
-      completeRegistration: createMetaEventId("complete_registration"),
-      viewContent: createMetaEventId("view_content"),
-    };
-    const browserIds = getMetaBrowserIdentifiers();
-
-    setSubmittedEmail(email);
-    setPendingMetaEventIds(eventIds);
-
-    submitQuiz.mutate({
-      email,
-      consentGiven: consent,
-      answers: state.answers.map((answer) => answer ?? -1),
-      sessionId,
-      meta: {
-        sourceUrl: typeof window !== "undefined" ? window.location.href : undefined,
-        leadEventId: eventIds.lead,
-        completeRegistrationEventId: eventIds.completeRegistration,
-        viewContentEventId: eventIds.viewContent,
-        ...browserIds,
-      },
-    });
-  };
-
   const handleRetake = () => {
     reset();
     navigate("/quiz");
@@ -664,10 +363,8 @@ export default function Results() {
   }
 
   return (
-    <LeadCaptureGate
-      onReveal={handleReveal}
-      isLoading={submitQuiz.isPending}
-      previewMatches={previewMatches}
-    />
+    <div className="flex min-h-screen items-center justify-center bg-[#f6f8f7] px-6 text-center text-[#4a5b58]">
+      Preparing your results…
+    </div>
   );
 }
