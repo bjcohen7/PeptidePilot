@@ -1,24 +1,31 @@
 export const RETURNING_TOKEN_KEY = "peptidepilot_returning_token";
 
-export type ReturningTokenSource = "url" | "localStorage" | null;
+type ResolveReturningTokenResult = {
+  activeToken: string | null;
+  shouldToastReplacement: boolean;
+  shouldPersistUrlToken: boolean;
+};
 
-export function resolveReturningToken(urlToken: string | null, localToken: string | null) {
-  const activeToken = urlToken ?? localToken;
-  const tokenSource: ReturningTokenSource = urlToken
-    ? "url"
-    : localToken
-      ? "localStorage"
-      : null;
+export function resolveReturningToken(
+  urlToken: string | null,
+  existingToken: string | null,
+): ResolveReturningTokenResult {
+  if (urlToken) {
+    return {
+      activeToken: urlToken,
+      shouldToastReplacement: Boolean(existingToken && existingToken !== urlToken),
+      shouldPersistUrlToken: true,
+    };
+  }
 
   return {
-    activeToken,
-    tokenSource,
-    shouldPersistUrlToken: Boolean(urlToken),
-    shouldToastReplacement: Boolean(urlToken && localToken && urlToken !== localToken),
+    activeToken: existingToken,
+    shouldToastReplacement: false,
+    shouldPersistUrlToken: false,
   };
 }
 
-export function getReturningTokenErrorCode(error: unknown) {
+function getErrorCode(error: unknown) {
   if (!error || typeof error !== "object") return null;
 
   const candidate = error as {
@@ -30,5 +37,6 @@ export function getReturningTokenErrorCode(error: unknown) {
 }
 
 export function shouldClearReturningToken(error: unknown) {
-  return getReturningTokenErrorCode(error) === "NOT_FOUND";
+  const code = getErrorCode(error);
+  return code === "NOT_FOUND" || code === "BAD_REQUEST" || code === "UNAUTHORIZED";
 }

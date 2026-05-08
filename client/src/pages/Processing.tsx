@@ -4,9 +4,8 @@ import { useQuiz } from "@/contexts/QuizContext";
 import { calculateMatches } from "../../../shared/scoring";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
-import { preloadResults } from "@/lib/preloadQuiz";
 
-const SLIDE_DURATION = 4200;
+const SLIDE_DURATION = 3000;
 
 interface Slide {
   icon: string;
@@ -124,7 +123,7 @@ const PRIORITY_MAP: Record<number, number[]> = {
 
 function getPersonalizedSlides(goalIndex: number): Slide[] {
   const order = PRIORITY_MAP[goalIndex] ?? [0, 1, 2, 3, 4, 5, 6];
-  const reordered = order.map((i) => BASE_SLIDES[i]!);
+  const reordered = order.map((i) => BASE_SLIDES[i]!).slice(0, 3);
   return [...reordered, BASE_SLIDES[7]!];
 }
 
@@ -186,7 +185,6 @@ export default function Processing() {
 
   // Bootstrap
   useEffect(() => {
-    void preloadResults();
     setTestimonialVisible(false);
     testimonialRef.current = setTimeout(() => setTestimonialVisible(true), 500);
     autoRef.current = setTimeout(() => goToSlide(1), SLIDE_DURATION);

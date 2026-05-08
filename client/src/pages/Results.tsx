@@ -1,35 +1,80 @@
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
-import { useLocation } from "wouter";
-import { useQuiz } from "@/contexts/QuizContext";
-import { useReturningSession } from "@/contexts/UserSessionContext";
-import { trpc } from "@/lib/trpc";
+import { Link, useLocation } from "wouter";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import ResultsCommercePage, {
   type ResultsVendorCard,
   type ResultsVendorCategoryFilter,
 } from "@/components/results/ResultsCommercePage";
+import { getVisitorSessionId } from "@/components/SessionTracker";
+import { useQuiz } from "@/contexts/QuizContext";
+import { useReturningSession } from "@/contexts/UserSessionContext";
+import { identifyLogRocketUser } from "@/lib/logrocket";
 import {
+  applyMetaAdvancedMatching,
   createMetaEventId,
+  getMetaBrowserIdentifiers,
   trackMetaEvent,
 } from "@/lib/metaPixel";
-import { getFacebookTrackingParams } from "@/utils/facebookUtils";
+import { trpc } from "@/lib/trpc";
 import {
+  BUDGET_OPTIONS,
   calculateMatches,
   libraryBackedPeptideProfileIds,
   peptideProfiles,
+  PRIMARY_GOAL_OPTIONS,
+  QUIZ_INDEX,
+  toReturningMatchSummary,
   type ReturningMatchSummary,
 } from "../../../shared/scoring";
-import { findResultsVendorPresentation } from "../../../shared/resultsVendorPresentation";
 
 const LIBRARY_BACKED_PROFILE_IDS = new Set<string>(libraryBackedPeptideProfileIds);
-function toReturningMatchSummary(result: ReturnType<typeof calculateMatches>[number]): ReturningMatchSummary {
-  return {
-    peptideId: result.peptide.id,
-    name: result.peptide.name,
-    description: result.peptide.description,
-    categories: result.peptide.categories,
-    matchPercent: result.matchPercent,
-  };
-}
+
+type VendorPresentation = {
+  category: ResultsVendorCategoryFilter;
+  logoMarkFallback: string;
+  headlineValue: string;
+  headlineUnit: string;
+  promoText?: string | null;
+  couponCode?: string | null;
+  trustSignals: string[];
+  features: string[];
+};
+
+const VENDOR_PRESENTATION_OVERRIDES: Record<string, Partial<VendorPresentation>> = {
+  "Peptide Sciences": {
+    category: "research-peptides",
+    logoMarkFallback: "PS",
+  },
+  "Core Peptides": {
+    category: "research-peptides",
+    logoMarkFallback: "CP",
+  },
+  "Limitless Life": {
+    category: "telehealth",
+    logoMarkFallback: "LL",
+  },
+  "Defy Medical": {
+    category: "telehealth",
+    logoMarkFallback: "DM",
+  },
+  "Hone Health": {
+    category: "telehealth",
+    logoMarkFallback: "HH",
+  },
+  LifeMD: {
+    category: "telehealth",
+    logoMarkFallback: "LM",
+  },
+  PeterMD: {
+    category: "telehealth",
+    logoMarkFallback: "PM",
+  },
+};
 
 function getLibraryBackedMatches(answers: number[]) {
   return calculateMatches(answers).filter((result) =>
@@ -37,45 +82,392 @@ function getLibraryBackedMatches(answers: number[]) {
   );
 }
 
-function prettyFocusLabel(value: string) {
-  return value
-    .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+function buildLogoFallback(name: string) {
+  const tokens = name
+    .split(/[\s-]+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
+
+  if (tokens.length === 0) return "PP";
+  if (tokens.length === 1) return tokens[0]!.slice(0, 2).toUpperCase();
+
+  return `${tokens[0]![0] ?? ""}${tokens[1]![0] ?? ""}`.toUpperCase();
 }
 
-function buildVendorFeatures({
-  explicitFeatures,
-  category,
+function buildVendorPresentation(name: string): VendorPresentation {
+  const override = VENDOR_PRESENTATION_OVERRIDES[name] ?? {};
+  const isTelehealth =
+    override.category === "telehealth" ||
+    /(?:\bmd\b|medical|health|clinic|care|wellness|life)/i.test(name);
+  const category: ResultsVendorCategoryFilter = isTelehealth
+    ? "telehealth"
+    : "research-peptides";
+
+  return {
+    category,
+    logoMarkFallback: override.logoMarkFallback ?? buildLogoFallback(name),
+    headlineValue:
+      override.headlineValue ?? (category === "telehealth" ? "Pricing varies" : "Pricing varies"),
+    headlineUnit:
+      override.headlineUnit ??
+      (category === "telehealth" ? "telehealth intake" : "research catalog"),
+    promoText: override.promoText ?? null,
+    couponCode: override.couponCode ?? null,
+    trustSignals:
+      override.trustSignals ??
+      (category === "telehealth"
+        ? ["Doctor-guided", "Prescription included", "US-licensed"]
+        : ["Research-use catalog", "Direct checkout", "Independent vendor"]),
+    features:
+      override.features ??
+      (category === "telehealth"
+        ? ["Clinician intake", "Prescription support", "Ongoing follow-up"]
+        : ["Research-use catalog", "Multiple peptide options", "Direct checkout"]),
+  };
+}
+
+function LeadCaptureGate({
+  onReveal,
+  isLoading,
+  previewMatches,
 }: {
-  explicitFeatures?: string[];
-  category: ResultsVendorCategoryFilter;
+  onReveal: (email: string, consent: boolean) => void;
+  isLoading: boolean;
+  previewMatches: ReturningMatchSummary[];
 }) {
-  if (explicitFeatures?.length) {
-    return explicitFeatures.slice(0, 4);
-  }
+  const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [emailError, setEmailError] = useState("");
 
-  const features: string[] = [];
+  const topThree = previewMatches.slice(0, 3);
 
-  if (category === "telehealth") {
-    features.push("Video Visits");
-    features.push("Prescription Support");
-    features.push("Secure Messaging");
-  } else if (category === "research-peptides") {
-    features.push("Research catalog");
-    features.push("Direct checkout");
-  }
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    setEmailError("");
 
-  return features.slice(0, 4);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError("Please enter a valid email address.");
+      return;
+    }
+
+    if (!consent) {
+      toast.error("Please check the consent box to continue.");
+      return;
+    }
+
+    onReveal(email, consent);
+  };
+
+  return (
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: "linear-gradient(160deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)" }}
+    >
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div
+          className="absolute rounded-full blur-3xl"
+          style={{
+            width: 500,
+            height: 500,
+            top: "-10%",
+            left: "-5%",
+            background: "radial-gradient(circle, #38bdf81a, transparent 70%)",
+          }}
+        />
+        <div
+          className="absolute rounded-full blur-3xl"
+          style={{
+            width: 400,
+            height: 400,
+            bottom: "-10%",
+            right: "-5%",
+            background: "radial-gradient(circle, #a855f71a, transparent 70%)",
+          }}
+        />
+      </div>
+
+      <header className="relative z-10 flex items-center justify-center px-4 pt-5 pb-4">
+        <Link href="/">
+          <PeptidePilotLogo height={30} variant="light" />
+        </Link>
+      </header>
+
+      <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-6 sm:py-10">
+        <div className="w-full max-w-lg">
+          <div className="mb-8 text-center">
+            <div
+              className="mb-5 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-widest"
+              style={{
+                background: "rgba(56,189,248,0.12)",
+                color: "#38bdf8",
+                border: "1px solid rgba(56,189,248,0.25)",
+              }}
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Analysis Complete
+            </div>
+            <h1
+              className="mb-3 text-white leading-snug"
+              style={{
+                fontSize: "clamp(1.7rem, 4.5vw, 2.4rem)",
+                fontFamily: "'DM Serif Display', Georgia, serif",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              Your peptide profile is ready.
+            </h1>
+            <p
+              style={{
+                color: "rgba(255,255,255,0.55)",
+                fontSize: "clamp(0.9rem, 2.5vw, 1rem)",
+                lineHeight: 1.7,
+              }}
+            >
+              We matched your biology across 8 domains. Enter your email to unlock your full personalized protocol.
+            </p>
+          </div>
+
+          {topThree.length > 0 ? (
+            <div className="relative mb-7">
+              <div className="space-y-2.5">
+                {topThree.map((match, index) => (
+                  <div
+                    key={match.peptideId}
+                    className="flex items-center gap-3 rounded-xl px-4 py-3"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.09)",
+                      filter: index === 0 ? "none" : `blur(${index * 2}px)`,
+                      opacity: index === 0 ? 1 : 0.5,
+                    }}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className="text-sm font-semibold text-white"
+                          style={index > 0 ? { filter: "blur(5px)", userSelect: "none" } : {}}
+                        >
+                          {index === 0 ? match.name : "████████"}
+                        </span>
+                        {index === 0
+                          ? match.categories.slice(0, 2).map((category) => (
+                              <span
+                                key={category}
+                                className="rounded-full px-2 py-0.5 text-xs"
+                                style={{
+                                  background: "rgba(56,189,248,0.15)",
+                                  color: "#38bdf8",
+                                }}
+                              >
+                                {category}
+                              </span>
+                            ))
+                          : null}
+                      </div>
+                    </div>
+                    <span
+                      className="flex-shrink-0 text-lg font-bold"
+                      style={{
+                        color: index === 0 ? "#38bdf8" : "rgba(255,255,255,0.3)",
+                        filter: index > 0 ? "blur(4px)" : "none",
+                        fontFamily: "'DM Serif Display', serif",
+                      }}
+                    >
+                      {match.matchPercent}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div
+                className="absolute bottom-0 left-0 right-0 h-20 rounded-b-xl"
+                style={{ background: "linear-gradient(to bottom, transparent, #0f172a)" }}
+              />
+            </div>
+          ) : null}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Input
+                type="email"
+                placeholder="Enter your email address"
+                value={email}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  setEmailError("");
+                }}
+                className="rounded-xl border-0 text-base"
+                style={{
+                  height: "52px",
+                  background: "rgba(255,255,255,0.08)",
+                  color: "white",
+                  outline: "1px solid rgba(255,255,255,0.15)",
+                }}
+                required
+              />
+              {emailError ? <p className="mt-1.5 text-xs text-red-400">{emailError}</p> : null}
+            </div>
+
+            <div
+              className="flex items-start gap-3 rounded-xl p-4"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+            >
+              <Checkbox
+                id="consent"
+                checked={consent}
+                onCheckedChange={(value) => setConsent(value === true)}
+                className="mt-0.5 h-5 w-5 flex-shrink-0 border-white/30 data-[state=checked]:bg-cyan-500 data-[state=checked]:border-cyan-500"
+              />
+              <label
+                htmlFor="consent"
+                className="cursor-pointer text-xs leading-relaxed"
+                style={{ color: "rgba(255,255,255,0.55)" }}
+              >
+                I agree to receive my personalized peptide report and understand that PeptidePilot may connect me with vetted telehealth and wellness providers relevant to my profile. I can withdraw consent at any time.{" "}
+                <Link
+                  href="/privacy"
+                  className="underline underline-offset-2"
+                  style={{ color: "rgba(255,255,255,0.75)" }}
+                >
+                  Privacy Policy
+                </Link>
+              </label>
+            </div>
+
+            <Button
+              type="submit"
+              size="lg"
+              disabled={isLoading || !consent}
+              className="w-full rounded-xl border-0 text-base font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99]"
+              style={{
+                height: "52px",
+                background: consent
+                  ? "linear-gradient(135deg, #38bdf8, #a855f7)"
+                  : "rgba(255,255,255,0.1)",
+                color: consent ? "white" : "rgba(255,255,255,0.35)",
+                cursor: consent ? "pointer" : "not-allowed",
+              }}
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  Preparing your report…
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  Unlock My Full Results
+                  <ArrowRight className="h-4 w-4" />
+                </span>
+              )}
+            </Button>
+          </form>
+
+          <p className="mt-4 text-center text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+            Free, always. No credit card required. Unsubscribe anytime.
+          </p>
+        </div>
+      </main>
+    </div>
+  );
 }
 
 export default function Results() {
   const [, navigate] = useLocation();
   const { state, reset } = useQuiz();
-  const { session, isLoading: isReturningSessionLoading, sessionStatus } = useReturningSession();
-  const [selectedPeptideId, setSelectedPeptideId] = useState<string>("");
+  const {
+    session,
+    isLoading: isReturningSessionLoading,
+    sessionStatus,
+    seedReturningSession,
+  } =
+    useReturningSession();
+  const [revealed, setRevealed] = useState(false);
+  const [leadId, setLeadId] = useState("");
+  const [matches, setMatches] = useState<ReturningMatchSummary[]>([]);
+  const [submittedEmail, setSubmittedEmail] = useState("");
+  const [selectedPeptideId, setSelectedPeptideId] = useState("");
+  const [pendingMetaEventIds, setPendingMetaEventIds] = useState<{
+    lead: string;
+    completeRegistration: string;
+    viewContent: string;
+  } | null>(null);
+
+  const sessionId = getVisitorSessionId();
+  const submitQuiz = trpc.quiz.submitQuiz.useMutation({
+    onSuccess: (data) => {
+      setLeadId(data.leadId);
+      setMatches(data.returningResults);
+      setRevealed(true);
+
+      if (submittedEmail) {
+        applyMetaAdvancedMatching(submittedEmail);
+      }
+
+      const isGlp1Lead = data.returningResults[0]?.peptideId === "semaglutide";
+
+      trackMetaEvent(
+        "CompleteRegistration",
+        {
+          content_name: "Peptide Quiz",
+          status: "completed",
+        },
+        pendingMetaEventIds?.completeRegistration,
+      );
+      trackMetaEvent(
+        "Lead",
+        {
+          content_name: data.returningResults[0]?.name ?? "Peptide Results",
+          content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+          value: isGlp1Lead ? 50 : 10,
+          currency: "USD",
+        },
+        pendingMetaEventIds?.lead,
+      );
+      trackMetaEvent(
+        "ViewContent",
+        {
+          content_name: data.returningResults[0]?.name ?? "Peptide Results",
+          content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+          content_ids: data.returningResults[0]?.peptideId
+            ? [data.returningResults[0].peptideId]
+            : undefined,
+        },
+        pendingMetaEventIds?.viewContent,
+      );
+
+      if (submittedEmail) {
+        void identifyLogRocketUser(submittedEmail, {
+          email: submittedEmail,
+          leadId: data.leadId,
+          topMatch: data.returningResults[0]?.peptideId ?? null,
+          budget: BUDGET_OPTIONS[state.answers[QUIZ_INDEX.BUDGET] ?? -1] ?? null,
+          primaryGoal:
+            PRIMARY_GOAL_OPTIONS[state.answers[QUIZ_INDEX.PRIMARY_GOAL] ?? -1] ?? null,
+        });
+      }
+
+      if (data.returningToken) {
+        seedReturningSession({
+          token: data.returningToken,
+          leadId: data.leadId,
+          createdAt: new Date(),
+          topMatches: data.returningResults,
+          justCompletedQuiz: true,
+        });
+      }
+    },
+    onError: (error) => {
+      toast.error("Something went wrong. Please try again.");
+      console.error(error);
+    },
+  });
+
+  const trackAffiliateClick = trpc.quiz.trackAffiliateClick.useMutation();
 
   const hasFreshQuizState = state.isComplete || state.answers.some((answer) => answer !== null);
-
   const previewMatches = useMemo(
     () =>
       getLibraryBackedMatches(state.answers.map((answer) => answer ?? -1)).map(
@@ -83,10 +475,10 @@ export default function Results() {
       ),
     [state.answers],
   );
+  const restoredMatches = session?.topMatches ?? [];
+  const activeMatches = revealed ? matches : restoredMatches;
+  const activeLeadId = revealed ? leadId : session?.leadId ?? "";
 
-  const restoredMatches = !hasFreshQuizState ? session?.topMatches ?? [] : [];
-  const activeMatches = hasFreshQuizState ? previewMatches : restoredMatches;
-  const activeLeadId = session?.leadId ?? "";
   const availablePeptideIds = trpc.affiliates.availablePeptideIds.useQuery(
     { peptideIds: activeMatches.map((match) => match.peptideId) },
     {
@@ -106,15 +498,12 @@ export default function Results() {
 
   const displayMatches = useMemo(() => {
     if (!activeMatches.length) return [];
-    if (!availablePeptideIds.data) {
-      return activeMatches;
-    }
+    if (!availablePeptideIds.data) return activeMatches;
 
     const coveredIds = new Set(availablePeptideIds.data);
     const coveredMatches = activeMatches.filter((match) => coveredIds.has(match.peptideId));
 
-    if (coveredMatches.length > 0) return coveredMatches;
-    return activeMatches;
+    return coveredMatches.length > 0 ? coveredMatches : activeMatches;
   }, [activeMatches, availablePeptideIds.data]);
 
   useEffect(() => {
@@ -124,7 +513,7 @@ export default function Results() {
       if (current && displayMatches.some((match) => match.peptideId === current)) {
         return current;
       }
-      return displayMatches[0]?.peptideId ?? "";
+      return displayMatches[0]!.peptideId;
     });
   }, [displayMatches]);
 
@@ -140,81 +529,77 @@ export default function Results() {
     },
   );
 
-  const trackClick = trpc.quiz.trackAffiliateClick.useMutation();
-
   const vendorCards = useMemo<ResultsVendorCard[]>(() => {
     if (!selectedMatch) return [];
 
-    const sourceLinks = (activeLinks.data ?? []).map((link) => ({
+    const affiliateVendors = (activeLinks.data ?? []).map((link) => ({
       label: link.label,
       url: link.url,
-      cardHeadlineValue: link.cardHeadlineValue,
-      cardHeadlineUnit: link.cardHeadlineUnit,
-      cardPromoText: link.cardPromoText,
-      cardCouponCode: link.cardCouponCode,
-      cardBadge: link.cardBadge,
     }));
 
-    let visibleBadgeCount = 0;
+    const profile = peptideProfiles.find((candidate) => candidate.id === selectedMatch.peptideId);
+    const fallbackVendors =
+      affiliateVendors.length === 0 ? (profile?.vendors ?? []).map((vendor) => ({
+        label: vendor.name,
+        url: vendor.url,
+      })) : [];
 
-    return sourceLinks.map((link, index) => {
-      const presentation = findResultsVendorPresentation(link.label);
-      const category = presentation?.category ?? "research-peptides";
-      const offer =
-        (selectedMatch ? presentation?.offersByPeptideId?.[selectedMatch.peptideId] : undefined) ??
-        presentation?.defaultOffer;
-      const features = buildVendorFeatures({
-        explicitFeatures: presentation?.cardFeatures,
-        category,
-      });
-      const headlineValue =
-        link.cardHeadlineValue?.trim() ||
-        offer?.headlineValue ||
-        (category === "telehealth" ? "Provider" : "Shop now");
-      const headlineUnit =
-        link.cardHeadlineUnit?.trim() ||
-        offer?.headlineUnit ||
-        "pricing varies";
-      const couponCode = link.cardCouponCode?.trim() || null;
-      const promoText =
-        link.cardPromoText?.trim() ||
-        offer?.promoText ||
-        null;
-      const requestedBadge =
-        link.cardBadge?.trim() ||
-        presentation?.cardBadge ||
-        (index === 0 ? "Recommended" : null);
-      const badge =
-        requestedBadge && visibleBadgeCount < 3
-          ? (visibleBadgeCount += 1, requestedBadge)
-          : null;
-
-      return {
-        id: presentation?.id ?? `${selectedMatch.peptideId}-${index}`,
-        name: presentation?.name ?? link.label,
-        category,
-        affiliateUrl: link.url,
-        logoUrl: presentation?.logoUrl,
-        logoAlt: presentation?.logoAlt,
-        logoMarkFallback: presentation?.logoMarkFallback ?? link.label.slice(0, 2).toUpperCase(),
-        badge,
-        headlineValue,
-        headlineUnit,
-        promoText,
-        couponCode,
-        planName: selectedMatch.name,
-        planDetail:
-          selectedMatch.categories.length > 0
-            ? `Best aligned with ${selectedMatch.categories
-                .slice(0, 2)
-                .map((category) => prettyFocusLabel(category).toLowerCase())
-                .join(" + ")}`
-            : "Matched from your quiz profile",
-        supplyTag: `${selectedMatch.matchPercent}% fit`,
-        features,
-      };
+    const sourceVendors = [...affiliateVendors, ...fallbackVendors];
+    const deduped = new Map<string, { label: string; url: string }>();
+    sourceVendors.forEach((vendor) => {
+      const key = `${vendor.label}::${vendor.url}`;
+      if (!deduped.has(key)) {
+        deduped.set(key, vendor);
+      }
     });
+
+    return Array.from(deduped.values())
+      .slice(0, 4)
+      .map((vendor, index) => {
+        const presentation = buildVendorPresentation(vendor.label);
+
+        return {
+          id: `${selectedMatch.peptideId}-${index}-${vendor.label}`,
+          name: vendor.label,
+          category: presentation.category,
+          affiliateUrl: vendor.url,
+          logoMarkFallback: presentation.logoMarkFallback,
+          badge: index === 0 ? "Recommended" : null,
+          headlineValue: presentation.headlineValue,
+          headlineUnit: presentation.headlineUnit,
+          promoText: presentation.promoText ?? null,
+          couponCode: presentation.couponCode ?? null,
+          features: presentation.features,
+          trustSignals: presentation.trustSignals,
+        };
+      });
   }, [activeLinks.data, selectedMatch]);
+
+  const handleReveal = (email: string, consent: boolean) => {
+    const eventIds = {
+      lead: createMetaEventId("lead"),
+      completeRegistration: createMetaEventId("complete_registration"),
+      viewContent: createMetaEventId("view_content"),
+    };
+    const browserIds = getMetaBrowserIdentifiers();
+
+    setSubmittedEmail(email);
+    setPendingMetaEventIds(eventIds);
+
+    submitQuiz.mutate({
+      email,
+      consentGiven: consent,
+      answers: state.answers.map((answer) => answer ?? -1),
+      sessionId,
+      meta: {
+        sourceUrl: typeof window !== "undefined" ? window.location.href : undefined,
+        leadEventId: eventIds.lead,
+        completeRegistrationEventId: eventIds.completeRegistration,
+        viewContentEventId: eventIds.viewContent,
+        ...browserIds,
+      },
+    });
+  };
 
   const handleRetake = () => {
     reset();
@@ -224,7 +609,7 @@ export default function Results() {
   const handleVendorClick = (vendor: ResultsVendorCard, event?: MouseEvent<HTMLAnchorElement>) => {
     if (!selectedMatch) return;
 
-    const shouldLetBrowserHandle =
+    const allowDefaultBrowserBehavior =
       !event ||
       event.button !== 0 ||
       event.metaKey ||
@@ -232,100 +617,57 @@ export default function Results() {
       event.shiftKey ||
       event.altKey;
 
-    if (!shouldLetBrowserHandle) {
+    if (!allowDefaultBrowserBehavior) {
       event.preventDefault();
     }
 
     if (activeLeadId) {
-      trackClick.mutate({
+      trackAffiliateClick.mutate({
         leadId: activeLeadId,
         peptideId: selectedMatch.peptideId,
         vendor: vendor.name,
       });
     }
 
-    const eventId = createMetaEventId("affiliate_click");
-    trackMetaEvent(
-      "Lead",
-      {
-        content_name: vendor.name,
-        content_category: selectedMatch.name,
-      },
-      eventId,
-    );
+    trackMetaEvent("Lead", {
+      content_name: vendor.name,
+      content_category: selectedMatch.name,
+    });
 
-    const { fbc, fbp } = getFacebookTrackingParams();
-    const capiPayload = {
-      email: null,
-      eventName: "Lead",
-      eventUrl: typeof window !== "undefined" ? window.location.href : null,
-      fbc: fbc ?? null,
-      fbp: fbp ?? null,
-      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
-      supplierName: vendor.name,
-      peptideName: selectedMatch.name,
-      eventId,
-    };
-
-    const payload = JSON.stringify(capiPayload);
-
-    if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
-      const sent = navigator.sendBeacon(
-        "/api/capi/track-affiliate-click",
-        new Blob([payload], { type: "application/json" }),
-      );
-
-      if (!sent) {
-        void fetch("/api/capi/track-affiliate-click", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: payload,
-          keepalive: true,
-        }).catch((error) => {
-          console.warn("[CAPI] Affiliate click tracking failed:", error);
-        });
-      }
-    } else {
-      void fetch("/api/capi/track-affiliate-click", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: payload,
-        keepalive: true,
-      }).catch((error) => {
-        console.warn("[CAPI] Affiliate click tracking failed:", error);
-      });
+    if (!allowDefaultBrowserBehavior && typeof window !== "undefined") {
+      window.setTimeout(() => {
+        window.location.assign(vendor.affiliateUrl);
+      }, 120);
     }
-
-    if (shouldLetBrowserHandle || typeof window === "undefined") {
-      return;
-    }
-
-    window.setTimeout(() => {
-      window.location.assign(vendor.affiliateUrl);
-    }, 180);
   };
 
-  if (!hasFreshQuizState && sessionStatus === "pending" && isReturningSessionLoading) {
+  if (!hasFreshQuizState && isReturningSessionLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="text-sm text-muted-foreground">Loading your saved results…</div>
+      <div className="flex min-h-screen items-center justify-center bg-[#f6f8f7] px-6 text-center text-[#4a5b58]">
+        Loading your saved results…
       </div>
     );
   }
 
-  if (!selectedMatch) {
-    return null;
+  if (selectedMatch && displayMatches.length > 0) {
+    return (
+      <ResultsCommercePage
+        matches={displayMatches}
+        selectedMatch={selectedMatch}
+        vendors={vendorCards}
+        onRetake={handleRetake}
+        onSelectMatch={setSelectedPeptideId}
+        onVendorClick={handleVendorClick}
+        vendorLoading={activeLinks.isLoading}
+      />
+    );
   }
 
   return (
-    <ResultsCommercePage
-      matches={displayMatches}
-      selectedMatch={selectedMatch}
-      vendors={vendorCards}
-      onRetake={handleRetake}
-      onSelectMatch={setSelectedPeptideId}
-      onVendorClick={handleVendorClick}
-      vendorLoading={activeLinks.isLoading || availablePeptideIds.isLoading}
+    <LeadCaptureGate
+      onReveal={handleReveal}
+      isLoading={submitQuiz.isPending}
+      previewMatches={previewMatches}
     />
   );
 }
