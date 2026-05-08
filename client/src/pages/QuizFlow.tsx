@@ -184,22 +184,28 @@ export default function QuizFlow() {
     }
   }, [goTo, previousQuestionIndex]);
 
-  const advanceToQuestion = useCallback(
-    (questionIndex?: number) => {
+  const advanceFromQuestion = useCallback(
+    (questionIndex: number) => {
       triggerAdvance("forward", () => {
-        if (typeof questionIndex === "number") {
-          goTo(questionIndex);
+        const visibleIndex = visibleQuestionIndices.indexOf(questionIndex);
+        const nextVisibleQuestionIndex =
+          visibleIndex >= 0 ? visibleQuestionIndices[visibleIndex + 1] : undefined;
+
+        if (typeof nextVisibleQuestionIndex === "number") {
+          goTo(nextVisibleQuestionIndex);
           return;
         }
+
         completeQuiz();
       });
     },
-    [completeQuiz, goTo, triggerAdvance],
+    [completeQuiz, goTo, triggerAdvance, visibleQuestionIndices],
   );
 
   const handleSelectAnswer = useCallback(
     (idx: number) => {
       if (isTransitioning || selectedAnswer !== null) return;
+      const answeredQuestionIndex = currentIndex;
       selectAnswer(idx);
       const questionToAdvanceTo = nextQuestionIndex;
 
@@ -217,11 +223,12 @@ export default function QuizFlow() {
       }
 
       setTimeout(() => {
-        advanceToQuestion(questionToAdvanceTo);
+        advanceFromQuestion(answeredQuestionIndex);
       }, 320);
     },
     [
-      advanceToQuestion,
+      advanceFromQuestion,
+      currentIndex,
       isTransitioning,
       selectedAnswer,
       selectAnswer,
