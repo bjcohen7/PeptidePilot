@@ -1608,7 +1608,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "muscle-growth",
     title: "Best Peptides for Muscle Growth",
-    h1: "Best Peptides for Muscle Growth in 2025",
+    h1: "Best Peptides for Muscle Growth in 2026",
     metaDescription: "Independent analysis of the best peptides for muscle growth. Ranked by evidence, mechanism, and PeptidePilot quiz data. No vendor bias.",
     subtitle: "Science-backed rankings for lean muscle gain, strength, and body recomposition.",
     scienceSection: "Skeletal muscle growth (hypertrophy) is governed by the interplay between anabolic signaling pathways — primarily the mTOR pathway activated by resistance training and protein intake — and growth hormone/IGF-1 axis activity. As we age, growth hormone secretion declines by approximately 14% per decade after age 30, which contributes to the progressive loss of lean muscle mass known as sarcopenia. Peptides that stimulate growth hormone release address this decline directly, restoring the anabolic signaling environment that supports muscle protein synthesis. The most effective peptides for muscle growth work by stimulating the pituitary gland to release GH in natural, pulsatile patterns — preserving the body's regulatory feedback mechanisms while amplifying the anabolic signal.",
@@ -1630,7 +1630,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "fat-loss",
     title: "Best Peptides for Fat Loss",
-    h1: "Best Peptides for Fat Loss in 2025",
+    h1: "Best Peptides for Fat Loss in 2026",
     metaDescription: "Independent analysis of the best peptides for fat loss and body recomposition. Ranked by clinical evidence and PeptidePilot quiz data. No vendor bias.",
     subtitle: "Evidence-based rankings for sustainable fat loss, metabolic health, and body recomposition.",
     scienceSection: "Peptide-driven fat loss operates through two distinct mechanisms: appetite regulation via gut-brain hormonal signaling, and metabolic enhancement via growth hormone and mitochondrial pathways. GLP-1 receptor agonists like Semaglutide and Tirzepatide represent the most clinically validated approach — they reduce appetite by acting on hypothalamic satiety centers, slow gastric emptying to prolong fullness, and improve insulin sensitivity to reduce fat storage. GH secretagogues like Ipamorelin/CJC-1295 address fat loss through a different mechanism: elevated GH directly stimulates lipolysis (fat breakdown) in adipose tissue, particularly visceral fat, while preserving lean muscle mass.",
@@ -1652,7 +1652,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "joint-recovery",
     title: "Best Peptides for Joint Recovery",
-    h1: "Best Peptides for Joint Recovery in 2025",
+    h1: "Best Peptides for Joint Recovery in 2026",
     metaDescription: "Independent analysis of the best peptides for joint pain, tendon healing, and injury recovery. Ranked by evidence and PeptidePilot quiz data.",
     subtitle: "Science-backed rankings for joint pain relief, tendon healing, and connective tissue repair.",
     scienceSection: "Joint and connective tissue recovery involves the repair of cartilage, tendons, ligaments, and the synovial membrane. These tissues are notoriously slow to heal due to their limited blood supply and low cellular turnover. Peptides that promote healing in these tissues work through several mechanisms: stimulating collagen synthesis in fibroblasts, promoting angiogenesis to improve blood supply to injured tissue, reducing pro-inflammatory cytokines that perpetuate chronic inflammation, and upregulating growth hormone receptors in tendon cells to accelerate repair. The most effective peptides for joint recovery target multiple aspects of this healing cascade simultaneously.",
@@ -1674,7 +1674,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "gut-health",
     title: "Best Peptides for Gut Health",
-    h1: "Best Peptides for Gut Health in 2025",
+    h1: "Best Peptides for Gut Health in 2026",
     metaDescription: "Independent analysis of the best peptides for gut health, IBS, leaky gut, and digestive issues. Science-backed, vendor-neutral.",
     subtitle: "Evidence-based rankings for gut healing, IBS relief, and mucosal repair.",
     scienceSection: "The gut is one of the most complex organ systems in the body, with its own enteric nervous system, a vast immune surface, and a mucosal barrier that must simultaneously allow nutrient absorption and prevent pathogen entry. Peptides that support gut health work through several mechanisms: protecting and repairing the mucosal lining, modulating the gut-brain axis through vagal nerve pathways, reducing intestinal inflammation, and promoting the growth of beneficial gut flora. BPC-157 is uniquely positioned in this space due to its demonstrated ability to protect against NSAID-induced gastric damage, accelerate healing of inflammatory bowel disease, and modulate the gut-brain connection.",
@@ -1694,7 +1694,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "anti-aging",
     title: "Best Peptides for Anti-Aging",
-    h1: "Best Peptides for Anti-Aging in 2025",
+    h1: "Best Peptides for Anti-Aging in 2026",
     metaDescription: "Independent analysis of the best peptides for anti-aging, longevity, and cellular health. Science-backed, vendor-neutral rankings.",
     subtitle: "Evidence-based rankings for longevity, cellular health, and age reversal.",
     scienceSection: "Biological aging is driven by multiple converging mechanisms: telomere shortening, mitochondrial dysfunction, accumulation of senescent cells, declining growth hormone production, and progressive inflammation ('inflammaging'). Effective anti-aging peptide strategies address multiple hallmarks simultaneously. Epithalon targets telomere maintenance through telomerase activation. SS-31 addresses mitochondrial dysfunction. GH secretagogues like Sermorelin restore the declining GH/IGF-1 axis. GHK-Cu combats the collagen and elastin degradation that drives visible aging. No single peptide addresses all aging mechanisms — the most effective protocols combine peptides that target different pathways.",
@@ -1715,7 +1715,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "sleep-optimization",
     title: "Best Peptides for Sleep",
-    h1: "Best Peptides for Sleep Quality in 2025",
+    h1: "Best Peptides for Sleep Quality in 2026",
     metaDescription: "Independent analysis of the best peptides for sleep quality, deep sleep, and sleep architecture. Science-backed, vendor-neutral.",
     subtitle: "Evidence-based rankings for deeper sleep, faster recovery, and improved sleep architecture.",
     scienceSection: "Sleep quality is regulated by a complex interplay of neurotransmitters, hormones, and circadian signals. Growth hormone is secreted primarily during slow-wave (deep) sleep, creating a bidirectional relationship: poor sleep reduces GH output, and low GH further impairs sleep architecture. Peptides that improve sleep quality work through multiple mechanisms: stimulating GH release (which enhances slow-wave sleep), modulating the GABAergic system (reducing sleep-onset anxiety), regulating melatonin production through the pineal gland, and normalizing stress hormone patterns that disrupt sleep continuity.",
@@ -1736,7 +1736,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "cognitive-performance",
     title: "Best Peptides for Cognitive Performance",
-    h1: "Best Peptides for Cognitive Performance in 2025",
+    h1: "Best Peptides for Cognitive Performance in 2026",
     metaDescription: "Independent analysis of the best nootropic peptides for focus, memory, and cognitive enhancement. Science-backed, vendor-neutral.",
     subtitle: "Evidence-based rankings for focus, memory, BDNF production, and neuroprotection.",
     scienceSection: "Cognitive performance is underpinned by neurotransmitter balance, neuroplasticity (the brain's ability to form new connections), cerebral blood flow, and the health of the blood-brain barrier. Nootropic peptides enhance cognition through several mechanisms: upregulating BDNF and NGF (neurotrophic factors that support neuronal survival and plasticity), modulating dopaminergic and serotonergic systems, reducing neuroinflammation, and improving cerebral blood flow. The Russian nootropic peptides — Semax and Selank — have the most extensive research base in this category, with decades of clinical use in Russia for cognitive and neurological conditions.",
@@ -1756,7 +1756,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "anxiety-reduction",
     title: "Best Peptides for Anxiety",
-    h1: "Best Peptides for Anxiety in 2025",
+    h1: "Best Peptides for Anxiety in 2026",
     metaDescription: "Independent analysis of the best peptides for anxiety reduction and stress management. Science-backed, vendor-neutral.",
     subtitle: "Evidence-based rankings for anxiety relief, stress reduction, and emotional balance.",
     scienceSection: "Anxiety disorders involve dysregulation of the GABAergic system, the HPA (hypothalamic-pituitary-adrenal) axis, and serotonergic neurotransmission. Conventional anxiolytics (benzodiazepines, SSRIs) address these systems but carry significant side effect burdens including sedation, dependence, and sexual dysfunction. Peptide-based anxiolytics offer a potentially cleaner mechanism: Selank modulates GABA-A receptors through a non-benzodiazepine binding site, producing anxiolysis without sedation or dependence. This makes it particularly attractive for individuals who need anxiety relief without cognitive impairment.",
@@ -1775,7 +1775,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "skin-health",
     title: "Best Peptides for Skin Health",
-    h1: "Best Peptides for Skin Health in 2025",
+    h1: "Best Peptides for Skin Health in 2026",
     metaDescription: "Independent analysis of the best peptides for skin health, collagen synthesis, and anti-aging skincare. Science-backed, vendor-neutral.",
     subtitle: "Evidence-based rankings for collagen synthesis, skin firmness, and visible anti-aging.",
     scienceSection: "Skin aging is driven by declining collagen and elastin production, increased oxidative stress, reduced cell turnover, and impaired wound healing. The dermis loses approximately 1% of its collagen content per year after age 20, accelerating after menopause in women. Peptides that address skin aging work by stimulating fibroblast activity to produce new collagen and elastin, activating antioxidant enzyme systems, promoting cell migration and wound healing, and modulating the gene expression programs that govern skin remodeling.",
@@ -1795,7 +1795,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "hair-growth",
     title: "Best Peptides for Hair Growth",
-    h1: "Best Peptides for Hair Growth in 2025",
+    h1: "Best Peptides for Hair Growth in 2026",
     metaDescription: "Independent analysis of the best peptides for hair growth and hair loss prevention. Science-backed, vendor-neutral.",
     subtitle: "Evidence-based rankings for hair follicle stimulation, hair density, and hair loss prevention.",
     scienceSection: "Hair loss (alopecia) involves the progressive miniaturization of hair follicles, driven by DHT sensitivity (androgenetic alopecia), inflammation, oxidative stress, and reduced growth factor signaling. Peptides that support hair growth work by promoting the transition of follicles from the resting (telogen) to the active growth (anagen) phase, stimulating growth factors that support follicle health, reducing scalp inflammation, and improving blood supply to follicles.",
@@ -1814,7 +1814,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "longevity",
     title: "Best Peptides for Longevity",
-    h1: "Best Peptides for Longevity in 2025",
+    h1: "Best Peptides for Longevity in 2026",
     metaDescription: "Independent analysis of the best peptides for longevity, healthspan, and cellular anti-aging. Science-backed, vendor-neutral.",
     subtitle: "Evidence-based rankings for healthspan extension, cellular health, and longevity optimization.",
     scienceSection: "Longevity science has identified several key hallmarks of aging that are amenable to peptide intervention: telomere attrition, mitochondrial dysfunction, cellular senescence, loss of proteostasis, and deregulated nutrient sensing. The most promising longevity peptides address multiple hallmarks simultaneously. Epithalon targets telomere maintenance. SS-31 addresses mitochondrial dysfunction. MOTS-c activates AMPK, the master metabolic regulator. Together, these peptides represent a multi-target approach to slowing the biological aging process.",
@@ -1834,7 +1834,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "body-recomposition",
     title: "Best Peptides for Body Recomposition",
-    h1: "Best Peptides for Body Recomposition in 2025",
+    h1: "Best Peptides for Body Recomposition in 2026",
     metaDescription: "Independent analysis of the best peptides for body recomposition — simultaneously building muscle and losing fat. Science-backed, vendor-neutral.",
     subtitle: "Evidence-based rankings for simultaneous muscle gain and fat loss.",
     scienceSection: "Body recomposition — the simultaneous gain of lean muscle mass and loss of body fat — is physiologically challenging because the anabolic processes that build muscle and the catabolic processes that burn fat are typically in opposition. Peptides are uniquely positioned to support recomposition because GH secretagogues simultaneously stimulate muscle protein synthesis (via IGF-1) and lipolysis (via GH's direct fat-mobilizing effects). This dual action makes GH secretagogues the most effective peptide class for true body recomposition.",
@@ -1854,7 +1854,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "injury-recovery",
     title: "Best Peptides for Injury Recovery",
-    h1: "Best Peptides for Injury Recovery in 2025",
+    h1: "Best Peptides for Injury Recovery in 2026",
     metaDescription: "Independent analysis of the best peptides for injury recovery, wound healing, and tissue repair. Science-backed, vendor-neutral.",
     subtitle: "Evidence-based rankings for accelerated injury healing, tissue repair, and rehabilitation.",
     scienceSection: "Injury recovery involves a cascade of biological processes: inflammation (necessary for clearing damaged tissue), proliferation (new tissue formation), and remodeling (maturation and strengthening of new tissue). Peptides that accelerate recovery work by optimizing each phase of this cascade — resolving inflammation more quickly, stimulating the proliferation of repair cells (fibroblasts, myoblasts, endothelial cells), and promoting the synthesis of structural proteins (collagen, elastin) that restore tissue integrity.",
@@ -1875,7 +1875,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "energy",
     title: "Best Peptides for Energy",
-    h1: "Best Peptides for Energy in 2025",
+    h1: "Best Peptides for Energy in 2026",
     metaDescription: "Independent analysis of the best peptides for energy, vitality, and fatigue reduction. Science-backed, vendor-neutral.",
     subtitle: "Evidence-based rankings for sustained energy, reduced fatigue, and improved vitality.",
     scienceSection: "Chronic fatigue and low energy are driven by multiple biological factors: mitochondrial dysfunction (reduced cellular energy production), HPA axis dysregulation (cortisol imbalance), declining growth hormone (which affects cellular metabolism and sleep quality), and neuroinflammation. Peptides that address energy work through complementary mechanisms: SS-31 directly targets mitochondrial function, GH secretagogues restore the metabolic and sleep-quality benefits of optimal GH levels, and MOTS-c activates AMPK to improve metabolic efficiency.",
@@ -1895,7 +1895,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "libido",
     title: "Best Peptides for Libido",
-    h1: "Best Peptides for Libido in 2025",
+    h1: "Best Peptides for Libido in 2026",
     metaDescription: "Independent analysis of the best peptides for libido enhancement and sexual health. Science-backed, vendor-neutral.",
     subtitle: "Evidence-based rankings for libido enhancement, sexual desire, and sexual health.",
     scienceSection: "Sexual desire is regulated by a complex interplay of hormones (testosterone, estrogen, DHEA), neurotransmitters (dopamine, serotonin), and central nervous system signaling. Low libido can have multiple causes: hormonal deficiency, psychological factors (anxiety, depression), vascular issues, or neurological dysfunction. Peptides address libido through different mechanisms depending on the underlying cause: PT-141 works centrally on melanocortin receptors to enhance desire at the neurological level, while GH secretagogues address hormonal contributors to low libido through the GH/IGF-1 axis.",
@@ -1915,7 +1915,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "inflammation",
     title: "Best Peptides for Inflammation",
-    h1: "Best Peptides for Inflammation in 2025",
+    h1: "Best Peptides for Inflammation in 2026",
     metaDescription: "Independent analysis of the best peptides for reducing inflammation and inflammatory conditions. Science-backed, vendor-neutral.",
     subtitle: "Evidence-based rankings for systemic and localized inflammation reduction.",
     scienceSection: "Chronic inflammation is now recognized as a central driver of most age-related diseases, from cardiovascular disease to neurodegeneration. Unlike acute inflammation (which is necessary for healing), chronic low-grade inflammation ('inflammaging') perpetuates tissue damage and accelerates biological aging. Peptides that address inflammation work through multiple mechanisms: downregulating pro-inflammatory cytokines (TNF-α, IL-1β, IL-6), activating anti-inflammatory pathways, and promoting the resolution phase of inflammation through specialized pro-resolving mediators.",
@@ -1935,7 +1935,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "metabolic-health",
     title: "Best Peptides for Metabolic Health",
-    h1: "Best Peptides for Metabolic Health in 2025",
+    h1: "Best Peptides for Metabolic Health in 2026",
     metaDescription: "Independent analysis of the best peptides for metabolic health, insulin sensitivity, and metabolic syndrome. Science-backed, vendor-neutral.",
     subtitle: "Evidence-based rankings for insulin sensitivity, metabolic optimization, and metabolic syndrome.",
     scienceSection: "Metabolic health encompasses insulin sensitivity, blood glucose regulation, lipid metabolism, and the absence of metabolic syndrome. Declining metabolic health is driven by insulin resistance, mitochondrial dysfunction, chronic inflammation, and hormonal changes. Peptides that improve metabolic health work through complementary mechanisms: GLP-1 agonists directly improve insulin secretion and sensitivity, MOTS-c activates AMPK to improve metabolic flexibility, and GH secretagogues address the hormonal contributors to metabolic decline.",
@@ -1954,7 +1954,7 @@ export const goalPages: GoalPageData[] = [
   {
     slug: "muscle-recovery",
     title: "Best Peptides for Muscle Recovery",
-    h1: "Best Peptides for Muscle Recovery in 2025",
+    h1: "Best Peptides for Muscle Recovery in 2026",
     metaDescription: "Independent analysis of the best peptides for muscle recovery, soreness reduction, and post-workout healing. Science-backed, vendor-neutral.",
     subtitle: "Evidence-based rankings for faster muscle recovery, soreness reduction, and training adaptation.",
     scienceSection: "Muscle recovery involves the repair of exercise-induced micro-tears in muscle fibers, resolution of exercise-induced inflammation, replenishment of glycogen stores, and adaptation of muscle tissue to the training stimulus. Peptides that accelerate muscle recovery work by promoting satellite cell activation (the muscle stem cells responsible for repair), reducing pro-inflammatory cytokines, and improving blood flow to recovering tissue.",
