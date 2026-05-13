@@ -359,67 +359,67 @@ export const pseoSections = [
       {
         "slug": "bone-density",
         "path": "/goals/bone-density",
-        "title": "Best Peptides for Bone Density Support in 2025"
+        "title": "Best Peptides for Bone Density Support in 2026"
       },
       {
         "slug": "wound-repair",
         "path": "/goals/wound-repair",
-        "title": "Best Peptides for Wound Repair Support in 2025"
+        "title": "Best Peptides for Wound Repair Support in 2026"
       },
       {
         "slug": "immune-support",
         "path": "/goals/immune-support",
-        "title": "Best Peptides for Immune Support in 2025"
+        "title": "Best Peptides for Immune Support in 2026"
       },
       {
         "slug": "neuroprotection",
         "path": "/goals/neuroprotection",
-        "title": "Best Peptides for Neuroprotection in 2025"
+        "title": "Best Peptides for Neuroprotection in 2026"
       },
       {
         "slug": "cardiovascular-health",
         "path": "/goals/cardiovascular-health",
-        "title": "Best Peptides for Cardiovascular Health in 2025"
+        "title": "Best Peptides for Cardiovascular Health in 2026"
       },
       {
         "slug": "blood-sugar-control",
         "path": "/goals/blood-sugar-control",
-        "title": "Best Peptides for Blood Sugar Control in 2025"
+        "title": "Best Peptides for Blood Sugar Control in 2026"
       },
       {
         "slug": "vision-health",
         "path": "/goals/vision-health",
-        "title": "Best Peptides for Vision Health Support in 2025"
+        "title": "Best Peptides for Vision Health Support in 2026"
       },
       {
         "slug": "hearing-support",
         "path": "/goals/hearing-support",
-        "title": "Best Peptides for Hearing Support in 2025"
+        "title": "Best Peptides for Hearing Support in 2026"
       },
       {
         "slug": "nerve-regeneration",
         "path": "/goals/nerve-regeneration",
-        "title": "Best Peptides for Nerve Regeneration in 2025"
+        "title": "Best Peptides for Nerve Regeneration in 2026"
       },
       {
         "slug": "cartilage-repair",
         "path": "/goals/cartilage-repair",
-        "title": "Best Peptides for Cartilage Repair Support in 2025"
+        "title": "Best Peptides for Cartilage Repair Support in 2026"
       },
       {
         "slug": "muscle-endurance",
         "path": "/goals/muscle-endurance",
-        "title": "Best Peptides for Muscle Endurance in 2025"
+        "title": "Best Peptides for Muscle Endurance in 2026"
       },
       {
         "slug": "sprint-performance",
         "path": "/goals/sprint-performance",
-        "title": "Best Peptides for Sprint Performance in 2025"
+        "title": "Best Peptides for Sprint Performance in 2026"
       },
       {
         "slug": "vo2-max",
         "path": "/goals/vo2-max",
-        "title": "Best Peptides for VO2 Max Support in 2025"
+        "title": "Best Peptides for VO2 Max Support in 2026"
       },
       {
         "slug": "focus-and-concentration",
@@ -429,7 +429,7 @@ export const pseoSections = [
       {
         "slug": "memory-retention",
         "path": "/goals/memory-retention",
-        "title": "Best Peptides for Memory Retention in 2025"
+        "title": "Best Peptides for Memory Retention in 2026"
       },
       {
         "slug": "verbal-fluency",
@@ -439,7 +439,7 @@ export const pseoSections = [
       {
         "slug": "stress-resilience",
         "path": "/goals/stress-resilience",
-        "title": "Best Peptides for Stress Resilience in 2025"
+        "title": "Best Peptides for Stress Resilience in 2026"
       },
       {
         "slug": "mood-elevation",
@@ -454,22 +454,22 @@ export const pseoSections = [
       {
         "slug": "ptsd-support",
         "path": "/goals/ptsd-support",
-        "title": "Best Peptides for PTSD Recovery Support in 2025"
+        "title": "Best Peptides for PTSD Recovery Support in 2026"
       },
       {
         "slug": "collagen-production",
         "path": "/goals/collagen-production",
-        "title": "Best Peptides for Collagen Production in 2025"
+        "title": "Best Peptides for Collagen Production in 2026"
       },
       {
         "slug": "elastin-production",
         "path": "/goals/elastin-production",
-        "title": "Best Peptides for Elastin Production in 2025"
+        "title": "Best Peptides for Elastin Production in 2026"
       },
       {
         "slug": "sun-damage-repair",
         "path": "/goals/sun-damage-repair",
-        "title": "Best Peptides for Sun Damage Repair in 2025"
+        "title": "Best Peptides for Sun Damage Repair in 2026"
       },
       {
         "slug": "scar-reduction",
@@ -479,32 +479,32 @@ export const pseoSections = [
       {
         "slug": "hyperpigmentation",
         "path": "/goals/hyperpigmentation",
-        "title": "Best Peptides for Hyperpigmentation in 2025"
+        "title": "Best Peptides for Hyperpigmentation in 2026"
       },
       {
         "slug": "nail-health",
         "path": "/goals/nail-health",
-        "title": "Best Peptides for Nail Health Support in 2025"
+        "title": "Best Peptides for Nail Health Support in 2026"
       },
       {
         "slug": "gut-motility",
         "path": "/goals/gut-motility",
-        "title": "Best Peptides for Gut Motility Support in 2025"
+        "title": "Best Peptides for Gut Motility Support in 2026"
       },
       {
         "slug": "microbiome-diversity",
         "path": "/goals/microbiome-diversity",
-        "title": "Best Peptides for Microbiome Diversity in 2025"
+        "title": "Best Peptides for Microbiome Diversity in 2026"
       },
       {
         "slug": "gastric-ulcer-healing",
         "path": "/goals/gastric-ulcer-healing",
-        "title": "Best Peptides for Gastric Ulcer Healing in 2025"
+        "title": "Best Peptides for Gastric Ulcer Healing in 2026"
       },
       {
         "slug": "ibd-support",
         "path": "/goals/ibd-support",
-        "title": "Best Peptides for IBD Gut Support in 2025"
+        "title": "Best Peptides for IBD Gut Support in 2026"
       }
     ]
   },
@@ -863,6 +863,211 @@ export const pseoSections = [
         "slug": "ipamorelin-vs-mk-677",
         "path": "/compare/ipamorelin-vs-mk-677",
         "title": "Ipamorelin vs MK-677 (Ibutamoren)"
+      },
+      {
+        "slug": "tesamorelin-vs-cjc-1295",
+        "path": "/compare/tesamorelin-vs-cjc-1295",
+        "title": "Tesamorelin vs CJC-1295"
+      },
+      {
+        "slug": "aod-9604-vs-ipamorelin",
+        "path": "/compare/aod-9604-vs-ipamorelin",
+        "title": "AOD-9604 vs Ipamorelin"
+      },
+      {
+        "slug": "aod-9604-vs-tesamorelin",
+        "path": "/compare/aod-9604-vs-tesamorelin",
+        "title": "AOD-9604 vs Tesamorelin"
+      },
+      {
+        "slug": "kisspeptin-vs-hcg",
+        "path": "/compare/kisspeptin-vs-hcg",
+        "title": "Kisspeptin vs HCG"
+      },
+      {
+        "slug": "dsip-vs-epithalon",
+        "path": "/compare/dsip-vs-epithalon",
+        "title": "DSIP vs Epithalon"
+      },
+      {
+        "slug": "melanotan-2-vs-melanotan-1",
+        "path": "/compare/melanotan-2-vs-melanotan-1",
+        "title": "Melanotan-2 vs Melanotan-1"
+      },
+      {
+        "slug": "snap-8-vs-matrixyl",
+        "path": "/compare/snap-8-vs-matrixyl",
+        "title": "SNAP-8 vs Matrixyl"
+      },
+      {
+        "slug": "argireline-vs-matrixyl",
+        "path": "/compare/argireline-vs-matrixyl",
+        "title": "Argireline vs Matrixyl"
+      },
+      {
+        "slug": "humanin-vs-ss-31",
+        "path": "/compare/humanin-vs-ss-31",
+        "title": "Humanin vs SS-31"
+      },
+      {
+        "slug": "mots-c-vs-ss-31",
+        "path": "/compare/mots-c-vs-ss-31",
+        "title": "MOTS-c vs SS-31"
+      },
+      {
+        "slug": "vip-vs-kpv",
+        "path": "/compare/vip-vs-kpv",
+        "title": "VIP vs KPV"
+      },
+      {
+        "slug": "kpv-vs-bpc-157",
+        "path": "/compare/kpv-vs-bpc-157",
+        "title": "KPV vs BPC-157"
+      },
+      {
+        "slug": "peg-mgf-vs-igf-1-lr3",
+        "path": "/compare/peg-mgf-vs-igf-1-lr3",
+        "title": "PEG-MGF vs IGF-1 LR3"
+      },
+      {
+        "slug": "igf-1-lr3-vs-ipamorelin",
+        "path": "/compare/igf-1-lr3-vs-ipamorelin",
+        "title": "IGF-1 LR3 vs Ipamorelin"
+      },
+      {
+        "slug": "bpc-157-vs-ara-290",
+        "path": "/compare/bpc-157-vs-ara-290",
+        "title": "BPC-157 vs ARA-290"
+      },
+      {
+        "slug": "tb-500-vs-ara-290",
+        "path": "/compare/tb-500-vs-ara-290",
+        "title": "TB-500 vs ARA-290"
+      },
+      {
+        "slug": "ghk-cu-vs-matrixyl",
+        "path": "/compare/ghk-cu-vs-matrixyl",
+        "title": "GHK-Cu vs Matrixyl"
+      },
+      {
+        "slug": "epithalon-vs-foxo4-dri",
+        "path": "/compare/epithalon-vs-foxo4-dri",
+        "title": "Epithalon vs FOXO4-DRI"
+      },
+      {
+        "slug": "selank-vs-cerebrolysin",
+        "path": "/compare/selank-vs-cerebrolysin",
+        "title": "Selank vs Cerebrolysin"
+      },
+      {
+        "slug": "nad-plus-vs-ss-31",
+        "path": "/compare/nad-plus-vs-ss-31",
+        "title": "NAD+ vs SS-31"
+      },
+      {
+        "slug": "methylene-blue-vs-dihexa",
+        "path": "/compare/methylene-blue-vs-dihexa",
+        "title": "Methylene Blue vs Dihexa"
+      },
+      {
+        "slug": "glutathione-vs-nac",
+        "path": "/compare/glutathione-vs-nac",
+        "title": "Glutathione vs NAC"
+      },
+      {
+        "slug": "rapamycin-vs-metformin",
+        "path": "/compare/rapamycin-vs-metformin",
+        "title": "Rapamycin vs Metformin"
+      },
+      {
+        "slug": "low-dose-naltrexone-vs-kpv",
+        "path": "/compare/low-dose-naltrexone-vs-kpv",
+        "title": "Low-Dose Naltrexone vs KPV"
+      },
+      {
+        "slug": "metformin-vs-berberine",
+        "path": "/compare/metformin-vs-berberine",
+        "title": "Metformin vs Berberine"
+      },
+      {
+        "slug": "oxandrolone-vs-ipamorelin",
+        "path": "/compare/oxandrolone-vs-ipamorelin",
+        "title": "Oxandrolone vs Ipamorelin"
+      },
+      {
+        "slug": "nandrolone-vs-tb-500",
+        "path": "/compare/nandrolone-vs-tb-500",
+        "title": "Nandrolone vs TB-500"
+      },
+      {
+        "slug": "tesamorelin-vs-hgh",
+        "path": "/compare/tesamorelin-vs-hgh",
+        "title": "Tesamorelin vs HGH"
+      },
+      {
+        "slug": "aod-9604-vs-hgh",
+        "path": "/compare/aod-9604-vs-hgh",
+        "title": "AOD-9604 vs HGH"
+      },
+      {
+        "slug": "kisspeptin-vs-clomid",
+        "path": "/compare/kisspeptin-vs-clomid",
+        "title": "Kisspeptin vs Clomid"
+      },
+      {
+        "slug": "dsip-vs-melatonin",
+        "path": "/compare/dsip-vs-melatonin",
+        "title": "DSIP vs Melatonin"
+      },
+      {
+        "slug": "cerebrolysin-vs-cortexin",
+        "path": "/compare/cerebrolysin-vs-cortexin",
+        "title": "Cerebrolysin vs Cortexin"
+      },
+      {
+        "slug": "dihexa-vs-noopept",
+        "path": "/compare/dihexa-vs-noopept",
+        "title": "Dihexa vs Noopept"
+      },
+      {
+        "slug": "ll-37-vs-kpv",
+        "path": "/compare/ll-37-vs-kpv",
+        "title": "LL-37 vs KPV"
+      },
+      {
+        "slug": "thymosin-alpha-1-vs-vip",
+        "path": "/compare/thymosin-alpha-1-vs-vip",
+        "title": "Thymosin Alpha-1 vs VIP"
+      },
+      {
+        "slug": "snap-8-vs-botox",
+        "path": "/compare/snap-8-vs-botox",
+        "title": "SNAP-8 vs Botox"
+      },
+      {
+        "slug": "argireline-vs-botox",
+        "path": "/compare/argireline-vs-botox",
+        "title": "Argireline vs Botox"
+      },
+      {
+        "slug": "mots-c-vs-aod-9604",
+        "path": "/compare/mots-c-vs-aod-9604",
+        "title": "MOTS-c vs AOD-9604"
+      },
+      {
+        "slug": "foxo4-dri-vs-dasatinib",
+        "path": "/compare/foxo4-dri-vs-dasatinib",
+        "title": "FOXO4-DRI vs Dasatinib"
+      },
+      {
+        "slug": "ss-31-vs-methylene-blue",
+        "path": "/compare/ss-31-vs-methylene-blue",
+        "title": "SS-31 vs Methylene Blue"
+      },
+      {
+        "slug": "tesamorelin-vs-mk-677",
+        "path": "/compare/tesamorelin-vs-mk-677",
+        "title": "Tesamorelin vs MK-677"
       }
     ]
   },
@@ -1154,6 +1359,191 @@ export const pseoSections = [
         "slug": "how-to-use-peptides-for-metabolic-health",
         "path": "/guides/how-to-use-peptides-for-metabolic-health",
         "title": "How to Use Peptides for Metabolic Health: Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-tesamorelin",
+        "path": "/guides/how-to-use-tesamorelin",
+        "title": "How To Use Tesamorelin: Dosing, Timing & Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-aod-9604",
+        "path": "/guides/how-to-use-aod-9604",
+        "title": "How To Use AOD-9604: Dosing & Fat Loss Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-kisspeptin",
+        "path": "/guides/how-to-use-kisspeptin",
+        "title": "How To Use Kisspeptin: Dosing & Hormonal Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-dsip",
+        "path": "/guides/how-to-use-dsip",
+        "title": "How To Use DSIP: Dosing & Sleep Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-cerebrolysin",
+        "path": "/guides/how-to-use-cerebrolysin",
+        "title": "How To Use Cerebrolysin: Dosing & Neuroprotection Guide"
+      },
+      {
+        "slug": "how-to-use-dihexa",
+        "path": "/guides/how-to-use-dihexa",
+        "title": "How To Use Dihexa: Dosing & Cognitive Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-ll-37",
+        "path": "/guides/how-to-use-ll-37",
+        "title": "How To Use LL-37: Dosing & Immune Support Guide"
+      },
+      {
+        "slug": "how-to-use-melanotan-1",
+        "path": "/guides/how-to-use-melanotan-1",
+        "title": "How To Use Melanotan-1: Dosing & Tanning Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-snap-8",
+        "path": "/guides/how-to-use-snap-8",
+        "title": "How To Use SNAP-8: Topical Application Guide"
+      },
+      {
+        "slug": "how-to-use-argireline",
+        "path": "/guides/how-to-use-argireline",
+        "title": "How To Use Argireline: Topical Application Guide"
+      },
+      {
+        "slug": "how-to-use-humanin",
+        "path": "/guides/how-to-use-humanin",
+        "title": "How To Use Humanin: Dosing & Longevity Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-mots-c",
+        "path": "/guides/how-to-use-mots-c",
+        "title": "How To Use MOTS-C: Dosing & Metabolic Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-foxo4-dri",
+        "path": "/guides/how-to-use-foxo4-dri",
+        "title": "How To Use FOXO4-DRI: Dosing & Senolytic Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-ss-31",
+        "path": "/guides/how-to-use-ss-31",
+        "title": "How To Use SS-31: Dosing & Mitochondrial Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-vip",
+        "path": "/guides/how-to-use-vip",
+        "title": "How To Use VIP: Dosing & Gut-Lung Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-kpv",
+        "path": "/guides/how-to-use-kpv",
+        "title": "How To Use KPV: Dosing & Gut Health Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-ara-290",
+        "path": "/guides/how-to-use-ara-290",
+        "title": "How To Use ARA-290: Dosing & Nerve Repair Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-peg-mgf",
+        "path": "/guides/how-to-use-peg-mgf",
+        "title": "How To Use PEG-MGF: Dosing & Muscle Repair Guide"
+      },
+      {
+        "slug": "how-to-use-igf-1-lr3",
+        "path": "/guides/how-to-use-igf-1-lr3",
+        "title": "How To Use IGF-1 LR3: Dosing & Anabolic Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-glutathione",
+        "path": "/guides/how-to-use-glutathione",
+        "title": "How To Use Glutathione: Dosing & Antioxidant Guide"
+      },
+      {
+        "slug": "how-to-use-rapamycin",
+        "path": "/guides/how-to-use-rapamycin",
+        "title": "How To Use Rapamycin: Dosing & Longevity Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-ldn",
+        "path": "/guides/how-to-use-ldn",
+        "title": "How To Use LDN (Low-Dose Naltrexone): Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-metformin-for-longevity",
+        "path": "/guides/how-to-use-metformin-for-longevity",
+        "title": "How To Use Metformin For Longevity: Protocol Guide"
+      },
+      {
+        "slug": "how-to-travel-with-peptides",
+        "path": "/guides/how-to-travel-with-peptides",
+        "title": "How To Travel With Peptides: TSA & Storage Guide"
+      },
+      {
+        "slug": "how-to-dispose-of-syringes",
+        "path": "/guides/how-to-dispose-of-syringes",
+        "title": "How To Dispose Of Syringes Safely: Complete Guide"
+      },
+      {
+        "slug": "how-to-manage-injection-site-reactions",
+        "path": "/guides/how-to-manage-injection-site-reactions",
+        "title": "How To Manage Injection Site Reactions: Complete Guide"
+      },
+      {
+        "slug": "how-to-measure-peptide-progress",
+        "path": "/guides/how-to-measure-peptide-progress",
+        "title": "How To Measure Peptide Progress: Tracking & Markers"
+      },
+      {
+        "slug": "how-to-transition-off-peptides",
+        "path": "/guides/how-to-transition-off-peptides",
+        "title": "How To Transition Off Peptides: Post-Cycle Guide"
+      },
+      {
+        "slug": "how-to-stack-peptides-safely",
+        "path": "/guides/how-to-stack-peptides-safely",
+        "title": "How To Stack Peptides Safely: Compatibility Guide"
+      },
+      {
+        "slug": "how-to-find-a-peptide-doctor",
+        "path": "/guides/how-to-find-a-peptide-doctor",
+        "title": "How To Find A Peptide Doctor: Telemedicine Guide"
+      },
+      {
+        "slug": "how-to-store-reconstituted-peptides",
+        "path": "/guides/how-to-store-reconstituted-peptides",
+        "title": "How to Store Reconstituted Peptides: Refrigeration Guide"
+      },
+      {
+        "slug": "how-to-travel-with-refrigerated-peptides",
+        "path": "/guides/how-to-travel-with-refrigerated-peptides",
+        "title": "How to Travel with Refrigerated Peptides: Travel Guide"
+      },
+      {
+        "slug": "how-to-inject-intramuscularly",
+        "path": "/guides/how-to-inject-intramuscularly",
+        "title": "How to Inject Peptides Intramuscularly (IM): Guide"
+      },
+      {
+        "slug": "how-to-calculate-mcg-to-mg",
+        "path": "/guides/how-to-calculate-mcg-to-mg",
+        "title": "How to Calculate mcg to mg for Peptides: Dosage Math Guide"
+      },
+      {
+        "slug": "how-to-spot-fake-peptides",
+        "path": "/guides/how-to-spot-fake-peptides",
+        "title": "How to Spot Fake or Underdosed Peptides: Quality Guide"
+      },
+      {
+        "slug": "how-to-use-peptides-for-pets",
+        "path": "/guides/how-to-use-peptides-for-pets",
+        "title": "How to Use Peptides for Pets (Dogs & Cats): Vet Guide"
+      },
+      {
+        "slug": "how-to-talk-to-your-doctor-about-peptides",
+        "path": "/guides/how-to-talk-to-your-doctor-about-peptides",
+        "title": "How to Talk to Your Doctor About Peptides: Communication Guide"
       }
     ]
   },

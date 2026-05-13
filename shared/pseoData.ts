@@ -5,12 +5,13 @@
  *   - 20 Goal Pages        → /goals/[slug]
  *   - 20 Comparison Pages  → /compare/[a]-vs-[b]
  *   - 20 Stack Pages       → /stacks/[slug]
- *   - 30 Guide Pages       → /guides/[slug]
+ *   - 72 Guide Pages       → /guides/[slug]
  */
 
 import { batch1GoalPages, batch1PeptidePages } from "./pseoData-batch-1";
 import { batch2ComparisonPages } from "./pseoData-batch-2";
 import { batch3StackPages } from "./pseoData-batch-3";
+import { batch4GuidePages } from "./pseoData-batch-4";
 
 // ─── PEPTIDE PROFILES ────────────────────────────────────────────────────────
 
@@ -7024,6 +7025,7 @@ export const guidePages: GuidePageData[] = [
     "relatedGuides": ["how-to-use-semaglutide", "how-to-use-tirzepatide", "how-to-reconstitute-peptides"],
     "relatedPeptides": ["semaglutide", "tirzepatide", "mots-c", "tesamorelin", "metformin"],
   },
+  ...batch4GuidePages,
 ];
 
 // ─── FOR-CONDITION PAGES ──────────────────────────────────────────────────────
@@ -8813,8 +8815,9 @@ export const forConditionPages: ForConditionPageData[] = [
         "cognitive-decline"
       ],
       "icdCode": "G93.3"
-    },
+  },
 ];
+
 
 // ─── REVIEW PAGES ─────────────────────────────────────────────────────────────
 // Template: /reviews/[slug]
