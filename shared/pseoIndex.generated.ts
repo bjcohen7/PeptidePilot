@@ -157,6 +157,106 @@ export const pseoSections = [
         "slug": "ss-31",
         "path": "/peptides/ss-31",
         "title": "SS-31"
+      },
+      {
+        "slug": "tesamorelin",
+        "path": "/peptides/tesamorelin",
+        "title": "Tesamorelin"
+      },
+      {
+        "slug": "aod-9604",
+        "path": "/peptides/aod-9604",
+        "title": "AOD-9604"
+      },
+      {
+        "slug": "kisspeptin",
+        "path": "/peptides/kisspeptin",
+        "title": "Kisspeptin"
+      },
+      {
+        "slug": "dsip",
+        "path": "/peptides/dsip",
+        "title": "DSIP"
+      },
+      {
+        "slug": "cerebrolysin",
+        "path": "/peptides/cerebrolysin",
+        "title": "Cerebrolysin"
+      },
+      {
+        "slug": "dihexa",
+        "path": "/peptides/dihexa",
+        "title": "Dihexa"
+      },
+      {
+        "slug": "ll-37",
+        "path": "/peptides/ll-37",
+        "title": "LL-37"
+      },
+      {
+        "slug": "thymosin-alpha-1",
+        "path": "/peptides/thymosin-alpha-1",
+        "title": "Thymosin Alpha-1"
+      },
+      {
+        "slug": "melanotan-2",
+        "path": "/peptides/melanotan-2",
+        "title": "Melanotan 2"
+      },
+      {
+        "slug": "snap-8",
+        "path": "/peptides/snap-8",
+        "title": "SNAP-8"
+      },
+      {
+        "slug": "argireline",
+        "path": "/peptides/argireline",
+        "title": "Argireline"
+      },
+      {
+        "slug": "humanin",
+        "path": "/peptides/humanin",
+        "title": "Humanin"
+      },
+      {
+        "slug": "mots-c",
+        "path": "/peptides/mots-c",
+        "title": "MOTS-C"
+      },
+      {
+        "slug": "foxo4-dri",
+        "path": "/peptides/foxo4-dri",
+        "title": "FOXO4-DRI"
+      },
+      {
+        "slug": "ss-31",
+        "path": "/peptides/ss-31",
+        "title": "SS-31"
+      },
+      {
+        "slug": "vip",
+        "path": "/peptides/vip",
+        "title": "VIP"
+      },
+      {
+        "slug": "kpv",
+        "path": "/peptides/kpv",
+        "title": "KPV"
+      },
+      {
+        "slug": "ara-290",
+        "path": "/peptides/ara-290",
+        "title": "ARA-290"
+      },
+      {
+        "slug": "peg-mgf",
+        "path": "/peptides/peg-mgf",
+        "title": "PEG-MGF"
+      },
+      {
+        "slug": "igf-1-lr3",
+        "path": "/peptides/igf-1-lr3",
+        "title": "IGF-1-LR3"
       }
     ]
   },
@@ -255,6 +355,156 @@ export const pseoSections = [
         "slug": "muscle-recovery",
         "path": "/goals/muscle-recovery",
         "title": "Best Peptides for Muscle Recovery"
+      },
+      {
+        "slug": "bone-density",
+        "path": "/goals/bone-density",
+        "title": "Best Peptides for Bone Density Support in 2025"
+      },
+      {
+        "slug": "wound-repair",
+        "path": "/goals/wound-repair",
+        "title": "Best Peptides for Wound Repair Support in 2025"
+      },
+      {
+        "slug": "immune-support",
+        "path": "/goals/immune-support",
+        "title": "Best Peptides for Immune Support in 2025"
+      },
+      {
+        "slug": "neuroprotection",
+        "path": "/goals/neuroprotection",
+        "title": "Best Peptides for Neuroprotection in 2025"
+      },
+      {
+        "slug": "cardiovascular-health",
+        "path": "/goals/cardiovascular-health",
+        "title": "Best Peptides for Cardiovascular Health in 2025"
+      },
+      {
+        "slug": "blood-sugar-control",
+        "path": "/goals/blood-sugar-control",
+        "title": "Best Peptides for Blood Sugar Control in 2025"
+      },
+      {
+        "slug": "vision-health",
+        "path": "/goals/vision-health",
+        "title": "Best Peptides for Vision Health Support in 2025"
+      },
+      {
+        "slug": "hearing-support",
+        "path": "/goals/hearing-support",
+        "title": "Best Peptides for Hearing Support in 2025"
+      },
+      {
+        "slug": "nerve-regeneration",
+        "path": "/goals/nerve-regeneration",
+        "title": "Best Peptides for Nerve Regeneration in 2025"
+      },
+      {
+        "slug": "cartilage-repair",
+        "path": "/goals/cartilage-repair",
+        "title": "Best Peptides for Cartilage Repair Support in 2025"
+      },
+      {
+        "slug": "muscle-endurance",
+        "path": "/goals/muscle-endurance",
+        "title": "Best Peptides for Muscle Endurance in 2025"
+      },
+      {
+        "slug": "sprint-performance",
+        "path": "/goals/sprint-performance",
+        "title": "Best Peptides for Sprint Performance in 2025"
+      },
+      {
+        "slug": "vo2-max",
+        "path": "/goals/vo2-max",
+        "title": "Best Peptides for VO2 Max Support in 2025"
+      },
+      {
+        "slug": "focus-and-concentration",
+        "path": "/goals/focus-and-concentration",
+        "title": "Best Peptides for Focus and Concentration"
+      },
+      {
+        "slug": "memory-retention",
+        "path": "/goals/memory-retention",
+        "title": "Best Peptides for Memory Retention in 2025"
+      },
+      {
+        "slug": "verbal-fluency",
+        "path": "/goals/verbal-fluency",
+        "title": "Best Peptides for Verbal Fluency Support"
+      },
+      {
+        "slug": "stress-resilience",
+        "path": "/goals/stress-resilience",
+        "title": "Best Peptides for Stress Resilience in 2025"
+      },
+      {
+        "slug": "mood-elevation",
+        "path": "/goals/mood-elevation",
+        "title": "Best Peptides for Mood Elevation Support"
+      },
+      {
+        "slug": "social-anxiety",
+        "path": "/goals/social-anxiety",
+        "title": "Best Peptides for Social Anxiety Support"
+      },
+      {
+        "slug": "ptsd-support",
+        "path": "/goals/ptsd-support",
+        "title": "Best Peptides for PTSD Recovery Support in 2025"
+      },
+      {
+        "slug": "collagen-production",
+        "path": "/goals/collagen-production",
+        "title": "Best Peptides for Collagen Production in 2025"
+      },
+      {
+        "slug": "elastin-production",
+        "path": "/goals/elastin-production",
+        "title": "Best Peptides for Elastin Production in 2025"
+      },
+      {
+        "slug": "sun-damage-repair",
+        "path": "/goals/sun-damage-repair",
+        "title": "Best Peptides for Sun Damage Repair in 2025"
+      },
+      {
+        "slug": "scar-reduction",
+        "path": "/goals/scar-reduction",
+        "title": "Best Peptides for Scar Reduction Support"
+      },
+      {
+        "slug": "hyperpigmentation",
+        "path": "/goals/hyperpigmentation",
+        "title": "Best Peptides for Hyperpigmentation in 2025"
+      },
+      {
+        "slug": "nail-health",
+        "path": "/goals/nail-health",
+        "title": "Best Peptides for Nail Health Support in 2025"
+      },
+      {
+        "slug": "gut-motility",
+        "path": "/goals/gut-motility",
+        "title": "Best Peptides for Gut Motility Support in 2025"
+      },
+      {
+        "slug": "microbiome-diversity",
+        "path": "/goals/microbiome-diversity",
+        "title": "Best Peptides for Microbiome Diversity in 2025"
+      },
+      {
+        "slug": "gastric-ulcer-healing",
+        "path": "/goals/gastric-ulcer-healing",
+        "title": "Best Peptides for Gastric Ulcer Healing in 2025"
+      },
+      {
+        "slug": "ibd-support",
+        "path": "/goals/ibd-support",
+        "title": "Best Peptides for IBD Gut Support in 2025"
       }
     ]
   },
@@ -651,6 +901,76 @@ export const pseoSections = [
         "slug": "wolverine-stack",
         "path": "/stacks/wolverine-stack",
         "title": "The Wolverine Stack"
+      },
+      {
+        "slug": "fat-loss-stack",
+        "path": "/stacks/fat-loss-stack",
+        "title": "The Fat Loss Stack"
+      },
+      {
+        "slug": "mitochondrial-stack",
+        "path": "/stacks/mitochondrial-stack",
+        "title": "The Mitochondrial Stack"
+      },
+      {
+        "slug": "sleep-stack",
+        "path": "/stacks/sleep-stack",
+        "title": "The Sleep Stack"
+      },
+      {
+        "slug": "gut-support-stack",
+        "path": "/stacks/gut-support-stack",
+        "title": "The Gut Support Stack"
+      },
+      {
+        "slug": "brain-fog-stack",
+        "path": "/stacks/brain-fog-stack",
+        "title": "The Brain Fog Stack"
+      },
+      {
+        "slug": "libido-stack",
+        "path": "/stacks/libido-stack",
+        "title": "The Libido Stack"
+      },
+      {
+        "slug": "immune-defense-stack",
+        "path": "/stacks/immune-defense-stack",
+        "title": "The Immune Defense Stack"
+      },
+      {
+        "slug": "nerve-repair-stack",
+        "path": "/stacks/nerve-repair-stack",
+        "title": "The Nerve Repair Stack"
+      },
+      {
+        "slug": "skin-health-stack",
+        "path": "/stacks/skin-health-stack",
+        "title": "The Skin Health Stack"
+      },
+      {
+        "slug": "muscle-growth-stack",
+        "path": "/stacks/muscle-growth-stack",
+        "title": "The Muscle Growth Stack"
+      },
+      {
+        "slug": "endurance-stack",
+        "path": "/stacks/endurance-stack",
+        "title": "The Endurance Stack"
+      },
+      {
+        "slug": "stress-resilience-stack",
+        "path": "/stacks/stress-resilience-stack",
+        "title": "The Stress Resilience Stack"
+      },
+      {
+        "slug": "bodybuilding-stack",
+        "path": "/stacks/bodybuilding-stack",
+        "title": "The Bodybuilding Stack"
+      },
+      {
+        "slug": "cardio-stack",
+        "path": "/stacks/cardio-stack",
+        "title": "The Cardiovascular Stack"
       }
     ]
   },
@@ -824,6 +1144,16 @@ export const pseoSections = [
         "slug": "peptide-half-lives-dosing-frequency",
         "path": "/guides/peptide-half-lives-dosing-frequency",
         "title": "Peptide Half-Lives Explained: Dosing Frequency Guide"
+      },
+      {
+        "slug": "how-to-use-peptides-for-immune-support",
+        "path": "/guides/how-to-use-peptides-for-immune-support",
+        "title": "How to Use Peptides for Immune Support: Protocol Guide"
+      },
+      {
+        "slug": "how-to-use-peptides-for-metabolic-health",
+        "path": "/guides/how-to-use-peptides-for-metabolic-health",
+        "title": "How to Use Peptides for Metabolic Health: Protocol Guide"
       }
     ]
   },

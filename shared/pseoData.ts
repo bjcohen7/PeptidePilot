@@ -4,11 +4,13 @@
  *   - 12 Peptide Profiles  → /peptides/[slug]
  *   - 20 Goal Pages        → /goals/[slug]
  *   - 20 Comparison Pages  → /compare/[a]-vs-[b]
- *   - 6 Stack Pages        → /stacks/[slug]
+ *   - 20 Stack Pages       → /stacks/[slug]
+ *   - 30 Guide Pages       → /guides/[slug]
  */
 
 import { batch1GoalPages, batch1PeptidePages } from "./pseoData-batch-1";
 import { batch2ComparisonPages } from "./pseoData-batch-2";
+import { batch3StackPages } from "./pseoData-batch-3";
 
 // ─── PEPTIDE PROFILES ────────────────────────────────────────────────────────
 
@@ -3973,6 +3975,7 @@ export const stackPages: StackPageData[] = [
         }
       ]
     },
+  ...batch3StackPages,
 ];
 
 // ─── HELPER FUNCTIONS ────────────────────────────────────────────────────────
@@ -6899,6 +6902,128 @@ export const guidePages: GuidePageData[] = [
         "semaglutide"
       ]
     },
+  {
+    "slug": "how-to-use-peptides-for-immune-support",
+    "title": "How to Use Peptides for Immune Support: Protocol Guide",
+    "h1": "How to Use Peptides for Immune Support: Complete Protocol Guide",
+    "metaDescription": "Step-by-step guide to using peptides for immune support — Thymosin Alpha-1, LL-37, KPV protocols, cycle length, stacking, and monitoring. Independent, vendor-neutral.",
+    "category": "Immune Health",
+    "targetPeptides": ["thymosin-alpha-1", "ll-37", "kpv", "bpc-157"],
+    "difficulty": "Intermediate",
+    "timeRequired": "10 minutes",
+    "overview": "Peptides for immune support work through three primary mechanisms: organizing adaptive immunity through T-cell and dendritic-cell signaling, supporting innate antimicrobial defense, and modulating inflammatory balance. The most evidence-backed peptides in this category include Thymosin Alpha-1 for immune coordination, LL-37 for host defense, and KPV for inflammatory balance. This guide covers how to match the mechanism to the immune pattern and build a responsible protocol.",
+    "whatYouNeed": [
+      "Clear understanding of the immune pattern you want to support",
+      "Thymosin Alpha-1, LL-37, or KPV depending on goal",
+      "Bacteriostatic water and sterile supplies for injectable protocols",
+      "Tracking log for symptoms and response",
+    ],
+    "steps": [
+      {
+        stepNumber: 1,
+        title: "Identify your immune pattern",
+        description: "The right peptide depends on whether you need immune coordination (frequent illness, poor vaccine response), antimicrobial defense (active infection pressure, barrier weakness), or inflammatory balance (autoimmune patterns, chronic inflammation). Thymosin Alpha-1 is the best fit for coordination. LL-37 for defense. KPV for balance.",
+        tip: "If you are unsure about the pattern, Thymosin Alpha-1 is the safest starting point with the strongest evidence base.",
+      },
+      {
+        stepNumber: 2,
+        title: "Choose your peptide and protocol",
+        description: "Thymosin Alpha-1: 1.6 mg SubQ twice weekly for 6-12 weeks. LL-37: 100-250 mcg SubQ daily for 10-30 day courses. KPV: 250-500 mcg oral or SubQ 1-2x daily for 4-8 weeks. Start with one peptide before considering combinations.",
+        warning: "Do not combine Thymosin Alpha-1 and LL-37 without understanding the immune activation profile — these work through different signaling pathways and the combined effect may be stronger than intended.",
+      },
+      {
+        stepNumber: 3,
+        title: "Sterile preparation",
+        description: "Reconstitute lyophilized peptides with bacteriostatic water per standard protocol. Store reconstituted peptides at 2-8°C. Use sterile insulin syringes for SubQ administration. Discard any vial with visible particulates or cloudiness.",
+        tip: "Thymosin Alpha-1 dissolves easily. LL-37 may require gentle swirling.",
+      },
+      {
+        stepNumber: 4,
+        title: "Administer and rotate sites",
+        description: "SubQ injections into the abdomen, outer thigh, or upper arm. Rotate sites with each injection. For intranasal options, follow the specific device instructions.",
+        tip: "LL-37 injections can cause transient flu-like symptoms in some users — this is often interpreted as immune activation but should be monitored.",
+      },
+      {
+        stepNumber: 5,
+        title: "Track and reassess",
+        description: "Monitor illness frequency, recovery time, energy levels, and any inflammatory symptoms. Most immune-modulating peptides require 4-8 weeks for noticeable effects. Reassess at the end of each cycle before deciding whether to continue.",
+        tip: "Keep a simple log of illness episodes, severity, and duration to objectively track response.",
+      },
+    ],
+    "commonMistakes": [
+      { mistake: "Using immune peptides when the root cause is something else", fix: "Chronic fatigue, poor sleep, and nutritional deficiencies can mimic immune dysfunction. Address these before or alongside peptide protocols." },
+      { mistake: "Expecting immediate immune boosting", fix: "Immune modulation takes time. Thymosin Alpha-1 clinical protocols run 6-12 weeks before full effects are assessed." },
+      { mistake: "Starting multiple immune peptides simultaneously", fix: "Add one peptide at a time with 4-week minimum evaluation periods to understand individual response." },
+    ],
+    "faqItems": [
+      { q: "Should I use immune peptides preventively or only when sick?", a: "Thymosin Alpha-1 is better suited for preventive immune organization during high-risk periods. LL-37 is more often used in shorter targeted windows. KPV can be used preventively for inflammatory patterns." },
+      { q: "Can immune peptides replace vaccines or medications?", a: "No. Immune peptides are supportive tools, not replacements for established vaccines, antimicrobials, or prescribed immunomodulatory therapies." },
+      { q: "How do I know if the peptide is working?", a: "Track concrete metrics: fewer illness episodes, shorter recovery time, better energy during stress periods, or improved lab markers if available." },
+    ],
+    "relatedGuides": ["how-to-use-thymosin-alpha-1", "how-to-reconstitute-peptides", "how-to-inject-subcutaneously"],
+    "relatedPeptides": ["thymosin-alpha-1", "ll-37", "kpv", "bpc-157"],
+  },
+  {
+    "slug": "how-to-use-peptides-for-metabolic-health",
+    "title": "How to Use Peptides for Metabolic Health: Protocol Guide",
+    "h1": "How to Use Peptides for Metabolic Health: Complete Protocol Guide",
+    "metaDescription": "Step-by-step guide to using peptides for metabolic health — GLP-1 agonists, MOTS-C, tesamorelin protocols, insulin sensitivity, and body composition. Independent, vendor-neutral.",
+    "category": "Metabolic Health",
+    "targetPeptides": ["semaglutide", "tirzepatide", "mots-c", "tesamorelin", "metformin"],
+    "difficulty": "Intermediate",
+    "timeRequired": "10 minutes",
+    "overview": "Metabolic health peptides address glucose regulation, insulin sensitivity, body composition, and energy metabolism through several distinct mechanisms. GLP-1 and dual incretin agonists reduce appetite and improve glycemic control through gut-brain signaling. MOTS-C and tesamorelin target mitochondrial efficiency and visceral adiposity through different upstream pathways. This guide helps match the mechanism to the metabolic pattern.",
+    "whatYouNeed": [
+      "Blood work including fasting glucose, HbA1c, insulin, and lipid panel",
+      "Clear metabolic goal: weight loss, insulin sensitivity, or body recomposition",
+      "Physician supervision for prescription compounds",
+      "Tracking log for weight, glucose, and side effects",
+    ],
+    "steps": [
+      {
+        stepNumber: 1,
+        title: "Get baseline blood work",
+        description: "Before starting any metabolic peptide, establish baseline fasting glucose, HbA1c, fasting insulin, lipid panel, and liver enzymes. These markers determine which peptide is most appropriate and provide a baseline for assessing response.",
+        tip: "HbA1c reflects 2-3 month glucose control. Fasting insulin is a more sensitive marker of insulin resistance than glucose alone.",
+      },
+      {
+        stepNumber: 2,
+        title: "Match the mechanism to your pattern",
+        description: "Appetite-driven overeating and significant weight loss goals: GLP-1 agonists (semaglutide, tirzepatide). Visceral adiposity and body composition focus: tesamorelin. Exercise response and metabolic flexibility: MOTS-C. Fasting glucose or prediabetes: metformin or GLP-1 agonists.",
+        warning: "Do not combine GLP-1 agonists with other glucose-lowering agents without physician supervision due to hypoglycemia risk.",
+      },
+      {
+        stepNumber: 3,
+        title: "Start low and titrate slowly",
+        description: "GLP-1 agonists require slow dose escalation over 8-20 weeks to minimize GI side effects. MOTS-C and tesamorelin can be started at standard doses. Metformin should be started at 500 mg daily and increased gradually.",
+        tip: "For GLP-1 agonists, stay at each dose step for 4 weeks before increasing. Rushing the titration is the most common cause of discontinuation.",
+      },
+      {
+        stepNumber: 4,
+        title: "Support the protocol with lifestyle",
+        description: "Metabolic peptides work best alongside adequate protein intake, resistance training, sleep optimization, and consistent meal timing. GLP-1 agonists reduce appetite broadly, making protein adequacy particularly important for muscle preservation.",
+        tip: "Target 1.2-1.6 g/kg of protein daily during metabolic peptide protocols.",
+      },
+      {
+        stepNumber: 5,
+        title: "Monitor and adjust",
+        description: "Recheck relevant blood markers at 8-12 week intervals. Track weight, waist circumference, energy levels, and side effects. Adjust dose or change peptides based on response. A plateau after initial response may indicate the need for a different mechanism rather than a higher dose.",
+        tip: "Waist circumference is a practical proxy for visceral fat changes that may not be reflected in scale weight.",
+      },
+    ],
+    "commonMistakes": [
+      { mistake: "Choosing a peptide before understanding the metabolic pattern", fix: "Appetite dysregulation, insulin resistance, mitochondrial inefficiency, and visceral adiposity require different approaches. Get the mechanism right first." },
+      { mistake: "Relying on peptides without lifestyle foundation", fix: "Metabolic peptides amplify the effects of nutrition and training. They do not replace the need for protein adequacy, resistance exercise, and sleep." },
+      { mistake: "Stopping a protocol too early", fix: "GLP-1 agonists take 8-12 weeks to reach therapeutic doses. Tesamorelin effects on visceral fat emerge over 12-26 weeks. Give each protocol adequate time." },
+    ],
+    "faqItems": [
+      { q: "Which metabolic peptide has the strongest evidence?", a: "Semaglutide and tirzepatide have the strongest clinical trial data for weight loss and glycemic control. Tesamorelin has strong data for visceral fat reduction. MOTS-C and metformin have moderate evidence for insulin sensitivity." },
+      { q: "Can these peptides be combined?", a: "Combining GLP-1 agonists with other metabolic peptides requires physician supervision. Tesamorelin and MOTS-C can be more safely combined with each other or with lifestyle support." },
+      { q: "What happens when I stop taking metabolic peptides?", a: "GLP-1 agonists typically result in weight regain after discontinuation. Tesamorelin and MOTS-C effects may persist longer but still require ongoing metabolic support through lifestyle." },
+    ],
+    "relatedGuides": ["how-to-use-semaglutide", "how-to-use-tirzepatide", "how-to-reconstitute-peptides"],
+    "relatedPeptides": ["semaglutide", "tirzepatide", "mots-c", "tesamorelin", "metformin"],
+  },
 ];
 
 // ─── FOR-CONDITION PAGES ──────────────────────────────────────────────────────
