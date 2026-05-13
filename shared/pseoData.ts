@@ -7,6 +7,8 @@
  *   - 6 Stack Pages        → /stacks/[slug]
  */
 
+import { batch1GoalPages, batch1PeptidePages } from "./pseoData-batch-1";
+
 // ─── PEPTIDE PROFILES ────────────────────────────────────────────────────────
 
 export interface PeptidePageData {
@@ -827,6 +829,7 @@ export const peptidePages: PeptidePageData[] = [
       { q: "How long does Nandrolone stay in the system?", a: "Nandrolone decanoate (the most common ester) has a half-life of approximately 6-12 days. It can be detected in urine for up to 18 months in some individuals due to its storage in fat tissue." },
     ],
   },
+  ...batch1PeptidePages,
 ];
 
 // ─── GOAL PAGES ──────────────────────────────────────────────────────────────
@@ -1223,6 +1226,7 @@ export const goalPages: GoalPageData[] = [
       { q: "What peptide speeds up muscle recovery the most?", a: "TB-500 is generally considered the most effective peptide for systemic muscle recovery, while BPC-157 excels at localized muscle and tendon repair. Combining both provides comprehensive recovery support." },
     ],
   },
+  ...batch1GoalPages,
 ];
 
 // ─── COMPARISON PAGES ────────────────────────────────────────────────────────
