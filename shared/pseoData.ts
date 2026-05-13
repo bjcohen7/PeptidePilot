@@ -8,6 +8,7 @@
  */
 
 import { batch1GoalPages, batch1PeptidePages } from "./pseoData-batch-1";
+import { batch2ComparisonPages } from "./pseoData-batch-2";
 
 // ─── PEPTIDE PROFILES ────────────────────────────────────────────────────────
 
@@ -3767,6 +3768,7 @@ export const comparisonPages: ComparisonPageData[] = [
 
 
 
+  ...batch2ComparisonPages,
 ];
 
 // ─── STACK PAGES ─────────────────────────────────────────────────────────────
