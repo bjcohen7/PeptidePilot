@@ -1,4 +1,5 @@
 import "dotenv/config";
+import compression from "compression";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -10,6 +11,7 @@ import { createContext } from "./context";
 import { ENV } from "./env";
 import { recordClickEvent, recordPageView, startVisitorSession } from "../routers/analytics";
 import { serveStatic, setupVite } from "./vite";
+import capiRouter from "../routes/capi";
 import { prerenderRoutes, SITE_URL } from "../../scripts/prerender-routes";
 
 // Previously /quiz was listed here as a static sitemap path, but it is now a
@@ -101,6 +103,11 @@ async function startServer() {
 
   const app = express();
   const server = createServer(app);
+  app.use(
+    compression({
+      threshold: 1024,
+    })
+  );
   app.use((req, res, next) => {
     if (process.env.NODE_ENV !== "development" && req.hostname === "peptidepilot.me") {
       return res.redirect(301, `https://www.peptidepilot.me${req.originalUrl}`);
@@ -191,6 +198,9 @@ async function startServer() {
       .type("text/plain")
       .send(["User-agent: *", "Allow: /", `Sitemap: ${siteUrl}/sitemap.xml`, ""].join("\n"));
   });
+  // Facebook Conversions API — server-side affiliate click tracking
+  app.use("/api/capi", capiRouter);
+
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // tRPC API

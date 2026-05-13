@@ -1,5 +1,3 @@
-const LOGROCKET_APP_ID = "peptidepilot/peptidepilot";
-
 type LogRocketIdentifyTraits = Record<string, string | number | boolean | null | undefined>;
 
 type LogRocketApi = {
@@ -20,24 +18,28 @@ function shouldEnableLogRocket() {
   return typeof window !== "undefined" && import.meta.env.PROD;
 }
 
-function loadLogRocketScript() {
+function waitForLogRocket() {
   return new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>('script[data-logrocket="true"]');
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Failed to load LogRocket")), { once: true });
-      if (window.LogRocket) resolve();
+    if (window.LogRocket) {
+      resolve();
       return;
     }
 
-    const script = document.createElement("script");
-    script.src = "https://cdn.logr-in.com/LogRocket.min.js";
-    script.crossOrigin = "anonymous";
-    script.async = true;
-    script.dataset.logrocket = "true";
-    script.addEventListener("load", () => resolve(), { once: true });
-    script.addEventListener("error", () => reject(new Error("Failed to load LogRocket")), { once: true });
-    document.head.appendChild(script);
+    let attempts = 0;
+    const maxAttempts = 50;
+    const interval = window.setInterval(() => {
+      attempts += 1;
+      if (window.LogRocket) {
+        window.clearInterval(interval);
+        resolve();
+        return;
+      }
+
+      if (attempts >= maxAttempts) {
+        window.clearInterval(interval);
+        reject(new Error("LogRocket script did not become available"));
+      }
+    }, 100);
   });
 }
 
@@ -46,10 +48,9 @@ export function initLogRocket() {
   if (initialized) return Promise.resolve();
   if (initPromise) return initPromise;
 
-  initPromise = loadLogRocketScript()
+  initPromise = waitForLogRocket()
     .then(() => {
       if (!window.LogRocket || initialized) return;
-      window.LogRocket.init(LOGROCKET_APP_ID);
       initialized = true;
     })
     .catch((error) => {

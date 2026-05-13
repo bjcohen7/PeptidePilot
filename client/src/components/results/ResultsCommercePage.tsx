@@ -141,7 +141,7 @@ export default function ResultsCommercePage({
   vendorLoading = false,
 }: ResultsCommercePageProps) {
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const [showSecondaryMatches, setShowSecondaryMatches] = useState(false);
+  const [showSecondaryMatches, setShowSecondaryMatches] = useState(true);
 
   const descriptionLead = useMemo(
     () => firstSentence(selectedMatch.description),

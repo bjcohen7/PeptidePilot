@@ -665,15 +665,15 @@ export const generatedBlogPostIndex = [
     "date": "February 2026",
     "publishedAt": "2026-02-05"
   },
-  {
-    "slug": "do-you-need-a-prescription-for-peptides",
-    "title": "Do You Need a Prescription for Peptides?",
-    "excerpt": "As interest in peptide therapy grows, a fundamental question arises for many: can you simply buy these molecules online, or do you need a prescription from a healthcare provider? The answer isn’t...",
-    "category": "Guides",
-    "readTime": "7 min read",
-    "date": "February 2026",
-    "publishedAt": "2026-02-04"
-  },
+    {
+      "slug": "do-you-need-a-prescription-for-peptides",
+      "title": "Do You Need a Prescription for Peptides? Legal Status Explained",
+      "excerpt": "Do You Need a Prescription for Peptides? Legal Status Explained explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Education",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-10"
+    },
   {
     "slug": "best-peptide-stack-for-anti-aging",
     "title": "Best Peptide Stack for Anti-Aging",
@@ -898,5 +898,176 @@ export const generatedBlogPostIndex = [
     "readTime": "7 min read",
     "date": "January 2026",
     "publishedAt": "2026-01-10"
-  }
+  },
+  {
+      "slug": "which-peptide-is-right-for-me-take-the-assessment",
+      "title": "Which Peptide is Right for Me? Take the Assessment",
+      "excerpt": "Which Peptide is Right for Me? Take the Assessment explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Guides",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-01"
+    },
+  {
+      "slug": "the-ultimate-peptide-comparison-tool-and-guide",
+      "title": "The Ultimate Peptide Comparison Tool & Guide",
+      "excerpt": "The Ultimate Peptide Comparison Tool & Guide explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Education",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-02"
+    },
+  {
+      "slug": "is-peptide-therapy-worth-it",
+      "title": "Is Peptide Therapy Worth It? Real Results and Expectations",
+      "excerpt": "Is Peptide Therapy Worth It? Real Results and Expectations explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Education",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-03"
+    },
+  {
+      "slug": "peptide-therapy-before-and-after-realistic-timeline",
+      "title": "Peptide Therapy Before and After: A Realistic Timeline",
+      "excerpt": "Peptide Therapy Before and After: A Realistic Timeline explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Education",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-04"
+    },
+  {
+      "slug": "how-much-does-peptide-therapy-cost-2026",
+      "title": "How Much Does Peptide Therapy Cost in 2026?",
+      "excerpt": "How Much Does Peptide Therapy Cost in 2026? explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Guides",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-05"
+    },
+  {
+      "slug": "trt-vs-peptide-therapy-which-is-better-for-men",
+      "title": "TRT vs. Peptide Therapy: Which is Better for Men?",
+      "excerpt": "TRT vs. Peptide Therapy: Which is Better for Men? explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Education",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-06"
+    },
+  {
+      "slug": "compounded-semaglutide-vs-brand-name",
+      "title": "Compounded Semaglutide vs. Brand Name: What You Need to Know",
+      "excerpt": "Compounded Semaglutide vs. Brand Name: What You Need to Know explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Metabolic Health",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-07"
+    },
+  {
+      "slug": "how-to-choose-a-trusted-peptide-clinic-telehealth",
+      "title": "How to Choose a Trusted Peptide Clinic or Telehealth Provider",
+      "excerpt": "How to Choose a Trusted Peptide Clinic or Telehealth Provider explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Guides",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-08"
+    },
+  {
+      "slug": "best-peptide-vendors-suppliers-2026",
+      "title": "The Best Peptide Vendors and Suppliers in 2026",
+      "excerpt": "The Best Peptide Vendors and Suppliers in 2026 explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Safety",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-09"
+    },
+  {
+      "slug": "bpc-157-long-term-side-effects",
+      "title": "BPC-157 Long-Term Side Effects: What the Research Says",
+      "excerpt": "BPC-157 Long-Term Side Effects: What the Research Says explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Safety",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-11"
+    },
+  {
+      "slug": "ipamorelin-cjc-1295-side-effects",
+      "title": "Ipamorelin and CJC-1295 Side Effects: Risks and Safety Profile",
+      "excerpt": "Ipamorelin and CJC-1295 Side Effects: Risks and Safety Profile explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Safety",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-12"
+    },
+  {
+      "slug": "peptide-therapy-risks",
+      "title": "Peptide Therapy Risks: What Can Go Wrong and How to Avoid It",
+      "excerpt": "Peptide Therapy Risks: What Can Go Wrong and How to Avoid It explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Safety",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-13"
+    },
+  {
+      "slug": "does-bpc-157-cause-cancer",
+      "title": "Does BPC-157 Cause Cancer? Debunking the Myths",
+      "excerpt": "Does BPC-157 Cause Cancer? Debunking the Myths explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Safety",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-14"
+    },
+  {
+      "slug": "semaglutide-side-effects-management",
+      "title": "Semaglutide Side Effects: How to Manage Nausea and Fatigue",
+      "excerpt": "Semaglutide Side Effects: How to Manage Nausea and Fatigue explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Metabolic Health",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-15"
+    },
+  {
+      "slug": "are-peptides-safe-long-term",
+      "title": "Are Peptides Safe for Long-Term Use? A Medical Perspective",
+      "excerpt": "Are Peptides Safe for Long-Term Use? A Medical Perspective explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Safety",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-16"
+    },
+  {
+      "slug": "peptide-injection-site-reactions",
+      "title": "Peptide Injection Site Reactions: Causes and Treatments",
+      "excerpt": "Peptide Injection Site Reactions: Causes and Treatments explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Safety",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-17"
+    },
+  {
+      "slug": "dangers-of-counterfeit-peptides",
+      "title": "The Dangers of Unapproved and Counterfeit Peptides",
+      "excerpt": "The Dangers of Unapproved and Counterfeit Peptides explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Safety",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-18"
+    },
+  {
+      "slug": "can-peptides-cause-autoimmune-flare-ups",
+      "title": "Can Peptides Cause Autoimmune Flare-Ups?",
+      "excerpt": "Can Peptides Cause Autoimmune Flare-Ups? explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Safety",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-19"
+    },
+  {
+      "slug": "tb-500-safety-profile",
+      "title": "TB-500 Safety Profile: Dosage Limits and Potential Risks",
+      "excerpt": "TB-500 Safety Profile: Dosage Limits and Potential Risks explains evidence, safety, realistic expectations, and decision criteria for peptide users...",
+      "category": "Safety",
+      "readTime": "7 min read",
+      "date": "May 2026",
+      "publishedAt": "2026-05-20"
+    }
 ] as const;

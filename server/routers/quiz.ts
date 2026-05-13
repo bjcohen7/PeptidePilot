@@ -1,9 +1,9 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { ensureAffiliateWorkspaceSchema, getDb } from "../db";
 import { leads, affiliateClicks, visitorSessions } from "../../drizzle/schema";
 import {
-  AGE_RANGE_OPTIONS,
   BUDGET_OPTIONS,
   calculateMatches,
   determineTier,
@@ -23,6 +23,11 @@ import { sendTelegramMessage } from "../_core/telegram";
 const TIER1_WEBHOOK = process.env.WEBHOOK_TIER1_URL;
 const TIER2_WEBHOOK = process.env.WEBHOOK_TIER2_URL;
 const TIER3_WEBHOOK = process.env.WEBHOOK_TIER3_URL;
+const RETURNING_TOKEN_TTL_MS = 90 * 24 * 60 * 60 * 1000;
+
+const returningLookupInput = z.object({
+  token: z.string().min(8).max(128),
+});
 
 async function sendWebhook(url: string | undefined, payload: object) {
   if (!url) return;
@@ -38,63 +43,55 @@ async function sendWebhook(url: string | undefined, payload: object) {
 }
 
 async function insertLead(
-  values: Pick<
-    typeof leads.$inferInsert,
-    | "id"
-    | "email"
-    | "sessionId"
-    | "returningToken"
-    | "tokenExpiresAt"
-    | "ageRange"
-    | "primaryGoal"
-    | "budget"
-    | "topPeptideMatch"
-    | "tier"
-    | "consentGiven"
-    | "consentTimestamp"
-    | "ipAddress"
-    | "rawQuizData"
-  >
+  values: Omit<typeof leads.$inferInsert, "sessionId" | "returningToken" | "tokenExpiresAt">
 ) {
   const db = await getDb();
   if (!db) return false;
+  await db.execute(sql`
+    insert into leads (
+      id,
+      email,
+      ageRange,
+      primaryGoal,
+      budget,
+      topPeptideMatch,
+      tier,
+      consentGiven,
+      consentTimestamp,
+      ipAddress,
+      rawQuizData
+    ) values (
+      ${values.id},
+      ${values.email},
+      ${values.ageRange},
+      ${values.primaryGoal},
+      ${values.budget},
+      ${values.topPeptideMatch},
+      ${values.tier},
+      ${values.consentGiven},
+      ${values.consentTimestamp},
+      ${values.ipAddress},
+      ${JSON.stringify(values.rawQuizData)}
+    )
+  `);
+  return true;
+}
 
-  const result = await db.execute(sql.raw("SHOW COLUMNS FROM leads"));
-  const rows = Array.isArray(result) ? result : ((result as any).rows ?? []);
-  const availableColumns = new Set(
-    rows
-      .map((row: Record<string, unknown>) => row.Field)
-      .filter((value: unknown): value is string => typeof value === "string"),
-  );
-
-  const insertValues: Record<string, unknown> = {
-    id: values.id,
-    email: values.email,
-    ageRange: values.ageRange,
-    primaryGoal: values.primaryGoal,
-    budget: values.budget,
-    topPeptideMatch: values.topPeptideMatch,
-    tier: values.tier,
-    consentGiven: values.consentGiven,
-    consentTimestamp: values.consentTimestamp,
-    ipAddress: values.ipAddress,
-    rawQuizData: values.rawQuizData,
-  };
-
-  if (availableColumns.has("sessionId")) {
-    insertValues.sessionId = values.sessionId ?? null;
+async function generateAndStoreReturningToken(leadId: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const returningToken = createReturningToken();
+  const tokenExpiresAt = createTokenExpiry();
+  try {
+    await db
+      .update(leads)
+      .set({ returningToken, tokenExpiresAt })
+      .where(eq(leads.id, leadId));
+  } catch (error) {
+    console.error("[ReturningUser] Failed to store token:", error);
+    return null;
   }
-
-  if (availableColumns.has("returningToken")) {
-    insertValues.returningToken = values.returningToken ?? null;
-  }
-
-  if (availableColumns.has("tokenExpiresAt")) {
-    insertValues.tokenExpiresAt = values.tokenExpiresAt ?? null;
-  }
-
-  await db.insert(leads).values(insertValues as typeof leads.$inferInsert);
-  return availableColumns.has("returningToken") && availableColumns.has("tokenExpiresAt");
+  return returningToken;
 }
 
 function createReturningToken() {
@@ -106,6 +103,27 @@ function createTokenExpiry() {
   expiresAt.setDate(expiresAt.getDate() + 180);
   return expiresAt;
 }
+
+function decodeLeadAnswers(rawQuizData: unknown) {
+  if (!Array.isArray(rawQuizData)) return [];
+  return rawQuizData.map((value) => (typeof value === "number" ? value : -1));
+}
+
+function buildReturningTopMatches(rawQuizData: unknown) {
+  const answers = decodeLeadAnswers(rawQuizData);
+  if (answers.length !== QUIZ_QUESTIONS.length) {
+    return [];
+  }
+
+  return calculateMatches(answers).slice(0, 5).map((match) => ({
+    slug: match.peptide.id,
+    name: match.peptide.name,
+    score: match.score,
+    matchPercent: match.matchPercent,
+  }));
+}
+
+
 
 export const quizRouter = router({
   getReturningResultsByToken: publicProcedure
@@ -119,22 +137,27 @@ export const quizRouter = router({
 
       const db = await getDb();
       if (!db) {
-        throw new Error("Database not available.");
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available." });
       }
 
       const rows = await db
-        .select()
+        .select({
+          id: leads.id,
+          returningToken: leads.returningToken,
+          tokenExpiresAt: leads.tokenExpiresAt,
+          rawQuizData: leads.rawQuizData,
+        })
         .from(leads)
         .where(eq(leads.returningToken, input.token))
         .limit(1);
 
       const lead = rows[0];
       if (!lead) {
-        throw new Error("Returning results not found.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Returning session not found." });
       }
 
       if (lead.tokenExpiresAt && lead.tokenExpiresAt.getTime() < Date.now()) {
-        throw new Error("Returning results expired.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Returning session not found." });
       }
 
       const answers = Array.isArray(lead.rawQuizData)
@@ -142,6 +165,9 @@ export const quizRouter = router({
             typeof value === "number" && Number.isFinite(value) ? value : -1,
           )
         : [];
+      if (answers.length !== QUIZ_QUESTIONS.length) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Returning session not found." });
+      }
       const topMatches = calculateMatches(answers)
         .slice(0, 5)
         .map(toReturningMatchSummary);
@@ -149,7 +175,6 @@ export const quizRouter = router({
       return {
         token: lead.returningToken,
         leadId: lead.id,
-        createdAt: lead.createdAt,
         topMatches,
       };
     }),
@@ -157,8 +182,8 @@ export const quizRouter = router({
   submitQuiz: publicProcedure
     .input(
       z.object({
-        email: z.string().email(),
-        consentGiven: z.boolean(),
+        email: z.string().email().optional().nullable(),
+        consentGiven: z.boolean().optional().default(false),
         answers: z.array(z.number().int().min(-1)).length(QUIZ_QUESTIONS.length),
         sessionId: z.string().min(8).max(64).optional().nullable(),
         meta: z
@@ -175,9 +200,13 @@ export const quizRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { email, consentGiven, answers, sessionId, meta } = input;
+      await ensureAffiliateWorkspaceSchema();
 
-      if (!consentGiven) {
+      const { email, consentGiven, answers, sessionId, meta } = input;
+      const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+      const hasProvidedEmail = normalizedEmail.length > 0;
+
+      if (hasProvidedEmail && !consentGiven) {
         throw new Error("Consent is required to submit.");
       }
 
@@ -188,7 +217,7 @@ export const quizRouter = router({
       const topPeptideMatch = topMatches[0] ?? "unknown";
       const tier = determineTier(answers);
 
-      const ageRange = AGE_RANGE_OPTIONS[answers[QUIZ_INDEX.AGE_RANGE] ?? -1] ?? "unknown";
+      const ageRange = "not-captured";
       const primaryGoal =
         PRIMARY_GOAL_OPTIONS[answers[QUIZ_INDEX.PRIMARY_GOAL] ?? -1] ?? "unknown";
       const budget = BUDGET_OPTIONS[answers[QUIZ_INDEX.BUDGET] ?? -1] ?? "unknown";
@@ -200,28 +229,35 @@ export const quizRouter = router({
         "unknown";
 
       const leadId = nanoid();
+      const leadEmail = hasProvidedEmail
+        ? normalizedEmail
+        : `anonymous+${leadId}@peptidepilot.local`;
       const consentTimestamp = new Date();
-      const returningToken = createReturningToken();
-      const tokenExpiresAt = createTokenExpiry();
 
       const db = await getDb();
       if (db) {
         await insertLead({
           id: leadId,
-          email,
-          sessionId: sessionId ?? undefined,
-          returningToken,
-          tokenExpiresAt,
+          email: leadEmail,
           ageRange,
           primaryGoal,
           budget,
           topPeptideMatch,
           tier,
-          consentGiven,
+          consentGiven: hasProvidedEmail ? consentGiven : false,
           consentTimestamp,
           ipAddress,
           rawQuizData: answers,
         });
+
+        // Update sessionId separately
+        if (sessionId) {
+          try {
+            await db.update(leads).set({ sessionId }).where(eq(leads.id, leadId));
+          } catch (e) {
+            console.error("[submitQuiz] Failed to set sessionId:", e);
+          }
+        }
 
         if (sessionId) {
           const existingSession = await db
@@ -249,9 +285,17 @@ export const quizRouter = router({
         }
       }
 
+      // Generate and store returning token separately (two-step to avoid schema mismatch)
+      let returningToken: string | null = null;
+      try {
+        returningToken = await generateAndStoreReturningToken(leadId);
+      } catch (error) {
+        console.error("[ReturningUser] Failed to generate/store token:", error);
+      }
+
       const webhookPayload = {
         leadId,
-        email,
+        email: leadEmail,
         returningToken,
         ageRange,
         primaryGoal,
@@ -263,66 +307,68 @@ export const quizRouter = router({
         ipAddress,
       };
 
-      await sendMetaServerEvents(ctx.req, [
-        {
-          eventName: "CompleteRegistration",
-          eventId: meta?.completeRegistrationEventId,
-          email,
-          clientIpAddress: ipAddress,
-          clientUserAgent: ctx.req.headers["user-agent"] ?? null,
-          sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
-          fbp: meta?.fbp ?? null,
-          fbc: meta?.fbc ?? null,
-          customData: {
-            content_name: "Peptide Quiz",
-            status: "completed",
+      if (hasProvidedEmail) {
+        await sendMetaServerEvents(ctx.req, [
+          {
+            eventName: "CompleteRegistration",
+            eventId: meta?.completeRegistrationEventId,
+            email: leadEmail,
+            clientIpAddress: ipAddress,
+            clientUserAgent: ctx.req.headers["user-agent"] ?? null,
+            sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
+            fbp: meta?.fbp ?? null,
+            fbc: meta?.fbc ?? null,
+            customData: {
+              content_name: "Peptide Quiz",
+              status: "completed",
+            },
           },
-        },
-        {
-          eventName: "Lead",
-          eventId: meta?.leadEventId,
-          email,
-          clientIpAddress: ipAddress,
-          clientUserAgent: ctx.req.headers["user-agent"] ?? null,
-          sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
-          fbp: meta?.fbp ?? null,
-          fbc: meta?.fbc ?? null,
-          customData: {
-            content_name: matches[0]?.peptide.name ?? "Peptide Results",
-            content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
-            value: isGlp1Lead ? 50 : 10,
-            currency: "USD",
+          {
+            eventName: "Lead",
+            eventId: meta?.leadEventId,
+            email: leadEmail,
+            clientIpAddress: ipAddress,
+            clientUserAgent: ctx.req.headers["user-agent"] ?? null,
+            sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
+            fbp: meta?.fbp ?? null,
+            fbc: meta?.fbc ?? null,
+            customData: {
+              content_name: matches[0]?.peptide.name ?? "Peptide Results",
+              content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+              value: isGlp1Lead ? 50 : 10,
+              currency: "USD",
+            },
           },
-        },
-        {
-          eventName: "ViewContent",
-          eventId: meta?.viewContentEventId,
-          email,
-          clientIpAddress: ipAddress,
-          clientUserAgent: ctx.req.headers["user-agent"] ?? null,
-          sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
-          fbp: meta?.fbp ?? null,
-          fbc: meta?.fbc ?? null,
-          customData: {
-            content_name: matches[0]?.peptide.name ?? "Peptide Results",
-            content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
-            content_ids: matches[0]?.peptide.id ? [matches[0].peptide.id] : undefined,
+          {
+            eventName: "ViewContent",
+            eventId: meta?.viewContentEventId,
+            email: leadEmail,
+            clientIpAddress: ipAddress,
+            clientUserAgent: ctx.req.headers["user-agent"] ?? null,
+            sourceUrl: meta?.sourceUrl ?? `${ENV.siteUrl}/results`,
+            fbp: meta?.fbp ?? null,
+            fbc: meta?.fbc ?? null,
+            customData: {
+              content_name: matches[0]?.peptide.name ?? "Peptide Results",
+              content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+              content_ids: matches[0]?.peptide.id ? [matches[0].peptide.id] : undefined,
+            },
           },
-        },
-      ]);
+        ]);
 
-      if (tier === 1) {
-        await sendWebhook(TIER1_WEBHOOK, webhookPayload);
-      } else if (tier === 2) {
-        await sendWebhook(TIER2_WEBHOOK, webhookPayload);
-      } else {
-        await sendWebhook(TIER3_WEBHOOK, webhookPayload);
+        if (tier === 1) {
+          await sendWebhook(TIER1_WEBHOOK, webhookPayload);
+        } else if (tier === 2) {
+          await sendWebhook(TIER2_WEBHOOK, webhookPayload);
+        } else {
+          await sendWebhook(TIER3_WEBHOOK, webhookPayload);
+        }
+
+        await notifyOwner({
+          title: `New PeptidePilot Lead — Tier ${tier}`,
+          content: `Email: ${leadEmail}\nTop Match: ${topPeptideMatch}\nBudget: ${budget}\nAge: ${ageRange}`,
+        });
       }
-
-      await notifyOwner({
-        title: `New PeptidePilot Lead — Tier ${tier}`,
-        content: `Email: ${email}\nTop Match: ${topPeptideMatch}\nBudget: ${budget}\nAge: ${ageRange}`,
-      });
 
       return {
         status: "success" as const,
@@ -342,6 +388,7 @@ export const quizRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      await ensureAffiliateWorkspaceSchema();
       const db = await getDb();
       if (db) {
         await db.insert(affiliateClicks).values({

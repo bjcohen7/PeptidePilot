@@ -122,6 +122,31 @@ export function getMetaBrowserIdentifiers() {
   };
 }
 
+/**
+ * Fires a custom browser-side Meta Pixel event (e.g. "AffiliateClick").
+ * Pass the same eventId to the CAPI backend endpoint so Facebook can
+ * deduplicate the browser and server events within the 48-hour window.
+ */
+export function trackMetaCustomEvent(
+  name: string,
+  params?: Record<string, unknown>,
+  eventId?: string
+) {
+  if (import.meta.env.DEV) return;
+
+  try {
+    const fbq = getFbq();
+    if (!fbq) return;
+    if (eventId) {
+      fbq("trackCustom", name, params ?? {}, { eventID: eventId });
+      return;
+    }
+    fbq("trackCustom", name, params ?? {});
+  } catch (error) {
+    console.error(`[Meta Pixel] Failed to track custom event ${name}`, error);
+  }
+}
+
 export function trackMetaEvent(
   name: "Lead" | "CompleteRegistration" | "ViewContent",
   params?: Record<string, unknown>,

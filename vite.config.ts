@@ -166,6 +166,60 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          const normalizedId = id.split(path.sep).join("/");
+
+          if (normalizedId.includes("/shared/blog-content.generated.ts")) {
+            return "blog-content";
+          }
+
+          if (normalizedId.includes("/client/src/pages/admin/")) {
+            return "admin-pages";
+          }
+
+          if (
+            normalizedId.includes("/shared/pseoContent.ts") ||
+            normalizedId.includes("/shared/pseoData.ts") ||
+            normalizedId.includes("/shared/pseo.ts")
+          ) {
+            return "pseo-content";
+          }
+
+          if (normalizedId.includes("/node_modules/")) {
+            if (
+              normalizedId.includes("/react/") ||
+              normalizedId.includes("/react-dom/") ||
+              normalizedId.includes("/scheduler/") ||
+              normalizedId.includes("/wouter/")
+            ) {
+              return "framework";
+            }
+
+            if (
+              normalizedId.includes("/@tanstack/") ||
+              normalizedId.includes("/@trpc/") ||
+              normalizedId.includes("/superjson/")
+            ) {
+              return "data-client";
+            }
+
+            if (normalizedId.includes("/recharts/")) {
+              return "charts";
+            }
+
+            if (
+              normalizedId.includes("/@radix-ui/") ||
+              normalizedId.includes("/lucide-react/") ||
+              normalizedId.includes("/framer-motion/")
+            ) {
+              return "ui-kit";
+            }
+          }
+        },
+      },
+    },
   },
   server: {
     host: true,

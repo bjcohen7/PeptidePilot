@@ -75,7 +75,33 @@ export function serveStatic(app: Express) {
     next();
   });
 
-  app.use(express.static(distPath, { redirect: false }));
+  app.use(
+    express.static(distPath, {
+      redirect: false,
+      setHeaders(res, filePath) {
+        const normalizedPath = filePath.split(path.sep).join("/");
+
+        if (normalizedPath.includes("/assets/")) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+          return;
+        }
+
+        if (normalizedPath.endsWith(".html")) {
+          res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+          return;
+        }
+
+        if (normalizedPath.includes("/data/") && normalizedPath.endsWith(".json")) {
+          res.setHeader("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
+          return;
+        }
+
+        if (/\.(?:png|jpe?g|gif|svg|webp|ico|woff2?)$/i.test(normalizedPath)) {
+          res.setHeader("Cache-Control", "public, max-age=604800, stale-while-revalidate=86400");
+        }
+      },
+    })
+  );
 
   // Fall through handler: serve the prerendered file if it exists, otherwise
   // serve the SPA shell (index.html) for client-side routing.

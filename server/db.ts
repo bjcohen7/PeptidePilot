@@ -6,6 +6,22 @@ import { ENV } from './_core/env';
 let _db: ReturnType<typeof drizzle> | null = null;
 let affiliateWorkspaceBootstrap: Promise<void> | null = null;
 
+function extractMysqlRows<T>(result: unknown): T[] {
+  if (Array.isArray(result)) {
+    if (Array.isArray(result[0])) {
+      return result[0] as T[];
+    }
+    return result as T[];
+  }
+
+  if (result && typeof result === "object" && "rows" in result) {
+    const rows = (result as { rows?: T[] }).rows;
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  return [];
+}
+
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
@@ -25,8 +41,91 @@ async function hasColumn(
   column: string
 ) {
   const result = await db.execute(sql.raw(`SHOW COLUMNS FROM \`${table}\` LIKE '${column}'`));
-  const rows = Array.isArray(result) ? result : ((result as any).rows ?? []);
+  const rows = extractMysqlRows(result);
   return rows.length > 0;
+}
+
+async function hasIndex(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  table: string,
+  index: string,
+) {
+  const result = await db.execute(sql.raw(`SHOW INDEX FROM \`${table}\` WHERE Key_name = '${index}'`));
+  const rows = extractMysqlRows(result);
+  return rows.length > 0;
+}
+
+function findMysqlErrorCode(error: unknown): string | null {
+  let current = error as { code?: string; cause?: unknown } | undefined;
+
+  while (current && typeof current === "object") {
+    if (typeof current.code === "string") {
+      return current.code;
+    }
+
+    current = current.cause as { code?: string; cause?: unknown } | undefined;
+  }
+
+  return null;
+}
+
+async function addColumnIfMissing(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  table: string,
+  column: string,
+  definitionSql: string,
+  options?: { force?: boolean },
+) {
+  if (!options?.force && (await hasColumn(db, table, column))) {
+    return;
+  }
+
+  try {
+    await db.execute(sql.raw(`ALTER TABLE \`${table}\` ADD COLUMN ${definitionSql}`));
+  } catch (error) {
+    const code = findMysqlErrorCode(error);
+    if (code === "ER_DUP_FIELDNAME") {
+      return;
+    }
+    throw error;
+  }
+}
+
+async function addIndexIfMissing(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  table: string,
+  indexName: string,
+  definitionSql: string,
+  options?: { force?: boolean },
+) {
+  if (!options?.force && (await hasIndex(db, table, indexName))) {
+    return;
+  }
+
+  try {
+    await db.execute(sql.raw(`ALTER TABLE \`${table}\` ADD ${definitionSql}`));
+  } catch (error) {
+    const code = findMysqlErrorCode(error);
+    if (code === "ER_DUP_KEYNAME" || code === "ER_DUP_ENTRY") {
+      return;
+    }
+    throw error;
+  }
+}
+
+export async function ensureReturningUserLeadSchema(options?: { force?: boolean }) {
+  const db = await getDb();
+  if (!db) return;
+
+  await addColumnIfMissing(db, "leads", "returningToken", "`returningToken` varchar(64)", options);
+  await addColumnIfMissing(db, "leads", "tokenExpiresAt", "`tokenExpiresAt` timestamp NULL", options);
+  await addIndexIfMissing(
+    db,
+    "leads",
+    "leads_returning_token_unique",
+    "UNIQUE INDEX `leads_returning_token_unique` (`returningToken`)",
+    options,
+  );
 }
 
 export async function ensureAffiliateWorkspaceSchema() {
@@ -59,6 +158,11 @@ export async function ensureAffiliateWorkspaceSchema() {
           \`peptideId\` varchar(64),
           \`isGlobal\` boolean NOT NULL DEFAULT false,
           \`sortOrder\` int NOT NULL DEFAULT 100,
+          \`cardHeadlineValue\` varchar(128),
+          \`cardHeadlineUnit\` varchar(128),
+          \`cardPromoText\` varchar(255),
+          \`cardCouponCode\` varchar(64),
+          \`cardBadge\` varchar(64),
           \`status\` enum('active','draft','paused') NOT NULL DEFAULT 'draft',
           \`lastTestedAt\` timestamp,
           \`lastTestStatus\` int,
@@ -132,6 +236,17 @@ export async function ensureAffiliateWorkspaceSchema() {
         )
       `));
 
+      await db.execute(sql.raw(`
+        CREATE TABLE IF NOT EXISTS \`affiliate_clicks\` (
+          \`id\` int AUTO_INCREMENT NOT NULL,
+          \`leadId\` varchar(36) NOT NULL,
+          \`peptideId\` varchar(64) NOT NULL,
+          \`vendor\` varchar(128) NOT NULL,
+          \`clickedAt\` timestamp NOT NULL DEFAULT (now()),
+          CONSTRAINT \`affiliate_clicks_id\` PRIMARY KEY(\`id\`)
+        )
+      `));
+
       if (!(await hasColumn(db, "affiliate_links", "isGlobal"))) {
         await db.execute(sql.raw("ALTER TABLE `affiliate_links` ADD COLUMN `isGlobal` boolean NOT NULL DEFAULT false"));
       }
@@ -139,6 +254,89 @@ export async function ensureAffiliateWorkspaceSchema() {
       if (!(await hasColumn(db, "affiliate_links", "sortOrder"))) {
         await db.execute(sql.raw("ALTER TABLE `affiliate_links` ADD COLUMN `sortOrder` int NOT NULL DEFAULT 100"));
       }
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "status",
+        "`status` enum('active','draft','paused') NOT NULL DEFAULT 'active'",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "createdAt",
+        "`createdAt` timestamp NOT NULL DEFAULT (now())",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "updatedAt",
+        "`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP",
+      );
+
+      try {
+        await db.execute(
+          sql.raw(
+            "UPDATE `affiliate_links` SET `status` = 'active' WHERE `status` IS NULL OR `status` = ''",
+          ),
+        );
+      } catch (error) {
+        const code = findMysqlErrorCode(error);
+        if (code !== "ER_BAD_FIELD_ERROR") {
+          throw error;
+        }
+      }
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "cardHeadlineValue",
+        "`cardHeadlineValue` varchar(128)",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "cardHeadlineUnit",
+        "`cardHeadlineUnit` varchar(128)",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "cardPromoText",
+        "`cardPromoText` varchar(255)",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "cardCouponCode",
+        "`cardCouponCode` varchar(64)",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "cardBadge",
+        "`cardBadge` varchar(64)",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "lastTestedAt",
+        "`lastTestedAt` timestamp NULL",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_links",
+        "lastTestStatus",
+        "`lastTestStatus` int",
+      );
 
       if (!(await hasColumn(db, "leads", "sessionId"))) {
         await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `sessionId` varchar(64)"));

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,14 +11,13 @@ import {
   Brain,
   Dumbbell,
   Moon,
-  Zap,
   Heart,
-  Sparkles,
   Activity,
   Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import Seo from "@/components/Seo";
+import { preloadQuizExperience } from "@/lib/preloadQuiz";
 
 const SITE_URL = "https://www.peptidepilot.me";
 
@@ -32,12 +31,12 @@ const HOW_IT_WORKS = [
   {
     step: "01",
     title: "Take the Quiz",
-    description: "Answer 20 targeted questions about your goals, body, and lifestyle. Takes just 5 minutes.",
+    description: "Answer 10 targeted questions about weight loss, appetite, recovery, and real-world fit. Takes just a few minutes.",
   },
   {
     step: "02",
     title: "Get Your Profile",
-    description: "Our algorithm evaluates your responses across 8 biological domains to find your optimal peptide matches.",
+    description: "Our algorithm weighs metabolic, body-composition, hormone, and recovery signals to find your strongest peptide matches.",
   },
   {
     step: "03",
@@ -47,19 +46,37 @@ const HOW_IT_WORKS = [
 ];
 
 const SCIENCE_AREAS = [
-  { icon: Dumbbell, label: "Goals & Performance", description: "Muscle, fat loss, endurance, and athletic output." },
-  { icon: Activity, label: "Body & Fitness", description: "Training type, recovery, and body composition." },
-  { icon: Heart, label: "Hormones & Aging", description: "Hormonal balance, libido, and longevity markers." },
-  { icon: Moon, label: "Sleep & Recovery", description: "Sleep architecture, restoration, and circadian health." },
-  { icon: Zap, label: "Pain & Injury", description: "Joint health, tissue repair, and gut integrity." },
-  { icon: Brain, label: "Cognition & Mood", description: "Focus, memory, anxiety, and neuroprotection." },
-  { icon: Sparkles, label: "Skin, Hair & Appearance", description: "Collagen synthesis, elasticity, and hair health." },
-  { icon: Clock, label: "Lifestyle & Preferences", description: "Budget, experience, administration, and routine." },
+  { icon: Dumbbell, label: "Body Composition", description: "Weight-loss goals, recomposition, and muscle-preservation priorities." },
+  { icon: Activity, label: "Activity & Training", description: "Current training volume and how hard your body needs to work." },
+  { icon: Heart, label: "Hormones & Metabolism", description: "Insulin resistance, menopause, testosterone, and stress-related friction." },
+  { icon: Moon, label: "Recovery", description: "Sleep quality, fatigue, and how well your system bounces back." },
+  { icon: Brain, label: "Appetite & Cravings", description: "Food noise, hunger, cravings, and day-to-day consistency." },
+  { icon: Clock, label: "Practical Fit", description: "Budget, approach preference, and what you can realistically sustain." },
 ];
 
 export default function Home() {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+
+  useEffect(() => {
+    const preload = () => {
+      preloadQuizExperience();
+    };
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if ("requestIdleCallback" in window) {
+      const idleHandle = window.requestIdleCallback(preload, { timeout: 1200 });
+      return () => {
+        window.cancelIdleCallback(idleHandle);
+      };
+    }
+
+    const timeoutHandle = setTimeout(preload, 350);
+    return () => clearTimeout(timeoutHandle);
+  }, []);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +104,7 @@ export default function Home() {
           url: `${SITE_URL}/`,
         }}
       />
-      {/* ── Hero ─────────────────────────────────────────────────── */}
+      {/* ── Hero ───────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-brand-gradient text-white">
         <div
           className="absolute inset-0 opacity-10"
@@ -118,6 +135,9 @@ export default function Home() {
             <Button
               size="lg"
               className="bg-white text-primary hover:bg-white/90 transition-all font-semibold text-base px-8 py-5 sm:py-6 h-auto rounded-xl shadow-lg shadow-black/20 group w-full sm:w-auto"
+              onMouseEnter={() => preloadQuizExperience()}
+              onFocus={() => preloadQuizExperience()}
+              onTouchStart={() => preloadQuizExperience()}
             >
               Take the 5-Minute Quiz
               <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -136,13 +156,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Social Proof Banner ───────────────────────────────────── */}
+      {/* ── Social Proof Banner ────────────────────────────────────── */}
       <section className="bg-secondary/60 border-y border-border/60 py-4 sm:py-5">
         <div className="container">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-10 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-accent flex-shrink-0" />
-              <span><strong className="text-foreground">20 questions</strong> across 8 biological domains</span>
+              <span><strong className="text-foreground">10 questions</strong> built for weight-loss and metabolic fit</span>
             </div>
             <div className="hidden sm:block w-px h-4 bg-border" />
             <div className="flex items-center gap-2">
@@ -158,7 +178,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── How It Works ─────────────────────────────────────────── */}
+      {/* ── How It Works ───────────────────────────────────────────── */}
       <section className="py-14 sm:py-20 bg-background">
         <div className="container">
           <div className="text-center mb-10 sm:mb-14">
@@ -167,7 +187,7 @@ export default function Home() {
               Your Personalized Protocol in 3 Steps
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base px-2">
-              No guesswork. No bias. Just a rigorous analysis of your biology matched to the most relevant peptide research.
+              No guesswork. No bias. Just a faster analysis of your biology matched to the most relevant peptide research.
             </p>
           </div>
 
@@ -195,7 +215,7 @@ export default function Home() {
 
           <div className="text-center mt-10 sm:mt-12">
             <Link href="/quiz">
-              <Button size="lg" className="bg-brand-gradient text-white hover:opacity-90 font-semibold px-8 py-5 sm:py-6 h-auto rounded-xl w-full sm:w-auto">
+              <Button size="lg" className="bg-brand-gradient text-white hover:opacity-90 font-semibold px-8 py-5 sm:py-6 h-auto rounded-xl w-full sm:w-auto" onMouseEnter={() => preloadQuizExperience()} onFocus={() => preloadQuizExperience()} onTouchStart={() => preloadQuizExperience()}>
                 Start Your Free Analysis
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
@@ -204,7 +224,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Science Section ───────────────────────────────────────── */}
+      {/* ── Science Section ────────────────────────────────────────── */}
       <section className="py-14 sm:py-20 bg-muted/40">
         <div className="container">
           <div className="text-center mb-10 sm:mb-14">
@@ -213,7 +233,7 @@ export default function Home() {
               The Science Behind Your Profile
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base px-2">
-              Our quiz evaluates 8 thematic areas across 20 targeted questions to build a complete biological picture — not a generic recommendation.
+              Our quiz focuses on the signals that matter most for weight loss, appetite, recovery, hormone context, and practical fit — not a generic recommendation.
             </p>
           </div>
 
@@ -262,7 +282,7 @@ export default function Home() {
                 ))}
               </ul>
               <Link href="/quiz">
-                <Button size="lg" className="bg-brand-gradient text-white hover:opacity-90 font-semibold px-8 rounded-xl w-full sm:w-auto">
+                <Button size="lg" className="bg-brand-gradient text-white hover:opacity-90 font-semibold px-8 rounded-xl w-full sm:w-auto" onMouseEnter={() => preloadQuizExperience()} onFocus={() => preloadQuizExperience()} onTouchStart={() => preloadQuizExperience()}>
                   Get My Free Report
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
@@ -320,7 +340,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Independent Positioning ───────────────────────────────── */}
+      {/* ── Independent Positioning ────────────────────────────────── */}
       <section className="py-14 sm:py-20 bg-background">
         <div className="container max-w-3xl text-center">
           <div className="section-badge mb-5 sm:mb-6">Why PeptidePilot</div>
@@ -352,7 +372,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Email Capture ─────────────────────────────────────────── */}
+      {/* ── Email Capture ──────────────────────────────────────────── */}
       <section className="py-12 sm:py-16 bg-secondary/40 border-y border-border/60">
         <div className="container max-w-xl text-center">
           <h2 className="text-2xl sm:text-3xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
@@ -389,7 +409,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Final CTA ─────────────────────────────────────────────── */}
+      {/* ── Final CTA ──────────────────────────────────────────────── */}
       <section className="py-14 sm:py-20 bg-brand-gradient text-white">
         <div className="container text-center">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-normal mb-4 sm:mb-5" style={{ fontFamily: "'DM Serif Display', serif" }}>
@@ -402,6 +422,9 @@ export default function Home() {
             <Button
               size="lg"
               className="bg-white text-primary hover:bg-white/90 font-semibold text-base px-8 py-5 sm:py-6 h-auto rounded-xl shadow-lg shadow-black/20 group w-full sm:w-auto"
+              onMouseEnter={() => preloadQuizExperience()}
+              onFocus={() => preloadQuizExperience()}
+              onTouchStart={() => preloadQuizExperience()}
             >
               Take the Free Quiz
               <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

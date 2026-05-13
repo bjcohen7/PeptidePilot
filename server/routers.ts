@@ -8,6 +8,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { analyticsRouter } from "./routers/analytics";
 import { publicProcedure, router } from "./_core/trpc";
 import { affiliatesRouter } from "./routers/affiliates";
+import { configRouter } from "./routers/config";
 import { quizRouter } from "./routers/quiz";
 import * as db from "./db";
 
@@ -19,6 +20,7 @@ export const appRouter = router({
   system: systemRouter,
   analytics: analyticsRouter,
   affiliates: affiliatesRouter,
+  config: configRouter,
   quiz: quizRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),

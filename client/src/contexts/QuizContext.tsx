@@ -22,7 +22,7 @@ interface QuizContextValue {
 }
 
 const QuizContext = createContext<QuizContextValue | null>(null);
-const QUIZ_STORAGE_KEY = "peptidepilot_quiz_state_v1";
+const QUIZ_STORAGE_KEY = "peptidepilot_quiz_state_v3";
 
 function persistQuizState(state: QuizState) {
   if (typeof window === "undefined") return;

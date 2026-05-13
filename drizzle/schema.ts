@@ -33,7 +33,7 @@ export const leads = mysqlTable("leads", {
   consentGiven: boolean("consentGiven").notNull().default(false),
   consentTimestamp: timestamp("consentTimestamp").notNull(),
   ipAddress: varchar("ipAddress", { length: 64 }).notNull(),
-  rawQuizData: json("rawQuizData").notNull(), // array of 40 answer indices
+  rawQuizData: json("rawQuizData").notNull(), // array of quiz answer indices
 });
 
 export type Lead = typeof leads.$inferSelect;
@@ -100,6 +100,11 @@ export const affiliateLinks = mysqlTable("affiliate_links", {
   peptideId: varchar("peptideId", { length: 64 }),
   isGlobal: boolean("isGlobal").notNull().default(false),
   sortOrder: int("sortOrder").notNull().default(100),
+  cardHeadlineValue: varchar("cardHeadlineValue", { length: 128 }),
+  cardHeadlineUnit: varchar("cardHeadlineUnit", { length: 128 }),
+  cardPromoText: varchar("cardPromoText", { length: 255 }),
+  cardCouponCode: varchar("cardCouponCode", { length: 64 }),
+  cardBadge: varchar("cardBadge", { length: 64 }),
   status: mysqlEnum("status", ["active", "draft", "paused"]).default("draft").notNull(),
   lastTestedAt: timestamp("lastTestedAt"),
   lastTestStatus: int("lastTestStatus"),

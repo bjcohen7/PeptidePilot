@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useQuiz } from "@/contexts/QuizContext";
 import { useSwipe } from "@/hooks/useSwipe";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
+import { preloadProcessing, preloadResults } from "@/lib/preloadQuiz";
 import {
   PRIMARY_GOAL_OPTIONS,
   QUIZ_INDEX,
@@ -63,6 +64,13 @@ const SECTION_BREATHERS: Record<
   },
 };
 
+const BREATHER_SECTIONS = new Set([
+  "Metabolic Health",
+  "Age & Hormones",
+  "Cognition & Mood",
+  "Lifestyle & Preferences",
+]);
+
 function getVisibleQuestionIndices(isWeightLossGoal: boolean): number[] {
   return QUIZ_QUESTIONS.map((_, index) => index).filter((index) => {
     if (isWeightLossGoal) return true;
@@ -77,8 +85,10 @@ function getBreatherIndices(questionIndices: number[]): Set<number> {
   let lastSection = QUIZ_QUESTIONS[questionIndices[0] ?? 0]?.section ?? "";
   for (let i = 1; i < questionIndices.length; i++) {
     const section = QUIZ_QUESTIONS[questionIndices[i] ?? 0]?.section ?? "";
-    if (section !== lastSection) {
+    if (section !== lastSection && BREATHER_SECTIONS.has(section)) {
       indices.add(i);
+    }
+    if (section !== lastSection) {
       lastSection = section;
     }
   }
@@ -142,7 +152,8 @@ export default function QuizFlow() {
   }, [currentIndex]);
 
   useEffect(() => {
-    void import("./Processing");
+    void preloadProcessing();
+    void preloadResults();
   }, []);
 
   useEffect(() => {
@@ -187,13 +198,16 @@ export default function QuizFlow() {
   const handleSelectAnswer = useCallback(
     (idx: number) => {
       if (isTransitioning || selectedAnswer !== null) return;
+      const targetVisibleIndex = currentVisibleIndex + 1;
+      const targetQuestionIndex = visibleQuestionIndices[targetVisibleIndex];
+      const shouldShowBreather =
+        typeof targetQuestionIndex === "number" &&
+        breatherIndices.has(targetVisibleIndex);
+
       selectAnswer(idx);
 
-      if (
-        typeof nextQuestionIndex === "number" &&
-        breatherIndices.has(currentVisibleIndex + 1)
-      ) {
-        const nextSection = QUIZ_QUESTIONS[nextQuestionIndex]?.section ?? "";
+      if (shouldShowBreather) {
+        const nextSection = QUIZ_QUESTIONS[targetQuestionIndex]?.section ?? "";
         setTimeout(() => {
           setBreatherSection(nextSection);
           setShowBreather(true);
@@ -203,18 +217,24 @@ export default function QuizFlow() {
       }
 
       setTimeout(() => {
-        triggerAdvance("forward", moveForward);
+        if (typeof targetQuestionIndex === "number") {
+          triggerAdvance("forward", () => goTo(targetQuestionIndex));
+          return;
+        }
+
+        triggerAdvance("forward", completeQuiz);
       }, 320);
     },
     [
+      breatherIndices,
+      completeQuiz,
+      currentVisibleIndex,
+      goTo,
       isTransitioning,
       selectedAnswer,
       selectAnswer,
-      nextQuestionIndex,
-      breatherIndices,
-      currentVisibleIndex,
       triggerAdvance,
-      moveForward,
+      visibleQuestionIndices,
     ],
   );
 

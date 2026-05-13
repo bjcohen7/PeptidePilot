@@ -1,16 +1,23 @@
+import { useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock, ShieldCheck, Zap } from "lucide-react";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { QUIZ_QUESTIONS, peptideProfiles } from "../../../shared/scoring";
+import { preloadQuizCompletionExperience, preloadQuizFlow } from "@/lib/preloadQuiz";
 
 const STEPS = [
-  { number: "01", label: `Answer ${QUIZ_QUESTIONS.length} targeted questions`, sub: "Across 8 biological domains" },
+  { number: "01", label: `Answer ${QUIZ_QUESTIONS.length} targeted questions`, sub: "Built around weight loss, appetite, recovery, and fit" },
   { number: "02", label: "We analyze your biology", sub: `Matched against ${peptideProfiles.length} peptide profiles` },
   { number: "03", label: "Receive your personalized protocol", sub: "Ranked by compatibility with your goals" },
 ];
 
 export default function QuizEntry() {
+  useEffect(() => {
+    void preloadQuizFlow();
+    void preloadQuizCompletionExperience();
+  }, []);
+
   return (
     <div
       className="min-h-screen flex flex-col"
@@ -74,7 +81,7 @@ export default function QuizEntry() {
               lineHeight: 1.75,
             }}
           >
-            20 questions. 8 biological domains. A personalized protocol built around your unique biology, goals, and lifestyle.
+            10 questions. A sharper weight-loss and metabolic read on your biology, goals, and lifestyle.
           </p>
 
           {/* Steps */}
@@ -109,6 +116,9 @@ export default function QuizEntry() {
                 background: "linear-gradient(135deg, #38bdf8, #0d9488)",
                 boxShadow: "0 8px 32px rgba(56,189,248,0.25)",
               }}
+              onMouseEnter={() => void preloadQuizFlow()}
+              onFocus={() => void preloadQuizFlow()}
+              onTouchStart={() => void preloadQuizFlow()}
             >
               Begin My Assessment
               <ArrowRight className="ml-2 w-4 h-4" />

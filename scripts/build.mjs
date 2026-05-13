@@ -2,6 +2,11 @@ import { spawn } from "node:child_process";
 
 const steps = [
   {
+    label: "export static content",
+    command: "tsx",
+    args: ["scripts/export-static-content.ts"],
+  },
+  {
     label: "vite build",
     command: "vite",
     args: ["build"],

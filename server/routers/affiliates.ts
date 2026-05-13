@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { and, asc, eq, inArray, ne, or } from "drizzle-orm";
+import { and, asc, eq, inArray, ne, or, sql } from "drizzle-orm";
 import { affiliatePartnerSeeds } from "../../shared/affiliatePartners";
 import { affiliateAuditEvents, affiliateLinks, affiliatePartners } from "../../drizzle/schema";
-import { getDb } from "../db";
+import { ensureAffiliateWorkspaceSchema, getDb } from "../db";
 import { adminProcedure, publicProcedure, router } from "../_core/trpc";
 import { peptideProfiles } from "../../shared/scoring";
 import type { TrpcContext } from "../_core/context";
@@ -23,6 +23,11 @@ const linkInput = z.object({
   peptideId: z.string().max(64).optional().nullable(),
   isGlobal: z.boolean().default(false),
   sortOrder: z.number().int().min(1).max(999).default(100),
+  cardHeadlineValue: z.string().max(128).optional().nullable(),
+  cardHeadlineUnit: z.string().max(128).optional().nullable(),
+  cardPromoText: z.string().max(255).optional().nullable(),
+  cardCouponCode: z.string().max(64).optional().nullable(),
+  cardBadge: z.string().max(64).optional().nullable(),
   status: z.enum(["active", "draft", "paused"]).default("draft"),
 });
 
@@ -186,7 +191,15 @@ async function findDuplicateLink(
     excludeId?: number;
   }
 ) {
-  const rows = await db.select().from(affiliateLinks);
+  const rows = await db
+    .select({
+      id: affiliateLinks.id,
+      placement: affiliateLinks.placement,
+      peptideId: affiliateLinks.peptideId,
+      isGlobal: affiliateLinks.isGlobal,
+      url: affiliateLinks.url,
+    })
+    .from(affiliateLinks);
   return (
     rows.find((row) => {
       if (input.excludeId && row.id === input.excludeId) return false;
@@ -195,11 +208,213 @@ async function findDuplicateLink(
   );
 }
 
+async function getAffiliateDb() {
+  await ensureAffiliateWorkspaceSchema();
+  return getDb();
+}
+
+function extractMysqlRows<T>(result: unknown): T[] {
+  if (Array.isArray(result)) {
+    if (Array.isArray(result[0])) {
+      return result[0] as T[];
+    }
+    return result as T[];
+  }
+
+  if (result && typeof result === "object" && "rows" in result) {
+    const rows = (result as { rows?: T[] }).rows;
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  return [];
+}
+
+async function listAffiliateLinksSafely(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+) {
+  const columnsResult = await db.execute(sql.raw("SHOW COLUMNS FROM `affiliate_links`"));
+  const columnRows = extractMysqlRows<{ Field?: string; field?: string }>(columnsResult);
+  const columnNames = new Set(
+    columnRows
+      .map((row) =>
+        typeof row?.Field === "string"
+          ? row.Field.toLowerCase()
+          : typeof row?.field === "string"
+            ? row.field.toLowerCase()
+            : null,
+      )
+      .filter((value): value is string => Boolean(value)),
+  );
+
+  const resolveColumn = (...candidates: string[]) => {
+    const match = candidates.find((candidate) => columnNames.has(candidate.toLowerCase()));
+    return match ?? null;
+  };
+
+  const selectExpr = (alias: string, candidates: string[], fallbackSql: string) => {
+    const resolved = resolveColumn(...candidates);
+    return resolved ? `l.\`${resolved}\` AS \`${alias}\`` : `${fallbackSql} AS \`${alias}\``;
+  };
+
+  const orderColumn = resolveColumn("sortOrder", "sort_order");
+  const orderExpr = orderColumn ? `l.\`${orderColumn}\`, l.\`id\`` : "l.`id`";
+  const query = `
+    SELECT
+      ${selectExpr("id", ["id"], "0")},
+      ${selectExpr("partnerId", ["partnerId", "partner_id"], "0")},
+      ${selectExpr("label", ["label"], "''")},
+      ${selectExpr("url", ["url"], "''")},
+      ${selectExpr("placement", ["placement"], "''")},
+      ${selectExpr("peptideId", ["peptideId", "peptide_id"], "NULL")},
+      ${selectExpr("isGlobal", ["isGlobal", "is_global"], "0")},
+      ${selectExpr("sortOrder", ["sortOrder", "sort_order"], "100")},
+      ${selectExpr("cardHeadlineValue", ["cardHeadlineValue", "card_headline_value"], "NULL")},
+      ${selectExpr("cardHeadlineUnit", ["cardHeadlineUnit", "card_headline_unit"], "NULL")},
+      ${selectExpr("cardPromoText", ["cardPromoText", "card_promo_text"], "NULL")},
+      ${selectExpr("cardCouponCode", ["cardCouponCode", "card_coupon_code"], "NULL")},
+      ${selectExpr("cardBadge", ["cardBadge", "card_badge"], "NULL")},
+      ${selectExpr("status", ["status"], "'draft'")},
+      p.\`name\` AS \`partnerName\`
+    FROM \`affiliate_links\` l
+    LEFT JOIN \`affiliate_partners\` p ON p.\`id\` = ${selectExpr("partnerIdJoin", ["partnerId", "partner_id"], "0").replace(" AS `partnerIdJoin`", "")}
+    ORDER BY ${orderExpr}
+  `;
+
+  const result = await db.execute(sql.raw(query));
+  const rows = extractMysqlRows<Record<string, unknown>>(result);
+
+  return rows.map((row) => ({
+    id: Number(row.id ?? 0),
+    partnerId: Number(row.partnerId ?? 0),
+    label: typeof row.label === "string" ? row.label : "",
+    url: typeof row.url === "string" ? row.url : "",
+    placement: typeof row.placement === "string" ? row.placement : "",
+    peptideId: typeof row.peptideId === "string" ? row.peptideId : null,
+    isGlobal: Boolean(Number(row.isGlobal ?? 0)),
+    sortOrder: Number(row.sortOrder ?? 100),
+    cardHeadlineValue: typeof row.cardHeadlineValue === "string" ? row.cardHeadlineValue : null,
+    cardHeadlineUnit: typeof row.cardHeadlineUnit === "string" ? row.cardHeadlineUnit : null,
+    cardPromoText: typeof row.cardPromoText === "string" ? row.cardPromoText : null,
+    cardCouponCode: typeof row.cardCouponCode === "string" ? row.cardCouponCode : null,
+    cardBadge: typeof row.cardBadge === "string" ? row.cardBadge : null,
+    status:
+      row.status === "active" || row.status === "paused" || row.status === "draft"
+        ? row.status
+        : "draft",
+    partnerName: typeof row.partnerName === "string" ? row.partnerName : "Unknown partner",
+  }));
+}
+
+type LegacyLinkSeed = {
+  partnerName: string;
+  label: string;
+  url: string;
+  placement: "results-card";
+  peptideId: string;
+  isGlobal: false;
+  sortOrder: number;
+};
+
+function inferLegacyPartnerCategory(partnerName: string) {
+  const telehealthPartners = new Set(["Hone Health", "LifeMD", "Defy Medical"]);
+  return telehealthPartners.has(partnerName) ? "Telehealth" : "Research peptides";
+}
+
+function inferLegacyPartnerNotes(partnerName: string) {
+  const seededPartner = affiliatePartnerSeeds.find((partner) => partner.name === partnerName);
+  if (seededPartner?.notes) return seededPartner.notes;
+  return "Restored from legacy hard-coded result card vendor definitions.";
+}
+
+const legacyLinkSeeds: LegacyLinkSeed[] = Array.from(
+  new Map(
+    peptideProfiles.flatMap((profile) =>
+      profile.vendors.map((vendor, index) => {
+        const seed: LegacyLinkSeed = {
+          partnerName: vendor.name,
+          label: vendor.name,
+          url: vendor.url,
+          placement: "results-card",
+          peptideId: profile.id,
+          isGlobal: false,
+          sortOrder: index + 1,
+        };
+
+        return [`${seed.placement}::${seed.peptideId}::${seed.url}`, seed] as const;
+      }),
+    ),
+  ).values(),
+);
+
+async function findOrRestoreLegacyPartner(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  input: { name: string; url: string },
+) {
+  const existingPartner = await db
+    .select({
+      id: affiliatePartners.id,
+      status: affiliatePartners.status,
+      primaryUrl: affiliatePartners.primaryUrl,
+      notes: affiliatePartners.notes,
+    })
+    .from(affiliatePartners)
+    .where(eq(affiliatePartners.name, input.name))
+    .limit(1);
+
+  const existing = existingPartner[0];
+  const category =
+    affiliatePartnerSeeds.find((partner) => partner.name === input.name)?.category ??
+    inferLegacyPartnerCategory(input.name);
+  const notes = inferLegacyPartnerNotes(input.name);
+
+  if (existing) {
+    const updates: Partial<{
+      status: "active";
+      primaryUrl: string;
+      notes: string;
+    }> = {};
+
+    if (existing.status !== "active") {
+      updates.status = "active";
+    }
+    if (!existing.primaryUrl?.trim()) {
+      updates.primaryUrl = input.url;
+    }
+    if (!existing.notes?.trim()) {
+      updates.notes = notes;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await db.update(affiliatePartners).set(updates).where(eq(affiliatePartners.id, existing.id));
+    }
+
+    return {
+      id: existing.id,
+      created: false,
+      reactivated: Boolean(updates.status),
+    };
+  }
+
+  const result = await db.insert(affiliatePartners).values({
+    name: input.name,
+    category,
+    status: "active",
+    primaryUrl: input.url,
+    notes,
+  });
+
+  return {
+    id: Number(result[0].insertId),
+    created: true,
+    reactivated: false,
+  };
+}
+
 export const affiliatesRouter = router({
   activeLinksByPeptide: publicProcedure
     .input(z.object({ peptideId: z.string().min(1).max(64) }))
     .query(async ({ input }) => {
-      const db = await getDb();
+      const db = await getAffiliateDb();
       if (!db) return [];
 
       const normalizedPeptideId = normalizePeptideId(input.peptideId) ?? input.peptideId;
@@ -212,24 +427,41 @@ export const affiliatesRouter = router({
       );
 
       return db
-        .select()
+        .select({
+          id: affiliateLinks.id,
+          partnerId: affiliateLinks.partnerId,
+          label: affiliateLinks.label,
+          url: affiliateLinks.url,
+          placement: affiliateLinks.placement,
+          peptideId: affiliateLinks.peptideId,
+          isGlobal: affiliateLinks.isGlobal,
+          sortOrder: affiliateLinks.sortOrder,
+          cardHeadlineValue: affiliateLinks.cardHeadlineValue,
+          cardHeadlineUnit: affiliateLinks.cardHeadlineUnit,
+          cardPromoText: affiliateLinks.cardPromoText,
+          cardCouponCode: affiliateLinks.cardCouponCode,
+          cardBadge: affiliateLinks.cardBadge,
+          status: affiliateLinks.status,
+        })
         .from(affiliateLinks)
+        .innerJoin(affiliatePartners, eq(affiliateLinks.partnerId, affiliatePartners.id))
         .where(
           and(
             or(
               ...peptideAliases.map((peptideId) => eq(affiliateLinks.peptideId, peptideId)),
               eq(affiliateLinks.isGlobal, true),
             ),
-            eq(affiliateLinks.status, "active")
+            eq(affiliateLinks.status, "active"),
+            eq(affiliatePartners.status, "active"),
           )
         )
-        .orderBy(asc(affiliateLinks.sortOrder), asc(affiliateLinks.createdAt));
+        .orderBy(asc(affiliateLinks.sortOrder), asc(affiliateLinks.id));
     }),
 
   availablePeptideIds: publicProcedure
     .input(z.object({ peptideIds: z.array(z.string().min(1).max(64)).max(50) }))
     .query(async ({ input }) => {
-      const db = await getDb();
+      const db = await getAffiliateDb();
       if (!db || input.peptideIds.length === 0) return [];
 
       const normalizedIds = Array.from(
@@ -252,9 +484,11 @@ export const affiliatesRouter = router({
           isGlobal: affiliateLinks.isGlobal,
         })
         .from(affiliateLinks)
+        .innerJoin(affiliatePartners, eq(affiliateLinks.partnerId, affiliatePartners.id))
         .where(
           and(
             eq(affiliateLinks.status, "active"),
+            eq(affiliatePartners.status, "active"),
             or(
               eq(affiliateLinks.isGlobal, true),
               inArray(affiliateLinks.peptideId, aliasPool),
@@ -275,7 +509,7 @@ export const affiliatesRouter = router({
     }),
 
   listPartners: adminProcedure.query(async () => {
-    const db = await getDb();
+    const db = await getAffiliateDb();
     if (!db) {
       return affiliatePartnerSeeds;
     }
@@ -284,7 +518,7 @@ export const affiliatesRouter = router({
   }),
 
   createPartner: adminProcedure.input(partnerInput).mutation(async ({ input, ctx }) => {
-    const db = await getDb();
+    const db = await getAffiliateDb();
     if (!db) {
       throw new Error("Database is required to create affiliate partners.");
     }
@@ -314,7 +548,7 @@ export const affiliatesRouter = router({
   updatePartner: adminProcedure
     .input(partnerInput.extend({ id: z.number().int().positive() }))
     .mutation(async ({ input, ctx }) => {
-      const db = await getDb();
+      const db = await getAffiliateDb();
       if (!db) {
         throw new Error("Database is required to update affiliate partners.");
       }
@@ -354,7 +588,7 @@ export const affiliatesRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const db = await getDb();
+      const db = await getAffiliateDb();
       if (!db) {
         throw new Error("Database is required to update affiliate partners.");
       }
@@ -397,7 +631,7 @@ export const affiliatesRouter = router({
     }),
 
   createLink: adminProcedure.input(linkInput).mutation(async ({ input, ctx }) => {
-    const db = await getDb();
+    const db = await getAffiliateDb();
     if (!db) {
       throw new Error("Database is required to create affiliate links.");
     }
@@ -432,7 +666,7 @@ export const affiliatesRouter = router({
   updateLink: adminProcedure
     .input(linkInput.extend({ id: z.number().int().positive() }))
     .mutation(async ({ input, ctx }) => {
-      const db = await getDb();
+      const db = await getAffiliateDb();
       if (!db) {
         throw new Error("Database is required to update affiliate links.");
       }
@@ -473,13 +707,16 @@ export const affiliatesRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const db = await getDb();
+      const db = await getAffiliateDb();
       if (!db) {
         throw new Error("Database is required to update affiliate links.");
       }
 
       const existing = await db
-        .select()
+        .select({
+          id: affiliateLinks.id,
+          label: affiliateLinks.label,
+        })
         .from(affiliateLinks)
         .where(eq(affiliateLinks.id, input.id))
         .limit(1);
@@ -509,7 +746,7 @@ export const affiliatesRouter = router({
     .input(z.object({ command: z.string().min(5).max(2000) }))
     .mutation(async ({ input }) => {
       const parsed = parseAssistantCommand(input.command);
-      const db = await getDb();
+      const db = await getAffiliateDb();
       const existing =
         db &&
         (await findDuplicateLink(db, {
@@ -531,7 +768,7 @@ export const affiliatesRouter = router({
   runAssistantCommand: adminProcedure
     .input(z.object({ command: z.string().min(5).max(2000) }))
     .mutation(async ({ input, ctx }) => {
-      const db = await getDb();
+      const db = await getAffiliateDb();
       if (!db) {
         throw new Error("Database is required to run affiliate assistant commands.");
       }
@@ -607,6 +844,106 @@ export const affiliatesRouter = router({
       };
     }),
 
+  seedLegacyLinks: adminProcedure.mutation(async ({ ctx }) => {
+    const db = await getAffiliateDb();
+    if (!db) {
+      throw new Error("Database is required to restore legacy affiliate links.");
+    }
+
+    const counts = {
+      partnersCreated: 0,
+      partnersReactivated: 0,
+      linksCreated: 0,
+      linksReactivated: 0,
+      linksSkipped: 0,
+    };
+
+    for (const seed of legacyLinkSeeds) {
+      const partner = await findOrRestoreLegacyPartner(db, {
+        name: seed.partnerName,
+        url: seed.url,
+      });
+
+      if (partner.created) counts.partnersCreated += 1;
+      if (partner.reactivated) counts.partnersReactivated += 1;
+
+      const existing = await findDuplicateLink(db, {
+        placement: seed.placement,
+        peptideId: seed.peptideId,
+        isGlobal: seed.isGlobal,
+        url: seed.url,
+      });
+
+      if (existing) {
+        const current = await db
+          .select({
+            id: affiliateLinks.id,
+            partnerId: affiliateLinks.partnerId,
+            label: affiliateLinks.label,
+            sortOrder: affiliateLinks.sortOrder,
+            status: affiliateLinks.status,
+          })
+          .from(affiliateLinks)
+          .where(eq(affiliateLinks.id, existing.id))
+          .limit(1);
+
+        const currentLink = current[0];
+        if (!currentLink) {
+          counts.linksSkipped += 1;
+          continue;
+        }
+
+        const needsUpdate =
+          currentLink.partnerId !== partner.id ||
+          currentLink.label !== seed.label ||
+          currentLink.sortOrder !== seed.sortOrder ||
+          currentLink.status !== "active";
+
+        if (needsUpdate) {
+          await db
+            .update(affiliateLinks)
+            .set({
+              partnerId: partner.id,
+              label: seed.label,
+              sortOrder: seed.sortOrder,
+              status: "active",
+            })
+            .where(eq(affiliateLinks.id, currentLink.id));
+          counts.linksReactivated += 1;
+        } else {
+          counts.linksSkipped += 1;
+        }
+
+        continue;
+      }
+
+      await db.insert(affiliateLinks).values({
+        partnerId: partner.id,
+        label: seed.label,
+        url: seed.url,
+        placement: seed.placement,
+        peptideId: seed.peptideId,
+        isGlobal: false,
+        sortOrder: seed.sortOrder,
+        status: "active",
+      });
+      counts.linksCreated += 1;
+    }
+
+    await logAffiliateAudit(db, ctx, {
+      action: "seed_legacy",
+      entityType: "affiliate_link",
+      summary: `Restored legacy affiliate links (${counts.linksCreated} created, ${counts.linksReactivated} reactivated, ${counts.linksSkipped} unchanged).`,
+      metadata: counts,
+    });
+
+    return {
+      status: "ok" as const,
+      ...counts,
+      message: `Legacy affiliate restore complete: ${counts.linksCreated} links created, ${counts.linksReactivated} reactivated, ${counts.linksSkipped} already current.`,
+    };
+  }),
+
   testLink: adminProcedure
     .input(z.object({ url: z.string().url() }))
     .mutation(async ({ input }) => {
@@ -628,23 +965,23 @@ export const affiliatesRouter = router({
     }),
 
   listLinks: adminProcedure.query(async () => {
-    const db = await getDb();
+    const db = await getAffiliateDb();
     if (!db) return [];
 
     const [links, partners] = await Promise.all([
-      db.select().from(affiliateLinks).orderBy(asc(affiliateLinks.sortOrder), asc(affiliateLinks.createdAt)),
+      listAffiliateLinksSafely(db),
       db.select().from(affiliatePartners),
     ]);
     const partnerMap = new Map(partners.map((partner) => [partner.id, partner.name]));
 
     return links.map((link) => ({
       ...link,
-      partnerName: partnerMap.get(link.partnerId) ?? "Unknown partner",
+      partnerName: link.partnerName || partnerMap.get(link.partnerId) || "Unknown partner",
     }));
   }),
 
   listAuditEvents: adminProcedure.query(async () => {
-    const db = await getDb();
+    const db = await getAffiliateDb();
     if (!db) return [];
 
     return db.select().from(affiliateAuditEvents).orderBy(asc(affiliateAuditEvents.createdAt));

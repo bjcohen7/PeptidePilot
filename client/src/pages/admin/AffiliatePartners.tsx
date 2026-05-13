@@ -23,6 +23,11 @@ type LinkForm = {
   peptideId: string;
   isGlobal: boolean;
   sortOrder: string;
+  cardHeadlineValue: string;
+  cardHeadlineUnit: string;
+  cardPromoText: string;
+  cardCouponCode: string;
+  cardBadge: string;
   status: "active" | "draft" | "paused";
 };
 
@@ -54,6 +59,11 @@ const emptyLink: LinkForm = {
   peptideId: "",
   isGlobal: false,
   sortOrder: "100",
+  cardHeadlineValue: "",
+  cardHeadlineUnit: "",
+  cardPromoText: "",
+  cardCouponCode: "",
+  cardBadge: "",
   status: "draft",
 };
 
@@ -63,6 +73,44 @@ function inputClass() {
 
 function textareaClass() {
   return "min-h-24 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-accent";
+}
+
+function summarizeLinkCoverage(link: {
+  cardHeadlineValue?: string | null;
+  cardHeadlineUnit?: string | null;
+  cardPromoText?: string | null;
+  cardCouponCode?: string | null;
+  cardBadge?: string | null;
+}) {
+  const hasPrice = Boolean(link.cardHeadlineValue?.trim());
+  const hasPromo = Boolean(link.cardPromoText?.trim());
+  const hasCoupon = Boolean(link.cardCouponCode?.trim());
+  const hasBadge = Boolean(link.cardBadge?.trim());
+  const isOfferReady = hasPrice && hasBadge;
+
+  let statusLabel = "Needs pricing";
+  let statusClass = "bg-amber-50 text-amber-800 border-amber-200";
+
+  if (isOfferReady) {
+    statusLabel = hasCoupon || hasPromo ? "Offer ready" : "Needs promo";
+    statusClass =
+      hasCoupon || hasPromo
+        ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+        : "bg-sky-50 text-sky-800 border-sky-200";
+  } else if (hasPrice) {
+    statusLabel = "Needs badge";
+    statusClass = "bg-sky-50 text-sky-800 border-sky-200";
+  }
+
+  return {
+    hasPrice,
+    hasPromo,
+    hasCoupon,
+    hasBadge,
+    isOfferReady: isOfferReady && (hasPromo || hasCoupon),
+    statusLabel,
+    statusClass,
+  };
 }
 
 export default function AffiliatePartnersAdmin() {
@@ -149,6 +197,17 @@ export default function AffiliatePartnersAdmin() {
     onSuccess: (result) => setAssistantPreview(result as AssistantPreview),
     onError: (error) => toast.error(error.message),
   });
+  const seedLegacyLinks = trpc.affiliates.seedLegacyLinks.useMutation({
+    onSuccess: async (result) => {
+      toast.success(result.message);
+      await Promise.all([
+        utils.affiliates.listPartners.invalidate(),
+        utils.affiliates.listLinks.invalidate(),
+        utils.affiliates.listAuditEvents.invalidate(),
+      ]);
+    },
+    onError: (error) => toast.error(error.message),
+  });
   const assistant = trpc.affiliates.runAssistantCommand.useMutation({
     onSuccess: async (result) => {
       toast.success(result.message);
@@ -167,6 +226,62 @@ export default function AffiliatePartnersAdmin() {
   const numericPartners = useMemo(
     () => rows.filter((partner): partner is Extract<typeof partner, { id: number }> => typeof partner.id === "number"),
     [rows]
+  );
+  const linkCoverage = useMemo(
+    () => linkRows.map((link) => ({ linkId: link.id, ...summarizeLinkCoverage(link) })),
+    [linkRows],
+  );
+  const coverageByLinkId = useMemo(
+    () => new Map(linkCoverage.map((entry) => [entry.linkId, entry])),
+    [linkCoverage],
+  );
+  const partnerCoverage = useMemo(() => {
+    return new Map(
+      rows
+        .filter((partner): partner is Extract<typeof partner, { id: number }> => typeof partner.id === "number")
+        .map((partner) => {
+          const partnerLinks = linkRows.filter((link) => link.partnerId === partner.id);
+          const offerReadyCount = partnerLinks.filter(
+            (link) => coverageByLinkId.get(link.id)?.isOfferReady,
+          ).length;
+          const couponCount = partnerLinks.filter(
+            (link) => coverageByLinkId.get(link.id)?.hasCoupon,
+          ).length;
+          const missingPricingCount = partnerLinks.filter(
+            (link) => !coverageByLinkId.get(link.id)?.hasPrice,
+          ).length;
+
+          return [
+            partner.id,
+            {
+              totalLinks: partnerLinks.length,
+              offerReadyCount,
+              couponCount,
+              missingPricingCount,
+            },
+          ] as const;
+        }),
+    );
+  }, [rows, linkRows, coverageByLinkId]);
+  const activeLinksCount = useMemo(
+    () => linkRows.filter((link) => link.status === "active").length,
+    [linkRows],
+  );
+  const offerReadyCount = useMemo(
+    () => linkCoverage.filter((entry) => entry.isOfferReady).length,
+    [linkCoverage],
+  );
+  const needsPricingCount = useMemo(
+    () => linkCoverage.filter((entry) => !entry.hasPrice).length,
+    [linkCoverage],
+  );
+  const couponsLiveCount = useMemo(
+    () => linkCoverage.filter((entry) => entry.hasCoupon).length,
+    [linkCoverage],
+  );
+  const promosLiveCount = useMemo(
+    () => linkCoverage.filter((entry) => entry.hasPromo).length,
+    [linkCoverage],
   );
 
   const savePartner = (event: React.FormEvent) => {
@@ -194,6 +309,11 @@ export default function AffiliatePartnersAdmin() {
       peptideId: linkForm.peptideId || null,
       isGlobal: linkForm.isGlobal,
       sortOrder: Number(linkForm.sortOrder) || 100,
+      cardHeadlineValue: linkForm.cardHeadlineValue || null,
+      cardHeadlineUnit: linkForm.cardHeadlineUnit || null,
+      cardPromoText: linkForm.cardPromoText || null,
+      cardCouponCode: linkForm.cardCouponCode || null,
+      cardBadge: linkForm.cardBadge || null,
       status: linkForm.status,
     };
 
@@ -220,6 +340,11 @@ export default function AffiliatePartnersAdmin() {
       peptideId: link.peptideId ?? "",
       isGlobal: link.isGlobal,
       sortOrder: String(link.sortOrder),
+      cardHeadlineValue: link.cardHeadlineValue ?? "",
+      cardHeadlineUnit: link.cardHeadlineUnit ?? "",
+      cardPromoText: link.cardPromoText ?? "",
+      cardCouponCode: link.cardCouponCode ?? "",
+      cardBadge: link.cardBadge ?? "",
       status: link.status,
     });
   };
@@ -259,6 +384,14 @@ export default function AffiliatePartnersAdmin() {
     setLinkStatus.mutate({ id: link.id, status: nextStatus });
   };
 
+  const restoreLegacyLinks = () => {
+    const confirmed = window.confirm(
+      "Restore legacy affiliate links from the original results-page vendor definitions? This will reactivate matching legacy partners/links and create any missing managed rows without duplicating exact scope+URL matches.",
+    );
+    if (!confirmed) return;
+    seedLegacyLinks.mutate();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -270,6 +403,14 @@ export default function AffiliatePartnersAdmin() {
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            variant="outline"
+            onClick={restoreLegacyLinks}
+            disabled={seedLegacyLinks.isPending}
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Restore Legacy Links
+          </Button>
           <Button className="bg-brand-gradient text-white hover:opacity-90" onClick={() => setPartnerForm(emptyPartner)}>
             <Plus className="w-4 h-4 mr-2" />
             New Partner
@@ -277,11 +418,14 @@ export default function AffiliatePartnersAdmin() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4">
         {[
           { label: "Partners", value: rows.length.toString() },
-          { label: "Active", value: rows.filter((row) => row.status === "active").length.toString() },
-          { label: "Tracked links", value: linkRows.length.toString() },
+          { label: "Active links", value: activeLinksCount.toString() },
+          { label: "Offer ready", value: offerReadyCount.toString() },
+          { label: "Needs pricing", value: needsPricingCount.toString() },
+          { label: "Promos live", value: promosLiveCount.toString() },
+          { label: "Coupons live", value: couponsLiveCount.toString() },
         ].map((metric) => (
           <div key={metric.label} className="rounded-xl border border-border bg-white p-5">
             <p className="text-sm text-muted-foreground">{metric.label}</p>
@@ -397,6 +541,46 @@ export default function AffiliatePartnersAdmin() {
               <option value="paused">Paused</option>
             </select>
           </div>
+          <div className="rounded-lg border border-border/70 bg-secondary/30 p-4 space-y-3">
+            <div>
+              <h3 className="text-sm font-semibold">Results card display</h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                These fields control the live price/promo surface on the results cards. Leave blank to fall back to the shared default metadata.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input
+                className={inputClass()}
+                placeholder='Headline value, e.g. "$179"'
+                value={linkForm.cardHeadlineValue}
+                onChange={(e) => setLinkForm({ ...linkForm, cardHeadlineValue: e.target.value })}
+              />
+              <input
+                className={inputClass()}
+                placeholder='Headline unit, e.g. "first month"'
+                value={linkForm.cardHeadlineUnit}
+                onChange={(e) => setLinkForm({ ...linkForm, cardHeadlineUnit: e.target.value })}
+              />
+              <input
+                className={inputClass()}
+                placeholder='Promo text, e.g. "Refills locked at $299"'
+                value={linkForm.cardPromoText}
+                onChange={(e) => setLinkForm({ ...linkForm, cardPromoText: e.target.value })}
+              />
+              <input
+                className={inputClass()}
+                placeholder='Coupon code, e.g. "PEPTIDEPILOT10"'
+                value={linkForm.cardCouponCode}
+                onChange={(e) => setLinkForm({ ...linkForm, cardCouponCode: e.target.value })}
+              />
+              <input
+                className={inputClass()}
+                placeholder='Card badge, e.g. "Lowest Price"'
+                value={linkForm.cardBadge}
+                onChange={(e) => setLinkForm({ ...linkForm, cardBadge: e.target.value })}
+              />
+            </div>
+          </div>
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
             <input
               type="checkbox"
@@ -443,8 +627,29 @@ export default function AffiliatePartnersAdmin() {
                   <h3 className="font-semibold text-foreground">{partner.name}</h3>
                   <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">{partner.status}</span>
                   <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">{partner.category}</span>
+                  {typeof partner.id === "number" && partnerCoverage.get(partner.id)?.offerReadyCount ? (
+                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
+                      {partnerCoverage.get(partner.id)?.offerReadyCount} offer-ready
+                    </span>
+                  ) : null}
+                  {typeof partner.id === "number" && partnerCoverage.get(partner.id)?.couponCount ? (
+                    <span className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-800">
+                      {partnerCoverage.get(partner.id)?.couponCount} coupon live
+                    </span>
+                  ) : null}
+                  {typeof partner.id === "number" && partnerCoverage.get(partner.id)?.missingPricingCount ? (
+                    <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
+                      {partnerCoverage.get(partner.id)?.missingPricingCount} need pricing
+                    </span>
+                  ) : null}
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-3">{partner.notes || "No notes yet."}</p>
+                {typeof partner.id === "number" && partnerCoverage.get(partner.id)?.totalLinks ? (
+                  <p className="mb-3 text-xs text-muted-foreground">
+                    {partnerCoverage.get(partner.id)?.totalLinks} tracked link
+                    {partnerCoverage.get(partner.id)?.totalLinks === 1 ? "" : "s"} · {partnerCoverage.get(partner.id)?.offerReadyCount ?? 0} ready · {partnerCoverage.get(partner.id)?.missingPricingCount ?? 0} still missing pricing
+                  </p>
+                ) : null}
                 <a href={partner.primaryUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline">
                   <ExternalLink className="w-4 h-4" />
                   {partner.primaryUrl}
@@ -484,7 +689,7 @@ export default function AffiliatePartnersAdmin() {
           <div>
             <h2 className="font-semibold">Tracked links</h2>
             <p className="text-sm text-muted-foreground">
-              Active links are sorted by order on result cards.
+              Active links are sorted by order on result cards. Enter price first, then badge, then promo/coupon so the card is fully merchandised.
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={() => links.refetch()}>
@@ -492,6 +697,11 @@ export default function AffiliatePartnersAdmin() {
             Refresh
           </Button>
         </div>
+        {links.error ? (
+          <div className="border-b border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-800">
+            Couldn&apos;t load tracked links: {links.error.message}
+          </div>
+        ) : null}
         {linkRows.length === 0 ? (
           <div className="p-5 text-sm text-muted-foreground">No tracked links yet.</div>
         ) : (
@@ -499,6 +709,36 @@ export default function AffiliatePartnersAdmin() {
             {linkRows.map((link) => (
               <div key={link.id} className="p-5 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
                 <div>
+                  {(() => {
+                    const coverage = coverageByLinkId.get(link.id);
+                    return coverage ? (
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
+                        <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${coverage.statusClass}`}>
+                          {coverage.statusLabel}
+                        </span>
+                        {coverage.hasPrice ? (
+                          <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                            Price entered
+                          </span>
+                        ) : null}
+                        {coverage.hasBadge ? (
+                          <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                            Ribbon ready
+                          </span>
+                        ) : null}
+                        {coverage.hasPromo ? (
+                          <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                            Promo text live
+                          </span>
+                        ) : null}
+                        {coverage.hasCoupon ? (
+                          <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                            Coupon live
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null;
+                  })()}
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <h3 className="font-semibold text-foreground">{link.label}</h3>
                     <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
@@ -516,8 +756,31 @@ export default function AffiliatePartnersAdmin() {
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">
                     Placement: {link.placement}
-                    {typeof link.lastTestStatus === "number" ? ` · Last test ${link.lastTestStatus}` : ""}
                   </p>
+                  {(link.cardHeadlineValue || link.cardPromoText || link.cardCouponCode || link.cardBadge) ? (
+                    <div className="mb-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                      {link.cardBadge ? (
+                        <span className="rounded-full border border-border px-2.5 py-1">
+                          Badge: {link.cardBadge}
+                        </span>
+                      ) : null}
+                      {link.cardHeadlineValue || link.cardHeadlineUnit ? (
+                        <span className="rounded-full border border-border px-2.5 py-1">
+                          Price: {[link.cardHeadlineValue, link.cardHeadlineUnit].filter(Boolean).join(" ")}
+                        </span>
+                      ) : null}
+                      {link.cardPromoText ? (
+                        <span className="rounded-full border border-border px-2.5 py-1">
+                          Promo: {link.cardPromoText}
+                        </span>
+                      ) : null}
+                      {link.cardCouponCode ? (
+                        <span className="rounded-full border border-border px-2.5 py-1">
+                          Code: {link.cardCouponCode}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
                   <a href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline">
                     <ExternalLink className="w-4 h-4" />
                     {link.url}

@@ -2,6 +2,7 @@ import { Activity, Check, ExternalLink, ListChecks, Mail, Search, Sparkles, Tras
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
+import { QUIZ_QUESTIONS } from "../../../../shared/scoring";
 
 function cardClass() {
   return "rounded-xl border border-border bg-white p-5";
@@ -244,7 +245,9 @@ export default function InsightsOverview() {
                         <span className="text-muted-foreground">Tracking</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-foreground">{session.lead ? "20/20" : "—"}</td>
+                    <td className="px-4 py-3 text-foreground">
+                      {session.lead ? `${QUIZ_QUESTIONS.length}/${QUIZ_QUESTIONS.length}` : "—"}
+                    </td>
                     <td className="px-4 py-3 text-muted-foreground">{session.utmSource ?? formatReferrer(session.referrer)}</td>
                     <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                       {new Date(session.firstSeenAt).toLocaleString()}
