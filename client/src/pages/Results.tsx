@@ -264,7 +264,7 @@ export default function Results() {
     const allAffiliateLinks = activeLinks.data ?? [];
 
     const linksForDisplay = isGlpMatch
-      ? allAffiliateLinks.filter((link) => link.label.toLowerCase() === "skinnyrx")
+      ? allAffiliateLinks.filter((link) => link.label.toLowerCase() === "direct meds")
       : allAffiliateLinks;
 
     const affiliateVendors = linksForDisplay.map((link) => ({
