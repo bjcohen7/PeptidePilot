@@ -117,7 +117,7 @@ function SecondaryCard({
   onCtaClick: Props["onCtaClick"];
 }) {
   return (
-    <article className="flex flex-col rounded-2xl border border-[#e2e8e5] bg-white p-5 sm:p-6">
+    <article className="flex flex-col rounded-2xl border border-[#e2e8e5] bg-gradient-to-br from-white to-[#dde8e0] p-5 sm:p-6">
       <div className="mb-3.5 flex flex-wrap items-center gap-2">
         {data.differentiatorBadge ? (
           <span className="inline-flex items-center rounded-full bg-[#e6f7f1] px-3 py-1 text-[11px] font-semibold tracking-wide text-[#0a6b54]">
