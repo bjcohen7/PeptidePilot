@@ -11,7 +11,7 @@
 import { batch1GoalPages, batch1PeptidePages } from "./pseoData-batch-1";
 import { batch2ComparisonPages } from "./pseoData-batch-2";
 import { batch3StackPages } from "./pseoData-batch-3";
-import { batch4GuidePages } from "./pseoData-batch-4";
+import { batch4GuidePages, batch4ComparisonPages, batch4StackPages, batch4GoalPages, batch4ReviewPages, batch4ConditionPages } from "./pseoData-batch-4";
 
 // ─── PEPTIDE PROFILES ────────────────────────────────────────────────────────
 
@@ -1977,6 +1977,7 @@ export const goalPages: GoalPageData[] = [
     ],
   },
   ...batch1GoalPages,
+  ...batch4GoalPages,
 ];
 
 // ─── COMPARISON PAGES ────────────────────────────────────────────────────────
@@ -3772,6 +3773,7 @@ export const comparisonPages: ComparisonPageData[] = [
 
 
   ...batch2ComparisonPages,
+  ...batch4ComparisonPages,
 ];
 
 // ─── STACK PAGES ─────────────────────────────────────────────────────────────
@@ -3977,6 +3979,7 @@ export const stackPages: StackPageData[] = [
       ]
     },
   ...batch3StackPages,
+  ...batch4StackPages,
 ];
 
 // ─── HELPER FUNCTIONS ────────────────────────────────────────────────────────
@@ -8816,6 +8819,7 @@ export const forConditionPages: ForConditionPageData[] = [
       ],
       "icdCode": "G93.3"
   },
+  ...batch4ConditionPages,
 ];
 
 
@@ -9436,5 +9440,6 @@ export const reviewPages: ReviewPageData[] = [
       a: "Semax is not FDA-approved in the United States. It is approved in Russia for cognitive impairment, stroke recovery, and ADHD. It is available as a research compound in the US.",
     }
     ],
-  }
+  },
+  ...batch4ReviewPages,
 ];

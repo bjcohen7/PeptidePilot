@@ -23,6 +23,8 @@ import {
 
 const LIBRARY_BACKED_PROFILE_IDS = new Set<string>(libraryBackedPeptideProfileIds);
 
+const GLP1_PEPTIDE_IDS = new Set(["semaglutide", "tirzepatide", "retatrutide", "liraglutide", "orforglipron"]);
+
 type VendorPresentation = {
   category: ResultsVendorCategoryFilter;
   logoMarkFallback: string;
@@ -257,7 +259,15 @@ export default function Results() {
   const vendorCards = useMemo<ResultsVendorCard[]>(() => {
     if (!selectedMatch) return [];
 
-    const affiliateVendors = (activeLinks.data ?? []).map((link) => ({
+    const isGlpMatch = GLP1_PEPTIDE_IDS.has(selectedMatch.peptideId);
+
+    const allAffiliateLinks = activeLinks.data ?? [];
+
+    const linksForDisplay = isGlpMatch
+      ? allAffiliateLinks.filter((link) => link.label.toLowerCase() === "direct meds")
+      : allAffiliateLinks;
+
+    const affiliateVendors = linksForDisplay.map((link) => ({
       label: link.label,
       url: link.url,
     }));
