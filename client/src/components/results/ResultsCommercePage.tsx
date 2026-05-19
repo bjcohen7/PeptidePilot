@@ -1,36 +1,16 @@
-import { useMemo, useState, type MouseEvent } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "wouter";
 import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import type { ReturningMatchSummary } from "../../../../shared/scoring";
-
-export type ResultsVendorCategoryFilter = "research-peptides" | "telehealth";
-
-export type ResultsVendorCard = {
-  id: string;
-  name: string;
-  category: ResultsVendorCategoryFilter;
-  affiliateUrl: string;
-  logoUrl?: string;
-  logoAlt?: string;
-  logoMarkFallback: string;
-  badge?: string | null;
-  headlineValue: string;
-  headlineUnit: string;
-  promoText?: string | null;
-  couponCode?: string | null;
-  features: string[];
-  trustSignals?: string[];
-};
+import { AffiliateRecommendationSection } from "@/components/affiliate/AffiliateRecommendationSection";
 
 type ResultsCommercePageProps = {
   matches: ReturningMatchSummary[];
   selectedMatch: ReturningMatchSummary;
-  vendors: ResultsVendorCard[];
   onRetake: () => void;
   onSelectMatch: (peptideId: string) => void;
-  onVendorClick: (vendor: ResultsVendorCard, event?: MouseEvent<HTMLAnchorElement>) => void;
-  vendorLoading?: boolean;
+  leadId?: string;
 };
 
 function prettyLabel(value: string) {
@@ -45,7 +25,9 @@ function firstSentence(text: string) {
 }
 
 function buildMatchReason(match: ReturningMatchSummary) {
-  const labels = match.categories.slice(0, 2).map((category) => prettyLabel(category).toLowerCase());
+  const labels = match.categories.slice(0, 2).map((category) =>
+    prettyLabel(category).toLowerCase(),
+  );
 
   if (labels.length === 0) {
     return `Your quiz profile made ${match.name} the strongest fit — a ${match.matchPercent}% match across your goals and lifestyle.`;
@@ -56,34 +38,6 @@ function buildMatchReason(match: ReturningMatchSummary) {
   }
 
   return `Your focus on ${labels[0]} and ${labels[1]} made ${match.name} the strongest fit — a ${match.matchPercent}% match across your goals and lifestyle.`;
-}
-
-function VendorLogo({
-  logoUrl,
-  logoAlt,
-  fallback,
-}: {
-  logoUrl?: string;
-  logoAlt?: string;
-  fallback: string;
-}) {
-  if (logoUrl) {
-    return (
-      <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white p-2 shadow-[inset_0_0_0_1px_rgba(14,31,28,0.06)]">
-        <img
-          src={logoUrl}
-          alt={logoAlt ?? fallback}
-          className="max-h-full max-w-full object-contain"
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white text-sm font-bold tracking-tight text-[#0e1f1c] shadow-[inset_0_0_0_1px_rgba(14,31,28,0.06)]">
-      {fallback}
-    </div>
-  );
 }
 
 function SecondaryMatchCard({
@@ -134,11 +88,9 @@ function SecondaryMatchCard({
 export default function ResultsCommercePage({
   matches,
   selectedMatch,
-  vendors,
   onRetake,
   onSelectMatch,
-  onVendorClick,
-  vendorLoading = false,
+  leadId,
 }: ResultsCommercePageProps) {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showSecondaryMatches, setShowSecondaryMatches] = useState(true);
@@ -152,15 +104,10 @@ export default function ResultsCommercePage({
     return selectedMatch.description.slice(descriptionLead.length).trim();
   }, [descriptionLead, selectedMatch.description]);
 
-  const primaryVendor = vendors[0] ?? null;
-  const alternateVendors = vendors.slice(1, 4);
-  const secondaryMatches = matches.filter((match) => match.peptideId !== selectedMatch.peptideId);
+  const secondaryMatches = matches.filter(
+    (match) => match.peptideId !== selectedMatch.peptideId,
+  );
   const personalizedReason = buildMatchReason(selectedMatch);
-  const trustSignals = primaryVendor?.trustSignals?.length
-    ? primaryVendor.trustSignals
-    : primaryVendor?.category === "telehealth"
-      ? ["Doctor-guided", "Prescription included", "US-licensed"]
-      : ["Direct checkout", "Research catalog", "Independent vendor"];
 
   return (
     <div className="min-h-screen bg-[#f6f8f7] text-[#0e1f1c]">
@@ -193,7 +140,10 @@ export default function ResultsCommercePage({
             <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#e2e8e5]">
               <div
                 className="h-full rounded-full"
-                style={{ width: `${selectedMatch.matchPercent}%`, background: "linear-gradient(90deg,#0fb88a 0%, #22d3ee 100%)" }}
+                style={{
+                  width: `${selectedMatch.matchPercent}%`,
+                  background: "linear-gradient(90deg,#0fb88a 0%, #22d3ee 100%)",
+                }}
               />
             </div>
             <span className="whitespace-nowrap text-sm font-bold text-[#0a8f73]">
@@ -231,7 +181,11 @@ export default function ResultsCommercePage({
               className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#0a8f73]"
             >
               {showFullDescription ? "Hide full description" : "Read full description"}
-              {showFullDescription ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              {showFullDescription ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
             </button>
           ) : null}
         </section>
@@ -259,137 +213,11 @@ export default function ResultsCommercePage({
           </span>
         </div>
 
-        <section className="relative overflow-hidden rounded-[24px] bg-[#0e1f1c] text-white shadow-[0_24px_60px_rgba(14,31,28,0.25)]">
-          <div
-            className="pointer-events-none absolute inset-0 opacity-50"
-            style={{
-              background:
-                "radial-gradient(900px 400px at 100% 0%, rgba(34,211,238,0.18), transparent 60%), radial-gradient(700px 360px at 0% 100%, rgba(15,184,138,0.22), transparent 60%)",
-            }}
-          />
-          <div
-            className="pointer-events-none absolute inset-0 opacity-[0.04]"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
-              backgroundSize: "32px 32px",
-            }}
-          />
-
-          <div className="relative p-6 md:p-8">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white">
-                ✦ Your next step
-              </span>
-              <span
-                className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.05em] text-[#0e1f1c]"
-                style={{ background: "linear-gradient(135deg, #0fb88a 0%, #22d3ee 100%)" }}
-              >
-                Recommended
-              </span>
-            </div>
-
-            {vendorLoading ? (
-              <div className="mt-6 rounded-[18px] border border-white/10 bg-white/5 px-5 py-8 text-sm text-white/70">
-                Loading provider options…
-              </div>
-            ) : primaryVendor ? (
-              <>
-                <h2
-                  className="mt-5 text-[28px] leading-tight text-white md:text-[32px]"
-                  style={{ fontFamily: "'Crimson Pro', Georgia, serif", fontWeight: 600 }}
-                >
-                  We recommend{" "}
-                  <span className="italic text-[#5eead4]">{primaryVendor.name}</span>
-                </h2>
-
-                <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
-                  <div className="flex flex-col gap-4 rounded-[18px] border border-white/10 bg-white/5 p-5 md:flex-row md:items-center">
-                    <VendorLogo
-                      logoUrl={primaryVendor.logoUrl}
-                      logoAlt={primaryVendor.logoAlt}
-                      fallback={primaryVendor.logoMarkFallback}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[18px] font-bold text-white">{primaryVendor.name}</div>
-                      <div className="mt-1 flex items-baseline gap-2">
-                        <span className="text-[28px] font-extrabold leading-none tracking-[-0.02em] text-white">
-                          {primaryVendor.headlineValue}
-                        </span>
-                        <span className="text-sm text-white/65">{primaryVendor.headlineUnit}</span>
-                      </div>
-                      {primaryVendor.promoText || primaryVendor.couponCode ? (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {primaryVendor.promoText ? (
-                            <span className="rounded-full bg-[#fff4d6] px-3 py-1 text-[11px] font-semibold text-[#7a5500]">
-                              {primaryVendor.promoText}
-                            </span>
-                          ) : null}
-                          {primaryVendor.couponCode ? (
-                            <span className="rounded-full border border-white/30 px-3 py-1 font-mono text-[11px] font-semibold text-white">
-                              Code {primaryVendor.couponCode}
-                            </span>
-                          ) : null}
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-stretch gap-2 lg:items-end">
-                    <a
-                      href={primaryVendor.affiliateUrl}
-                      onClick={(event) => onVendorClick(primaryVendor, event)}
-                      className="inline-flex min-w-[260px] items-center justify-center gap-2 rounded-full px-6 py-4 text-sm font-semibold text-[#0e1f1c] shadow-[0_14px_30px_rgba(15,184,138,0.45)]"
-                      style={{ background: "linear-gradient(135deg, #0fb88a 0%, #22d3ee 100%)" }}
-                    >
-                      Check Eligibility at {primaryVendor.name}
-                      <ArrowRight className="h-4 w-4" />
-                    </a>
-                    <span className="text-[11px] text-white/55">No commitment</span>
-                  </div>
-                </div>
-
-                <div className="mt-5 flex flex-wrap gap-4 text-[12px] text-white/75">
-                  {trustSignals.map((signal) => (
-                    <span key={signal} className="inline-flex items-center gap-2">
-                      <span className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#0fb88a] text-[9px] text-[#0e1f1c]">
-                        ✓
-                      </span>
-                      {signal}
-                    </span>
-                  ))}
-                </div>
-
-                {alternateVendors.length > 0 ? (
-                  <div className="mt-5 border-t border-white/10 pt-4">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/55">
-                      Also available at
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {alternateVendors.map((vendor) => (
-                        <a
-                          key={vendor.id}
-                          href={vendor.affiliateUrl}
-                          onClick={(event) => onVendorClick(vendor, event)}
-                          className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-[12px] font-medium text-white/90"
-                        >
-                          <span className="inline-flex h-[18px] w-[18px] items-center justify-center rounded-[5px] bg-white text-[9px] font-bold text-[#0e1f1c]">
-                            {vendor.logoMarkFallback}
-                          </span>
-                          {vendor.name}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </>
-            ) : (
-              <div className="mt-6 rounded-[18px] border border-white/10 bg-white/5 px-5 py-8 text-sm leading-7 text-white/72">
-                We don’t have a live provider recommendation wired in for this match yet, but the fit itself is still valid and you can compare the other strong options below.
-              </div>
-            )}
-          </div>
-        </section>
+        <AffiliateRecommendationSection
+          peptideId={selectedMatch.peptideId}
+          peptideName={selectedMatch.name}
+          leadId={leadId}
+        />
 
         {secondaryMatches.length > 0 ? (
           <section className="mx-auto mt-8 max-w-[900px]">
@@ -399,7 +227,8 @@ export default function ResultsCommercePage({
               className="flex w-full items-center justify-between rounded-[18px] border border-dashed border-[#cfd8d4] bg-white px-5 py-4 text-left transition hover:border-[#0fb88a]/40"
             >
               <span className="text-sm font-semibold text-[#0e1f1c]">
-                Compare {secondaryMatches.length} other match{secondaryMatches.length === 1 ? "" : "es"}
+                Compare {secondaryMatches.length} other match
+                {secondaryMatches.length === 1 ? "" : "es"}
               </span>
               {showSecondaryMatches ? (
                 <ChevronUp className="h-5 w-5 text-[#4a5b58]" />

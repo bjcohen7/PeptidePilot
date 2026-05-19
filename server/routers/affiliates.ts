@@ -430,6 +430,7 @@ export const affiliatesRouter = router({
         .select({
           id: affiliateLinks.id,
           partnerId: affiliateLinks.partnerId,
+          partnerName: affiliatePartners.name,
           label: affiliateLinks.label,
           url: affiliateLinks.url,
           placement: affiliateLinks.placement,
