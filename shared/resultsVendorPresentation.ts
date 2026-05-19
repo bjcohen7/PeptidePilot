@@ -207,6 +207,25 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     notes: "Public domain is reachable, but a clean official logo asset still needs manual capture.",
   },
   {
+    id: "dynamic-peptides",
+    name: "Dynamic Peptides",
+    category: "research-peptides",
+    officialUrl: "",
+    logoMarkFallback: "DP",
+    cardBadge: "Top Pick",
+    cardFeatures: ["Research-Grade", "US Based", "Fast Shipping"],
+    differentiatorBadge: "Top Pick",
+    headline: "Top-rated peptide source trusted by researchers",
+    promo:
+      "Dynamic Peptides is a leading provider of research-grade peptides with rigorous quality standards and reliable nationwide shipping.",
+    trustSignals: ["Research-Grade", "US Based", "Fast Shipping"],
+    secondaryHeadline: "Research peptides you can trust",
+    secondaryCtaLabel: "Shop Now",
+    sourceStatus: "manual-review",
+    notes:
+      "Partner was added through the admin panel DB. Source URL, logo asset, and business details need to be confirmed and localized for the override entry.",
+  },
+  {
     id: "amino-asylum",
     name: "Amino Asylum",
     category: "research-peptides",

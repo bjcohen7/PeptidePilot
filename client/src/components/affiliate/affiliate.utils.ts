@@ -58,8 +58,8 @@ export function buildCardData(
     promo: override?.promo
       ? truncate(override.promo, MAX_PROMO_LENGTH, "promo")
       : fallbackPromo,
-    couponCode: isFeatured ? override?.couponCode : undefined,
-    couponLabel: isFeatured ? override?.couponLabel : undefined,
+    couponCode: override?.couponCode,
+    couponLabel: override?.couponLabel,
     trustSignals: isFeatured ? override?.trustSignals : undefined,
     ctaLabel: isFeatured
       ? (override?.ctaLabel ?? "Get Started")
