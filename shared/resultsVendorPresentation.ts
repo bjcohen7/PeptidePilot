@@ -211,10 +211,11 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     category: "research-peptides",
     officialUrl: "",
     logoMarkFallback: "DP",
-    headline: "Affordable pricing",
+    differentiatorBadge: "Top Pick",
+    headline: "Top-rated peptide source trusted by researchers",
     promo: "25% off first order",
     trustSignals: ["USA sourced", "24/7 support", "Fast shipping"],
-    secondaryHeadline: "Affordable pricing",
+    secondaryHeadline: "Premium research-grade peptides",
     secondaryCtaLabel: "Shop Now",
     sourceStatus: "manual-review",
     notes:
