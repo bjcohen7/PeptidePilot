@@ -52,10 +52,10 @@ describe("buildCardData", () => {
     expect(out.ctaLabel).toBe("Get Started");
   });
 
-  it("secondary: strips coupon and trust signals, uses secondary headline/CTA", () => {
+  it("secondary: shows coupon and trust signals, uses secondary headline/CTA", () => {
     const out = buildCardData(baseLink, fullOverride, false);
-    expect(out.couponCode).toBeUndefined();
-    expect(out.trustSignals).toBeUndefined();
+    expect(out.couponCode).toBe("PILOT50");
+    expect(out.trustSignals).toEqual(["Licensed", "Free consult"]);
     expect(out.headline).toBe("Transparent Pricing");
     expect(out.ctaLabel).toBe("Learn More");
   });

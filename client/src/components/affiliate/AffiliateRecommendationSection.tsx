@@ -90,9 +90,9 @@ export function AffiliateRecommendationSection({
   if (linksQuery.isLoading) {
     return (
       <section aria-label="Recommended partners" className="w-full">
-        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4">
-          <Skeleton className="h-[340px] rounded-2xl" />
-          <Skeleton className="h-[300px] rounded-2xl" />
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4 items-start">
+          <Skeleton className="h-[320px] rounded-2xl" />
+          <Skeleton className="h-[280px] rounded-2xl" />
         </div>
       </section>
     );
@@ -108,7 +108,7 @@ export function AffiliateRecommendationSection({
       <div
         className={
           secondary
-            ? "grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4"
+            ? "grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4 items-start"
             : "grid grid-cols-1 gap-3.5"
         }
       >
