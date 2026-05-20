@@ -60,7 +60,7 @@ export function buildCardData(
       : fallbackPromo,
     couponCode: override?.couponCode,
     couponLabel: override?.couponLabel,
-    trustSignals: isFeatured ? override?.trustSignals : undefined,
+    trustSignals: override?.trustSignals,
     ctaLabel: isFeatured
       ? (override?.ctaLabel ?? "Get Started")
       : (override?.secondaryCtaLabel ?? "Learn More"),
