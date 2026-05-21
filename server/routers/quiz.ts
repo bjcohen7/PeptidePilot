@@ -379,6 +379,156 @@ export const quizRouter = router({
       };
     }),
 
+  attachEmail: publicProcedure
+    .input(
+      z.object({
+        leadId: z.string().min(8).max(64),
+        email: z.string().email(),
+        consentGiven: z.boolean(),
+        meta: z
+          .object({
+            leadEventId: z.string().min(8).max(128).optional().nullable(),
+            completeRegistrationEventId: z.string().min(8).max(128).optional().nullable(),
+            viewContentEventId: z.string().min(8).max(128).optional().nullable(),
+            fbp: z.string().min(1).max(512).optional().nullable(),
+            fbc: z.string().min(1).max(512).optional().nullable(),
+          })
+          .optional()
+          .nullable(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      await ensureAffiliateWorkspaceSchema();
+
+      const { leadId, email, consentGiven, meta } = input;
+      const normalizedEmail = email.trim().toLowerCase();
+
+      if (!consentGiven) {
+        throw new Error("Consent is required to attach an email.");
+      }
+
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available." });
+      }
+
+      const rows = await db
+        .select({
+          id: leads.id,
+          email: leads.email,
+          rawQuizData: leads.rawQuizData,
+          tier: leads.tier,
+          topPeptideMatch: leads.topPeptideMatch,
+        })
+        .from(leads)
+        .where(eq(leads.id, leadId))
+        .limit(1);
+
+      const lead = rows[0];
+      if (!lead) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Lead not found." });
+      }
+
+      // Skip if email is already a real email (not anonymous)
+      if (!lead.email.startsWith("anonymous+")) {
+        return { status: "skipped" as const };
+      }
+
+      await db.update(leads).set({ email: normalizedEmail, consentGiven }).where(eq(leads.id, leadId));
+
+      const answers = Array.isArray(lead.rawQuizData)
+        ? lead.rawQuizData.map((value: unknown) => (typeof value === "number" ? value : -1))
+        : [];
+
+      const matches = calculateMatches(answers);
+      const tier = lead.tier;
+      const topPeptideMatch = lead.topPeptideMatch ?? "unknown";
+      const isGlp1Lead = topPeptideMatch === "semaglutide";
+      const ipAddress =
+        (ctx.req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+        (ctx.req.socket as { remoteAddress?: string })?.remoteAddress ||
+        "unknown";
+
+      const ageRange = "not-captured";
+      const primaryGoal =
+        PRIMARY_GOAL_OPTIONS[answers[QUIZ_INDEX.PRIMARY_GOAL] ?? -1] ?? "unknown";
+      const budget = BUDGET_OPTIONS[answers[QUIZ_INDEX.BUDGET] ?? -1] ?? "unknown";
+
+      const webhookPayload = {
+        leadId,
+        email: normalizedEmail,
+        ageRange,
+        primaryGoal,
+        budget,
+        topPeptideMatch,
+        tier,
+        ipAddress,
+      };
+
+      await sendMetaServerEvents(ctx.req, [
+        {
+          eventName: "CompleteRegistration",
+          eventId: meta?.completeRegistrationEventId,
+          email: normalizedEmail,
+          clientIpAddress: ipAddress,
+          clientUserAgent: ctx.req.headers["user-agent"] ?? null,
+          sourceUrl: `${ENV.siteUrl}/results`,
+          fbp: meta?.fbp ?? null,
+          fbc: meta?.fbc ?? null,
+          customData: {
+            content_name: "Peptide Quiz",
+            status: "completed",
+          },
+        },
+        {
+          eventName: "Lead",
+          eventId: meta?.leadEventId,
+          email: normalizedEmail,
+          clientIpAddress: ipAddress,
+          clientUserAgent: ctx.req.headers["user-agent"] ?? null,
+          sourceUrl: `${ENV.siteUrl}/results`,
+          fbp: meta?.fbp ?? null,
+          fbc: meta?.fbc ?? null,
+          customData: {
+            content_name: matches[0]?.peptide.name ?? "Peptide Results",
+            content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+            value: isGlp1Lead ? 50 : 10,
+            currency: "USD",
+          },
+        },
+        {
+          eventName: "ViewContent",
+          eventId: meta?.viewContentEventId,
+          email: normalizedEmail,
+          clientIpAddress: ipAddress,
+          clientUserAgent: ctx.req.headers["user-agent"] ?? null,
+          sourceUrl: `${ENV.siteUrl}/results`,
+          fbp: meta?.fbp ?? null,
+          fbc: meta?.fbc ?? null,
+          customData: {
+            content_name: matches[0]?.peptide.name ?? "Peptide Results",
+            content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+            content_ids: matches[0]?.peptide.id ? [matches[0].peptide.id] : undefined,
+          },
+        },
+      ]);
+
+      if (tier === 1) {
+        await sendWebhook(TIER1_WEBHOOK, webhookPayload);
+      } else if (tier === 2) {
+        await sendWebhook(TIER2_WEBHOOK, webhookPayload);
+      } else {
+        await sendWebhook(TIER3_WEBHOOK, webhookPayload);
+      }
+
+      await notifyOwner({
+        title: `New PeptidePilot Lead — Tier ${tier}`,
+        content: `Email: ${normalizedEmail}\nTop Match: ${topPeptideMatch}\nBudget: ${budget}\nAge: ${ageRange}`,
+      });
+
+      return { status: "success" as const };
+    }),
+
   trackAffiliateClick: publicProcedure
     .input(
       z.object({

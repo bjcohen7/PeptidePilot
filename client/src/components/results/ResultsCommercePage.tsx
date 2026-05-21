@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
-import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronUp, X } from "lucide-react";
+import { toast } from "sonner";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import type { ReturningMatchSummary } from "../../../../shared/scoring";
 import { AffiliateRecommendationSection } from "@/components/affiliate/AffiliateRecommendationSection";
 import { TestimonialSection } from "@/components/testimonials/TestimonialSection";
+import { trpc } from "@/lib/trpc";
 
 type ResultsCommercePageProps = {
   matches: ReturningMatchSummary[];
@@ -39,6 +41,124 @@ function buildMatchReason(match: ReturningMatchSummary) {
   }
 
   return `Your focus on ${labels[0]} and ${labels[1]} made ${match.name} the strongest fit — a ${match.matchPercent}% match across your goals and lifestyle.`;
+}
+
+function EmailCaptureSection({ leadId }: { leadId?: string }) {
+  const [dismissed, setDismissed] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [emailError, setEmailError] = useState("");
+
+  const attachEmail = trpc.quiz.attachEmail.useMutation({
+    onSuccess: () => setSubmitted(true),
+    onError: (error) => toast.error(error.message),
+  });
+
+  if (dismissed || submitted) return null;
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    setEmailError("");
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError("Please enter a valid email address.");
+      return;
+    }
+    if (!consent) {
+      toast.error("Please check the consent box to continue.");
+      return;
+    }
+    if (!leadId) {
+      toast.error("Session error. Please retake the quiz.");
+      return;
+    }
+
+    attachEmail.mutate({ leadId, email, consentGiven: consent });
+  };
+
+  return (
+    <section className="mx-auto mt-8 max-w-[600px] rounded-[22px] border border-[#dce7e2] bg-white p-6 shadow-[0_2px_4px_rgba(14,31,28,0.04),0_12px_30px_rgba(14,31,28,0.05)] md:p-8">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h2
+            className="text-[22px] leading-tight text-[#0e1f1c]"
+            style={{ fontFamily: "'Crimson Pro', Georgia, serif", fontWeight: 700 }}
+          >
+            Want your complete protocol emailed?
+          </h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-[#4a5b58]">
+            We'll send you your full personalized peptide report with dosing details, vendor links, and stack recommendations.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setDismissed(true)}
+          className="flex-shrink-0 rounded-full p-1 text-[#4a5b58] transition hover:bg-[#e2e8e5]"
+          aria-label="Dismiss"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+        <input
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
+          className="h-[52px] w-full rounded-xl border border-[#dce7e2] bg-white px-4 text-[15px] text-[#0e1f1c] placeholder:text-[#9aa8a2] outline-none transition focus:border-[#0fb88a] focus:ring-2 focus:ring-[#0fb88a]/20"
+          required
+        />
+        {emailError ? <p className="text-xs text-red-500">{emailError}</p> : null}
+
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            className="mt-0.5 h-5 w-5 flex-shrink-0 rounded border-[#cfd8d4] text-[#0fb88a] accent-[#0fb88a]"
+          />
+          <span className="text-xs leading-relaxed text-[#4a5b58]">
+            I agree to receive my personalized peptide report and understand that PeptidePilot may connect me with vetted telehealth and wellness providers relevant to my profile. I can withdraw consent at any time.{" "}
+            <Link href="/privacy" className="font-medium underline underline-offset-2">
+              Privacy Policy
+            </Link>
+          </span>
+        </label>
+
+        <button
+          type="submit"
+          disabled={attachEmail.isPending || !consent}
+          className="flex h-[52px] w-full items-center justify-center gap-2 rounded-xl border-0 text-base font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed"
+          style={{
+            background: consent
+              ? "linear-gradient(135deg, #0fb88a, #22d3ee)"
+              : "rgba(0,0,0,0.08)",
+            color: consent ? "white" : "rgba(0,0,0,0.25)",
+          }}
+        >
+          {attachEmail.isPending ? (
+            <span className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              Sending…
+            </span>
+          ) : (
+            "Send My Protocol"
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setDismissed(true)}
+          className="block w-full text-center text-xs text-[#9aa8a2] underline underline-offset-2 hover:text-[#4a5b58]"
+        >
+          No thanks, I'll browse here
+        </button>
+      </form>
+    </section>
+  );
 }
 
 function SecondaryMatchCard({
@@ -223,6 +343,8 @@ export default function ResultsCommercePage({
         <div className="mt-8">
           <TestimonialSection />
         </div>
+
+        <EmailCaptureSection leadId={leadId} />
 
         {secondaryMatches.length > 0 ? (
           <section className="mx-auto mt-8 max-w-[900px]">
