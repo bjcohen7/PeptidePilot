@@ -24,6 +24,8 @@ export default defineConfig({
       "server/**/*.spec.ts",
       "client/src/components/affiliate/*.test.ts",
       "client/src/components/affiliate/*.test.tsx",
+      "client/src/components/testimonials/*.test.ts",
+      "client/src/components/testimonials/*.test.tsx",
     ],
   },
 });

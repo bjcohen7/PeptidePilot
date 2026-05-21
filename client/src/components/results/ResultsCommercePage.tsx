@@ -4,6 +4,7 @@ import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import type { ReturningMatchSummary } from "../../../../shared/scoring";
 import { AffiliateRecommendationSection } from "@/components/affiliate/AffiliateRecommendationSection";
+import { TestimonialSection } from "@/components/testimonials/TestimonialSection";
 
 type ResultsCommercePageProps = {
   matches: ReturningMatchSummary[];
@@ -218,6 +219,10 @@ export default function ResultsCommercePage({
           peptideName={selectedMatch.name}
           leadId={leadId}
         />
+
+        <div className="mt-8">
+          <TestimonialSection />
+        </div>
 
         {secondaryMatches.length > 0 ? (
           <section className="mx-auto mt-8 max-w-[900px]">
