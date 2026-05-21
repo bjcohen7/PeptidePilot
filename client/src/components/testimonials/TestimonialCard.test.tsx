@@ -41,10 +41,10 @@ describe("<TestimonialCard />", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders Before and After labels", () => {
+  it("renders the before image without a grey overlay label", () => {
     render(<TestimonialCard testimonial={mockTestimonial} />);
-    expect(screen.getByText("Before")).toBeInTheDocument();
-    expect(screen.getByText("After")).toBeInTheDocument();
+    expect(screen.getByAltText("Test before")).toBeInTheDocument();
+    expect(screen.queryByText("Before")).not.toBeInTheDocument();
   });
 
   it("lazy-loads images", () => {

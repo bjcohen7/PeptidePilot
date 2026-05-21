@@ -29,12 +29,10 @@ export function TestimonialCard({ testimonial: t }: Props) {
         <BeforeAfterImage
           src={t.beforeImage.src}
           alt={t.beforeImage.alt}
-          label="Before"
         />
         <BeforeAfterImage
           src={t.afterImage.src}
           alt={t.afterImage.alt}
-          label="After"
         />
       </div>
 
@@ -58,14 +56,12 @@ export function TestimonialCard({ testimonial: t }: Props) {
 function BeforeAfterImage({
   src,
   alt,
-  label,
 }: {
   src: string;
   alt: string;
-  label: "Before" | "After";
 }) {
   return (
-    <div className="relative aspect-[3/4] rounded-[10px] overflow-hidden bg-[#e2e8e5]">
+    <div className="aspect-[3/4] rounded-[10px] overflow-hidden">
       <img
         src={src}
         alt={alt}
@@ -75,9 +71,6 @@ function BeforeAfterImage({
         decoding="async"
         className="w-full h-full object-cover"
       />
-      <span className="absolute bottom-2 left-2 px-2.5 py-1 rounded-full bg-[rgba(14,31,28,0.65)] backdrop-blur-sm text-white font-mono text-[9.5px] font-semibold uppercase tracking-[0.1em]">
-        {label}
-      </span>
     </div>
   );
 }
