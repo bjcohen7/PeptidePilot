@@ -12,6 +12,7 @@ import { batch1GoalPages, batch1PeptidePages } from "./pseoData-batch-1";
 import { batch2ComparisonPages } from "./pseoData-batch-2";
 import { batch3StackPages } from "./pseoData-batch-3";
 import { batch4GuidePages, batch4ComparisonPages, batch4StackPages, batch4GoalPages, batch4ReviewPages, batch4ConditionPages } from "./pseoData-batch-4";
+import { batch5GuidePages, batch5GuidePages2, batch5StackPages, batch5GoalPages, batch5ReviewPages, batch5ConditionPages } from "./pseoData-batch-5";
 
 // ─── PEPTIDE PROFILES ────────────────────────────────────────────────────────
 
@@ -1978,6 +1979,7 @@ export const goalPages: GoalPageData[] = [
   },
   ...batch1GoalPages,
   ...batch4GoalPages,
+  ...batch5GoalPages,
 ];
 
 // ─── COMPARISON PAGES ────────────────────────────────────────────────────────
@@ -3980,6 +3982,7 @@ export const stackPages: StackPageData[] = [
     },
   ...batch3StackPages,
   ...batch4StackPages,
+  ...batch5StackPages,
 ];
 
 // ─── HELPER FUNCTIONS ────────────────────────────────────────────────────────
@@ -7029,6 +7032,8 @@ export const guidePages: GuidePageData[] = [
     "relatedPeptides": ["semaglutide", "tirzepatide", "mots-c", "tesamorelin", "metformin"],
   },
   ...batch4GuidePages,
+  ...batch5GuidePages,
+  ...batch5GuidePages2,
 ];
 
 // ─── FOR-CONDITION PAGES ──────────────────────────────────────────────────────
@@ -8820,6 +8825,7 @@ export const forConditionPages: ForConditionPageData[] = [
       "icdCode": "G93.3"
   },
   ...batch4ConditionPages,
+  ...batch5ConditionPages,
 ];
 
 
@@ -9442,4 +9448,5 @@ export const reviewPages: ReviewPageData[] = [
     ],
   },
   ...batch4ReviewPages,
+  ...batch5ReviewPages,
 ];

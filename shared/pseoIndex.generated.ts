@@ -555,6 +555,86 @@ export const pseoSections = [
         "slug": "stroke-recovery",
         "path": "/goals/stroke-recovery",
         "title": "Best Peptides for Stroke Recovery in 2026"
+      },
+      {
+        "slug": "body-recomposition",
+        "path": "/goals/body-recomposition",
+        "title": "Best Peptides for Body Recomposition in 2026"
+      },
+      {
+        "slug": "immune-function",
+        "path": "/goals/immune-function",
+        "title": "Best Peptides for Immune Function in 2026"
+      },
+      {
+        "slug": "hormone-balance",
+        "path": "/goals/hormone-balance",
+        "title": "Best Peptides for Hormone Balance in 2026"
+      },
+      {
+        "slug": "focus",
+        "path": "/goals/focus",
+        "title": "Best Peptides for Focus and Concentration in 2026"
+      },
+      {
+        "slug": "bodybuilding-performance",
+        "path": "/goals/bodybuilding-performance",
+        "title": "Best Peptides for Bodybuilding Performance in 2026"
+      },
+      {
+        "slug": "cognitive-performance",
+        "path": "/goals/cognitive-performance",
+        "title": "Best Peptides for Cognitive Performance in 2026"
+      },
+      {
+        "slug": "muscle-recovery",
+        "path": "/goals/muscle-recovery",
+        "title": "Best Peptides for Muscle Recovery in 2026"
+      },
+      {
+        "slug": "anxiety-reduction",
+        "path": "/goals/anxiety-reduction",
+        "title": "Best Peptides for Anxiety Reduction in 2026"
+      },
+      {
+        "slug": "joint-recovery",
+        "path": "/goals/joint-recovery",
+        "title": "Best Peptides for Joint Recovery in 2026"
+      },
+      {
+        "slug": "gut-health",
+        "path": "/goals/gut-health",
+        "title": "Best Peptides for Gut Health in 2026"
+      },
+      {
+        "slug": "injury-recovery",
+        "path": "/goals/injury-recovery",
+        "title": "Best Peptides for Injury Recovery in 2026"
+      },
+      {
+        "slug": "fat-loss",
+        "path": "/goals/fat-loss",
+        "title": "Best Peptides for Fat Loss in 2026"
+      },
+      {
+        "slug": "memory",
+        "path": "/goals/memory",
+        "title": "Best Peptides for Memory in 2026"
+      },
+      {
+        "slug": "metabolic-health",
+        "path": "/goals/metabolic-health",
+        "title": "Best Peptides for Metabolic Health in 2026"
+      },
+      {
+        "slug": "recovery",
+        "path": "/goals/recovery",
+        "title": "Best Peptides for Recovery in 2026"
+      },
+      {
+        "slug": "skin-health",
+        "path": "/goals/skin-health",
+        "title": "Best Peptides for Skin Health in 2026"
       }
     ]
   },
@@ -1366,6 +1446,106 @@ export const pseoSections = [
         "slug": "deep-sleep-stack",
         "path": "/stacks/deep-sleep-stack",
         "title": "The Deep Sleep Peptide Stack"
+      },
+      {
+        "slug": "injury-recovery-stack-advanced",
+        "path": "/stacks/injury-recovery-stack-advanced",
+        "title": "Advanced Injury Recovery Stack"
+      },
+      {
+        "slug": "gh-secretagogue-complete-stack",
+        "path": "/stacks/gh-secretagogue-complete-stack",
+        "title": "Complete GH Secretagogue Stack"
+      },
+      {
+        "slug": "cognitive-enhancement-stack",
+        "path": "/stacks/cognitive-enhancement-stack",
+        "title": "Cognitive Enhancement Stack"
+      },
+      {
+        "slug": "gut-healing-restoration-stack",
+        "path": "/stacks/gut-healing-restoration-stack",
+        "title": "Gut Healing & Restoration Stack"
+      },
+      {
+        "slug": "bodybuilding-prep-stack",
+        "path": "/stacks/bodybuilding-prep-stack",
+        "title": "Bodybuilding Contest Prep Stack"
+      },
+      {
+        "slug": "longevity-comprehensive-stack",
+        "path": "/stacks/longevity-comprehensive-stack",
+        "title": "Comprehensive Longevity Stack"
+      },
+      {
+        "slug": "sleep-recovery-optimization-stack",
+        "path": "/stacks/sleep-recovery-optimization-stack",
+        "title": "Sleep & Recovery Optimization Stack"
+      },
+      {
+        "slug": "metabolic-health-weight-loss-stack",
+        "path": "/stacks/metabolic-health-weight-loss-stack",
+        "title": "Metabolic Health & Weight Loss Stack"
+      },
+      {
+        "slug": "inflammation-pain-management-stack",
+        "path": "/stacks/inflammation-pain-management-stack",
+        "title": "Systemic Inflammation & Pain Management Stack"
+      },
+      {
+        "slug": "skin-hair-regeneration-stack",
+        "path": "/stacks/skin-hair-regeneration-stack",
+        "title": "Skin, Hair & Connective Tissue Regeneration Stack"
+      },
+      {
+        "slug": "hormone-axis-support-stack",
+        "path": "/stacks/hormone-axis-support-stack",
+        "title": "HPA Axis & Hormone Support Stack"
+      },
+      {
+        "slug": "endurance-athlete-recovery-stack",
+        "path": "/stacks/endurance-athlete-recovery-stack",
+        "title": "Endurance Athlete Recovery Stack"
+      },
+      {
+        "slug": "stress-resilience-adaptogen-stack",
+        "path": "/stacks/stress-resilience-adaptogen-stack",
+        "title": "Stress Resilience & Adaptogen Stack"
+      },
+      {
+        "slug": "post-surgical-recovery-stack",
+        "path": "/stacks/post-surgical-recovery-stack",
+        "title": "Post-Surgical Recovery Stack"
+      },
+      {
+        "slug": "immune-boost-recovery-stack",
+        "path": "/stacks/immune-boost-recovery-stack",
+        "title": "Immune Boost & Recovery Stack"
+      },
+      {
+        "slug": "mitochondrial-energy-stack",
+        "path": "/stacks/mitochondrial-energy-stack",
+        "title": "Mitochondrial Energy & Vitality Stack"
+      },
+      {
+        "slug": "connective-tissue-joint-stack",
+        "path": "/stacks/connective-tissue-joint-stack",
+        "title": "Connective Tissue & Joint Longevity Stack"
+      },
+      {
+        "slug": "fat-loss-metabolic-ignition-stack",
+        "path": "/stacks/fat-loss-metabolic-ignition-stack",
+        "title": "Fat Loss Metabolic Ignition Stack"
+      },
+      {
+        "slug": "recovery-stack-everyday-active",
+        "path": "/stacks/recovery-stack-everyday-active",
+        "title": "Everyday Active Recovery Stack"
+      },
+      {
+        "slug": "libido-desire-optimization-stack",
+        "path": "/stacks/libido-desire-optimization-stack",
+        "title": "Libido & Desire Optimization Stack"
       }
     ]
   },
@@ -1734,6 +1914,181 @@ export const pseoSections = [
         "slug": "how-to-talk-to-your-doctor-about-peptides",
         "path": "/guides/how-to-talk-to-your-doctor-about-peptides",
         "title": "How to Talk to Your Doctor About Peptides: Communication Guide"
+      },
+      {
+        "slug": "how-to-use-peptides-for-crossfit-training",
+        "path": "/guides/how-to-use-peptides-for-crossfit-training",
+        "title": "How to Use Peptides for CrossFit Training: Recovery & Performance Guide"
+      },
+      {
+        "slug": "how-to-use-peptides-for-bjj-martial-arts",
+        "path": "/guides/how-to-use-peptides-for-bjj-martial-arts",
+        "title": "How to Use Peptides for BJJ and Martial Arts: Recovery & Injury Prevention"
+      },
+      {
+        "slug": "how-to-use-peptides-for-marathon-running",
+        "path": "/guides/how-to-use-peptides-for-marathon-running",
+        "title": "How to Use Peptides for Marathon Running: Endurance & Recovery Guide"
+      },
+      {
+        "slug": "how-to-use-peptides-for-powerlifting",
+        "path": "/guides/how-to-use-peptides-for-powerlifting",
+        "title": "How to Use Peptides for Powerlifting: Strength, Joint Health & Recovery"
+      },
+      {
+        "slug": "how-to-use-peptides-for-bodybuilding",
+        "path": "/guides/how-to-use-peptides-for-bodybuilding",
+        "title": "How to Use Peptides for Bodybuilding: Muscle Growth & Fat Loss Guide"
+      },
+      {
+        "slug": "how-to-use-peptides-for-endurance-sports",
+        "path": "/guides/how-to-use-peptides-for-endurance-sports",
+        "title": "How to Use Peptides for Endurance Sports: VO2 Max, Recovery & Inflammation"
+      },
+      {
+        "slug": "how-to-use-peptides-for-swimming-performance",
+        "path": "/guides/how-to-use-peptides-for-swimming-performance",
+        "title": "How to Use Peptides for Swimming: Shoulder Recovery & Training Support"
+      },
+      {
+        "slug": "how-to-use-peptides-for-cycling-performance",
+        "path": "/guides/how-to-use-peptides-for-cycling-performance",
+        "title": "How to Use Peptides for Cycling: Endurance, Recovery & Knee Health"
+      },
+      {
+        "slug": "how-to-use-peptides-for-strongman-training",
+        "path": "/guides/how-to-use-peptides-for-strongman-training",
+        "title": "How to Use Peptides for Strongman: Joint Health & Heavy Loading Recovery"
+      },
+      {
+        "slug": "how-to-use-peptides-for-olympic-weightlifting",
+        "path": "/guides/how-to-use-peptides-for-olympic-weightlifting",
+        "title": "How to Use Peptides for Olympic Weightlifting: Snatch, Clean & Jerk Recovery"
+      },
+      {
+        "slug": "how-to-use-peptides-for-wrestling",
+        "path": "/guides/how-to-use-peptides-for-wrestling",
+        "title": "How to Use Peptides for Wrestling: Weight Cuts, Recovery & Injury Prevention"
+      },
+      {
+        "slug": "how-to-use-peptides-for-soccer-performance",
+        "path": "/guides/how-to-use-peptides-for-soccer-performance",
+        "title": "How to Use Peptides for Soccer: Hamstring Recovery & Match Preparation"
+      },
+      {
+        "slug": "how-to-use-peptides-for-basketball-performance",
+        "path": "/guides/how-to-use-peptides-for-basketball-performance",
+        "title": "How to Use Peptides for Basketball: Jumping, Ankle Recovery & Court Performance"
+      },
+      {
+        "slug": "how-to-use-peptides-for-rugby-performance",
+        "path": "/guides/how-to-use-peptides-for-rugby-performance",
+        "title": "How to Use Peptides for Rugby: Contact Recovery & Injury Rehabilitation"
+      },
+      {
+        "slug": "how-to-use-peptides-for-tennis-performance",
+        "path": "/guides/how-to-use-peptides-for-tennis-performance",
+        "title": "How to Use Peptides for Tennis: Elbow Recovery & Tournament Preparation"
+      },
+      {
+        "slug": "how-to-use-peptides-for-sprinting-speed",
+        "path": "/guides/how-to-use-peptides-for-sprinting-speed",
+        "title": "How to Use Peptides for Sprinting: Hamstring Health & Explosive Power"
+      },
+      {
+        "slug": "how-to-use-peptides-for-triathlon-training",
+        "path": "/guides/how-to-use-peptides-for-triathlon-training",
+        "title": "How to Use Peptides for Triathlon: Multi-Sport Recovery & Endurance"
+      },
+      {
+        "slug": "how-to-use-peptides-for-hybrid-athlete-training",
+        "path": "/guides/how-to-use-peptides-for-hybrid-athlete-training",
+        "title": "How to Use Peptides for Hybrid Athletes: Strength + Endurance Recovery"
+      },
+      {
+        "slug": "how-to-combine-bpc-157-and-tb-500",
+        "path": "/guides/how-to-combine-bpc-157-and-tb-500",
+        "title": "How to Combine BPC-157 and TB-500: The Recovery Stack Protocol"
+      },
+      {
+        "slug": "how-to-stack-gh-secretagogues-safely",
+        "path": "/guides/how-to-stack-gh-secretagogues-safely",
+        "title": "How to Stack GH Secretagogues Safely: Ipamorelin, CJC-1295 & Sermorelin"
+      },
+      {
+        "slug": "how-to-minimize-peptide-injection-side-effects",
+        "path": "/guides/how-to-minimize-peptide-injection-side-effects",
+        "title": "How to Minimize Peptide Injection Side Effects: Pain, Lumps & Reactions"
+      },
+      {
+        "slug": "how-to-rotate-injection-sites-properly",
+        "path": "/guides/how-to-rotate-injection-sites-properly",
+        "title": "How to Rotate Injection Sites Properly for Peptide Protocols"
+      },
+      {
+        "slug": "how-to-dose-peptides-by-body-weight",
+        "path": "/guides/how-to-dose-peptides-by-body-weight",
+        "title": "How to Dose Peptides by Body Weight: Calculating mcg/kg Protocols"
+      },
+      {
+        "slug": "how-to-choose-between-peptide-vendors",
+        "path": "/guides/how-to-choose-between-peptide-vendors",
+        "title": "How to Choose Between Peptide Vendors: Quality, Transparency & Value"
+      },
+      {
+        "slug": "how-to-verify-peptide-purity-using-coas",
+        "path": "/guides/how-to-verify-peptide-purity-using-coas",
+        "title": "How to Verify Peptide Purity Using COAs: HPLC & Mass Spec Guide"
+      },
+      {
+        "slug": "how-to-taper-off-peptides-after-a-cycle",
+        "path": "/guides/how-to-taper-off-peptides-after-a-cycle",
+        "title": "How to Taper Off Peptides After a Cycle: Transition & Recovery Guide"
+      },
+      {
+        "slug": "how-to-maintain-results-post-peptide-cycle",
+        "path": "/guides/how-to-maintain-results-post-peptide-cycle",
+        "title": "How to Maintain Results After a Peptide Cycle: Long-Term Strategy"
+      },
+      {
+        "slug": "how-to-combine-peptides-with-diet-and-exercise",
+        "path": "/guides/how-to-combine-peptides-with-diet-and-exercise",
+        "title": "How to Combine Peptides with Diet and Exercise for Maximum Results"
+      },
+      {
+        "slug": "how-to-combine-peptides-with-trt",
+        "path": "/guides/how-to-combine-peptides-with-trt",
+        "title": "How to Combine Peptides with TRT: Synergy, Safety & Protocol Guide"
+      },
+      {
+        "slug": "how-to-time-peptides-around-workouts",
+        "path": "/guides/how-to-time-peptides-around-workouts",
+        "title": "How to Time Peptides Around Workouts: Pre, Post & Rest Day Dosing"
+      },
+      {
+        "slug": "how-to-identify-and-avoid-peptide-scams",
+        "path": "/guides/how-to-identify-and-avoid-peptide-scams",
+        "title": "How to Identify and Avoid Peptide Scams: Red Flags & Warning Signs"
+      },
+      {
+        "slug": "how-to-spot-counterfeit-or-low-quality-peptides",
+        "path": "/guides/how-to-spot-counterfeit-or-low-quality-peptides",
+        "title": "How to Spot Counterfeit or Low-Quality Peptides: Visual & Physical Checks"
+      },
+      {
+        "slug": "how-to-travel-with-peptides-internationally",
+        "path": "/guides/how-to-travel-with-peptides-internationally",
+        "title": "How to Travel with Peptides Internationally: Customs, Storage & Legal Guide"
+      },
+      {
+        "slug": "how-to-safely-dispose-of-peptide-syringes",
+        "path": "/guides/how-to-safely-dispose-of-peptide-syringes",
+        "title": "How to Safely Dispose of Peptide Syringes: Sharps Guidelines"
+      },
+      {
+        "slug": "how-to-read-and-understand-a-peptide-coa",
+        "path": "/guides/how-to-read-and-understand-a-peptide-coa",
+        "title": "How to Read and Understand a Peptide COA Report"
       }
     ]
   },
@@ -2167,6 +2522,131 @@ export const pseoSections = [
         "slug": "feline-kidney-disease",
         "path": "/for/feline-kidney-disease",
         "title": "Feline Chronic Kidney Disease"
+      },
+      {
+        "slug": "crossfit-performance-and-recovery",
+        "path": "/for/crossfit-performance-and-recovery",
+        "title": "CrossFit Performance & Recovery"
+      },
+      {
+        "slug": "running-performance-and-recovery",
+        "path": "/for/running-performance-and-recovery",
+        "title": "Running Performance & Recovery"
+      },
+      {
+        "slug": "weightlifting-performance-and-recovery",
+        "path": "/for/weightlifting-performance-and-recovery",
+        "title": "Weightlifting Performance & Recovery"
+      },
+      {
+        "slug": "bjj-martial-arts-recovery",
+        "path": "/for/bjj-martial-arts-recovery",
+        "title": "BJJ & Martial Arts Recovery"
+      },
+      {
+        "slug": "swimming-performance-and-recovery",
+        "path": "/for/swimming-performance-and-recovery",
+        "title": "Swimming Performance & Recovery"
+      },
+      {
+        "slug": "cycling-performance-and-recovery",
+        "path": "/for/cycling-performance-and-recovery",
+        "title": "Cycling Performance & Recovery"
+      },
+      {
+        "slug": "soccer-performance-and-recovery",
+        "path": "/for/soccer-performance-and-recovery",
+        "title": "Soccer Performance & Recovery"
+      },
+      {
+        "slug": "rugby-performance-and-recovery",
+        "path": "/for/rugby-performance-and-recovery",
+        "title": "Rugby Performance & Recovery"
+      },
+      {
+        "slug": "metabolic-syndrome",
+        "path": "/for/metabolic-syndrome",
+        "title": "Metabolic Syndrome"
+      },
+      {
+        "slug": "non-alcoholic-fatty-liver-disease",
+        "path": "/for/non-alcoholic-fatty-liver-disease",
+        "title": "Non-Alcoholic Fatty Liver Disease (NAFLD)"
+      },
+      {
+        "slug": "pre-diabetes",
+        "path": "/for/pre-diabetes",
+        "title": "Pre-Diabetes"
+      },
+      {
+        "slug": "insulin-resistance",
+        "path": "/for/insulin-resistance",
+        "title": "Insulin Resistance"
+      },
+      {
+        "slug": "chronic-inflammation-systemic",
+        "path": "/for/chronic-inflammation-systemic",
+        "title": "Chronic Systemic Inflammation"
+      },
+      {
+        "slug": "dyslipidemia-high-cholesterol",
+        "path": "/for/dyslipidemia-high-cholesterol",
+        "title": "Dyslipidemia (High Cholesterol)"
+      },
+      {
+        "slug": "hypertension-high-blood-pressure",
+        "path": "/for/hypertension-high-blood-pressure",
+        "title": "Hypertension (High Blood Pressure)"
+      },
+      {
+        "slug": "adult-onset-obesity",
+        "path": "/for/adult-onset-obesity",
+        "title": "Adult-Onset Obesity"
+      },
+      {
+        "slug": "sibo-small-intestinal-bacterial-overgrowth",
+        "path": "/for/sibo-small-intestinal-bacterial-overgrowth",
+        "title": "SIBO (Small Intestinal Bacterial Overgrowth)"
+      },
+      {
+        "slug": "candida-overgrowth",
+        "path": "/for/candida-overgrowth",
+        "title": "Candida Overgrowth"
+      },
+      {
+        "slug": "intestinal-dysbiosis",
+        "path": "/for/intestinal-dysbiosis",
+        "title": "Intestinal Dysbiosis"
+      },
+      {
+        "slug": "histamine-intolerance-mcas",
+        "path": "/for/histamine-intolerance-mcas",
+        "title": "Histamine Intolerance & MCAS"
+      },
+      {
+        "slug": "adrenal-fatigue-hpa-axis-dysfunction",
+        "path": "/for/adrenal-fatigue-hpa-axis-dysfunction",
+        "title": "Adrenal Fatigue & HPA Axis Dysfunction"
+      },
+      {
+        "slug": "chronic-stress-burnout",
+        "path": "/for/chronic-stress-burnout",
+        "title": "Chronic Stress & Burnout"
+      },
+      {
+        "slug": "post-partum-recovery-support",
+        "path": "/for/post-partum-recovery-support",
+        "title": "Post-Partum Recovery Support"
+      },
+      {
+        "slug": "menopausal-weight-gain",
+        "path": "/for/menopausal-weight-gain",
+        "title": "Menopausal Weight Gain"
+      },
+      {
+        "slug": "andropause-low-testosterone-age-related",
+        "path": "/for/andropause-low-testosterone-age-related",
+        "title": "Andropause & Age-Related Low Testosterone"
       }
     ]
   },
@@ -2530,6 +3010,31 @@ export const pseoSections = [
         "slug": "peptide-therapy-cost-review",
         "path": "/reviews/peptide-therapy-cost-review",
         "title": "Peptide Therapy Cost Review: Pricing Guide and Value Analysis"
+      },
+      {
+        "slug": "bpc-157-tb-500-stack-review",
+        "path": "/reviews/bpc-157-tb-500-stack-review",
+        "title": "BPC-157 + TB-500 Stack Review: Does the Recovery Stack Work?"
+      },
+      {
+        "slug": "semaglutide-vs-tirzepatide-review",
+        "path": "/reviews/semaglutide-vs-tirzepatide-review",
+        "title": "Semaglutide vs Tirzepatide Review: Which GLP-1 Is Better for Weight Loss?"
+      },
+      {
+        "slug": "selank-vs-benzodiazepines-review",
+        "path": "/reviews/selank-vs-benzodiazepines-review",
+        "title": "Selank vs Benzodiazepines Review: Anxiety Treatment Without Sedation"
+      },
+      {
+        "slug": "ghk-cu-injectable-vs-topical-review",
+        "path": "/reviews/ghk-cu-injectable-vs-topical-review",
+        "title": "GHK-Cu Injectable vs Topical Review: Which Form Is Better for Skin?"
+      },
+      {
+        "slug": "ipamorelin-cjc-1295-stack-review",
+        "path": "/reviews/ipamorelin-cjc-1295-stack-review",
+        "title": "Ipamorelin + CJC-1295 Stack Review: The Gold Standard GH Protocol"
       }
     ]
   }
