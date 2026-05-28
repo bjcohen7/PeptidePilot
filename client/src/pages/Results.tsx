@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import ResultsCommercePage from "@/components/results/ResultsCommercePage";
+import Glp1BridgePage from "@/components/bridge/Glp1BridgePage";
 import { getVisitorSessionId } from "@/components/SessionTracker";
 import { useQuiz } from "@/contexts/QuizContext";
 import { useReturningSession } from "@/contexts/UserSessionContext";
@@ -14,6 +15,8 @@ import {
 } from "../../../shared/scoring";
 
 const LIBRARY_BACKED_PROFILE_IDS = new Set<string>(libraryBackedPeptideProfileIds);
+
+const GLP1_PROFILE_IDS = new Set<string>(["semaglutide"]);
 
 function getLibraryBackedMatches(answers: number[]) {
   return calculateMatches(answers).filter((result) =>
@@ -149,6 +152,10 @@ export default function Results() {
   const selectedMatch =
     displayMatches.find((match) => match.peptideId === selectedPeptideId) ?? displayMatches[0] ?? null;
 
+  const [userDismissedBridge, setUserDismissedBridge] = useState(false);
+  const isGlp1Match = selectedMatch !== null && GLP1_PROFILE_IDS.has(selectedMatch.peptideId);
+  const showBridge = isGlp1Match && !userDismissedBridge;
+
   const handleRetake = () => {
     reset();
     navigate("/quiz");
@@ -163,6 +170,16 @@ export default function Results() {
   }
 
   if (selectedMatch && displayMatches.length > 0) {
+    if (showBridge) {
+      return (
+        <Glp1BridgePage
+          matchName={selectedMatch.name}
+          matchPercent={selectedMatch.matchPercent}
+          onSkipToProviders={() => setUserDismissedBridge(true)}
+        />
+      );
+    }
+
     return (
       <ResultsCommercePage
         matches={displayMatches}
