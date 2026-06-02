@@ -179,7 +179,7 @@ export default function QuizFlow() {
     }
 
     triggerAdvance("forward", advance);
-  }, [currentIndex, isTransitioning, triggerAdvance, advance]);
+  }, [answers, currentIndex, isTransitioning, triggerAdvance, advance]);
 
   // ── Back ───────────────────────────────────────────────────────────────
 
