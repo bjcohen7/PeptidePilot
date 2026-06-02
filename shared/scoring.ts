@@ -533,7 +533,7 @@ export const QUIZ_QUESTIONS = [
   },
   {
     section: "Hook",
-    question: 'Food noise \u2014 how loud is it for you?\n("Food noise" = constant thoughts about food, even when you\'re not hungry.)',
+    question: 'How loud is your food noise?',
     options: [
       "It's always there. I can't turn it off.",
       "Loud most days, especially afternoons and evenings",
