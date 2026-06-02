@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   ShieldCheck,
-  FlaskConical,
+  BadgeCheck,
   Star,
   ArrowRight,
   CheckCircle2,
@@ -23,7 +23,7 @@ const SITE_URL = "https://www.peptidepilot.me";
 
 const TRUST_BADGES = [
   { icon: ShieldCheck, label: "Independent & unbiased" },
-  { icon: FlaskConical, label: "Built from clinical research" },
+  { icon: BadgeCheck, label: "Licensed US providers" },
   { icon: Star, label: "Free, no email to start" },
 ];
 
@@ -91,8 +91,8 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <Seo
-        title="PeptidePilot — GLP-1 and peptide matching, 100% independent"
-        description="A 22-question intake that matches you to GLP-1 therapy or other peptide protocols backed by clinical research, and connects you to vetted licensed providers. 100% independent."
+        title="PeptidePilot — GLP-1 matching, from your couch in minutes. 100% independent."
+        description="Get matched to GLP-1 therapy in minutes. A short intake finds the right protocol for your body and connects you to a vetted licensed provider — no doctor's office, no waiting. 100% independent."
         path="/"
         type="website"
         jsonLd={{
@@ -100,7 +100,7 @@ export default function Home() {
           "@type": "WebSite",
           name: "PeptidePilot",
           description:
-            "A 22-question intake that matches you to GLP-1 therapy or other peptide protocols backed by clinical research, and connects you to vetted licensed providers. 100% independent.",
+            "Get matched to GLP-1 therapy in minutes. A short intake finds the right protocol for your body and connects you to a vetted licensed provider — no doctor's office, no waiting. 100% independent.",
           url: `${SITE_URL}/`,
         }}
       />
@@ -116,18 +116,18 @@ export default function Home() {
           {/* Social proof chip */}
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-6 sm:mb-8">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
-            Trusted by thousands matching to GLP-1 and peptide protocols
+            Trusted by thousands matching to GLP-1
           </div>
 
           <h1
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal leading-tight mb-5 sm:mb-6 max-w-3xl mx-auto"
             style={{ fontFamily: "'DM Serif Display', serif" }}
           >
-            Food noise. Stubborn weight. A metabolism that feels broken.
+            Get matched to GLP-1 therapy in minutes — from your couch.
           </h1>
 
           <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
-            A 22-question intake matches you to GLP-1 therapy or other peptide protocols that actually fit your body — and connects you to vetted providers we'd use ourselves.{" "}
+            A short intake finds the right GLP-1 protocol for your body and connects you to a licensed provider — no doctor's office, no waiting.{" "}
             <span className="text-white font-semibold">100% independent.</span>
           </p>
 
@@ -162,7 +162,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-10 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-accent flex-shrink-0" />
-              <span><strong className="text-foreground">22 questions</strong> built for GLP-1 candidacy and metabolic fit</span>
+              <span><strong className="text-foreground">Match in minutes</strong>, not a doctor's office visit</span>
             </div>
             <div className="hidden sm:block w-px h-4 bg-border" />
             <div className="flex items-center gap-2">
