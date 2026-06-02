@@ -18,7 +18,7 @@ const LIBRARY_BACKED_PROFILE_IDS = new Set<string>(libraryBackedPeptideProfileId
 
 const GLP1_PROFILE_IDS = new Set<string>(["semaglutide"]);
 
-function getLibraryBackedMatches(answers: number[]) {
+function getLibraryBackedMatches(answers: (number | number[])[]) {
   return calculateMatches(answers).filter((result) =>
     LIBRARY_BACKED_PROFILE_IDS.has(result.peptide.id),
   );
@@ -66,7 +66,7 @@ export default function Results() {
   const hasFreshQuizState = state.isComplete || state.answers.some((answer) => answer !== null);
   const previewMatches = useMemo(
     () =>
-      getLibraryBackedMatches(state.answers.map((answer) => answer ?? -1)).map(
+      getLibraryBackedMatches(state.answers.map((answer) => answer ?? -1) as (number | number[])[]).map(
         toReturningMatchSummary,
       ),
     [state.answers],
@@ -113,7 +113,7 @@ export default function Results() {
     submitQuiz.mutate({
       email: null,
       consentGiven: false,
-      answers: state.answers.map((answer) => answer ?? -1),
+      answers: state.answers.map((answer) => answer ?? -1) as (number | number[])[],
       sessionId,
       meta: {
         sourceUrl: typeof window !== "undefined" ? window.location.href : undefined,

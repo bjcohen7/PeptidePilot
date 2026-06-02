@@ -33,6 +33,7 @@ export const leads = mysqlTable("leads", {
   consentGiven: boolean("consentGiven").notNull().default(false),
   consentTimestamp: timestamp("consentTimestamp").notNull(),
   ipAddress: varchar("ipAddress", { length: 64 }).notNull(),
+  source: varchar("source", { length: 64 }),
   rawQuizData: json("rawQuizData").notNull(), // array of quiz answer indices
 });
 
