@@ -367,11 +367,7 @@ export default function QuizFlow() {
             </div>
           )}
 
-          {!multiSelect && !topTwo && (
-            <p className="text-xs text-muted-foreground text-center mt-5 animate-fade-in">
-              Select one answer and we&apos;ll keep things moving. Swipe right to go back.
-            </p>
-          )}
+
         </div>
       </main>
 
