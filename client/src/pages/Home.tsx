@@ -36,12 +36,12 @@ const HOW_IT_WORKS = [
   {
     step: "02",
     title: "Get your match",
-    description: "A compatibility match \u2014 primary recommendation with a real score, plus optional complements like BPC-157 if they fit your profile.",
+    description: "A compatibility match — primary recommendation with a real score, plus optional complements like BPC-157 if they fit your profile.",
   },
   {
     step: "03",
     title: "Review your plan",
-    description: "Vetted licensed providers \u2014 board-certified, transparent pricing, no paid placements.",
+    description: "Vetted licensed providers — board-certified, transparent pricing, no paid placements.",
   },
 ];
 
@@ -91,7 +91,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <Seo
-        title="PeptidePilot \u2014 GLP-1 and peptide matching, 100% independent"
+        title="PeptidePilot — GLP-1 and peptide matching, 100% independent"
         description="A 22-question intake that matches you to GLP-1 therapy or other peptide protocols backed by clinical research, and connects you to vetted licensed providers. 100% independent."
         path="/"
         type="website"
@@ -127,7 +127,7 @@ export default function Home() {
           </h1>
 
           <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
-            A 22-question intake matches you to GLP-1 therapy or other peptide protocols that actually fit your biology \u2014 and connects you to vetted providers we'd use ourselves.{" "}
+            A 22-question intake matches you to GLP-1 therapy or other peptide protocols that actually fit your body — and connects you to vetted providers we'd use ourselves.{" "}
             <span className="text-white font-semibold">100% independent.</span>
           </p>
 
