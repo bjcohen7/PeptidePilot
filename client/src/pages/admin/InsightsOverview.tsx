@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Activity, ArrowDown, Check, ExternalLink, ListChecks, Mail, Search, Sparkles, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
@@ -47,9 +48,18 @@ function formatRate(numerator: number, denominator: number) {
   return `${Math.round((numerator / denominator) * 100)}%`;
 }
 
+const TIME_RANGES = [
+  { value: "today" as const, label: "Today" },
+  { value: "yesterday" as const, label: "Yesterday" },
+  { value: "last7" as const, label: "Last 7 days" },
+  { value: "last30" as const, label: "Last 30 days" },
+  { value: "all" as const, label: "All time" },
+];
+
 export default function InsightsOverview() {
   const utils = trpc.useUtils();
-  const summary = trpc.analytics.summary.useQuery(undefined, {
+  const [timeRange, setTimeRange] = useState<string>("all");
+  const summary = trpc.analytics.summary.useQuery({ timeRange }, {
     retry: false,
     refetchOnWindowFocus: true,
     refetchInterval: 10000,
@@ -59,7 +69,7 @@ export default function InsightsOverview() {
     refetchOnWindowFocus: true,
     refetchInterval: 10000,
   });
-  const funnel = trpc.analytics.funnel.useQuery(undefined, {
+  const funnel = trpc.analytics.funnel.useQuery({ timeRange }, {
     retry: false,
     refetchOnWindowFocus: true,
     refetchInterval: 10000,
@@ -142,6 +152,24 @@ export default function InsightsOverview() {
         <p className="text-muted-foreground mt-2 max-w-3xl">
           Scan live traffic quickly, then click into a session to see referral context, affiliate activity, and the full quiz profile once a lead is created.
         </p>
+      </div>
+
+      {/* Time range selector */}
+      <div className="flex flex-wrap gap-2">
+        {TIME_RANGES.map((r) => (
+          <button
+            key={r.value}
+            type="button"
+            onClick={() => setTimeRange(r.value)}
+            className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${
+              timeRange === r.value
+                ? "border-accent bg-accent/10 text-accent"
+                : "border-border text-muted-foreground hover:border-accent/50 hover:text-foreground"
+            }`}
+          >
+            {r.label}
+          </button>
+        ))}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
