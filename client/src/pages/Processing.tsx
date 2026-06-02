@@ -132,11 +132,11 @@ export default function Processing() {
   const { state } = useQuiz();
   const { answers } = state;
 
-  const goalIndex = (answers[0] as number) ?? 0;
+  const goalIndex = typeof answers[0] === "number" ? answers[0] : 0;
   const slides = getPersonalizedSlides(goalIndex);
 
   const matchCount = (() => {
-    const valid = answers.filter((a) => a !== null) as number[];
+    const valid = answers.filter((a) => a !== null) as (number | number[])[];
     if (valid.length === 0) return 4;
     const matches = calculateMatches(valid);
     return Math.min(5, Math.max(3, matches.filter((m) => m.score > 0.4).length));

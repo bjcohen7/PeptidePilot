@@ -302,6 +302,15 @@
     animation: slideOutToRight 0.22s ease-in forwards;
   }
 
+  @keyframes pulseOnce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+    100% { transform: scale(1); }
+  }
+  .animate-pulse-once {
+    animation: pulseOnce 0.3s ease-in-out;
+  }
+
   @keyframes processingPulse {
     0%, 100% { opacity: 0.7; transform: scale(0.99); }
     50% { opacity: 1; transform: scale(1.01); }
