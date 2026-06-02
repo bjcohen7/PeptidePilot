@@ -87,8 +87,8 @@ function Router() {
   const noindexMeta = (() => {
     if (location === "/quiz") {
       return {
-        title: "Quiz",
-        description: "Start the PeptidePilot assessment.",
+        title: "Take the Quiz — Is GLP-1 the right fit for you? | PeptidePilot",
+        description: "A 22-question clinical-grade intake that matches you to GLP-1 therapy or other peptide protocols, and connects you to vetted licensed providers. 100% independent.",
       };
     }
 
