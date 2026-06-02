@@ -1,4 +1,4 @@
-import { desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { affiliateClicks, clickEvents, pageVisits, leads, visitorSessions } from "../../drizzle/schema";
 import { QUIZ_QUESTIONS, calculateAspectScores } from "../../shared/scoring";
@@ -609,4 +609,108 @@ export const analyticsRouter = router({
         deletedLeadCount: leadIdList.length,
       };
     }),
+
+  funnel: adminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return { stages: [], totalSessions: 0 };
+
+    const stages: Array<{
+      label: string;
+      path: string;
+      count: number;
+      pctOfTotal: number;
+      droppedFromPrevious: number;
+      pctDropped: number;
+    }> = [];
+
+    const [totalResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(visitorSessions);
+    const totalSessions = Number(totalResult?.count ?? 0);
+
+    stages.push({
+      label: "All Sessions",
+      path: "",
+      count: totalSessions,
+      pctOfTotal: 100,
+      droppedFromPrevious: 0,
+      pctDropped: 0,
+    });
+
+    const funnelPaths = [
+      { path: "/quiz", label: "Quiz Intro" },
+      { path: "/quiz/flow", label: "Started Quiz" },
+      { path: "/processing", label: "Processing" },
+      { path: "/results", label: "Results" },
+    ];
+
+    for (const { path, label } of funnelPaths) {
+      const [result] = await db
+        .select({ count: sql<number>`count(distinct ${pageVisits.sessionId})` })
+        .from(pageVisits)
+        .where(eq(pageVisits.path, path));
+      const count = Number(result?.count ?? 0);
+      const prevCount = stages[stages.length - 1].count;
+      stages.push({
+        label,
+        path,
+        count,
+        pctOfTotal: totalSessions ? Math.round((count / totalSessions) * 100) : 0,
+        droppedFromPrevious: prevCount - count,
+        pctDropped: prevCount ? Math.round(((prevCount - count) / prevCount) * 100) : 0,
+      });
+    }
+
+    const [leadResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(visitorSessions)
+      .where(sql`${visitorSessions.leadId} is not null`);
+    const leadCount = Number(leadResult?.count ?? 0);
+    const prevLead = stages[stages.length - 1].count;
+    stages.push({
+      label: "Lead Created",
+      path: "lead",
+      count: leadCount,
+      pctOfTotal: totalSessions ? Math.round((leadCount / totalSessions) * 100) : 0,
+      droppedFromPrevious: prevLead - leadCount,
+      pctDropped: prevLead ? Math.round(((prevLead - leadCount) / prevLead) * 100) : 0,
+    });
+
+    const leadsWithClicks = await db
+      .selectDistinct({ leadId: affiliateClicks.leadId })
+      .from(affiliateClicks);
+
+    const clickLeadIds = leadsWithClicks.map((r) => r.leadId).filter(Boolean) as string[];
+    let affCount = 0;
+
+    if (clickLeadIds.length) {
+      const fkSessions = await db
+        .select({ id: visitorSessions.id })
+        .from(visitorSessions)
+        .where(inArray(visitorSessions.leadId, clickLeadIds));
+
+      const revLeads = await db
+        .select({ sessionId: leads.sessionId })
+        .from(leads)
+        .where(and(inArray(leads.id, clickLeadIds), sql`${leads.sessionId} is not null`));
+
+      const allIds = new Set([
+        ...fkSessions.map((s) => s.id),
+        ...revLeads.filter((l) => l.sessionId).map((l) => l.sessionId as string),
+      ]);
+      affCount = allIds.size;
+    }
+
+    const prevAff = stages[stages.length - 1].count;
+    stages.push({
+      label: "Affiliate Click",
+      path: "affiliate_click",
+      count: affCount,
+      pctOfTotal: totalSessions ? Math.round((affCount / totalSessions) * 100) : 0,
+      droppedFromPrevious: prevAff - affCount,
+      pctDropped: prevAff ? Math.round(((prevAff - affCount) / prevAff) * 100) : 0,
+    });
+
+    return { stages, totalSessions };
+  }),
 });
