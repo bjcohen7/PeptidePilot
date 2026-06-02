@@ -1,9 +1,32 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { affiliateClicks, clickEvents, pageVisits, leads, visitorSessions } from "../../drizzle/schema";
 import { QUIZ_QUESTIONS, calculateAspectScores } from "../../shared/scoring";
 import { getDb } from "../db";
 import { adminProcedure, publicProcedure, router } from "../_core/trpc";
+
+const timeRangeEnum = z.enum(["today", "yesterday", "last7", "last30", "all"]);
+type TimeRange = z.infer<typeof timeRangeEnum>;
+
+function timeConditions(range: TimeRange, column: any) {
+  if (range === "all") return [];
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  switch (range) {
+    case "today":
+      return [gte(column, todayStart)];
+    case "yesterday": {
+      const yesterdayStart = new Date(todayStart.getTime() - 86400000);
+      return [gte(column, yesterdayStart), lt(column, todayStart)];
+    }
+    case "last7":
+      return [gte(column, new Date(now.getTime() - 7 * 86400000))];
+    case "last30":
+      return [gte(column, new Date(now.getTime() - 30 * 86400000))];
+    default:
+      return [];
+  }
+}
 
 const pageViewInput = z.object({
   sessionId: z.string().min(8).max(64),
@@ -440,87 +463,100 @@ export const analyticsRouter = router({
     return { status: "ok" as const };
   }),
 
-  summary: adminProcedure.query(async () => {
-    const db = await getDb();
-    if (!db) {
+  summary: adminProcedure
+    .input(z.object({ timeRange: timeRangeEnum.optional().default("all") }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) {
+        return {
+          totalSessions: 0,
+          totalLeads: 0,
+          totalQuizStarts: 0,
+          totalAffiliateClicks: 0,
+          leadsWithAffiliateClicks: 0,
+          quizCompletionRate: 0,
+          avgEngagementSeconds: 0,
+          topReferrers: [],
+          totalClicks: 0,
+        };
+      }
+
+      const tc = (col: any) => timeConditions(input.timeRange, col);
+
+      const [sessionStats] = await db
+        .select({
+          totalSessions: sql<number>`count(*)`,
+          totalDurationMs: sql<number>`coalesce(sum(${visitorSessions.totalDurationMs}), 0)`,
+          completedSessions: sql<number>`count(case when ${visitorSessions.leadId} is not null then 1 end)`,
+        })
+        .from(visitorSessions)
+        .where(and(...tc(visitorSessions.firstSeenAt)));
+
+      const [leadStats] = await db
+        .select({
+          totalLeads: sql<number>`count(*)`,
+        })
+        .from(leads)
+        .where(and(...tc(leads.createdAt)));
+
+      const [clickStats] = await db
+        .select({
+          totalClicks: sql<number>`count(*)`,
+        })
+        .from(clickEvents)
+        .where(and(...tc(clickEvents.createdAt)));
+
+      const [affiliateClickStats] = await db
+        .select({
+          totalAffiliateClicks: sql<number>`count(*)`,
+          leadsWithAffiliateClicks: sql<number>`count(distinct ${affiliateClicks.leadId})`,
+        })
+        .from(affiliateClicks)
+        .where(and(...tc(affiliateClicks.clickedAt)));
+
+      const [quizStartStats] = await db
+        .select({
+          totalQuizStarts: sql<number>`count(distinct ${pageVisits.sessionId})`,
+        })
+        .from(pageVisits)
+        .where(and(eq(pageVisits.path, "/quiz/flow"), ...tc(pageVisits.createdAt)));
+
+      const referrerRows = await db
+        .select({
+          referrer: visitorSessions.referrer,
+          count: sql<number>`count(*)`,
+        })
+        .from(visitorSessions)
+        .where(
+          and(
+            sql`${visitorSessions.referrer} is not null and ${visitorSessions.referrer} <> ''`,
+            ...tc(visitorSessions.firstSeenAt),
+          ),
+        )
+        .groupBy(visitorSessions.referrer)
+        .orderBy(sql`count(*) desc`)
+        .limit(5);
+
+      const totalSessions = Number(sessionStats?.totalSessions ?? 0);
+      const totalDurationMs = Number(sessionStats?.totalDurationMs ?? 0);
+      const completedSessions = Number(sessionStats?.completedSessions ?? 0);
+      const totalLeads = Number(leadStats?.totalLeads ?? 0);
+
       return {
-        totalSessions: 0,
-        totalLeads: 0,
-        totalQuizStarts: 0,
-        totalAffiliateClicks: 0,
-        leadsWithAffiliateClicks: 0,
-        quizCompletionRate: 0,
-        avgEngagementSeconds: 0,
-        topReferrers: [],
-        totalClicks: 0,
+        totalSessions,
+        totalLeads,
+        totalQuizStarts: Number(quizStartStats?.totalQuizStarts ?? 0),
+        totalAffiliateClicks: Number(affiliateClickStats?.totalAffiliateClicks ?? 0),
+        leadsWithAffiliateClicks: Number(affiliateClickStats?.leadsWithAffiliateClicks ?? 0),
+        totalClicks: Number(clickStats?.totalClicks ?? 0),
+        quizCompletionRate: totalSessions ? Math.round((completedSessions / totalSessions) * 100) : 0,
+        avgEngagementSeconds: totalSessions ? Math.round(totalDurationMs / totalSessions / 1000) : 0,
+        topReferrers: referrerRows.map((row) => ({
+          referrer: row.referrer,
+          count: Number(row.count ?? 0),
+        })),
       };
-    }
-
-    const [sessionStats] = await db
-      .select({
-        totalSessions: sql<number>`count(*)`,
-        totalDurationMs: sql<number>`coalesce(sum(${visitorSessions.totalDurationMs}), 0)`,
-        completedSessions: sql<number>`count(case when ${visitorSessions.leadId} is not null then 1 end)`,
-      })
-      .from(visitorSessions);
-
-    const [leadStats] = await db
-      .select({
-        totalLeads: sql<number>`count(*)`,
-      })
-      .from(leads);
-
-    const [clickStats] = await db
-      .select({
-        totalClicks: sql<number>`count(*)`,
-      })
-      .from(clickEvents);
-
-    const [affiliateClickStats] = await db
-      .select({
-        totalAffiliateClicks: sql<number>`count(*)`,
-        leadsWithAffiliateClicks: sql<number>`count(distinct ${affiliateClicks.leadId})`,
-      })
-      .from(affiliateClicks);
-
-    const [quizStartStats] = await db
-      .select({
-        totalQuizStarts: sql<number>`count(distinct ${pageVisits.sessionId})`,
-      })
-      .from(pageVisits)
-      .where(eq(pageVisits.path, "/quiz/flow"));
-
-    const referrerRows = await db
-      .select({
-        referrer: visitorSessions.referrer,
-        count: sql<number>`count(*)`,
-      })
-      .from(visitorSessions)
-      .where(sql`${visitorSessions.referrer} is not null and ${visitorSessions.referrer} <> ''`)
-      .groupBy(visitorSessions.referrer)
-      .orderBy(sql`count(*) desc`)
-      .limit(5);
-
-    const totalSessions = Number(sessionStats?.totalSessions ?? 0);
-    const totalDurationMs = Number(sessionStats?.totalDurationMs ?? 0);
-    const completedSessions = Number(sessionStats?.completedSessions ?? 0);
-    const totalLeads = Number(leadStats?.totalLeads ?? 0);
-
-    return {
-      totalSessions,
-      totalLeads,
-      totalQuizStarts: Number(quizStartStats?.totalQuizStarts ?? 0),
-      totalAffiliateClicks: Number(affiliateClickStats?.totalAffiliateClicks ?? 0),
-      leadsWithAffiliateClicks: Number(affiliateClickStats?.leadsWithAffiliateClicks ?? 0),
-      totalClicks: Number(clickStats?.totalClicks ?? 0),
-      quizCompletionRate: totalSessions ? Math.round((completedSessions / totalSessions) * 100) : 0,
-      avgEngagementSeconds: totalSessions ? Math.round(totalDurationMs / totalSessions / 1000) : 0,
-      topReferrers: referrerRows.map((row) => ({
-        referrer: row.referrer,
-        count: Number(row.count ?? 0),
-      })),
-    };
-  }),
+    }),
 
   recentSessions: adminProcedure.query(async () => {
     const db = await getDb();
@@ -610,23 +646,28 @@ export const analyticsRouter = router({
       };
     }),
 
-  funnel: adminProcedure.query(async () => {
-    const db = await getDb();
-    if (!db) return { stages: [], totalSessions: 0 };
+  funnel: adminProcedure
+    .input(z.object({ timeRange: timeRangeEnum.optional().default("all") }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return { stages: [], totalSessions: 0 };
 
-    const stages: Array<{
-      label: string;
-      path: string;
-      count: number;
-      pctOfTotal: number;
-      droppedFromPrevious: number;
-      pctDropped: number;
-    }> = [];
+      const tc = (col: any) => timeConditions(input.timeRange, col);
 
-    const [totalResult] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(visitorSessions);
-    const totalSessions = Number(totalResult?.count ?? 0);
+      const stages: Array<{
+        label: string;
+        path: string;
+        count: number;
+        pctOfTotal: number;
+        droppedFromPrevious: number;
+        pctDropped: number;
+      }> = [];
+
+      const [totalResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(visitorSessions)
+        .where(and(...tc(visitorSessions.firstSeenAt)));
+      const totalSessions = Number(totalResult?.count ?? 0);
 
     stages.push({
       label: "All Sessions",
@@ -648,7 +689,7 @@ export const analyticsRouter = router({
       const [result] = await db
         .select({ count: sql<number>`count(distinct ${pageVisits.sessionId})` })
         .from(pageVisits)
-        .where(eq(pageVisits.path, path));
+        .where(and(eq(pageVisits.path, path), ...tc(pageVisits.createdAt)));
       const count = Number(result?.count ?? 0);
       const prevCount = stages[stages.length - 1].count;
       stages.push({
@@ -664,7 +705,7 @@ export const analyticsRouter = router({
     const [leadResult] = await db
       .select({ count: sql<number>`count(*)` })
       .from(visitorSessions)
-      .where(sql`${visitorSessions.leadId} is not null`);
+      .where(and(sql`${visitorSessions.leadId} is not null`, ...tc(visitorSessions.firstSeenAt)));
     const leadCount = Number(leadResult?.count ?? 0);
     const prevLead = stages[stages.length - 1].count;
     stages.push({
@@ -678,7 +719,8 @@ export const analyticsRouter = router({
 
     const leadsWithClicks = await db
       .selectDistinct({ leadId: affiliateClicks.leadId })
-      .from(affiliateClicks);
+      .from(affiliateClicks)
+      .where(and(...tc(affiliateClicks.clickedAt)));
 
     const clickLeadIds = leadsWithClicks.map((r) => r.leadId).filter(Boolean) as string[];
     let affCount = 0;
@@ -687,12 +729,12 @@ export const analyticsRouter = router({
       const fkSessions = await db
         .select({ id: visitorSessions.id })
         .from(visitorSessions)
-        .where(inArray(visitorSessions.leadId, clickLeadIds));
+        .where(and(inArray(visitorSessions.leadId, clickLeadIds), ...tc(visitorSessions.firstSeenAt)));
 
       const revLeads = await db
         .select({ sessionId: leads.sessionId })
         .from(leads)
-        .where(and(inArray(leads.id, clickLeadIds), sql`${leads.sessionId} is not null`));
+        .where(and(inArray(leads.id, clickLeadIds), sql`${leads.sessionId} is not null`, ...tc(leads.createdAt)));
 
       const allIds = new Set([
         ...fkSessions.map((s) => s.id),
