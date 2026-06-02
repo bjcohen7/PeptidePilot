@@ -38,9 +38,7 @@ export default function QuizFlow() {
   const { currentIndex, answers, isComplete } = state;
 
   const totalQuestions = QUIZ_QUESTIONS.length;
-  const selectedAnswer = answers[currentIndex];
   const isFirst = currentIndex === 0;
-  const isLast = currentIndex >= totalQuestions - 1;
   const multiSelect = isMultiSelect(currentIndex);
   const topTwo = isTopTwo(currentIndex);
 
@@ -50,6 +48,12 @@ export default function QuizFlow() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const directionRef = useRef<Direction>("forward");
   const prevIndexRef = useRef(currentIndex);
+
+  // Refs to avoid stale closures in callbacks
+  const answersRef = useRef(answers);
+  answersRef.current = answers;
+  const currentIndexRef = useRef(currentIndex);
+  currentIndexRef.current = currentIndex;
 
   const [pulseIndex, setPulseIndex] = useState<number | null>(null);
 
@@ -104,26 +108,29 @@ export default function QuizFlow() {
 
   const handleSingleSelect = useCallback(
     (idx: number) => {
-      if (isTransitioning || selectedAnswer !== null) return;
+      if (isTransitioning) return;
+      const val = answersRef.current[currentIndexRef.current];
+      if (val !== null) return;
       selectAnswer(idx);
       setTimeout(() => {
         triggerAdvance("forward", advance);
       }, 320);
     },
-    [isTransitioning, selectedAnswer, selectAnswer, triggerAdvance, advance],
+    [isTransitioning, selectAnswer, triggerAdvance, advance],
   );
 
-  // ── Multi-select toggle ────────────────────────────────────────────────
+  // ── Multi-select helpers ───────────────────────────────────────────────
 
-  const getCurrentMulti = (): number[] => {
-    const val = answers[currentIndex];
+  const getCurrentMulti = useCallback((): number[] => {
+    const val = answersRef.current[currentIndexRef.current];
     return Array.isArray(val) ? val : [];
-  };
+  }, []);
 
   const handleMultiToggle = useCallback(
     (idx: number) => {
       if (isTransitioning) return;
       const current: number[] = getCurrentMulti();
+      const ci = currentIndexRef.current;
 
       if (topTwo) {
         // Q20: top-2 behavior
@@ -148,7 +155,8 @@ export default function QuizFlow() {
       }
 
       // Regular multi-select
-      const isNoneIndex = currentQuestion.options.length - 1; // last option is "None"
+      const optionsLen = QUIZ_QUESTIONS[ci]?.options.length ?? 0;
+      const isNoneIndex = optionsLen - 1;
       if (idx === isNoneIndex) {
         selectAnswer([idx]);
         return;
@@ -163,23 +171,24 @@ export default function QuizFlow() {
         selectAnswer([...current, idx]);
       }
     },
-    [isTransitioning, answers, currentIndex, currentQuestion.options.length, selectAnswer, topTwo, triggerAdvance, advance],
+    [isTransitioning, selectAnswer, topTwo, triggerAdvance, advance, getCurrentMulti],
   );
 
   // ── Multi-select continue ──────────────────────────────────────────────
 
   const handleMultiContinue = useCallback(() => {
     const current = getCurrentMulti();
+    const ci = currentIndexRef.current;
     if (current.length === 0 || isTransitioning) return;
 
     // Q17: check for contraindications
-    if (currentIndex === 16 && hasContraindication(current)) {
+    if (ci === 16 && hasContraindication(current)) {
       setShowOffRamp(true);
       return;
     }
 
     triggerAdvance("forward", advance);
-  }, [answers, currentIndex, isTransitioning, triggerAdvance, advance]);
+  }, [isTransitioning, triggerAdvance, advance, getCurrentMulti]);
 
   // ── Back ───────────────────────────────────────────────────────────────
 
@@ -203,10 +212,11 @@ export default function QuizFlow() {
       }
       return;
     }
-    if (selectedAnswer !== null && !isTransitioning) {
+    const val = answersRef.current[currentIndexRef.current];
+    if (val !== null && !isTransitioning) {
       triggerAdvance("forward", advance);
     }
-  }, [showOffRamp, multiSelect, topTwo, getCurrentMulti, handleMultiContinue, selectedAnswer, isTransitioning, triggerAdvance, advance]);
+  }, [showOffRamp, multiSelect, topTwo, getCurrentMulti, handleMultiContinue, isTransitioning, triggerAdvance, advance]);
 
   const swipeHandlers = useSwipe({
     onSwipeLeft: handleSwipeLeft,
@@ -241,12 +251,7 @@ export default function QuizFlow() {
     );
   }
 
-  const isOptionSelected = (idx: number): boolean => {
-    if (multiSelect || topTwo) {
-      return multiSelection.includes(idx);
-    }
-    return selectedAnswer === idx;
-  };
+  const singleVal = answersRef.current[currentIndexRef.current];
 
   return (
     <div
@@ -283,8 +288,9 @@ export default function QuizFlow() {
 
           <div className="space-y-3">
             {currentQuestion.options.map((option, idx) => {
-              const selected = isOptionSelected(idx);
-              const isDisabled = !multiSelect && !topTwo && (selectedAnswer !== null || isTransitioning);
+              const selected = multiSelect || topTwo
+                ? multiSelection.includes(idx)
+                : singleVal === idx;
               const showPulse = topTwo && pulseIndex === idx;
 
               return (
@@ -297,12 +303,12 @@ export default function QuizFlow() {
                       handleSingleSelect(idx);
                     }
                   }}
-                  disabled={isDisabled}
+                  disabled={!multiSelect && !topTwo && (singleVal !== null || isTransitioning)}
                   aria-pressed={selected}
                   className={`answer-btn ${selected ? "selected" : ""} ${
                     showPulse ? "animate-pulse-once" : ""
                   } ${
-                    !multiSelect && !topTwo && selectedAnswer !== null && !selected
+                    !multiSelect && !topTwo && singleVal !== null && !selected
                       ? "opacity-40 cursor-default"
                       : ""
                   }`}
