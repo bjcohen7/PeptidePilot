@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import ResultsCommercePage from "@/components/results/ResultsCommercePage";
-import Glp1BridgePage from "@/components/bridge/Glp1BridgePage";
+import NewResultsPage from "@/pages/NewResultsPage";
 import { getVisitorSessionId } from "@/components/SessionTracker";
 import { useQuiz } from "@/contexts/QuizContext";
 import { useReturningSession } from "@/contexts/UserSessionContext";
@@ -152,9 +152,8 @@ export default function Results() {
   const selectedMatch =
     displayMatches.find((match) => match.peptideId === selectedPeptideId) ?? displayMatches[0] ?? null;
 
-  const [userDismissedBridge, setUserDismissedBridge] = useState(false);
   const isGlp1Match = selectedMatch !== null && GLP1_PROFILE_IDS.has(selectedMatch.peptideId);
-  const showBridge = isGlp1Match && !userDismissedBridge;
+  const showNewResults = isGlp1Match;
 
   const handleRetake = () => {
     reset();
@@ -170,12 +169,11 @@ export default function Results() {
   }
 
   if (selectedMatch && displayMatches.length > 0) {
-    if (showBridge) {
+    if (showNewResults) {
       return (
-        <Glp1BridgePage
-          matchName={selectedMatch.name}
-          matchPercent={selectedMatch.matchPercent}
-          onSkipToProviders={() => setUserDismissedBridge(true)}
+        <NewResultsPage
+          leadId={activeLeadId}
+          onRetake={handleRetake}
         />
       );
     }
