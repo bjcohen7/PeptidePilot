@@ -7,13 +7,21 @@ function LegalLayout({ title, subtitle, children }: { title: string; subtitle: s
       ? "/privacy"
       : title === "Terms of Service"
         ? "/terms"
-        : "/disclaimer";
+        : title === "Affiliate Disclosure"
+          ? "/affiliate-disclosure"
+          : title === "Screening Criteria"
+            ? "/screening-criteria"
+            : "/disclaimer";
   const description =
     title === "Privacy Policy"
       ? "Read how PeptidePilot collects, uses, stores, and shares quiz and lead data."
       : title === "Terms of Service"
         ? "Review the terms that govern use of the PeptidePilot platform and educational content."
-        : "Understand the medical and regulatory limitations of PeptidePilot's educational peptide content.";
+        : title === "Affiliate Disclosure"
+          ? "Learn how PeptidePilot earns revenue through affiliate partnerships with GLP-1 providers."
+          : title === "Screening Criteria"
+            ? "See how PeptidePilot vets and selects providers for its comparison platform."
+            : "Understand the medical and regulatory limitations of PeptidePilot's educational peptide content.";
 
   return (
     <div className="min-h-screen bg-background">
@@ -106,6 +114,43 @@ export function TermsOfService() {
           <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>6. Limitation of Liability</h2>
           <p>To the maximum extent permitted by law, PeptidePilot shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the platform or any peptide protocol you undertake.</p>
         </div>
+      </div>
+    </LegalLayout>
+  );
+}
+
+export function AffiliateDisclosure() {
+  return (
+    <LegalLayout
+      title="Affiliate Disclosure"
+      subtitle="How PeptidePilot earns revenue through provider partnerships"
+    >
+      <div className="space-y-6 text-muted-foreground leading-relaxed">
+        <p>PeptidePilot is an independent matching and comparison service. We earn affiliate commissions when you start treatment through linked providers. These commissions come at no additional cost to you — providers pay us a standard referral fee, similar to how insurance brokers or price-comparison sites operate.</p>
+        <p>Our provider rankings are based on fit and independent vetting, not payment for placement. We screen every provider for board-certified clinicians, transparent pricing, real medication sourcing, and clear cancellation policies before they appear on our platform. We do not accept payment to list a provider higher or to exclude providers who decline our affiliate terms.</p>
+        <p>We list multiple providers for every match to ensure you have choice. The "Best" badge reflects our scoring algorithm's assessment of fit based on your quiz answers, and may change as the algorithm or your profile updates.</p>
+        <p>This disclosure is part of our commitment to honest, transparent matching. If you have questions about our affiliate relationships, email <a href="mailto:hello@peptidepilot.me" className="text-accent underline underline-offset-2">hello@peptidepilot.me</a>.</p>
+      </div>
+    </LegalLayout>
+  );
+}
+
+export function ScreeningCriteria() {
+  return (
+    <LegalLayout
+      title="Screening Criteria"
+      subtitle="How we vet and select the providers on our platform"
+    >
+      <div className="space-y-6 text-muted-foreground leading-relaxed">
+        <p>Every provider on PeptidePilot must meet these minimum requirements to be listed:</p>
+        <ul className="list-disc pl-6 space-y-2">
+          <li><strong className="text-foreground">Licensed clinicians:</strong> Providers must employ or contract with board-certified physicians, nurse practitioners, or physician assistants licensed in the states where they practice.</li>
+          <li><strong className="text-foreground">Transparent pricing:</strong> Providers must clearly disclose medication, consultation, shipping, and membership costs before the patient commits.</li>
+          <li><strong className="text-foreground">Real medication sourcing:</strong> Compounded medications must come from FDA-registered 503A or 503B pharmacies. Brand-name medications must be dispensed through licensed retail or mail-order pharmacies.</li>
+          <li><strong className="text-foreground">Clear cancellation policies:</strong> Providers must have published cancellation and refund terms that are not designed to trap patients into ongoing billing.</li>
+          <li><strong className="text-foreground">Positive patient experience:</strong> Providers must maintain satisfactory ratings on independent review platforms and respond substantively to complaints.</li>
+        </ul>
+        <p>We review these criteria periodically and may delist providers who fail to maintain them. If you have a concern about a listed provider, email <a href="mailto:hello@peptidepilot.me" className="text-accent underline underline-offset-2">hello@peptidepilot.me</a>.</p>
       </div>
     </LegalLayout>
   );

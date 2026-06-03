@@ -30,6 +30,12 @@ const TermsOfService = lazy(() =>
 const MedicalDisclaimer = lazy(() =>
   import("./pages/Legal").then((module) => ({ default: module.MedicalDisclaimer })),
 );
+const AffiliateDisclosure = lazy(() =>
+  import("./pages/Legal").then((module) => ({ default: module.AffiliateDisclosure })),
+);
+const ScreeningCriteria = lazy(() =>
+  import("./pages/Legal").then((module) => ({ default: module.ScreeningCriteria })),
+);
 const BlogArticle = lazy(() => import("./pages/BlogArticle"));
 const PseoHub = lazy(() =>
   import("./pages/PseoPages").then((module) => ({ default: module.PseoHub })),
@@ -347,6 +353,22 @@ function Router() {
         <PublicLayout>
           <Suspense fallback={<RouteFallback />}>
             <MedicalDisclaimer />
+          </Suspense>
+        </PublicLayout>
+      </Route>
+
+      <Route path="/affiliate-disclosure">
+        <PublicLayout>
+          <Suspense fallback={<RouteFallback />}>
+            <AffiliateDisclosure />
+          </Suspense>
+        </PublicLayout>
+      </Route>
+
+      <Route path="/screening-criteria">
+        <PublicLayout>
+          <Suspense fallback={<RouteFallback />}>
+            <ScreeningCriteria />
           </Suspense>
         </PublicLayout>
       </Route>
