@@ -153,7 +153,7 @@ export default function NewResultsPage({
   return (
     <div className="min-h-screen bg-[#f6f8f7] font-sans leading-normal text-[#0e1f1c] antialiased">
       {/* ── §4.1 Sticky top nav ─────────────────────────────────────── */}
-      <nav className="sticky top-0 z-10 flex items-center justify-between border-b border-[#eef2f0] bg-white px-[18px] py-[14px]">
+      <nav className="sticky top-0 z-10 flex items-center justify-between border-b border-[#eef2f0] bg-white px-[18px] py-[14px] lg:px-8 lg:py-4">
         <div className="flex items-center gap-2 text-[14px] font-bold">
           <div
             className="h-[22px] w-[22px] rounded-[5px]"
@@ -174,7 +174,7 @@ export default function NewResultsPage({
 
       {/* ── §4.2 Dark header band ─────────────────────────────────────── */}
       <div
-        className="relative px-[18px] pb-[22px] pt-[26px] text-white"
+        className="relative px-[18px] pb-[22px] pt-[26px] text-white lg:px-0"
         style={{
           background: "linear-gradient(180deg, #0a1815 0%, #102a25 100%)",
         }}
@@ -187,7 +187,7 @@ export default function NewResultsPage({
             backgroundSize: "22px 22px",
           }}
         />
-        <div className="relative">
+        <div className="relative lg:max-w-[1120px] lg:mx-auto lg:w-full lg:px-8">
           {/* Meta line */}
           <div className="mb-[10px] flex flex-wrap items-center gap-[6px] font-mono text-[9.5px] font-semibold uppercase tracking-[0.12em] text-white/55">
             <span>Quiz complete</span>
@@ -203,10 +203,10 @@ export default function NewResultsPage({
           </h1>
 
           {/* Match block */}
-          <div className="mb-[16px] flex items-baseline gap-[14px]">
+          <div className="mb-[16px] flex items-baseline gap-[14px] lg:grid lg:grid-cols-[144px_1fr] lg:gap-10 lg:items-start lg:mb-0">
             <div className="flex-shrink-0">
               <div
-                className="font-serif text-[52px] leading-[0.9]"
+                className="font-serif text-[52px] leading-[0.9] lg:text-[64px]"
                 style={{ color: "#5eead4" }}
               >
                 {matchScore}%
@@ -216,7 +216,7 @@ export default function NewResultsPage({
               </span>
             </div>
             <div
-              className="font-serif text-[13px] italic leading-[1.45] text-white/82"
+              className="font-serif text-[13px] italic leading-[1.45] text-white/82 lg:text-[15px] lg:leading-[1.55]"
               style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
             >
               Strong fit for weight loss and metabolic goals. Three vetted
@@ -244,19 +244,21 @@ export default function NewResultsPage({
       </div>
 
       {/* ── §4.3 Grid intro ────────────────────────────────────────────── */}
-      <div className="bg-white px-[18px] pb-[8px] pt-[18px]">
-        <h2 className="mb-[4px] font-serif text-[19px] leading-[1.2]">
-          Compare your three providers
-        </h2>
-        <p className="text-[11.5px] leading-[1.5] text-[#4a5b58]">
-          Ranked by fit for your answers, not by what we earn. Affiliate
-          compensation disclosed.
-        </p>
+      <div className="bg-white px-[18px] pb-[8px] pt-[18px] lg:px-0">
+        <div className="lg:max-w-[1120px] lg:mx-auto lg:w-full lg:px-8">
+          <h2 className="mb-[4px] font-serif text-[19px] leading-[1.2]">
+            Compare your three providers
+          </h2>
+          <p className="text-[11.5px] leading-[1.5] text-[#4a5b58]">
+            Ranked by fit for your answers, not by what we earn. Affiliate
+            compensation disclosed.
+          </p>
+        </div>
       </div>
 
       {/* ── §4.4 Provider header row (6D) ──────────────────────────────── */}
       <div
-        className="mx-[14px] mt-[16px] grid grid-cols-3 overflow-hidden rounded-[12px] text-white"
+        className="mx-[14px] mt-[16px] grid grid-cols-3 overflow-hidden rounded-[12px] text-white lg:mx-auto lg:mt-6 lg:max-w-[1120px] lg:w-full"
         style={{ background: "#0a1815" }}
       >
         {providers.map((p) => {
@@ -264,7 +266,7 @@ export default function NewResultsPage({
           return (
             <div
               key={p.id}
-              className="px-[6px] pb-[14px] pt-[12px] text-center"
+              className="px-[6px] pb-[14px] pt-[12px] text-center lg:px-[10px] lg:pb-[18px] lg:pt-[16px]"
               style={{
                 borderRight: "1px solid rgba(255,255,255,0.08)",
                 ...(isFeatured
@@ -275,15 +277,20 @@ export default function NewResultsPage({
                   : {}),
               }}
             >
-              <div className="mb-[5px] text-[11px] font-bold leading-[1.2]">
+              <div className="mb-[5px] text-[11px] font-bold leading-[1.2] lg:text-[13px]">
                 {p.name}
               </div>
-              <div className="font-serif text-[20px] leading-[1]" style={{ color: "#5eead4" }}>
+              {p.subDescription && (
+                <div className="hidden lg:block text-[9px] leading-[1.3] text-white/60 mt-[2px] mb-[6px] px-[2px]">
+                  {p.subDescription}
+                </div>
+              )}
+              <div className="font-serif text-[20px] leading-[1] lg:text-[24px]" style={{ color: "#5eead4" }}>
                 ${p.startingPrice}
                 <span className="text-[10px] text-white/55">/mo</span>
               </div>
               <div
-                className="mt-[4px] font-mono text-[7.5px] font-bold uppercase tracking-[0.06em]"
+                className="mt-[4px] font-mono text-[7.5px] font-bold uppercase tracking-[0.06em] lg:text-[8.5px]"
                 style={{
                   color: isFeatured ? "#5eead4" : "rgba(255,255,255,0.5)",
                 }}
@@ -296,7 +303,7 @@ export default function NewResultsPage({
       </div>
 
       {/* ── §4.5 Four clusters ──────────────────────────────────────────── */}
-      <div className="px-[14px] pb-[14px] pt-[8px]">
+      <div className="px-[14px] pb-[14px] pt-[8px] lg:grid lg:grid-cols-2 lg:gap-4 lg:max-w-[1120px] lg:mx-auto lg:w-full lg:px-8 lg:pb-8">
         {/* Medications */}
         <Cluster title="Medications">
           <Row>
@@ -374,58 +381,61 @@ export default function NewResultsPage({
       </div>
 
       {/* ── §4.6 CTA bar + affiliate disclosure ─────────────────────────── */}
-      <div className="bg-white px-[14px] pb-[8px] pt-[10px]">
-        <div className="grid grid-cols-3 gap-[5px]">
-          {providers.map((p) => {
-            const isFeatured = p.id === FEATURED_PROVIDER_ID;
-            return (
-              <a
-                key={p.id}
-                href={p.affiliateUrl}
-                target="_blank"
-                rel="sponsored noopener"
-                onClick={(e) => handleProviderClick(e, p.id)}
-                className="block rounded-[8px] px-[4px] py-[10px] text-center text-[10.5px] font-semibold leading-[1.2] no-underline"
-                style={
-                  isFeatured
-                    ? {
-                        background: "linear-gradient(135deg, #0fb88a, #22d3ee)",
-                        color: "#0e1f1c",
-                        boxShadow: "0 6px 14px rgba(15,184,138,0.32)",
-                      }
-                    : {
-                        background: "#0e1f1c",
-                        color: "white",
-                      }
-                }
-              >
-                Start &rarr;
-              </a>
-            );
-          })}
-        </div>
-        <div className="px-[0] pb-[0] pt-[8px] text-center text-[9.5px] italic text-[#8a939b]">
-          Affiliate links — we earn when you start.{" "}
-          <a
-            href="/affiliate-disclosure"
-            onClick={handleDisclosureLink("affiliate")}
-            className="underline"
-            style={{ color: "#0a6b54" }}
-          >
-            See disclosure
-          </a>
+      <div className="bg-white px-[14px] pb-[8px] pt-[10px] lg:px-0">
+        <div className="lg:max-w-[1120px] lg:mx-auto lg:w-full lg:px-8">
+          <div className="grid grid-cols-3 gap-[5px]">
+            {providers.map((p) => {
+              const isFeatured = p.id === FEATURED_PROVIDER_ID;
+              return (
+                <a
+                  key={p.id}
+                  href={p.affiliateUrl}
+                  target="_blank"
+                  rel="sponsored noopener"
+                  onClick={(e) => handleProviderClick(e, p.id)}
+                  className="block rounded-[8px] px-[4px] py-[10px] text-center text-[10.5px] font-semibold leading-[1.2] no-underline"
+                  style={
+                    isFeatured
+                      ? {
+                          background: "linear-gradient(135deg, #0fb88a, #22d3ee)",
+                          color: "#0e1f1c",
+                          boxShadow: "0 6px 14px rgba(15,184,138,0.32)",
+                        }
+                      : {
+                          background: "#0e1f1c",
+                          color: "white",
+                        }
+                  }
+                >
+                  Start &rarr;
+                </a>
+              );
+            })}
+          </div>
+          <div className="px-[0] pb-[0] pt-[8px] text-center text-[9.5px] italic text-[#8a939b]">
+            Affiliate links — we earn when you start.{" "}
+            <a
+              href="/affiliate-disclosure"
+              onClick={handleDisclosureLink("affiliate")}
+              className="underline"
+              style={{ color: "#0a6b54" }}
+            >
+              See disclosure
+            </a>
+          </div>
         </div>
       </div>
 
       {/* ── §4.7 "Why this match" narrative ─────────────────────────────── */}
-      <div className="border-t border-[#e2e8e5] bg-white px-[18px] pb-[18px] pt-[22px]">
-        <div className="mb-[6px] font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[#0a6b54]">
-          About your recommendation
-        </div>
-        <h2 className="mb-[12px] font-serif text-[19px] leading-[1.2]">
-          Why {providerById[FEATURED_PROVIDER_ID]?.name ?? "Direct Meds"} is
-          your top match
-        </h2>
+      <div className="border-t border-[#e2e8e5] bg-white px-[18px] pb-[18px] pt-[22px] lg:px-0">
+        <div className="lg:max-w-[1120px] lg:mx-auto lg:w-full lg:px-8">
+          <div className="mb-[6px] font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[#0a6b54]">
+            About your recommendation
+          </div>
+          <h2 className="mb-[12px] font-serif text-[19px] leading-[1.2]">
+            Why {providerById[FEATURED_PROVIDER_ID]?.name ?? "Direct Meds"} is
+            your top match
+          </h2>
         <p className="mb-[10px] text-[12.5px] leading-[1.55] text-[#4a5b58]">
           Based on your answers, the things that matter most to you are{" "}
           <strong className="font-semibold text-[#0e1f1c]">
@@ -459,119 +469,127 @@ export default function NewResultsPage({
         </p>
         {/* TODO(v2): when dynamic recommendation logic lands, bolded dimension
             names in paragraph 1 need to be dynamic too, based on quizResult.aspectScores */}
+        </div>
       </div>
 
       {/* ── §4.8 Timeline ────────────────────────────────────────────────── */}
-      <div className="bg-[#f3f6f4] px-[18px] pb-[18px] pt-[22px]">
-        <div className="mb-[6px] font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[#0a6b54]">
-          What happens next
+      <div className="bg-[#f3f6f4] px-[18px] pb-[18px] pt-[22px] lg:px-0">
+        <div className="lg:max-w-[1120px] lg:mx-auto lg:w-full lg:px-8">
+          <div className="mb-[6px] font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[#0a6b54]">
+            What happens next
+          </div>
+          <h2 className="mb-[12px] font-serif text-[19px] leading-[1.2]">
+            After you click Start
+          </h2>
+          <ul className="flex flex-col gap-[12px] lg:grid lg:grid-cols-4 lg:gap-6">
+            {[
+              {
+                when: "Today",
+                what: "Provider intake (10\u201315 min)",
+                sub: "Quick medical questionnaire on the provider's site. Your quiz answers don't transfer automatically.",
+              },
+              {
+                when: "1\u20133 days",
+                what: "Clinician review",
+                sub: "A licensed physician reviews your intake. If labs are needed, you'll get an order or upload existing results.",
+              },
+              {
+                when: "3\u201310 days",
+                what: "First dose ships",
+                sub: "If approved, ships overnight in temperature-controlled packaging. Sharps and supplies included.",
+              },
+              {
+                when: "Week 1",
+                what: "Start titration",
+                sub: "Lowest dose first. Most people titrate up every 4 weeks as tolerance builds.",
+              },
+            ].map((item) => (
+              <li key={item.when} className="grid gap-[12px] lg:flex lg:flex-col lg:gap-[8px]" style={{ gridTemplateColumns: "70px 1fr" }}>
+                <span className="pt-[2px] font-mono text-[10.5px] font-bold tracking-[0.04em] text-[#0a6b54] lg:pt-0">
+                  {item.when}
+                </span>
+                <span className="text-[12.5px] leading-[1.5] text-[#0e1f1c]">
+                  <strong className="font-semibold">{item.what}</strong>
+                  <em className="mt-[2px] block text-[11.5px] not-italic text-[#4a5b58]">
+                    {item.sub}
+                  </em>
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
-        <h2 className="mb-[12px] font-serif text-[19px] leading-[1.2]">
-          After you click Start
-        </h2>
-        <ul className="flex flex-col gap-[12px]">
-          {[
-            {
-              when: "Today",
-              what: "Provider intake (10–15 min)",
-              sub: "Quick medical questionnaire on the provider's site. Your quiz answers don't transfer automatically.",
-            },
-            {
-              when: "1–3 days",
-              what: "Clinician review",
-              sub: "A licensed physician reviews your intake. If labs are needed, you'll get an order or upload existing results.",
-            },
-            {
-              when: "3–10 days",
-              what: "First dose ships",
-              sub: "If approved, ships overnight in temperature-controlled packaging. Sharps and supplies included.",
-            },
-            {
-              when: "Week 1",
-              what: "Start titration",
-              sub: "Lowest dose first. Most people titrate up every 4 weeks as tolerance builds.",
-            },
-          ].map((item) => (
-            <li key={item.when} className="grid gap-[12px]" style={{ gridTemplateColumns: "70px 1fr" }}>
-              <span className="pt-[2px] font-mono text-[10.5px] font-bold tracking-[0.04em] text-[#0a6b54]">
-                {item.when}
-              </span>
-              <span className="text-[12.5px] leading-[1.5] text-[#0e1f1c]">
-                <strong className="font-semibold">{item.what}</strong>
-                <em className="mt-[2px] block text-[11.5px] not-italic text-[#4a5b58]">
-                  {item.sub}
-                </em>
-              </span>
-            </li>
-          ))}
-        </ul>
       </div>
 
       {/* ── §4.9 FAQ ────────────────────────────────────────────────────── */}
-      <div id="results-faq" className="border-t border-[#e2e8e5] bg-white px-[18px] pb-[18px] pt-[22px]">
-        <div className="mb-[6px] font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[#0a6b54]">
-          Common questions
-        </div>
-        <h2 className="mb-[12px] font-serif text-[19px] leading-[1.2]">
-          Questions people ask
-        </h2>
-        <div className="border-b border-[#eef2f0] py-[12px]">
-          <div className="mb-[4px] text-[13px] font-semibold">
-            Why these three providers?
+      <div id="results-faq" className="border-t border-[#e2e8e5] bg-white px-[18px] pb-[18px] pt-[22px] lg:px-0">
+        <div className="lg:max-w-[1120px] lg:mx-auto lg:w-full lg:px-8">
+          <div className="mb-[6px] font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[#0a6b54]">
+            Common questions
           </div>
-          <div className="text-[11.5px] leading-[1.55] text-[#4a5b58]">
-            Of 30+ GLP-1 providers we screened, these three met our
-            requirements: board-certified clinicians, transparent pricing, real
-            medication sourcing, and clear cancellation policies. Read our full{" "}
-            <a
-              href="/screening-criteria"
-              onClick={handleDisclosureLink("screening")}
-              className="underline"
-              style={{ color: "#0a6b54" }}
-            >
-              screening criteria
-            </a>
-            .
-          </div>
-        </div>
-        <div className="border-b border-[#eef2f0] py-[12px]">
-          <div className="mb-[4px] text-[13px] font-semibold">
-            Are you paid by providers?
-          </div>
-          <div className="text-[11.5px] leading-[1.55] text-[#4a5b58]">
-            Yes. We earn a commission when you start treatment through our
-            links. We don't accept payment for placement, and we don't list
-            providers we wouldn't use ourselves.
-          </div>
-        </div>
-        <div className="border-b border-[#eef2f0] py-[12px]">
-          <div className="mb-[4px] text-[13px] font-semibold">
-            What if GLP-1 isn't right for me?
-          </div>
-          <div className="text-[11.5px] leading-[1.55] text-[#4a5b58]">
-            The clinician's intake will catch any contraindications. If they
-            decline you, you'll typically get a refund. Email us if you want a
-            different protocol matched.
-          </div>
-        </div>
-        <div className="py-[12px]">
-          <div className="mb-[4px] text-[13px] font-semibold">
-            Can I change providers later?
-          </div>
-          <div className="text-[11.5px] leading-[1.55] text-[#4a5b58]">
-            Yes. Each provider's cancellation terms are listed above — Direct
-            Meds is the most flexible at "cancel anytime." Switching providers
-            usually means starting a new intake.
+          <h2 className="mb-[12px] font-serif text-[19px] leading-[1.2]">
+            Questions people ask
+          </h2>
+          <div className="lg:grid lg:grid-cols-2 lg:gap-x-8">
+            <div className="border-b border-[#eef2f0] py-[12px]">
+              <div className="mb-[4px] text-[13px] font-semibold">
+                Why these three providers?
+              </div>
+              <div className="text-[11.5px] leading-[1.55] text-[#4a5b58]">
+                Of 30+ GLP-1 providers we screened, these three met our
+                requirements: board-certified clinicians, transparent pricing, real
+                medication sourcing, and clear cancellation policies. Read our full{" "}
+                <a
+                  href="/screening-criteria"
+                  onClick={handleDisclosureLink("screening")}
+                  className="underline"
+                  style={{ color: "#0a6b54" }}
+                >
+                  screening criteria
+                </a>
+                .
+              </div>
+            </div>
+            <div className="border-b border-[#eef2f0] py-[12px]">
+              <div className="mb-[4px] text-[13px] font-semibold">
+                Are you paid by providers?
+              </div>
+              <div className="text-[11.5px] leading-[1.55] text-[#4a5b58]">
+                Yes. We earn a commission when you start treatment through our
+                links. We don't accept payment for placement, and we don't list
+                providers we wouldn't use ourselves.
+              </div>
+            </div>
+            <div className="border-b border-[#eef2f0] py-[12px]">
+              <div className="mb-[4px] text-[13px] font-semibold">
+                What if GLP-1 isn't right for me?
+              </div>
+              <div className="text-[11.5px] leading-[1.55] text-[#4a5b58]">
+                The clinician's intake will catch any contraindications. If they
+                decline you, you'll typically get a refund. Email us if you want a
+                different protocol matched.
+              </div>
+            </div>
+            <div className="py-[12px]">
+              <div className="mb-[4px] text-[13px] font-semibold">
+                Can I change providers later?
+              </div>
+              <div className="text-[11.5px] leading-[1.55] text-[#4a5b58]">
+                Yes. Each provider's cancellation terms are listed above — Direct
+                Meds is the most flexible at "cancel anytime." Switching providers
+                usually means starting a new intake.
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* ── §4.10 Trust strip ────────────────────────────────────────────── */}
       <div
-        className="grid grid-cols-2 gap-[14px] px-[18px] py-[22px] text-white"
+        className="px-[18px] py-[22px] lg:px-0"
         style={{ background: "#0a1815" }}
       >
-        <div>
+        <div className="grid grid-cols-2 gap-[14px] text-white lg:grid-cols-4 lg:max-w-[1120px] lg:mx-auto lg:w-full lg:px-8">
+          <div>
           <div className="mb-[4px] font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-[#5eead4]">
             Privacy
           </div>
@@ -605,36 +623,39 @@ export default function NewResultsPage({
               hello@peptidepilot.me
             </a>
           </div>
+          </div>
         </div>
       </div>
 
       {/* ── §4.11 Footer disclosure ──────────────────────────────────────── */}
-      <div className="bg-[#f3f6f4] px-[18px] py-[18px] text-center text-[10.5px] leading-[1.6] text-[#8a939b]">
-        <strong className="font-semibold text-[#4a5b58]">
-          PeptidePilot is an independent matching and comparison service.
-        </strong>{" "}
-        We earn affiliate commissions when you start treatment through linked
-        providers, but our rankings are based on fit and independent vetting —
-        not payment for placement. Not medical advice. Individual results vary.
-        See{" "}
-        <a
-          href="/affiliate-disclosure"
-          onClick={handleDisclosureLink("affiliate")}
-          className="underline"
-          style={{ color: "#0a6b54" }}
-        >
-          affiliate disclosure
-        </a>{" "}
-        &amp;{" "}
-        <a
-          href="/screening-criteria"
-          onClick={handleDisclosureLink("screening")}
-          className="underline"
-          style={{ color: "#0a6b54" }}
-        >
-          screening criteria
-        </a>
-        .
+      <div className="bg-[#f3f6f4] px-[18px] py-[18px] text-center text-[10.5px] leading-[1.6] text-[#8a939b] lg:px-0">
+        <div className="lg:max-w-[1120px] lg:mx-auto lg:w-full lg:px-8">
+          <strong className="font-semibold text-[#4a5b58]">
+            PeptidePilot is an independent matching and comparison service.
+          </strong>{" "}
+          We earn affiliate commissions when you start treatment through linked
+          providers, but our rankings are based on fit and independent vetting —
+          not payment for placement. Not medical advice. Individual results vary.
+          See{" "}
+          <a
+            href="/affiliate-disclosure"
+            onClick={handleDisclosureLink("affiliate")}
+            className="underline"
+            style={{ color: "#0a6b54" }}
+          >
+            affiliate disclosure
+          </a>{" "}
+          &amp;{" "}
+          <a
+            href="/screening-criteria"
+            onClick={handleDisclosureLink("screening")}
+            className="underline"
+            style={{ color: "#0a6b54" }}
+          >
+            screening criteria
+          </a>
+          .
+        </div>
       </div>
     </div>
   );

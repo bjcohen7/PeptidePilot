@@ -23,6 +23,7 @@ export type GLP1Provider = {
   logoAlt?: string;
   logoMarkFallback: string;
   notes?: string;
+  subDescription?: string;
 };
 
 export const GLP1_PROVIDERS: GLP1Provider[] = [
@@ -52,6 +53,7 @@ export const GLP1_PROVIDERS: GLP1Provider[] = [
     logoAlt: "Direct Meds",
     logoMarkFallback: "DM",
     notes: "Recommended provider for v1 — best fit for broadest user profile",
+    subDescription: "Board-certified MD oversight — optional labs, ships in 3\u20135 days",
   },
   {
     id: "skinny_rx",
@@ -76,6 +78,7 @@ export const GLP1_PROVIDERS: GLP1Provider[] = [
     logoUrl: "/partner-logos/skinnyrx.png",
     logoAlt: "SkinnyRX",
     logoMarkFallback: "SR",
+    subDescription: "Brand + compounded options, accepts insurance, MD-led team",
   },
   {
     id: "medvi",
@@ -100,6 +103,7 @@ export const GLP1_PROVIDERS: GLP1Provider[] = [
     logoUrl: "/partner-logos/medvi.png",
     logoAlt: "Medvi",
     logoMarkFallback: "MV",
+    subDescription: "Same clinician each visit, concierge model, 30-day cancel",
   },
 ];
 
