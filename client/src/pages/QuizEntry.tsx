@@ -8,8 +8,8 @@ import { preloadQuizCompletionExperience, preloadQuizFlow } from "@/lib/preloadQ
 
 const STEPS = [
   { number: "01", label: `Answer ${QUIZ_QUESTIONS.length} questions`, sub: "Goals, symptoms, medical context, and readiness — the structure of a real intake, not a marketing quiz" },
-  { number: "02", label: "You get matched", sub: "A primary recommendation with a real score, plus optional complements like BPC-157 if they fit your profile" },
-  { number: "03", label: "Review your match", sub: "Vetted licensed providers — board-certified, transparent pricing, no paid placements" },
+  { number: "02", label: "You get matched", sub: "A primary recommendation with a real score, plus optional complements for your profile" },
+  { number: "03", label: "Review your match", sub: "Vetted licensed providers with transparent pricing — no paid placements" },
 ];
 
 export default function QuizEntry() {
@@ -54,7 +54,7 @@ export default function QuizEntry() {
 
           {/* Badge */}
           <div
-            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase mb-7"
+            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase mb-5"
             style={{ background: "rgba(56,189,248,0.12)", color: "#38bdf8", border: "1px solid rgba(56,189,248,0.25)" }}
           >
             <Zap className="w-3.5 h-3.5" />
@@ -62,9 +62,9 @@ export default function QuizEntry() {
           </div>
 
           <h1
-            className="text-white mb-4 leading-snug"
+            className="text-white mb-3 leading-snug"
             style={{
-              fontSize: "clamp(2rem, 5vw, 3rem)",
+              fontSize: "clamp(1.45rem, 4.5vw, 3rem)",
               fontFamily: "'DM Serif Display', Georgia, serif",
               letterSpacing: "-0.02em",
             }}
@@ -73,23 +73,23 @@ export default function QuizEntry() {
           </h1>
 
           <p
-            className="mb-10 mx-auto leading-relaxed"
+            className="mb-6 mx-auto leading-relaxed"
             style={{
               color: "rgba(255,255,255,0.55)",
-              fontSize: "clamp(0.95rem, 2.5vw, 1.1rem)",
+              fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)",
               maxWidth: 440,
-              lineHeight: 1.75,
+              lineHeight: 1.6,
             }}
           >
-            22 questions. A clinical-grade intake that maps your body to GLP-1 therapy or other peptide protocols — and connects you to vetted licensed providers.
+            22 questions. A clinical-grade intake that maps your body to GLP-1 therapy — and connects you to vetted licensed providers.
           </p>
 
           {/* Steps */}
-          <div className="mb-10 space-y-3 text-left max-w-sm mx-auto">
+          <div className="mb-7 space-y-[8px] text-left max-w-sm mx-auto">
             {STEPS.map((step) => (
               <div
                 key={step.number}
-                className="flex items-center gap-4 rounded-xl px-4 py-3.5"
+                className="flex items-center gap-4 rounded-xl px-4 py-[9px]"
                 style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
               >
                 <span
