@@ -90,7 +90,7 @@ export default function Seo({
     upsertMeta("property", "og:type", type);
     upsertMeta("property", "og:url", canonical);
     upsertMeta("property", "og:site_name", "PeptidePilot");
-    upsertMeta("name", "twitter:card", "summary");
+    upsertMeta("name", "twitter:card", "summary_large_image");
     upsertMeta("name", "twitter:title", normalizedTitle);
     upsertMeta("name", "twitter:description", description);
 
