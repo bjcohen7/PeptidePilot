@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { trackMetaCustomEvent } from "@/lib/metaPixel";
+import { trpc } from "@/lib/trpc";
 import { useQuiz } from "@/contexts/QuizContext";
 import {
   calculateAspectScores,
@@ -94,6 +95,26 @@ export default function NewResultsPage({
     return sorted;
   }, []);
 
+  // ── Managed affiliate links ─────────────────────────────────────────────
+
+  const linksQuery = trpc.affiliates.activeLinksByPeptide.useQuery(
+    { peptideId: "semaglutide" },
+    { staleTime: 1000 * 60 * 5, retry: false },
+  );
+
+  const trackClick = trpc.quiz.trackAffiliateClick.useMutation();
+
+  const partnerUrlMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const link of linksQuery.data ?? []) {
+      const name = link.partnerName ?? link.label;
+      if (!map.has(name)) {
+        map.set(name, link.url);
+      }
+    }
+    return map;
+  }, [linksQuery.data]);
+
   // ── Track page view ─────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -137,6 +158,9 @@ export default function NewResultsPage({
       matchScore,
       position: idx >= 0 ? idx + 1 : 0,
     });
+    if (leadId) {
+      trackClick.mutate({ leadId, peptideId: "semaglutide", vendor: provider.name });
+    }
   };
 
   const handleRestart = () => {
@@ -389,7 +413,7 @@ export default function NewResultsPage({
               return (
                 <a
                   key={p.id}
-                  href={p.affiliateUrl}
+                  href={partnerUrlMap.get(p.name) ?? p.affiliateUrl}
                   target="_blank"
                   rel="sponsored noopener"
                   onClick={(e) => handleProviderClick(e, p.id)}
