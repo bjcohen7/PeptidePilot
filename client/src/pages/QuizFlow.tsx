@@ -305,7 +305,7 @@ export default function QuizFlow() {
                   }}
                   disabled={!multiSelect && !topTwo && (singleVal !== null || isTransitioning)}
                   aria-pressed={selected}
-                  className={`answer-btn ${selected ? "selected" : ""} ${
+                  className={`answer-btn ${multiSelect ? "option-card--compact" : ""} ${selected ? "selected" : ""} ${
                     showPulse ? "animate-pulse-once" : ""
                   } ${
                     !multiSelect && !topTwo && singleVal !== null && !selected
