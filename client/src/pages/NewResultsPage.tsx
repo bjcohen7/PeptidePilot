@@ -64,7 +64,7 @@ function getLibraryBackedMatchScore(answers: (number | number[])[]): number {
 
 // ── Providers ───────────────────────────────────────────────────────────────
 
-const FEATURED_PROVIDER_ID = "direct_meds";
+const FEATURED_PROVIDER_ID = "gala";
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -244,7 +244,7 @@ export default function NewResultsPage({
               style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
             >
               Strong fit for weight loss and metabolic goals. Three vetted
-              providers compared below — Direct Meds is your top match.
+              providers compared below — Gala is your top match.
             </div>
           </div>
 
@@ -457,7 +457,7 @@ export default function NewResultsPage({
             About your recommendation
           </div>
           <h2 className="mb-[12px] font-serif text-[19px] leading-[1.2]">
-            Why {providerById[FEATURED_PROVIDER_ID]?.name ?? "Direct Meds"} is
+            Why {providerById[FEATURED_PROVIDER_ID]?.name ?? "Gala"} is
             your top match
           </h2>
         <p className="mb-[10px] text-[12.5px] leading-[1.55] text-[#4a5b58]">
@@ -473,7 +473,7 @@ export default function NewResultsPage({
           <strong className="font-semibold text-[#0e1f1c]">
             medical oversight without a doctor's office visit
           </strong>
-          . Direct Meds leads on all three.
+          . Gala leads on all three.
         </p>
         <p className="mb-[10px] text-[12.5px] leading-[1.55] text-[#4a5b58]">
           They're also the lowest-priced of the three at $179/mo for compounded

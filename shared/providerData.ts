@@ -1,5 +1,5 @@
 export type GLP1Provider = {
-  id: "direct_meds" | "skinny_rx" | "medvi";
+  id: "gala" | "direct_med" | "sprout";
   name: string;
   brandName: string;
   startingPrice: number;
@@ -28,12 +28,36 @@ export type GLP1Provider = {
 
 export const GLP1_PROVIDERS: GLP1Provider[] = [
   {
-    id: "direct_meds",
-    name: "Direct Meds",
-    brandName: "Direct Meds",
+    id: "gala",
+    name: "Gala",
+    brandName: "Gala",
     startingPrice: 179,
     priceTag: "$179/mo",
-    positioningTag: "Best · 92%",
+    positioningTag: "Best Value",
+
+    medications: "Compounded semaglutide",
+    providerModel: "Licensed providers",
+    timeToFirstDose: "3\u20135 days",
+    labWorkRequired: "optional",
+    cancelPolicy: "Anytime",
+    insuranceAccepted: false,
+    insuranceLabel: "Cash pay",
+
+    affiliateUrl: "https://galaglp1.com/lp/glp1?a=price&_ef_transaction_id=&oid=1&affid=13",
+    isAffiliate: true,
+    category: "telehealth",
+    officialUrl: "https://galaglp1.com/",
+    logoMarkFallback: "GA",
+    notes: "LegitScript Certified — $179/mo all doses, no hidden fees",
+    subDescription: "Licensed providers in all 50 states — $179/mo all doses, no hidden fees",
+  },
+  {
+    id: "direct_med",
+    name: "Direct Med",
+    brandName: "Direct Med",
+    startingPrice: 199,
+    priceTag: "$199/mo",
+    positioningTag: "Most Trusted",
 
     medications: "Compounded sema & tirz",
     providerModel: "Board-cert MD",
@@ -43,67 +67,37 @@ export const GLP1_PROVIDERS: GLP1Provider[] = [
     insuranceAccepted: false,
     insuranceLabel: "Cash pay",
 
-    // TODO(v2): make recommendedProviderId dynamic based on quiz answers
-    // price_sensitivity=high → Direct Meds, has_insurance=true → SkinnyRX, want_continuity=high → Medvi
-    affiliateUrl: "https://www.directmeds.com/",
+    affiliateUrl: "https://track.revoffers.com/aff_c?offer_id=1304&aff_id=12185",
     isAffiliate: true,
     category: "telehealth",
     officialUrl: "https://www.directmeds.com/",
-    logoUrl: "/partner-logos/direct-meds.png",
-    logoAlt: "Direct Meds",
     logoMarkFallback: "DM",
-    notes: "Recommended provider for v1 — best fit for broadest user profile",
-    subDescription: "Board-certified MD oversight — optional labs, ships in 3\u20135 days",
+    notes: "LegitScript Certified — use code PILOT50 at checkout",
+    subDescription: "Doctor prescribed and supervised — personalized care plans",
   },
   {
-    id: "skinny_rx",
-    name: "SkinnyRX",
-    brandName: "SkinnyRX",
-    startingPrice: 249,
-    priceTag: "$249/mo",
-    positioningTag: "w/ insurance",
+    id: "sprout",
+    name: "Sprout",
+    brandName: "Sprout",
+    startingPrice: 199,
+    priceTag: "$199/mo",
+    positioningTag: "No Contracts",
 
-    medications: "Brand + compounded",
-    providerModel: "MD-led + NP",
-    timeToFirstDose: "5\u201310 days",
-    labWorkRequired: "required",
-    cancelPolicy: "Monthly",
-    insuranceAccepted: true,
-    insuranceLabel: "Yes",
-
-    affiliateUrl: "https://skinnyrx.com/",
-    isAffiliate: true,
-    category: "telehealth",
-    officialUrl: "https://skinnyrx.com/",
-    logoUrl: "/partner-logos/skinnyrx.png",
-    logoAlt: "SkinnyRX",
-    logoMarkFallback: "SR",
-    subDescription: "Brand + compounded options, accepts insurance, MD-led team",
-  },
-  {
-    id: "medvi",
-    name: "Medvi",
-    brandName: "Medvi",
-    startingPrice: 299,
-    priceTag: "$299/mo",
-    positioningTag: "Concierge",
-
-    medications: "Compounded only",
-    providerModel: "Same MD each visit",
-    timeToFirstDose: "7\u201310 days",
-    labWorkRequired: "required",
-    cancelPolicy: "30-day notice",
+    medications: "Compounded semaglutide",
+    providerModel: "Patient care team",
+    timeToFirstDose: "3\u20137 days",
+    labWorkRequired: "optional",
+    cancelPolicy: "Anytime",
     insuranceAccepted: false,
     insuranceLabel: "Cash pay",
 
-    affiliateUrl: "https://glp.medvi.org/",
+    affiliateUrl: "https://track.revoffers.com/aff_c?offer_id=1286&aff_id=12185",
     isAffiliate: true,
     category: "telehealth",
-    officialUrl: "https://glp.medvi.org/",
-    logoUrl: "/partner-logos/medvi.png",
-    logoAlt: "Medvi",
-    logoMarkFallback: "MV",
-    subDescription: "Same clinician each visit, concierge model, 30-day cancel",
+    officialUrl: "https://sprouthealth.com/",
+    logoMarkFallback: "SP",
+    notes: "LegitScript Certified — no contracts, no surprise fees",
+    subDescription: "Prepared by state-licensed US pharmacies — fast shipping",
   },
 ];
 
