@@ -215,8 +215,6 @@ export const quizRouter = router({
         throw new Error("Consent is required to submit.");
       }
 
-      await ensureAffiliateWorkspaceSchema();
-
       const matches = calculateMatches(answers);
       const topMatches = matches.slice(0, 5).map((m) => m.peptide.id);
       const topPeptideMatch = topMatches[0] ?? "unknown";
