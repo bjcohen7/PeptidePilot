@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { trackMetaCustomEvent } from "@/lib/metaPixel";
 import { trpc } from "@/lib/trpc";
 import { useQuiz } from "@/contexts/QuizContext";
@@ -103,6 +103,16 @@ export default function NewResultsPage({
   );
 
   const trackClick = trpc.quiz.trackAffiliateClick.useMutation();
+  const pendingClicks = useRef<Array<{ peptideId: string; vendor: string }>>([]);
+
+  useEffect(() => {
+    if (leadId && pendingClicks.current.length > 0) {
+      for (const click of pendingClicks.current) {
+        trackClick.mutate({ leadId, peptideId: click.peptideId, vendor: click.vendor });
+      }
+      pendingClicks.current = [];
+    }
+  }, [leadId]);
 
   const partnerUrlMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -160,6 +170,8 @@ export default function NewResultsPage({
     });
     if (leadId) {
       trackClick.mutate({ leadId, peptideId: "semaglutide", vendor: provider.name });
+    } else {
+      pendingClicks.current.push({ peptideId: "semaglutide", vendor: provider.name });
     }
   };
 
@@ -473,24 +485,50 @@ export default function NewResultsPage({
           <strong className="font-semibold text-[#0e1f1c]">
             medical oversight without a doctor's office visit
           </strong>
-          . Gala leads on all three.
+            . {providerById[FEATURED_PROVIDER_ID]?.name ?? "Gala"} leads on all three.
         </p>
-        <p className="mb-[10px] text-[12.5px] leading-[1.55] text-[#4a5b58]">
-          They're also the lowest-priced of the three at $179/mo for compounded
-          semaglutide or tirzepatide, with board-certified MD oversight and an
-          optional (not required) labs flow that lets you start within 3–5 days.
-        </p>
-        <p className="text-[12.5px] leading-[1.55] text-[#4a5b58]">
-          SkinnyRX and Medvi are real alternatives — strong matches on different
-          dimensions. <strong className="font-semibold text-[#0e1f1c]">
-            SkinnyRX
-          </strong>{" "}
-          is the choice if you have insurance you want to use or specifically
-          want brand-name medications.{" "}
-          <strong className="font-semibold text-[#0e1f1c]">Medvi</strong> is the
-          choice if you want the same clinician every visit and don't mind paying
-          more for that continuity.
-        </p>
+        {(() => {
+          const fp = providerById[FEATURED_PROVIDER_ID];
+          if (!fp) return null;
+          const lowest = providers.every((p) => p.startingPrice >= fp.startingPrice);
+          return (
+            <p className="mb-[10px] text-[12.5px] leading-[1.55] text-[#4a5b58]">
+              {lowest
+                ? `They're also the lowest-priced of the three at $${fp.startingPrice}/mo for ${fp.medications.toLowerCase()}`
+                : `At $${fp.startingPrice}/mo for ${fp.medications.toLowerCase()}`}
+              , with {fp.providerModel.toLowerCase()} oversight and
+              {fp.labWorkRequired === "optional"
+                ? " an optional (not required) labs flow"
+                : " required labs"}
+              {fp.timeToFirstDose
+                ? ` that lets you start within ${fp.timeToFirstDose.toLowerCase()}`
+                : ""}.
+            </p>
+          );
+        })()}
+        {(() => {
+          const alts = providers.filter((p) => p.id !== FEATURED_PROVIDER_ID);
+          return (
+            <p className="text-[12.5px] leading-[1.55] text-[#4a5b58]">
+              {alts.map((alt, i) => (
+                <span key={alt.id}>
+                  {i > 0 && i === alts.length - 1 ? ", and " : i > 0 ? ", " : ""}
+                  <strong className="font-semibold text-[#0e1f1c]">{alt.name}</strong> (${alt.startingPrice}/mo)
+                </span>
+              ))}{" "}
+              are real alternatives with different strengths.
+              {alts.map((alt) => (
+                <span key={alt.id}>
+                  {" "}
+                  <strong className="font-semibold text-[#0e1f1c]">{alt.name}</strong>{" "}
+                  offers {alt.medications.toLowerCase()} with{" "}
+                  {alt.providerModel.toLowerCase()} care
+                  {alt.insuranceAccepted ? " and accepts insurance" : ""}.
+                </span>
+              ))}
+            </p>
+          );
+        })()}
         {/* TODO(v2): when dynamic recommendation logic lands, bolded dimension
             names in paragraph 1 need to be dynamic too, based on quizResult.aspectScores */}
         </div>
