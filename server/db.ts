@@ -4,6 +4,8 @@ import { InsertUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _dbRetries = 0;
+const MAX_DB_RETRIES = 5;
 let affiliateWorkspaceBootstrap: Promise<void> | null = null;
 
 function extractMysqlRows<T>(result: unknown): T[] {
@@ -24,12 +26,13 @@ function extractMysqlRows<T>(result: unknown): T[] {
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  if (!_db && process.env.DATABASE_URL && _dbRetries < MAX_DB_RETRIES) {
     try {
       _db = drizzle(process.env.DATABASE_URL);
+      _dbRetries = 0;
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
-      _db = null;
+      _dbRetries += 1;
+      console.warn(`[Database] Failed to connect (attempt ${_dbRetries}/${MAX_DB_RETRIES}):`, error);
     }
   }
   return _db;
