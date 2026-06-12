@@ -1,15 +1,15 @@
 import { useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Clock, ShieldCheck, Zap } from "lucide-react";
+import { ArrowRight, Ban, Clock, ShieldCheck, Zap } from "lucide-react";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { QUIZ_QUESTIONS, peptideProfiles } from "../../../shared/scoring";
 import { preloadQuizCompletionExperience, preloadQuizFlow } from "@/lib/preloadQuiz";
 
 const STEPS = [
-  { number: "01", label: `Answer ${QUIZ_QUESTIONS.length} targeted questions`, sub: "Built around weight loss, appetite, recovery, and fit" },
-  { number: "02", label: "We analyze your biology", sub: `Matched against ${peptideProfiles.length} peptide profiles` },
-  { number: "03", label: "Receive your personalized protocol", sub: "Ranked by compatibility with your goals" },
+  { number: "01", label: `Answer ${QUIZ_QUESTIONS.length} questions`, sub: "Goals, symptoms, medical context, and readiness — the structure of a real intake, not a marketing quiz" },
+  { number: "02", label: "You get matched", sub: "A primary recommendation with a real score, plus optional complements for your profile" },
+  { number: "03", label: "Review your match", sub: "Vetted licensed providers with transparent pricing — no paid placements" },
 ];
 
 export default function QuizEntry() {
@@ -54,42 +54,42 @@ export default function QuizEntry() {
 
           {/* Badge */}
           <div
-            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase mb-7"
+            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase mb-5"
             style={{ background: "rgba(56,189,248,0.12)", color: "#38bdf8", border: "1px solid rgba(56,189,248,0.25)" }}
           >
             <Zap className="w-3.5 h-3.5" />
-            Free · 5 Minutes · Science-Backed
+            FREE · 22 QUESTIONS · CLINICAL-GRADE INTAKE
           </div>
 
           <h1
-            className="text-white mb-4 leading-snug"
+            className="text-white mb-3 leading-snug"
             style={{
-              fontSize: "clamp(2rem, 5vw, 3rem)",
+              fontSize: "clamp(1.45rem, 4.5vw, 3rem)",
               fontFamily: "'DM Serif Display', Georgia, serif",
               letterSpacing: "-0.02em",
             }}
           >
-            Discover your peptide match.
+            Is GLP-1 the right fit for your body?
           </h1>
 
           <p
-            className="mb-10 mx-auto leading-relaxed"
+            className="mb-6 mx-auto leading-relaxed"
             style={{
               color: "rgba(255,255,255,0.55)",
-              fontSize: "clamp(0.95rem, 2.5vw, 1.1rem)",
+              fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)",
               maxWidth: 440,
-              lineHeight: 1.75,
+              lineHeight: 1.6,
             }}
           >
-            10 questions. A sharper weight-loss and metabolic read on your biology, goals, and lifestyle.
+            22 questions. A clinical-grade intake that maps your body to GLP-1 therapy — and connects you to vetted licensed providers.
           </p>
 
           {/* Steps */}
-          <div className="mb-10 space-y-3 text-left max-w-sm mx-auto">
+          <div className="mb-7 space-y-[8px] text-left max-w-sm mx-auto">
             {STEPS.map((step) => (
               <div
                 key={step.number}
-                className="flex items-center gap-4 rounded-xl px-4 py-3.5"
+                className="flex items-center gap-4 rounded-xl px-4 py-[9px]"
                 style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
               >
                 <span
@@ -120,7 +120,7 @@ export default function QuizEntry() {
               onFocus={() => void preloadQuizFlow()}
               onTouchStart={() => void preloadQuizFlow()}
             >
-              Begin My Assessment
+              Start the quiz
               <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </Link>
@@ -129,16 +129,20 @@ export default function QuizEntry() {
           <div className="flex flex-wrap items-center justify-center gap-4 mt-6 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
             <div className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5" />
-              Takes ~5 minutes
+              Takes about 4 minutes
             </div>
             <div className="flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5" />
               Private &amp; secure
             </div>
+            <div className="flex items-center gap-1.5">
+              <Ban className="w-3.5 h-3.5" />
+              No paid placements
+            </div>
           </div>
 
           <p className="text-xs mt-4 max-w-xs mx-auto leading-relaxed" style={{ color: "rgba(255,255,255,0.2)" }}>
-            Your responses are private and used solely to generate your personalized peptide recommendations.
+            Your responses are private. We use them to match you to the right protocol — nothing else.
           </p>
         </div>
       </main>

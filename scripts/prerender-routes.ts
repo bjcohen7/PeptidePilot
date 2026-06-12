@@ -24,9 +24,9 @@ export type PrerenderRoute = {
 const staticRoutes: PrerenderRoute[] = [
   {
     path: "/",
-    title: "Personalized Peptide Recommendations | PeptidePilot",
+    title: "PeptidePilot — GLP-1 matching, from your couch in minutes. 100% independent.",
     description:
-      "Take the free 5-minute PeptidePilot quiz to get independent, science-backed peptide recommendations tailored to your goals, biology, and lifestyle.",
+      "Get matched to GLP-1 therapy in minutes. A short intake finds the right protocol for your body and connects you to a vetted licensed provider — no doctor's office, no waiting. 100% independent.",
     type: "website",
   },
   {

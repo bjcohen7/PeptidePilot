@@ -1,4 +1,4 @@
-import { boolean, int, json, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, index, int, json, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -33,6 +33,7 @@ export const leads = mysqlTable("leads", {
   consentGiven: boolean("consentGiven").notNull().default(false),
   consentTimestamp: timestamp("consentTimestamp").notNull(),
   ipAddress: varchar("ipAddress", { length: 64 }).notNull(),
+  source: varchar("source", { length: 64 }),
   rawQuizData: json("rawQuizData").notNull(), // array of quiz answer indices
 });
 
@@ -184,3 +185,68 @@ export const clickEvents = mysqlTable("click_events", {
 
 export type ClickEvent = typeof clickEvents.$inferSelect;
 export type InsertClickEvent = typeof clickEvents.$inferInsert;
+
+export type VariantConfig = {
+  funnel: { step: string; page: string; template: string }[];
+  copy?: Record<string, string>;
+};
+
+export const experiments = mysqlTable("experiments", {
+  id: int("id").autoincrement().primaryKey(),
+  slug: varchar("slug", { length: 64 }).notNull().unique(),
+  name: varchar("name", { length: 128 }).notNull(),
+  hypothesis: text("hypothesis"),
+  status: mysqlEnum("status", ["draft", "running", "paused", "winner", "archived"]).notNull().default("draft"),
+  primaryMetric: varchar("primary_metric", { length: 64 }).notNull().default("affiliate_click"),
+  startedAt: timestamp("started_at"),
+  endedAt: timestamp("ended_at"),
+  winnerVariantId: int("winner_variant_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const experimentVariants = mysqlTable("experiment_variants", {
+  id: int("id").autoincrement().primaryKey(),
+  experimentId: int("experiment_id").notNull(),
+  name: varchar("name", { length: 32 }).notNull(),
+  label: varchar("label", { length: 128 }).notNull(),
+  trafficWeight: int("traffic_weight").notNull().default(50),
+  config: json("config").$type<VariantConfig>().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex("uq_exp_variant").on(t.experimentId, t.name),
+]);
+
+export const experimentAssignments = mysqlTable("experiment_assignments", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("session_id", { length: 64 }).notNull(),
+  experimentId: int("experiment_id").notNull(),
+  variantId: int("variant_id").notNull(),
+  assignedAt: timestamp("assigned_at").defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex("uq_session_experiment").on(t.sessionId, t.experimentId),
+  index("ix_assign_exp_variant").on(t.experimentId, t.variantId),
+]);
+
+export const experimentEvents = mysqlTable("experiment_events", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("session_id", { length: 64 }).notNull(),
+  experimentId: int("experiment_id").notNull(),
+  variantId: int("variant_id").notNull(),
+  event: varchar("event", { length: 48 }).notNull(),
+  page: varchar("page", { length: 128 }),
+  meta: json("meta").$type<Record<string, unknown>>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [
+  index("ix_evt_exp_variant_event").on(t.experimentId, t.variantId, t.event),
+  index("ix_evt_session").on(t.sessionId),
+  index("ix_evt_created").on(t.createdAt),
+]);
+
+export type Experiment = typeof experiments.$inferSelect;
+export type InsertExperiment = typeof experiments.$inferInsert;
+export type ExperimentVariant = typeof experimentVariants.$inferSelect;
+export type InsertExperimentVariant = typeof experimentVariants.$inferInsert;
+export type ExperimentAssignment = typeof experimentAssignments.$inferSelect;
+export type InsertExperimentAssignment = typeof experimentAssignments.$inferInsert;
+export type ExperimentEvent = typeof experimentEvents.$inferSelect;
+export type InsertExperimentEvent = typeof experimentEvents.$inferInsert;

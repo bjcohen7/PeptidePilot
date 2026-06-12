@@ -4,6 +4,8 @@ import { InsertUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _dbRetries = 0;
+const MAX_DB_RETRIES = 5;
 let affiliateWorkspaceBootstrap: Promise<void> | null = null;
 
 function extractMysqlRows<T>(result: unknown): T[] {
@@ -24,12 +26,13 @@ function extractMysqlRows<T>(result: unknown): T[] {
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  if (!_db && process.env.DATABASE_URL && _dbRetries < MAX_DB_RETRIES) {
     try {
       _db = drizzle(process.env.DATABASE_URL);
+      _dbRetries = 0;
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
-      _db = null;
+      _dbRetries += 1;
+      console.warn(`[Database] Failed to connect (attempt ${_dbRetries}/${MAX_DB_RETRIES}):`, error);
     }
   }
   return _db;
@@ -349,6 +352,10 @@ export async function ensureAffiliateWorkspaceSchema() {
       if (!(await hasColumn(db, "leads", "tokenExpiresAt"))) {
         await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `tokenExpiresAt` timestamp NULL"));
       }
+
+      if (!(await hasColumn(db, "leads", "source"))) {
+        await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `source` varchar(64)"));
+      }
     })().catch((error) => {
       affiliateWorkspaceBootstrap = null;
       throw error;
@@ -356,6 +363,111 @@ export async function ensureAffiliateWorkspaceSchema() {
   }
 
   await affiliateWorkspaceBootstrap;
+}
+
+let experimentSchemaBootstrap: Promise<void> | null = null;
+
+export async function ensureExperimentSchema() {
+  const db = await getDb();
+  if (!db) return;
+
+  if (!experimentSchemaBootstrap) {
+    experimentSchemaBootstrap = (async () => {
+      await db.execute(sql.raw(`
+        CREATE TABLE IF NOT EXISTS \`experiments\` (
+          \`id\` int AUTO_INCREMENT NOT NULL,
+          \`slug\` varchar(64) NOT NULL,
+          \`name\` varchar(128) NOT NULL,
+          \`hypothesis\` text,
+          \`status\` enum('draft','running','paused','winner','archived') NOT NULL DEFAULT 'draft',
+          \`primary_metric\` varchar(64) NOT NULL DEFAULT 'affiliate_click',
+          \`started_at\` timestamp NULL,
+          \`ended_at\` timestamp NULL,
+          \`winner_variant_id\` int,
+          \`created_at\` timestamp NOT NULL DEFAULT (now()),
+          CONSTRAINT \`experiments_id\` PRIMARY KEY(\`id\`),
+          UNIQUE KEY \`experiments_slug_unique\` (\`slug\`)
+        )
+      `));
+
+      await db.execute(sql.raw(`
+        CREATE TABLE IF NOT EXISTS \`experiment_variants\` (
+          \`id\` int AUTO_INCREMENT NOT NULL,
+          \`experiment_id\` int NOT NULL,
+          \`name\` varchar(32) NOT NULL,
+          \`label\` varchar(128) NOT NULL,
+          \`traffic_weight\` int NOT NULL DEFAULT 50,
+          \`config\` json NOT NULL,
+          \`created_at\` timestamp NOT NULL DEFAULT (now()),
+          CONSTRAINT \`experiment_variants_id\` PRIMARY KEY(\`id\`),
+          UNIQUE KEY \`uq_exp_variant\` (\`experiment_id\`, \`name\`)
+        )
+      `));
+
+      await db.execute(sql.raw(`
+        CREATE TABLE IF NOT EXISTS \`experiment_assignments\` (
+          \`id\` int AUTO_INCREMENT NOT NULL,
+          \`session_id\` varchar(64) NOT NULL,
+          \`experiment_id\` int NOT NULL,
+          \`variant_id\` int NOT NULL,
+          \`assigned_at\` timestamp NOT NULL DEFAULT (now()),
+          CONSTRAINT \`experiment_assignments_id\` PRIMARY KEY(\`id\`),
+          UNIQUE KEY \`uq_session_experiment\` (\`session_id\`, \`experiment_id\`),
+          KEY \`ix_assign_exp_variant\` (\`experiment_id\`, \`variant_id\`)
+        )
+      `));
+
+      await db.execute(sql.raw(`
+        CREATE TABLE IF NOT EXISTS \`experiment_events\` (
+          \`id\` int AUTO_INCREMENT NOT NULL,
+          \`session_id\` varchar(64) NOT NULL,
+          \`experiment_id\` int NOT NULL,
+          \`variant_id\` int NOT NULL,
+          \`event\` varchar(48) NOT NULL,
+          \`page\` varchar(128),
+          \`meta\` json,
+          \`created_at\` timestamp NOT NULL DEFAULT (now()),
+          CONSTRAINT \`experiment_events_id\` PRIMARY KEY(\`id\`),
+          KEY \`ix_evt_exp_variant_event\` (\`experiment_id\`, \`variant_id\`, \`event\`),
+          KEY \`ix_evt_session\` (\`session_id\`),
+          KEY \`ix_evt_created\` (\`created_at\`)
+        )
+      `));
+
+      await addColumnIfMissing(
+        db,
+        "page_visits",
+        "experimentId",
+        "\`experimentId\` int",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "page_visits",
+        "variantId",
+        "\`variantId\` int",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_clicks",
+        "experimentId",
+        "\`experimentId\` int",
+      );
+
+      await addColumnIfMissing(
+        db,
+        "affiliate_clicks",
+        "variantId",
+        "\`variantId\` int",
+      );
+    })().catch((error) => {
+      experimentSchemaBootstrap = null;
+      throw error;
+    });
+  }
+
+  await experimentSchemaBootstrap;
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {

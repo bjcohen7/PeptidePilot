@@ -1,4 +1,5 @@
-import { Activity, Check, ExternalLink, ListChecks, Mail, Search, Sparkles, Trash2, X } from "lucide-react";
+import { useState } from "react";
+import { Activity, ArrowDown, Check, ExternalLink, ListChecks, Mail, Search, Sparkles, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
@@ -47,14 +48,28 @@ function formatRate(numerator: number, denominator: number) {
   return `${Math.round((numerator / denominator) * 100)}%`;
 }
 
+const TIME_RANGES = [
+  { value: "today" as const, label: "Today" },
+  { value: "yesterday" as const, label: "Yesterday" },
+  { value: "last7" as const, label: "Last 7 days" },
+  { value: "last30" as const, label: "Last 30 days" },
+  { value: "all" as const, label: "All time" },
+];
+
 export default function InsightsOverview() {
   const utils = trpc.useUtils();
-  const summary = trpc.analytics.summary.useQuery(undefined, {
+  const [timeRange, setTimeRange] = useState<string>("all");
+  const summary = trpc.analytics.summary.useQuery({ timeRange }, {
     retry: false,
     refetchOnWindowFocus: true,
     refetchInterval: 10000,
   });
   const sessions = trpc.analytics.recentSessions.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: true,
+    refetchInterval: 10000,
+  });
+  const funnel = trpc.analytics.funnel.useQuery({ timeRange }, {
     retry: false,
     refetchOnWindowFocus: true,
     refetchInterval: 10000,
@@ -139,6 +154,24 @@ export default function InsightsOverview() {
         </p>
       </div>
 
+      {/* Time range selector */}
+      <div className="flex flex-wrap gap-2">
+        {TIME_RANGES.map((r) => (
+          <button
+            key={r.value}
+            type="button"
+            onClick={() => setTimeRange(r.value)}
+            className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${
+              timeRange === r.value
+                ? "border-accent bg-accent/10 text-accent"
+                : "border-border text-muted-foreground hover:border-accent/50 hover:text-foreground"
+            }`}
+          >
+            {r.label}
+          </button>
+        ))}
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {cards.map((card) => (
           <div key={card.label} className={cardClass()}>
@@ -154,6 +187,54 @@ export default function InsightsOverview() {
             <p className="mt-3 text-xs text-muted-foreground">{card.note}</p>
           </div>
         ))}
+      </div>
+
+      {/* Funnel Card */}
+      <div className={cardClass()}>
+        <div className="flex items-center gap-2 mb-4">
+          <ArrowDown className="h-4 w-4 text-accent" />
+          <h2 className="text-lg font-semibold">Conversion Funnel</h2>
+        </div>
+        <p className="text-sm text-muted-foreground mb-5">How far visitors make it through the full path. Each stage counts sessions that visited that page.</p>
+        <div className="space-y-2.5">
+          {(funnel.data?.stages ?? []).map((stage, index) => {
+            const maxCount = funnel.data?.stages[0]?.count ?? 1;
+            const barPct = maxCount ? Math.max(2, (stage.count / maxCount) * 100) : 0;
+            return (
+              <div key={stage.path} className="flex items-center gap-3">
+                <div className="w-28 shrink-0 text-xs text-right text-muted-foreground">{stage.label}</div>
+                <div className="flex-1 flex items-center gap-2">
+                  <div
+                    className="h-5 rounded-sm transition-all"
+                    style={{
+                      width: `${barPct}%`,
+                      background:
+                        index === 0
+                          ? "linear-gradient(135deg, #38bdf8, #0d9488)"
+                          : index === funnel.data!.stages.length - 1
+                            ? "linear-gradient(135deg, #0d9488, #059669)"
+                            : `linear-gradient(135deg, rgba(56,189,248,${0.9 - index * 0.12}), rgba(13,148,136,${0.9 - index * 0.12}))`,
+                    }}
+                  />
+                  <span className="text-xs font-medium text-foreground w-12 text-right tabular-nums">{stage.count}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">{stage.pctOfTotal}%</span>
+                </div>
+                {index > 0 && stage.droppedFromPrevious > 0 ? (
+                  <div className="w-20 shrink-0 text-xs text-right text-rose-500 tabular-nums">
+                    -{stage.droppedFromPrevious} ({stage.pctDropped}%)
+                  </div>
+                ) : (
+                  <div className="w-20 shrink-0" />
+                )}
+              </div>
+            );
+          })}
+        </div>
+        {!funnel.data?.stages.length ? (
+          <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+            Funnel data will populate once visitors move through the site.
+          </div>
+        ) : null}
       </div>
 
       <div className={cardClass()}>

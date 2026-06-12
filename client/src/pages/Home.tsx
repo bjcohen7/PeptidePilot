@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   ShieldCheck,
-  FlaskConical,
+  BadgeCheck,
   Star,
   ArrowRight,
   CheckCircle2,
@@ -22,26 +22,26 @@ import { preloadQuizExperience } from "@/lib/preloadQuiz";
 const SITE_URL = "https://www.peptidepilot.me";
 
 const TRUST_BADGES = [
-  { icon: ShieldCheck, label: "Independent & Unbiased" },
-  { icon: FlaskConical, label: "Science-Backed" },
-  { icon: Star, label: "Free Analysis" },
+  { icon: ShieldCheck, label: "Independent & unbiased" },
+  { icon: BadgeCheck, label: "Licensed US providers" },
+  { icon: Star, label: "Free, no email to start" },
 ];
 
 const HOW_IT_WORKS = [
   {
     step: "01",
-    title: "Take the Quiz",
-    description: "Answer 10 targeted questions about weight loss, appetite, recovery, and real-world fit. Takes just a few minutes.",
+    title: "Take the quiz",
+    description: "Answer 22 questions about your goals, symptoms, medical context, and readiness. Takes about 4 minutes.",
   },
   {
     step: "02",
-    title: "Get Your Profile",
-    description: "Our algorithm weighs metabolic, body-composition, hormone, and recovery signals to find your strongest peptide matches.",
+    title: "Get your match",
+    description: "A compatibility match — primary recommendation with a real score, plus optional complements like BPC-157 if they fit your profile.",
   },
   {
     step: "03",
-    title: "Review Your Plan",
-    description: "Receive personalized, unbiased recommendations and trusted sourcing options.",
+    title: "Review your plan",
+    description: "Vetted licensed providers — board-certified, transparent pricing, no paid placements.",
   },
 ];
 
@@ -91,8 +91,8 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <Seo
-        title="Personalized Peptide Recommendations"
-        description="Take the free 5-minute PeptidePilot quiz to get independent, science-backed peptide recommendations tailored to your goals, biology, and lifestyle."
+        title="PeptidePilot — GLP-1 matching, from your couch in minutes. 100% independent."
+        description="Get matched to GLP-1 therapy in minutes. A short intake finds the right protocol for your body and connects you to a vetted licensed provider — no doctor's office, no waiting. 100% independent."
         path="/"
         type="website"
         jsonLd={{
@@ -100,7 +100,7 @@ export default function Home() {
           "@type": "WebSite",
           name: "PeptidePilot",
           description:
-            "Independent peptide research and personalized peptide matching based on your goals, biology, and lifestyle.",
+            "Get matched to GLP-1 therapy in minutes. A short intake finds the right protocol for your body and connects you to a vetted licensed provider — no doctor's office, no waiting. 100% independent.",
           url: `${SITE_URL}/`,
         }}
       />
@@ -116,19 +116,19 @@ export default function Home() {
           {/* Social proof chip */}
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-6 sm:mb-8">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
-            Trusted by thousands of health-focused individuals
+            Trusted by thousands matching to GLP-1
           </div>
 
           <h1
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal leading-tight mb-5 sm:mb-6 max-w-3xl mx-auto"
             style={{ fontFamily: "'DM Serif Display', serif" }}
           >
-            Struggling to Optimize Your Health and Performance?
+            Get matched to GLP-1 therapy in minutes — from your couch.
           </h1>
 
           <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
-            Discover the specific peptides matched to your unique biology, goals, and lifestyle.{" "}
-            <span className="text-white font-semibold">100% independent analysis.</span>
+            A short intake finds the right GLP-1 protocol for your body and connects you to a licensed provider — no doctor's office, no waiting.{" "}
+            <span className="text-white font-semibold">100% independent.</span>
           </p>
 
           <Link href="/quiz">
@@ -139,7 +139,7 @@ export default function Home() {
               onFocus={() => preloadQuizExperience()}
               onTouchStart={() => preloadQuizExperience()}
             >
-              Take the 5-Minute Quiz
+              Take the 4-minute quiz
               <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Button>
           </Link>
@@ -162,7 +162,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-10 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-accent flex-shrink-0" />
-              <span><strong className="text-foreground">10 questions</strong> built for weight-loss and metabolic fit</span>
+              <span><strong className="text-foreground">Match in minutes</strong>, not a doctor's office visit</span>
             </div>
             <div className="hidden sm:block w-px h-4 bg-border" />
             <div className="flex items-center gap-2">
@@ -172,7 +172,7 @@ export default function Home() {
             <div className="hidden sm:block w-px h-4 bg-border" />
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-accent flex-shrink-0" />
-              <span>Connected to <strong className="text-foreground">vetted telehealth providers</strong></span>
+              <span>Connected to <strong className="text-foreground">vetted licensed providers</strong></span>
             </div>
           </div>
         </div>
@@ -184,10 +184,10 @@ export default function Home() {
           <div className="text-center mb-10 sm:mb-14">
             <div className="section-badge mb-4">How It Works</div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
-              Your Personalized Protocol in 3 Steps
+              Your match in 3 steps
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base px-2">
-              No guesswork. No bias. Just a faster analysis of your biology matched to the most relevant peptide research.
+              No guesswork. No paid placements. A short intake, an honest match, and a path to a real licensed provider.
             </p>
           </div>
 
@@ -216,7 +216,7 @@ export default function Home() {
           <div className="text-center mt-10 sm:mt-12">
             <Link href="/quiz">
               <Button size="lg" className="bg-brand-gradient text-white hover:opacity-90 font-semibold px-8 py-5 sm:py-6 h-auto rounded-xl w-full sm:w-auto" onMouseEnter={() => preloadQuizExperience()} onFocus={() => preloadQuizExperience()} onTouchStart={() => preloadQuizExperience()}>
-                Start Your Free Analysis
+                Start the quiz
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </Link>

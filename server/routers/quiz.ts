@@ -4,11 +4,8 @@ import { publicProcedure, router } from "../_core/trpc";
 import { ensureAffiliateWorkspaceSchema, getDb } from "../db";
 import { leads, affiliateClicks, visitorSessions } from "../../drizzle/schema";
 import {
-  BUDGET_OPTIONS,
   calculateMatches,
   determineTier,
-  PRIMARY_GOAL_OPTIONS,
-  QUIZ_INDEX,
   QUIZ_QUESTIONS,
   toReturningMatchSummary,
 } from "../../shared/scoring";
@@ -59,7 +56,8 @@ async function insertLead(
       consentGiven,
       consentTimestamp,
       ipAddress,
-      rawQuizData
+      rawQuizData,
+      source
     ) values (
       ${values.id},
       ${values.email},
@@ -71,7 +69,8 @@ async function insertLead(
       ${values.consentGiven},
       ${values.consentTimestamp},
       ${values.ipAddress},
-      ${JSON.stringify(values.rawQuizData)}
+      ${JSON.stringify(values.rawQuizData)},
+      ${values.source ?? null}
     )
   `);
   return true;
@@ -106,7 +105,11 @@ function createTokenExpiry() {
 
 function decodeLeadAnswers(rawQuizData: unknown) {
   if (!Array.isArray(rawQuizData)) return [];
-  return rawQuizData.map((value) => (typeof value === "number" ? value : -1));
+  return rawQuizData.map((value) => {
+    if (Array.isArray(value)) return value.filter((v) => typeof v === "number");
+    if (typeof value === "number") return value;
+    return -1;
+  });
 }
 
 function buildReturningTopMatches(rawQuizData: unknown) {
@@ -161,9 +164,11 @@ export const quizRouter = router({
       }
 
       const answers = Array.isArray(lead.rawQuizData)
-        ? lead.rawQuizData.map((value) =>
-            typeof value === "number" && Number.isFinite(value) ? value : -1,
-          )
+        ? lead.rawQuizData.map((value) => {
+            if (Array.isArray(value)) return value.filter((v) => typeof v === "number" && Number.isFinite(v));
+            if (typeof value === "number" && Number.isFinite(value)) return value;
+            return -1;
+          })
         : [];
       if (answers.length !== QUIZ_QUESTIONS.length) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Returning session not found." });
@@ -184,7 +189,7 @@ export const quizRouter = router({
       z.object({
         email: z.string().email().optional().nullable(),
         consentGiven: z.boolean().optional().default(false),
-        answers: z.array(z.number().int().min(-1)).length(QUIZ_QUESTIONS.length),
+        answers: z.array(z.union([z.number().int(), z.array(z.number().int())])).length(QUIZ_QUESTIONS.length),
         sessionId: z.string().min(8).max(64).optional().nullable(),
         meta: z
           .object({
@@ -210,17 +215,14 @@ export const quizRouter = router({
         throw new Error("Consent is required to submit.");
       }
 
-      await ensureAffiliateWorkspaceSchema();
-
       const matches = calculateMatches(answers);
       const topMatches = matches.slice(0, 5).map((m) => m.peptide.id);
       const topPeptideMatch = topMatches[0] ?? "unknown";
-      const tier = determineTier(answers);
+      const tier = determineTier(answers as number[]);
 
       const ageRange = "not-captured";
-      const primaryGoal =
-        PRIMARY_GOAL_OPTIONS[answers[QUIZ_INDEX.PRIMARY_GOAL] ?? -1] ?? "unknown";
-      const budget = BUDGET_OPTIONS[answers[QUIZ_INDEX.BUDGET] ?? -1] ?? "unknown";
+      const primaryGoal = typeof answers[0] === "number" ? String(answers[0]) : "multi";
+      const budget = "not-captured";
       const isGlp1Lead = topPeptideMatch === "semaglutide";
 
       const ipAddress =
@@ -450,9 +452,8 @@ export const quizRouter = router({
         "unknown";
 
       const ageRange = "not-captured";
-      const primaryGoal =
-        PRIMARY_GOAL_OPTIONS[answers[QUIZ_INDEX.PRIMARY_GOAL] ?? -1] ?? "unknown";
-      const budget = BUDGET_OPTIONS[answers[QUIZ_INDEX.BUDGET] ?? -1] ?? "unknown";
+      const primaryGoal = typeof answers[0] === "number" ? String(answers[0]) : "multi";
+      const budget = "not-captured";
 
       const webhookPayload = {
         leadId,
@@ -529,23 +530,66 @@ export const quizRouter = router({
       return { status: "success" as const };
     }),
 
+  submitOffRampEmail: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      await ensureAffiliateWorkspaceSchema();
+
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available." });
+      }
+
+      const leadId = nanoid();
+      const ipAddress =
+        (ctx.req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+        (ctx.req.socket as { remoteAddress?: string })?.remoteAddress ||
+        "unknown";
+
+      await db.execute(sql`
+        insert into leads (
+          id, email, ageRange, primaryGoal, budget, topPeptideMatch, tier,
+          consentGiven, consentTimestamp, ipAddress, rawQuizData, source
+        ) values (
+          ${leadId},
+          ${input.email.trim().toLowerCase()},
+          'not-captured', 'offramp', 'not-captured', 'none', 2,
+          true, ${new Date()},
+          ${ipAddress},
+          '[]',
+          'glp1_offramp'
+        )
+      `);
+
+      return { status: "success" as const, leadId };
+    }),
+
   trackAffiliateClick: publicProcedure
     .input(
       z.object({
         leadId: z.string(),
         peptideId: z.string(),
         vendor: z.string(),
+        experimentId: z.number().optional(),
+        variantId: z.number().optional(),
       })
     )
     .mutation(async ({ input }) => {
       await ensureAffiliateWorkspaceSchema();
       const db = await getDb();
       if (db) {
-        await db.insert(affiliateClicks).values({
+        const values: Record<string, unknown> = {
           leadId: input.leadId,
           peptideId: input.peptideId,
           vendor: input.vendor,
-        });
+        };
+        if (input.experimentId !== undefined) values.experimentId = input.experimentId;
+        if (input.variantId !== undefined) values.variantId = input.variantId;
+        await db.insert(affiliateClicks).values(values as any);
       }
 
       // Fire-and-forget Telegram notification — never blocks the response

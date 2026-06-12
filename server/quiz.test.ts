@@ -13,18 +13,17 @@ import type { TrpcContext } from "./_core/context";
 // ── Scoring Engine Tests ───────────────────────────────────────────────────────
 
 describe("scoring engine", () => {
-  it("QUIZ_QUESTIONS has exactly 10 questions", () => {
-    expect(QUIZ_QUESTIONS).toHaveLength(10);
+  it("QUIZ_QUESTIONS has exactly 22 questions", () => {
+    expect(QUIZ_QUESTIONS).toHaveLength(22);
   });
 
-  it("scoreMaps has exactly 10 entries", () => {
-    expect(scoreMaps).toHaveLength(10);
+  it("scoreMaps has exactly 22 entries", () => {
+    expect(scoreMaps).toHaveLength(22);
   });
 
   it("each question has at least 2 options", () => {
     for (const q of QUIZ_QUESTIONS) {
       expect(q.options.length).toBeGreaterThanOrEqual(2);
-      expect(q.section).toBeTruthy();
       expect(q.question).toBeTruthy();
     }
   });
@@ -53,7 +52,7 @@ describe("scoring engine", () => {
   });
 
   it("calculateMatches returns all 12 peptides sorted by score descending", () => {
-    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
+    const answers: (number | number[])[] = new Array(QUIZ_QUESTIONS.length).fill(0);
     const results = calculateMatches(answers);
     expect(results).toHaveLength(12);
     for (let i = 1; i < results.length; i++) {
@@ -62,7 +61,7 @@ describe("scoring engine", () => {
   });
 
   it("calculateMatches returns matchPercent between 0 and 100", () => {
-    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
+    const answers: (number | number[])[] = new Array(QUIZ_QUESTIONS.length).fill(0);
     const results = calculateMatches(answers);
     for (const r of results) {
       expect(r.matchPercent).toBeGreaterThanOrEqual(0);
@@ -71,37 +70,16 @@ describe("scoring engine", () => {
   });
 
   it("top match has matchPercent of 100", () => {
-    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
+    const answers: (number | number[])[] = new Array(QUIZ_QUESTIONS.length).fill(0);
     const results = calculateMatches(answers);
     expect(results[0].matchPercent).toBe(100);
   });
 
-  it("muscle-preserving answers keep muscle-support peptides near the top", () => {
-    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
-    answers[0] = 3; // Preserve muscle while leaning out
-    answers[4] = 3; // 5+ workouts
-    answers[5] = 4; // recomposition focus
-    const results = calculateMatches(answers);
-    const topFive = results.slice(0, 5).map((r) => r.peptide.id);
-    const muscleIds = ["ipamorelin_cjc1295", "sermorelin", "bpc157", "tb500"];
-    expect(topFive.some((id) => muscleIds.includes(id))).toBe(true);
-  });
-
-  it("poor sleep signals boost sleep-related peptides", () => {
-    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
-    answers[6] = 0; // poor sleep
-    const results = calculateMatches(answers);
-    const sleepIds = ["dsip", "sermorelin", "epithalon"];
-    const topFive = results.slice(0, 5).map((r) => r.peptide.id);
-    const hasSleepPeptide = topFive.some((id) => sleepIds.includes(id));
-    expect(hasSleepPeptide).toBe(true);
-  });
-
   it("fat-loss answers boost metabolic peptides", () => {
-    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
-    answers[0] = 0; // Lose body fat
-    answers[2] = 1; // food noise
-    answers[3] = 0; // appetite / portion control
+    const answers: (number | number[])[] = new Array(QUIZ_QUESTIONS.length).fill(0);
+    answers[0] = 0; // I want to lose weight
+    answers[3] = 0; // food noise is always there
+    answers[8] = 0; // "I eat past full"
     const results = calculateMatches(answers);
     const metabolicIds = ["semaglutide", "mots_c"];
     const topFive = results.slice(0, 5).map((r) => r.peptide.id);
@@ -109,47 +87,38 @@ describe("scoring engine", () => {
     expect(hasMetabolicPeptide).toBe(true);
   });
 
-  it("initAspects returns all zeros", () => {
+  it("multi-select answers sum deltas across selected indices", () => {
+    const answers: (number | number[])[] = new Array(QUIZ_QUESTIONS.length).fill(0);
+    answers[13] = [0, 1, 3]; // Q14: calorie counting + keto + exercise
+    const results = calculateMatches(answers);
+    expect(results[0].score).toBeGreaterThan(0);
+  });
+
+  it("initAspects returns all zeros and excludes removed aspects", () => {
     const aspects = initAspects();
     for (const val of Object.values(aspects)) {
       expect(val).toBe(0);
     }
+    expect((aspects as any).bmi_qualifies).toBeUndefined();
+    expect((aspects as any).glp1_budget).toBeUndefined();
+    expect((aspects as any).insurance).toBeUndefined();
   });
 });
 
 // ── Tier Determination Tests ───────────────────────────────────────────────────
 
 describe("determineTier", () => {
-  it("returns tier 1 for older, hormone-context, premium-budget users when premium matches win", () => {
+  it("always returns tier 2", () => {
     const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
-    answers[0] = 4; // long-term health
-    answers[7] = 1; // menopause / hormone context
-    answers[8] = 4; // flexible budget
-    const tier = determineTier(answers);
-    expect([1, 2]).toContain(tier);
+    expect(determineTier(answers)).toBe(2);
   });
 
-  it("returns tier 2 for standard budget", () => {
-    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
-    answers[8] = 1;
-    const tier = determineTier(answers);
-    expect(tier).toBe(2);
-  });
-
-  it("returns tier 3 for lowest budget tier", () => {
-    const answers = new Array(QUIZ_QUESTIONS.length).fill(0);
-    answers[8] = 0;
-    const tier = determineTier(answers);
-    expect(tier).toBe(3);
-  });
-
-  it("always returns 1, 2, or 3", () => {
+  it("returns 2 regardless of input", () => {
     for (let i = 0; i < 10; i++) {
-      const answers = QUIZ_QUESTIONS.map((question) =>
-        Math.floor(Math.random() * question.options.length),
+      const answers = QUIZ_QUESTIONS.map((q) =>
+        Math.floor(Math.random() * q.options.length),
       );
-      const tier = determineTier(answers);
-      expect([1, 2, 3]).toContain(tier);
+      expect(determineTier(answers)).toBe(2);
     }
   });
 });
@@ -240,5 +209,22 @@ describe("quiz.submitQuiz", () => {
     expect(result.leadId.length).toBeGreaterThan(0);
     expect(Array.isArray(result.topMatches)).toBe(true);
     expect(result.topMatches.length).toBeGreaterThan(0);
+  });
+
+  it("accepts multi-select answers in array format", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const answers: (number | number[])[] = new Array(QUIZ_QUESTIONS.length).fill(0);
+    answers[13] = [0, 1, 2]; // multi-select at Q14
+    answers[15] = [0, 3];    // multi-select at Q16
+
+    const result = await caller.quiz.submitQuiz({
+      email: "test@example.com",
+      consentGiven: true,
+      answers,
+    });
+
+    expect(result.status).toBe("success");
   });
 });

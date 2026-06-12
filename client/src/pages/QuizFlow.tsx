@@ -1,146 +1,85 @@
-import { useEffect, useCallback, useMemo, useRef, useState } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useQuiz } from "@/contexts/QuizContext";
 import { useSwipe } from "@/hooks/useSwipe";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
+import ContraindicationOffRamp from "@/components/bridge/ContraindicationOffRamp";
 import { preloadProcessing, preloadResults } from "@/lib/preloadQuiz";
-import {
-  PRIMARY_GOAL_OPTIONS,
-  QUIZ_INDEX,
-  QUIZ_QUESTIONS,
-} from "../../../shared/scoring";
+import { QUIZ_QUESTIONS } from "../../../shared/scoring";
+import { useExperimentEvent } from "@/contexts/ExperimentContext";
 
 type Direction = "forward" | "backward";
 
-const WEIGHT_LOSS_GOAL_INDEX = PRIMARY_GOAL_OPTIONS.indexOf(
-  "Lose body fat and improve body composition",
-);
+// Indices of multi-select questions (0-indexed)
+const MULTI_SELECT_INDICES = new Set([13, 15, 16]); // Q14, Q16, Q17
+const TOP_TWO_INDEX = 19; // Q20
 
-const SECTION_BREATHERS: Record<
-  string,
-  { label: string; headline: string; body: string }
-> = {
-  "Body & Fitness": {
-    label: "Body Composition",
-    headline: "Individual biology determines individual outcomes.",
-    body: "The same peptide protocol can produce meaningfully different results across individuals. This assessment evaluates your goals, physiology, and lifestyle in combination — not any single factor in isolation.",
-  },
-  "Metabolic Health": {
-    label: "Metabolic Health",
-    headline: "Prescription GLP-1 fit depends on more than just weight-loss interest.",
-    body: "For weight-loss users, we add a short eligibility layer so your results can better distinguish metabolic-health candidates from general fat-loss support options.",
-  },
-  "Age & Hormones": {
-    label: "Endocrine Health",
-    headline: "Hormones govern nearly every physiological process.",
-    body: "Peptides interact directly with the endocrine system. Accurately mapping your hormonal profile is essential to identifying protocols with the highest probability of clinical relevance for your specific situation.",
-  },
-  "Sleep & Recovery": {
-    label: "Recovery & Regeneration",
-    headline: "Restorative sleep is a primary driver of tissue repair.",
-    body: "Sleep quality influences growth hormone secretion, inflammatory regulation, and cellular regeneration. Targeted peptide support can meaningfully improve the depth and efficiency of your recovery cycles.",
-  },
-  "Pain & Injury": {
-    label: "Musculoskeletal Health",
-    headline: "Regenerative peptides operate at the cellular level.",
-    body: "Compounds such as BPC-157 and TB-500 have demonstrated tissue-repair and anti-inflammatory properties in preclinical and clinical research. Understanding the nature and history of your injury guides accurate protocol selection.",
-  },
-  "Cognition & Mood": {
-    label: "Neurological Function",
-    headline: "Cognitive performance is a measurable, trainable variable.",
-    body: "Select peptides support neuroplasticity, neurotransmitter regulation, and cerebral blood flow. This section establishes your cognitive baseline so the algorithm can weight neuroprotective compounds appropriately.",
-  },
-  "Skin, Hair & Appearance": {
-    label: "Dermal & Aesthetic Health",
-    headline: "Biological aging is a process that can be modulated.",
-    body: "Collagen-stimulating peptides and growth-factor analogs have demonstrated measurable effects on dermal thickness, hair follicle cycling, and tissue elasticity. Your responses here refine the aesthetic component of your match.",
-  },
-  "Lifestyle & Preferences": {
-    label: "Final Section",
-    headline: "Practical factors determine long-term adherence.",
-    body: "Protocol compliance is as important as protocol selection. This final section captures your lifestyle context and preferences so your matches reflect what you will realistically sustain — not just what is theoretically optimal.",
-  },
-};
+// Q17 contraindication indices
+const PREGNANCY_INDEX = 0;
+const MTC_INDEX = 1;
 
-const BREATHER_SECTIONS = new Set([
-  "Metabolic Health",
-  "Age & Hormones",
-  "Cognition & Mood",
-  "Lifestyle & Preferences",
-]);
-
-function getVisibleQuestionIndices(isWeightLossGoal: boolean): number[] {
-  return QUIZ_QUESTIONS.map((_, index) => index).filter((index) => {
-    if (isWeightLossGoal) return true;
-    return (
-      index !== QUIZ_INDEX.GLP1_BMI && index !== QUIZ_INDEX.GLP1_INSURANCE
-    );
-  });
+function isMultiSelect(index: number) {
+  return MULTI_SELECT_INDICES.has(index);
 }
 
-function getBreatherIndices(questionIndices: number[]): Set<number> {
-  const indices = new Set<number>();
-  let lastSection = QUIZ_QUESTIONS[questionIndices[0] ?? 0]?.section ?? "";
-  for (let i = 1; i < questionIndices.length; i++) {
-    const section = QUIZ_QUESTIONS[questionIndices[i] ?? 0]?.section ?? "";
-    if (section !== lastSection && BREATHER_SECTIONS.has(section)) {
-      indices.add(i);
-    }
-    if (section !== lastSection) {
-      lastSection = section;
-    }
-  }
-  return indices;
+function isTopTwo(index: number) {
+  return index === TOP_TWO_INDEX;
+}
+
+function hasContraindication(answer: number[]): boolean {
+  return answer.includes(PREGNANCY_INDEX) || answer.includes(MTC_INDEX);
 }
 
 export default function QuizFlow() {
   const [, navigate] = useLocation();
-  const {
-    state,
-    selectAnswer,
-    goTo,
-    completeQuiz,
-    currentQuestion,
-  } = useQuiz();
+  const { state, selectAnswer, goTo, completeQuiz, currentQuestion } = useQuiz();
+  const trackExp = useExperimentEvent();
 
   const { currentIndex, answers, isComplete } = state;
-  const isWeightLossGoal = answers[QUIZ_INDEX.PRIMARY_GOAL] === WEIGHT_LOSS_GOAL_INDEX;
-  const visibleQuestionIndices = useMemo(
-    () => getVisibleQuestionIndices(isWeightLossGoal),
-    [isWeightLossGoal],
-  );
-  const breatherIndices = useMemo(
-    () => getBreatherIndices(visibleQuestionIndices),
-    [visibleQuestionIndices],
-  );
-  const totalQuestions = visibleQuestionIndices.length;
-  const currentVisibleIndex = Math.max(
-    0,
-    visibleQuestionIndices.indexOf(currentIndex),
-  );
-  const selectedAnswer = answers[currentIndex];
-  const isFirst = currentVisibleIndex === 0;
 
-  const currentSectionQuestions = visibleQuestionIndices.filter(
-    (index) => QUIZ_QUESTIONS[index]?.section === currentQuestion.section,
-  ).length;
-  const currentSectionIndex = visibleQuestionIndices
-    .slice(0, currentVisibleIndex + 1)
-    .filter((index) => QUIZ_QUESTIONS[index]?.section === currentQuestion.section)
-    .length;
+  const totalQuestions = QUIZ_QUESTIONS.length;
+  const isFirst = currentIndex === 0;
+  const multiSelect = isMultiSelect(currentIndex);
+  const topTwo = isTopTwo(currentIndex);
 
-  const nextQuestionIndex = visibleQuestionIndices[currentVisibleIndex + 1];
-  const previousQuestionIndex = visibleQuestionIndices[currentVisibleIndex - 1];
-
-  const [showBreather, setShowBreather] = useState(false);
-  const [breatherSection, setBreatherSection] = useState<string>("");
+  const [showOffRamp, setShowOffRamp] = useState(false);
 
   const [animClass, setAnimClass] = useState<string>("quiz-slide-enter-forward");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const directionRef = useRef<Direction>("forward");
   const prevIndexRef = useRef(currentIndex);
+  const quizStartedRef = useRef(false);
+  const prevQuestionRef = useRef(currentIndex);
+
+  useEffect(() => {
+    if (!quizStartedRef.current) {
+      quizStartedRef.current = true;
+      trackExp("quiz_start");
+    }
+  }, [trackExp]);
+
+  useEffect(() => {
+    if (currentIndex !== prevQuestionRef.current && currentIndex > 0) {
+      prevQuestionRef.current = currentIndex;
+      trackExp("quiz_question", { question: currentIndex + 1 });
+    }
+  }, [currentIndex, trackExp]);
+
+  useEffect(() => {
+    if (isComplete) {
+      trackExp("quiz_complete");
+    }
+  }, [isComplete, trackExp]);
+
+  // Refs to avoid stale closures in callbacks
+  const answersRef = useRef(answers);
+  answersRef.current = answers;
+  const currentIndexRef = useRef(currentIndex);
+  currentIndexRef.current = currentIndex;
+
+  const [pulseIndex, setPulseIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (currentIndex !== prevIndexRef.current) {
@@ -155,12 +94,6 @@ export default function QuizFlow() {
     void preloadProcessing();
     void preloadResults();
   }, []);
-
-  useEffect(() => {
-    if (!visibleQuestionIndices.includes(currentIndex)) {
-      goTo(visibleQuestionIndices[0] ?? 0);
-    }
-  }, [currentIndex, goTo, visibleQuestionIndices]);
 
   useEffect(() => {
     if (isComplete) {
@@ -181,95 +114,133 @@ export default function QuizFlow() {
     [isTransitioning],
   );
 
-  const moveForward = useCallback(() => {
-    if (typeof nextQuestionIndex === "number") {
-      goTo(nextQuestionIndex);
-      return;
+  const advance = useCallback(() => {
+    if (currentIndex < totalQuestions - 1) {
+      goTo(currentIndex + 1);
+    } else {
+      completeQuiz();
     }
-    completeQuiz();
-  }, [completeQuiz, goTo, nextQuestionIndex]);
+  }, [currentIndex, totalQuestions, goTo, completeQuiz]);
 
-  const moveBackward = useCallback(() => {
-    if (typeof previousQuestionIndex === "number") {
-      goTo(previousQuestionIndex);
+  const goBack = useCallback(() => {
+    if (currentIndex > 0) {
+      goTo(currentIndex - 1);
     }
-  }, [goTo, previousQuestionIndex]);
+  }, [currentIndex, goTo]);
 
-  const handleSelectAnswer = useCallback(
+  // ── Single-select handler ──────────────────────────────────────────────
+
+  const handleSingleSelect = useCallback(
     (idx: number) => {
-      if (isTransitioning || selectedAnswer !== null) return;
-      const targetVisibleIndex = currentVisibleIndex + 1;
-      const targetQuestionIndex = visibleQuestionIndices[targetVisibleIndex];
-      const shouldShowBreather =
-        typeof targetQuestionIndex === "number" &&
-        breatherIndices.has(targetVisibleIndex);
-
+      if (isTransitioning) return;
+      const val = answersRef.current[currentIndexRef.current];
+      if (val !== null) return;
       selectAnswer(idx);
+      setTimeout(() => {
+        triggerAdvance("forward", advance);
+      }, 320);
+    },
+    [isTransitioning, selectAnswer, triggerAdvance, advance],
+  );
 
-      if (shouldShowBreather) {
-        const nextSection = QUIZ_QUESTIONS[targetQuestionIndex]?.section ?? "";
-        setTimeout(() => {
-          setBreatherSection(nextSection);
-          setShowBreather(true);
-          setIsTransitioning(false);
-        }, 320);
+  // ── Multi-select helpers ───────────────────────────────────────────────
+
+  const getCurrentMulti = useCallback((): number[] => {
+    const val = answersRef.current[currentIndexRef.current];
+    return Array.isArray(val) ? val : [];
+  }, []);
+
+  const handleMultiToggle = useCallback(
+    (idx: number) => {
+      if (isTransitioning) return;
+      const current: number[] = getCurrentMulti();
+      const ci = currentIndexRef.current;
+
+      if (topTwo) {
+        // Q20: top-2 behavior
+        if (current.includes(idx)) {
+          const next = current.filter((i) => i !== idx);
+          selectAnswer(next);
+          return;
+        }
+        if (current.length >= 2) {
+          setPulseIndex(idx);
+          setTimeout(() => setPulseIndex(null), 300);
+          return;
+        }
+        const next = [...current, idx];
+        selectAnswer(next);
+        if (next.length === 2) {
+          setTimeout(() => {
+            triggerAdvance("forward", advance);
+          }, 400);
+        }
         return;
       }
 
-      setTimeout(() => {
-        if (typeof targetQuestionIndex === "number") {
-          triggerAdvance("forward", () => goTo(targetQuestionIndex));
-          return;
-        }
-
-        triggerAdvance("forward", completeQuiz);
-      }, 320);
+      // Regular multi-select
+      const optionsLen = QUIZ_QUESTIONS[ci]?.options.length ?? 0;
+      const isNoneIndex = optionsLen - 1;
+      if (idx === isNoneIndex) {
+        selectAnswer([idx]);
+        return;
+      }
+      if (current.includes(isNoneIndex)) {
+        selectAnswer([idx]);
+        return;
+      }
+      if (current.includes(idx)) {
+        selectAnswer(current.filter((i) => i !== idx));
+      } else {
+        selectAnswer([...current, idx]);
+      }
     },
-    [
-      breatherIndices,
-      completeQuiz,
-      currentVisibleIndex,
-      goTo,
-      isTransitioning,
-      selectedAnswer,
-      selectAnswer,
-      triggerAdvance,
-      visibleQuestionIndices,
-    ],
+    [isTransitioning, selectAnswer, topTwo, triggerAdvance, advance, getCurrentMulti],
   );
 
-  const handleBreatherContinue = useCallback(() => {
-    setShowBreather(false);
-    setTimeout(() => {
-      triggerAdvance("forward", moveForward);
-    }, 80);
-  }, [triggerAdvance, moveForward]);
+  // ── Multi-select continue ──────────────────────────────────────────────
+
+  const handleMultiContinue = useCallback(() => {
+    const current = getCurrentMulti();
+    const ci = currentIndexRef.current;
+    if (current.length === 0 || isTransitioning) return;
+
+    // Q17: check for contraindications
+    if (ci === 16 && hasContraindication(current)) {
+      setShowOffRamp(true);
+      return;
+    }
+
+    triggerAdvance("forward", advance);
+  }, [isTransitioning, triggerAdvance, advance, getCurrentMulti]);
+
+  // ── Back ───────────────────────────────────────────────────────────────
 
   const handleBack = useCallback(() => {
-    if (showBreather) {
-      setShowBreather(false);
+    if (showOffRamp) {
+      setShowOffRamp(false);
       return;
     }
     if (isFirst || isTransitioning) return;
-    triggerAdvance("backward", moveBackward);
-  }, [showBreather, isFirst, isTransitioning, triggerAdvance, moveBackward]);
+    triggerAdvance("backward", goBack);
+  }, [showOffRamp, isFirst, isTransitioning, triggerAdvance, goBack]);
+
+  // ── Swipe ──────────────────────────────────────────────────────────────
 
   const handleSwipeLeft = useCallback(() => {
-    if (showBreather) {
-      handleBreatherContinue();
+    if (showOffRamp) return;
+    if (multiSelect || topTwo) {
+      const current = getCurrentMulti();
+      if (current.length > 0 && !isTransitioning) {
+        handleMultiContinue();
+      }
       return;
     }
-    if (selectedAnswer !== null && !isTransitioning) {
-      triggerAdvance("forward", moveForward);
+    const val = answersRef.current[currentIndexRef.current];
+    if (val !== null && !isTransitioning) {
+      triggerAdvance("forward", advance);
     }
-  }, [
-    showBreather,
-    handleBreatherContinue,
-    selectedAnswer,
-    isTransitioning,
-    triggerAdvance,
-    moveForward,
-  ]);
+  }, [showOffRamp, multiSelect, topTwo, getCurrentMulti, handleMultiContinue, isTransitioning, triggerAdvance, advance]);
 
   const swipeHandlers = useSwipe({
     onSwipeLeft: handleSwipeLeft,
@@ -280,11 +251,31 @@ export default function QuizFlow() {
 
   if (!currentQuestion) return null;
 
-  const breatherData = SECTION_BREATHERS[breatherSection];
-  const effectiveProgress = Math.round(
-    ((currentVisibleIndex + (showBreather ? 0.5 : 0)) / totalQuestions) * 100,
-  );
-  const progressDotIndex = Math.floor((currentVisibleIndex / totalQuestions) * 10);
+  const multiSelection = getCurrentMulti();
+  const multiHasSelection = multiSelection.length > 0;
+
+  // ── Off-ramp screen ────────────────────────────────────────────────────
+
+  if (showOffRamp) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col overflow-hidden">
+        <header className="border-b border-border/60 bg-white/95 backdrop-blur-md sticky top-0 z-40">
+          <div className="container">
+            <div className="flex items-center justify-between h-14">
+              <Link href="/" className="flex items-center">
+                <PeptidePilotLogo height={30} variant="dark" />
+              </Link>
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4">
+          <ContraindicationOffRamp />
+        </main>
+      </div>
+    );
+  }
+
+  const singleVal = answersRef.current[currentIndexRef.current];
 
   return (
     <div
@@ -297,102 +288,51 @@ export default function QuizFlow() {
             <Link href="/" className="flex items-center">
               <PeptidePilotLogo height={30} variant="dark" />
             </Link>
-            {!showBreather && (
-              <span className="text-xs sm:text-sm text-muted-foreground font-medium tabular-nums">
-                {currentVisibleIndex + 1} <span className="text-border">/</span> {totalQuestions}
-              </span>
-            )}
-            {showBreather && (
-              <span className="text-xs sm:text-sm text-muted-foreground font-medium">
-                New section
-              </span>
-            )}
+            <span className="text-xs sm:text-sm text-muted-foreground font-medium tabular-nums">
+              {currentIndex + 1} <span className="text-border">/</span> {totalQuestions}
+            </span>
           </div>
           <div className="h-1.5 bg-border/50 -mx-4 sm:-mx-6 lg:-mx-8">
             <div
               className="progress-bar-fill h-full transition-all duration-500"
-              style={{ width: `${effectiveProgress}%` }}
+              style={{ width: `${Math.round((currentIndex / totalQuestions) * 100)}%` }}
             />
           </div>
         </div>
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4 overflow-hidden">
-        {showBreather && breatherData && (
-          <div className="w-full max-w-lg quiz-slide-enter-forward">
-            <div
-              className="rounded-2xl p-8 sm:p-10 text-center text-white shadow-2xl"
-              style={{
-                background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f2744 100%)",
-              }}
-            >
-              <div className="flex items-center justify-center mb-6">
-                <span
-                  className="text-xs font-semibold tracking-widest uppercase px-4 py-1.5 rounded-full"
-                  style={{
-                    background: "rgba(56,189,248,0.15)",
-                    color: "#38bdf8",
-                    letterSpacing: "0.12em",
-                    border: "1px solid rgba(56,189,248,0.25)",
-                  }}
-                >
-                  {breatherData.label}
-                </span>
-              </div>
+        <div key={currentIndex} className={`w-full max-w-2xl ${animClass}`}>
+          <h2
+            className="text-xl sm:text-2xl md:text-3xl font-normal text-foreground mb-7 sm:mb-8 leading-snug"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            {currentQuestion.question}
+          </h2>
 
-              <div
-                className="w-12 h-0.5 mx-auto mb-6 rounded-full"
-                style={{ background: "linear-gradient(90deg, #38bdf8, #818cf8)" }}
-              />
+          <div className="space-y-3">
+            {currentQuestion.options.map((option, idx) => {
+              const selected = multiSelect || topTwo
+                ? multiSelection.includes(idx)
+                : singleVal === idx;
+              const showPulse = topTwo && pulseIndex === idx;
 
-              <h2
-                className="text-2xl sm:text-3xl font-normal mb-4 leading-snug"
-                style={{ fontFamily: "'DM Serif Display', serif" }}
-              >
-                {breatherData.headline}
-              </h2>
-              <p className="text-slate-300 text-base sm:text-lg leading-relaxed mb-8">
-                {breatherData.body}
-              </p>
-              <button
-                onClick={handleBreatherContinue}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95"
-                style={{
-                  background: "linear-gradient(135deg, #38bdf8, #818cf8)",
-                }}
-              >
-                Continue
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {!showBreather && (
-          <div key={currentIndex} className={`w-full max-w-2xl ${animClass}`}>
-            <div className="mb-5 sm:mb-6">
-              <span className="section-badge">{currentQuestion.section}</span>
-              <div className="mt-2 text-xs font-medium text-muted-foreground">
-                {currentSectionIndex} of {currentSectionQuestions} in this section
-              </div>
-            </div>
-
-            <h2
-              className="text-xl sm:text-2xl md:text-3xl font-normal text-foreground mb-7 sm:mb-8 leading-snug"
-              style={{ fontFamily: "'DM Serif Display', serif" }}
-            >
-              {currentQuestion.question}
-            </h2>
-
-            <div className="space-y-3">
-              {currentQuestion.options.map((option, idx) => (
+              return (
                 <button
                   key={idx}
-                  onClick={() => handleSelectAnswer(idx)}
-                  disabled={selectedAnswer !== null || isTransitioning}
-                  aria-pressed={selectedAnswer === idx}
-                  className={`answer-btn ${selectedAnswer === idx ? "selected" : ""} ${
-                    selectedAnswer !== null && selectedAnswer !== idx
+                  onClick={() => {
+                    if (multiSelect || topTwo) {
+                      handleMultiToggle(idx);
+                    } else {
+                      handleSingleSelect(idx);
+                    }
+                  }}
+                  disabled={!multiSelect && !topTwo && (singleVal !== null || isTransitioning)}
+                  aria-pressed={selected}
+                  className={`answer-btn ${multiSelect ? "option-card--compact" : ""} ${selected ? "selected" : ""} ${
+                    showPulse ? "animate-pulse-once" : ""
+                  } ${
+                    !multiSelect && !topTwo && singleVal !== null && !selected
                       ? "opacity-40 cursor-default"
                       : ""
                   }`}
@@ -400,34 +340,65 @@ export default function QuizFlow() {
                 >
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div
-                      className={`answer-indicator w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${
-                        selectedAnswer === idx
+                      className={`${
+                        multiSelect || topTwo
+                          ? "w-5 h-5 sm:w-6 sm:h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all"
+                          : "answer-indicator w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all"
+                      } ${
+                        selected
                           ? "border-accent bg-accent"
                           : "border-border"
                       }`}
                     >
-                      {selectedAnswer === idx && (
-                        <div className="w-2 h-2 rounded-full bg-white" />
+                      {selected && (
+                        multiSelect || topTwo ? (
+                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <div className="w-2 h-2 rounded-full bg-white" />
+                        )
                       )}
                     </div>
                     <span className="text-sm sm:text-base leading-snug text-left flex-1">
                       {option}
                     </span>
-                    {selectedAnswer === idx ? (
+                    {selected && !multiSelect && !topTwo ? (
                       <span className="text-xs font-semibold uppercase tracking-wide text-accent">
                         Selected
                       </span>
                     ) : null}
                   </div>
                 </button>
-              ))}
-            </div>
-
-            <p className="text-xs text-muted-foreground text-center mt-5 animate-fade-in">
-              Select one answer and we&apos;ll keep things moving. Swipe right to go back.
-            </p>
+              );
+            })}
           </div>
-        )}
+
+          {(multiSelect || topTwo) && (
+            <div className="mt-6 flex flex-col items-center gap-3">
+              <Button
+                onClick={handleMultiContinue}
+                disabled={!multiHasSelection || isTransitioning}
+                className="gap-2 px-6"
+              >
+                Continue
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+              {topTwo && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Select up to 2 — choose the ones that resonate most.
+                </p>
+              )}
+              {multiSelect && !topTwo && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Select all that apply, then continue.
+                </p>
+              )}
+            </div>
+          )}
+
+
+        </div>
       </main>
 
       <footer className="border-t border-border/60 bg-white/95 backdrop-blur-md sticky bottom-0">
@@ -436,7 +407,7 @@ export default function QuizFlow() {
             <Button
               variant="ghost"
               onClick={handleBack}
-              disabled={(isFirst && !showBreather) || isTransitioning}
+              disabled={(isFirst && !showOffRamp) || isTransitioning}
               className="text-muted-foreground hover:text-foreground gap-2 h-10 px-3 sm:px-4"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -444,16 +415,16 @@ export default function QuizFlow() {
             </Button>
 
             <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(totalQuestions, 10) }).map((_, i) => {
-                const isActive = i === progressDotIndex;
-                const isPast = i < progressDotIndex;
+              {Array.from({ length: totalQuestions }).map((_, i) => {
+                const answered = answers[i] !== null;
+                const isActive = i === currentIndex;
                 return (
                   <div
                     key={i}
                     className={`rounded-full transition-all ${
                       isActive
                         ? "w-4 h-2 bg-accent"
-                        : isPast
+                        : answered
                           ? "w-2 h-2 bg-accent/40"
                           : "w-2 h-2 bg-border"
                     }`}

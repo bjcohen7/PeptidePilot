@@ -12,6 +12,7 @@ import DashboardLayout from "./components/DashboardLayout";
 import SessionTracker from "./components/SessionTracker";
 import Seo from "./components/Seo";
 import { UserSessionProvider } from "./contexts/UserSessionContext";
+import { ExperimentProvider } from "./contexts/ExperimentContext";
 
 // Pages
 const Home = lazy(() => import("./pages/Home"));
@@ -29,6 +30,12 @@ const TermsOfService = lazy(() =>
 );
 const MedicalDisclaimer = lazy(() =>
   import("./pages/Legal").then((module) => ({ default: module.MedicalDisclaimer })),
+);
+const AffiliateDisclosure = lazy(() =>
+  import("./pages/Legal").then((module) => ({ default: module.AffiliateDisclosure })),
+);
+const ScreeningCriteria = lazy(() =>
+  import("./pages/Legal").then((module) => ({ default: module.ScreeningCriteria })),
 );
 const BlogArticle = lazy(() => import("./pages/BlogArticle"));
 const PseoHub = lazy(() =>
@@ -50,6 +57,7 @@ const ReviewPage = lazy(() => import("./pages/pseo/ReviewPage"));
 const AffiliatePartnersAdmin = lazy(() => import("./pages/admin/AffiliatePartners"));
 const InsightsOverview = lazy(() => import("./pages/admin/InsightsOverview"));
 const SessionDetail = lazy(() => import("./pages/admin/SessionDetail"));
+const ExperimentsAdmin = lazy(() => import("./pages/admin/Experiments"));
 
 // Pages that should NOT show the standard navbar/footer
 const BARE_ROUTES = ["/quiz/flow", "/processing"];
@@ -87,8 +95,8 @@ function Router() {
   const noindexMeta = (() => {
     if (location === "/quiz") {
       return {
-        title: "Quiz",
-        description: "Start the PeptidePilot assessment.",
+        title: "Take the Quiz — Is GLP-1 the right fit for you? | PeptidePilot",
+        description: "A 22-question clinical-grade intake that matches you to GLP-1 therapy or other peptide protocols, and connects you to vetted licensed providers. 100% independent.",
       };
     }
 
@@ -351,6 +359,22 @@ function Router() {
         </PublicLayout>
       </Route>
 
+      <Route path="/affiliate-disclosure">
+        <PublicLayout>
+          <Suspense fallback={<RouteFallback />}>
+            <AffiliateDisclosure />
+          </Suspense>
+        </PublicLayout>
+      </Route>
+
+      <Route path="/screening-criteria">
+        <PublicLayout>
+          <Suspense fallback={<RouteFallback />}>
+            <ScreeningCriteria />
+          </Suspense>
+        </PublicLayout>
+      </Route>
+
       <Route path="/faq">
         <PublicLayout>
           <Suspense fallback={<RouteFallback />}>
@@ -385,6 +409,14 @@ function Router() {
         </DashboardLayout>
       </Route>
 
+      <Route path="/admin/experiments">
+        <DashboardLayout>
+          <Suspense fallback={<RouteFallback />}>
+            <ExperimentsAdmin />
+          </Suspense>
+        </DashboardLayout>
+      </Route>
+
       <Route path="/admin">
         <DashboardLayout>
           <Suspense fallback={<RouteFallback />}>
@@ -413,8 +445,10 @@ function App() {
           <Toaster />
           <QuizProvider>
             <UserSessionProvider>
-              <SessionTracker />
-              <Router />
+              <ExperimentProvider>
+                <SessionTracker />
+                <Router />
+              </ExperimentProvider>
             </UserSessionProvider>
           </QuizProvider>
         </TooltipProvider>

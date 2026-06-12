@@ -1,11 +1,57 @@
-import { useMemo } from "react";
 import { trpc } from "@/lib/trpc";
-import { peptideProfiles } from "../../../../shared/scoring";
-import { findResultsVendorPresentation } from "../../../../shared/resultsVendorPresentation";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useExperimentEvent } from "@/contexts/ExperimentContext";
 import { AffiliatePartnerCard } from "./AffiliatePartnerCard";
-import { buildCardData, derivePartnerSlug } from "./affiliate.utils";
 import type { AffiliatePartnerCardData } from "./affiliate.types";
+
+// ---------------------------------------------------------------------------
+// Hardcoded provider list — always shown in this exact order regardless of
+// quiz answers. To update providers, edit HARDCODED_PROVIDERS below.
+// ---------------------------------------------------------------------------
+const HARDCODED_PROVIDERS: AffiliatePartnerCardData[] = [
+  {
+    partnerName: "Gala",
+    partnerSlug: "gala",
+    url: "https://galaglp1.com/lp/glp1?a=price&_ef_transaction_id=&oid=1&affid=13",
+    monogram: "GA",
+    differentiatorBadge: "Legit Script Certified",
+    headline: "$179 per month all doses, no hidden fees",
+    promo: "",
+    trustSignals: ["Licensed providers in all 50 states"],
+    ctaLabel: "Get Started",
+  },
+  {
+    partnerName: "Direct Med",
+    partnerSlug: "direct-med",
+    url: "https://track.revoffers.com/aff_c?offer_id=1304&aff_id=12185",
+    monogram: "DM",
+    differentiatorBadge: "Legit Script Certified",
+    headline: "Transparent all inclusive pricing",
+    promo: "Transparent all inclusive pricing",
+    couponCode: "PILOT50",
+    couponLabel: "Use code PILOT50 at checkout",
+    trustSignals: [
+      "Doctor Subscribed and supervised",
+      "Personalized care plans",
+      "Convenient at home delivery",
+    ],
+    ctaLabel: "View Offer",
+  },
+  {
+    partnerName: "Sprout",
+    partnerSlug: "sprout",
+    url: "https://track.revoffers.com/aff_c?offer_id=1286&aff_id=12185",
+    monogram: "SP",
+    differentiatorBadge: "Legit Script Certified",
+    headline: "No contracts, no surprise fees",
+    promo: "",
+    trustSignals: [
+      "Prepared by state licensed US pharmacies",
+      "Patient care team",
+      "Fast shipping",
+    ],
+    ctaLabel: "Get Started",
+  },
+];
 
 type Props = {
   peptideId: string;
@@ -15,115 +61,53 @@ type Props = {
 
 export function AffiliateRecommendationSection({
   peptideId,
-  peptideName,
+  peptideName: _peptideName,
   leadId,
 }: Props) {
-  const linksQuery = trpc.affiliates.activeLinksByPeptide.useQuery(
-    { peptideId },
-    {
-      staleTime: 1000 * 60 * 5,
-      refetchOnWindowFocus: false,
-      retry: false,
-    },
-  );
-
   const trackClick = trpc.quiz.trackAffiliateClick.useMutation();
-
-  const cards = useMemo<AffiliatePartnerCardData[]>(() => {
-    const links = linksQuery.data ?? [];
-
-    const profile =
-      links.length === 0
-        ? peptideProfiles.find((profile) => profile.id === peptideId)
-        : undefined;
-
-    const fallbackVendors = profile?.vendors ?? [];
-
-    const source =
-      links.length > 0
-        ? links.map((link) => ({
-            partnerName: link.partnerName ?? link.label,
-            partnerSlug: derivePartnerSlug(link.partnerName ?? link.label),
-            url: link.url,
-            sortOrder: link.sortOrder,
-          }))
-        : fallbackVendors.map((v, i) => ({
-            partnerName: v.name,
-            partnerSlug: derivePartnerSlug(v.name),
-            url: v.url,
-            sortOrder: i,
-          }));
-
-    const top = [...source].sort((a, b) => a.sortOrder - b.sortOrder).slice(0, 2);
-
-    if (process.env.NODE_ENV !== "production" && source.length > 2) {
-      console.warn(
-        `[AffiliateRecommendationSection] ${source.length} partners returned for ${peptideId}; using first 2.`,
-      );
-    }
-
-    return top.map((link, idx) => {
-      const override = findResultsVendorPresentation(link.partnerName) ?? undefined;
-      return buildCardData(link, override, idx === 0);
-    });
-  }, [linksQuery.data, peptideId]);
+  const trackExp = useExperimentEvent();
 
   const handleCtaClick = (partnerName: string, url: string) => {
     if (leadId) {
       trackClick.mutate({ leadId, peptideId, vendor: partnerName });
     }
+    trackExp("affiliate_click", { provider: partnerName, leadId });
 
-    if (typeof window !== "undefined" && (window as { fbq?: (...args: unknown[]) => void }).fbq) {
+    if (
+      typeof window !== "undefined" &&
+      (window as { fbq?: (...args: unknown[]) => void }).fbq
+    ) {
       const fbq = (window as { fbq: (...args: unknown[]) => void }).fbq;
       fbq("track", "Lead", { content_name: partnerName });
       fbq("trackCustom", "AffiliateClick", {
         content_name: partnerName,
-        slot: (() => {
-          const found = cards.findIndex((c) => c.partnerName === partnerName);
-          return found === 0 ? "featured" : "secondary";
-        })(),
+        slot:
+          partnerName === HARDCODED_PROVIDERS[0]!.partnerName
+            ? "featured"
+            : "secondary",
         peptide_id: peptideId,
       });
     }
   };
 
-  if (linksQuery.isLoading) {
-    return (
-      <section aria-label="Recommended partners" className="w-full">
-        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4 items-start">
-          <Skeleton className="h-[320px] rounded-2xl" />
-          <Skeleton className="h-[280px] rounded-2xl" />
-        </div>
-      </section>
-    );
-  }
-
-  if (cards.length === 0) return null;
-
-  const featured = cards[0]!;
-  const secondary = cards[1];
+  const [featured, ...rest] = HARDCODED_PROVIDERS;
 
   return (
     <section aria-label="Recommended partners" className="w-full">
-      <div
-        className={
-          secondary
-            ? "grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4 items-start"
-            : "grid grid-cols-1 gap-3.5"
-        }
-      >
+      <div className="grid grid-cols-1 gap-3.5 items-start">
         <AffiliatePartnerCard
           variant="featured"
-          data={featured}
+          data={featured!}
           onCtaClick={(name, url) => handleCtaClick(name, url)}
         />
-        {secondary && (
+        {rest.map((provider) => (
           <AffiliatePartnerCard
+            key={provider.partnerSlug}
             variant="secondary"
-            data={secondary}
+            data={provider}
             onCtaClick={(name, url) => handleCtaClick(name, url)}
           />
-        )}
+        ))}
       </div>
     </section>
   );
