@@ -6,7 +6,7 @@ import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
-import { ensureAffiliateWorkspaceSchema } from "../db";
+import { ensureAffiliateWorkspaceSchema, ensureExperimentSchema } from "../db";
 import { createContext } from "./context";
 import { ENV } from "./env";
 import { recordClickEvent, recordPageView, startVisitorSession } from "../routers/analytics";
@@ -99,6 +99,12 @@ async function startServer() {
     await ensureAffiliateWorkspaceSchema();
   } catch (error) {
     console.error("[Bootstrap] Failed to ensure affiliate workspace schema:", error);
+  }
+
+  try {
+    await ensureExperimentSchema();
+  } catch (error) {
+    console.error("[Bootstrap] Failed to ensure experiment schema:", error);
   }
 
   const app = express();

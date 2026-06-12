@@ -218,7 +218,7 @@ export const quizRouter = router({
       const matches = calculateMatches(answers);
       const topMatches = matches.slice(0, 5).map((m) => m.peptide.id);
       const topPeptideMatch = topMatches[0] ?? "unknown";
-      const tier = determineTier(answers);
+      const tier = determineTier(answers as number[]);
 
       const ageRange = "not-captured";
       const primaryGoal = typeof answers[0] === "number" ? String(answers[0]) : "multi";
@@ -574,17 +574,22 @@ export const quizRouter = router({
         leadId: z.string(),
         peptideId: z.string(),
         vendor: z.string(),
+        experimentId: z.number().optional(),
+        variantId: z.number().optional(),
       })
     )
     .mutation(async ({ input }) => {
       await ensureAffiliateWorkspaceSchema();
       const db = await getDb();
       if (db) {
-        await db.insert(affiliateClicks).values({
+        const values: Record<string, unknown> = {
           leadId: input.leadId,
           peptideId: input.peptideId,
           vendor: input.vendor,
-        });
+        };
+        if (input.experimentId !== undefined) values.experimentId = input.experimentId;
+        if (input.variantId !== undefined) values.variantId = input.variantId;
+        await db.insert(affiliateClicks).values(values as any);
       }
 
       // Fire-and-forget Telegram notification — never blocks the response

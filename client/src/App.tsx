@@ -12,6 +12,7 @@ import DashboardLayout from "./components/DashboardLayout";
 import SessionTracker from "./components/SessionTracker";
 import Seo from "./components/Seo";
 import { UserSessionProvider } from "./contexts/UserSessionContext";
+import { ExperimentProvider } from "./contexts/ExperimentContext";
 
 // Pages
 const Home = lazy(() => import("./pages/Home"));
@@ -56,6 +57,7 @@ const ReviewPage = lazy(() => import("./pages/pseo/ReviewPage"));
 const AffiliatePartnersAdmin = lazy(() => import("./pages/admin/AffiliatePartners"));
 const InsightsOverview = lazy(() => import("./pages/admin/InsightsOverview"));
 const SessionDetail = lazy(() => import("./pages/admin/SessionDetail"));
+const ExperimentsAdmin = lazy(() => import("./pages/admin/Experiments"));
 
 // Pages that should NOT show the standard navbar/footer
 const BARE_ROUTES = ["/quiz/flow", "/processing"];
@@ -407,6 +409,14 @@ function Router() {
         </DashboardLayout>
       </Route>
 
+      <Route path="/admin/experiments">
+        <DashboardLayout>
+          <Suspense fallback={<RouteFallback />}>
+            <ExperimentsAdmin />
+          </Suspense>
+        </DashboardLayout>
+      </Route>
+
       <Route path="/admin">
         <DashboardLayout>
           <Suspense fallback={<RouteFallback />}>
@@ -435,8 +445,10 @@ function App() {
           <Toaster />
           <QuizProvider>
             <UserSessionProvider>
-              <SessionTracker />
-              <Router />
+              <ExperimentProvider>
+                <SessionTracker />
+                <Router />
+              </ExperimentProvider>
             </UserSessionProvider>
           </QuizProvider>
         </TooltipProvider>

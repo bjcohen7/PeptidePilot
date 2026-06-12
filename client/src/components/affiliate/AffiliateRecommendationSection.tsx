@@ -1,4 +1,5 @@
 import { trpc } from "@/lib/trpc";
+import { useExperimentEvent } from "@/contexts/ExperimentContext";
 import { AffiliatePartnerCard } from "./AffiliatePartnerCard";
 import type { AffiliatePartnerCardData } from "./affiliate.types";
 
@@ -64,11 +65,13 @@ export function AffiliateRecommendationSection({
   leadId,
 }: Props) {
   const trackClick = trpc.quiz.trackAffiliateClick.useMutation();
+  const trackExp = useExperimentEvent();
 
   const handleCtaClick = (partnerName: string, url: string) => {
     if (leadId) {
       trackClick.mutate({ leadId, peptideId, vendor: partnerName });
     }
+    trackExp("affiliate_click", { provider: partnerName, leadId });
 
     if (
       typeof window !== "undefined" &&

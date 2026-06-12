@@ -8,6 +8,7 @@ import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import ContraindicationOffRamp from "@/components/bridge/ContraindicationOffRamp";
 import { preloadProcessing, preloadResults } from "@/lib/preloadQuiz";
 import { QUIZ_QUESTIONS } from "../../../shared/scoring";
+import { useExperimentEvent } from "@/contexts/ExperimentContext";
 
 type Direction = "forward" | "backward";
 
@@ -34,6 +35,7 @@ function hasContraindication(answer: number[]): boolean {
 export default function QuizFlow() {
   const [, navigate] = useLocation();
   const { state, selectAnswer, goTo, completeQuiz, currentQuestion } = useQuiz();
+  const trackExp = useExperimentEvent();
 
   const { currentIndex, answers, isComplete } = state;
 
@@ -48,6 +50,28 @@ export default function QuizFlow() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const directionRef = useRef<Direction>("forward");
   const prevIndexRef = useRef(currentIndex);
+  const quizStartedRef = useRef(false);
+  const prevQuestionRef = useRef(currentIndex);
+
+  useEffect(() => {
+    if (!quizStartedRef.current) {
+      quizStartedRef.current = true;
+      trackExp("quiz_start");
+    }
+  }, [trackExp]);
+
+  useEffect(() => {
+    if (currentIndex !== prevQuestionRef.current && currentIndex > 0) {
+      prevQuestionRef.current = currentIndex;
+      trackExp("quiz_question", { question: currentIndex + 1 });
+    }
+  }, [currentIndex, trackExp]);
+
+  useEffect(() => {
+    if (isComplete) {
+      trackExp("quiz_complete");
+    }
+  }, [isComplete, trackExp]);
 
   // Refs to avoid stale closures in callbacks
   const answersRef = useRef(answers);

@@ -6,6 +6,7 @@ import NewResultsPage from "@/pages/NewResultsPage";
 import { getVisitorSessionId } from "@/components/SessionTracker";
 import { useQuiz } from "@/contexts/QuizContext";
 import { useReturningSession } from "@/contexts/UserSessionContext";
+import { useExperimentEvent } from "@/contexts/ExperimentContext";
 import { trpc } from "@/lib/trpc";
 import {
   calculateMatches,
@@ -27,6 +28,7 @@ function getLibraryBackedMatches(answers: (number | number[])[]) {
 export default function Results() {
   const [, navigate] = useLocation();
   const { state, reset } = useQuiz();
+  const trackExp = useExperimentEvent();
   const {
     session,
     isLoading: isReturningSessionLoading,
@@ -46,6 +48,7 @@ export default function Results() {
       setLeadId(data.leadId);
       setMatches(data.returningResults);
       setRevealed(true);
+      trackExp("results_view");
 
       if (data.returningToken) {
         seedReturningSession({

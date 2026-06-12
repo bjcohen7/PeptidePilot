@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useLocation } from "wouter";
 import { trackMetaPageView } from "@/lib/metaPixel";
 import { trpc } from "@/lib/trpc";
+import { useExperimentEvent } from "@/contexts/ExperimentContext";
 
 const VISITOR_SESSION_KEY = "peptidepilot_visitor_session_id";
 
@@ -88,6 +89,7 @@ export default function SessionTracker() {
   const currentPathRef = useRef(normalizePath(location));
   const enteredAtRef = useRef(Date.now());
   const startedRef = useRef(false);
+  const trackExp = useExperimentEvent();
 
   useEffect(() => {
     if (typeof window === "undefined" || !shouldTrackPath(location)) return;
@@ -124,6 +126,7 @@ export default function SessionTracker() {
         durationMs,
         referrer: document.referrer || null,
       });
+      trackExp("page_view", { previousPath, nextPath });
     }
 
     currentPathRef.current = nextPath;
