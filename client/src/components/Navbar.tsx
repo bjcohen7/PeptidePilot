@@ -14,6 +14,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const hidden = location.startsWith("/quiz/flow") || location.startsWith("/results") || location.startsWith("/processing");
+  const isHome = location === "/";
   if (hidden) return null;
 
   return (
@@ -48,10 +49,12 @@ export default function Navbar() {
             <PeptidePilotLogo height={30} variant="dark" />
           </Link>
 
-          <div className="nav-search hidden md:block">
-            <Search />
-            <input placeholder="Search providers, drugs, states…" />
-          </div>
+          {!isHome && (
+            <div className="nav-search hidden md:block">
+              <Search />
+              <input placeholder="Search providers, drugs, states…" />
+            </div>
+          )}
 
           <nav className="hidden md:flex items-center gap-[6px]" style={{ marginLeft: "auto" }}>
             {NAV_LINKS.map(({ href, label }) => (
