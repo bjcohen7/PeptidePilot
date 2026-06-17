@@ -2,13 +2,13 @@ import { Link } from "wouter";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 
 const PLATFORM_LINKS = [
-  { href: "/quiz/flow", label: "Take the Quiz" },
-  { href: "/results", label: "My Results" },
-  { href: "/about", label: "About" },
+  { href: "/quiz/flow", label: "Quiz" },
+  { href: "/results", label: "Results" },
+  { href: "/providers", label: "Providers" },
 ];
 
-const COMPARE_LINKS = [
-  { href: "/peptides", label: "Providers" },
+const RESOURCES_LINKS = [
+  { href: "/about", label: "About" },
   { href: "/blog", label: "Blog" },
 ];
 
@@ -21,7 +21,7 @@ const LEGAL_LINKS = [
 
 export default function Footer() {
   return (
-    <footer style={{ background: "#0a1815", color: "rgba(255,255,255,0.78)" }}>
+    <footer style={{ background: "#0F1729", color: "rgba(255,255,255,0.78)" }}>
       <div className="mx-auto w-full max-w-[1120px] px-5 py-12 sm:px-8 sm:py-14">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-[1.5fr_1fr_1fr_1.2fr] md:gap-10">
           <div className="col-span-2 md:col-span-1">
@@ -34,7 +34,7 @@ export default function Footer() {
           </div>
 
           <FooterColumn title="Platform" links={PLATFORM_LINKS} />
-          <FooterColumn title="Resources" links={COMPARE_LINKS} />
+          <FooterColumn title="Resources" links={RESOURCES_LINKS} />
           <div>
             <FooterColumn title="Legal" links={LEGAL_LINKS} />
             <div className="mt-6 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>

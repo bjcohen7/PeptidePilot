@@ -270,6 +270,10 @@
     display: grid; place-items: center; margin: 0 auto 18px; font-size: 1.6rem;
   }
 
+  details summary::-webkit-details-marker { display: none; }
+  details > summary { list-style: none; }
+  details > summary::marker { display: none; content: ""; }
+
   /* ── Hero section ── */
   .pp-hero { position: relative; overflow: hidden; background: var(--grad-hero); }
   .pp-hero::after {

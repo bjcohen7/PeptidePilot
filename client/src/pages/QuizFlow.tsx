@@ -11,6 +11,7 @@ type Step = {
   question?: string;
   subtitle?: string;
   options?: string[];
+  interEyebrow?: string;
   interTitle?: string;
   interBody?: string;
   interIcon?: string;
@@ -21,13 +22,13 @@ type Step = {
 const STEPS: Step[] = [
   { type: "single", question: "Which medication are you considering?", options: ["Semaglutide", "Tirzepatide", "Ozempic", "Wegovy", "Mounjaro", "Zepbound", "Not sure yet"], subtitle: "Not sure is fine — we'll help you compare." },
   { type: "single", question: "What's your main goal?", options: ["Lose 10–25 lb", "Lose 25–50 lb", "Lose 50+ lb", "Maintain / metabolic health"] },
-  { type: "inter", interIcon: "✓", interIconBg: "var(--tint-mint)", interIconColor: "#138A5E", interTitle: "Nice — that helps", interBody: "Now let's find your best price. A few quick preferences and we'll line up vetted providers side by side. No medical forms — your provider handles that part." },
+  { type: "inter", interIcon: "✓", interIconBg: "var(--tint-mint)", interIconColor: "#138A5E", interEyebrow: "Nice — that helps", interTitle: "Now let's find your best price", interBody: "A few quick preferences and we'll line up vetted providers side by side. No medical forms — your provider handles that part." },
   { type: "single", question: "Have you taken a GLP-1 before?", options: ["No, I'm new to this", "Yes, I'm currently on one", "I took one previously"] },
   { type: "select", question: "Where will you receive your medication?", subtitle: "We detect your state from your location — confirm or change it. Providers are licensed by state, so we only show ones that serve you." },
   { type: "multi", question: "What matters most to you?", subtitle: "Select all that apply.", options: ["Lowest price", "Fast shipping", "Lots of support & check-ins", "Brand-name medication"] },
   { type: "multi", question: "How do you want to connect with a provider?", subtitle: "Select all that apply.", options: ["Messaging", "Video visits", "Phone"] },
   { type: "single", question: "How would you like to pay?", options: ["Lowest-cost compounded (cash-pay)", "Brand-name through insurance", "Not sure — show me both"] },
-  { type: "inter", interIcon: "★", interIconBg: "var(--tint-lav)", interIconColor: "#6B4FD0", interTitle: "All set", interBody: "Your match is ready. We found vetted providers ready to see you this week." },
+  { type: "inter", interIcon: "★", interIconBg: "var(--tint-lav)", interIconColor: "#6B4FD0", interEyebrow: "All set", interTitle: "Your match is ready", interBody: "Want your results & price-drop alerts emailed too?" },
   { type: "email", question: "Where should we send your match?", subtitle: "Optional — we'll send your results & price-drop alerts." },
 ];
 
@@ -133,17 +134,13 @@ export default function QuizFlow() {
             <Link href="/" className="flex items-center no-underline">
               <PeptidePilotLogo height={30} variant="dark" />
             </Link>
-            {step.type !== "inter" && (
-              <span className="font-mono text-xs" style={{ color: "var(--muted)" }}>
-                Question {qSoFar} of {qCount}
-              </span>
-            )}
+            <span className="font-mono text-xs" style={{ color: step.type !== "inter" ? "var(--muted)" : "transparent" }}>
+              Question {qSoFar} of {qCount}
+            </span>
           </div>
-          {step.type !== "inter" && (
-            <div className="h-1.5 -mx-[22px] sm:-mx-[22px]" style={{ background: "var(--secondary)" }}>
-              <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${Math.round((qSoFar / qCount) * 100)}%`, background: "var(--grad-cta)" }} />
-            </div>
-          )}
+          <div className="h-1.5 -mx-[22px] sm:-mx-[22px]" style={{ background: "var(--secondary)" }}>
+            <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${Math.round((qSoFar / qCount) * 100)}%`, background: "var(--grad-cta)" }} />
+          </div>
         </div>
       </header>
 
@@ -153,12 +150,29 @@ export default function QuizFlow() {
           {step.type === "inter" && (
             <div className="inter">
               <StepIcon step={step} />
-              <span className="pp-eyebrow" style={{ justifyContent: "center", marginBottom: 18 }}>{step.interTitle}</span>
+              {step.interEyebrow && <span className="pp-mono" style={{ color: "var(--sky-deep)", fontSize: ".72rem", letterSpacing: ".16em", textTransform: "uppercase", fontWeight: 600, display: "block", marginBottom: 18 }}>{step.interEyebrow}</span>}
               <h2 style={{ fontSize: "1.6rem", marginBottom: 8 }}>{step.interTitle}</h2>
               <p style={{ color: "var(--ink-soft)", maxWidth: 400, margin: "0 auto 6px" }}>{step.interBody}</p>
-              <div style={{ marginTop: 20 }}>
-                <button className="pp-btn pp-btn-primary pp-btn-lg" onClick={() => triggerAdvance("forward", advance)}>Continue →</button>
-              </div>
+              {stepIdx === 8 && (
+                <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 10, alignItems: "center" }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "1px solid var(--line)", borderRadius: 999, padding: "6px 16px", fontFamily: "Inter, sans-serif", fontSize: ".82rem", color: "var(--ink-soft)", background: "var(--card)" }}>
+                    ★ Joined by 12,480 people · live count
+                  </div>
+                  <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 340 }}>
+                    <button className="pp-btn pp-btn-primary pp-btn-lg" onClick={() => triggerAdvance("forward", advance)}>
+                      Email my results →
+                    </button>
+                    <button className="linkbtn" onClick={skipToResults} style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: "pointer", font: "inherit", fontSize: ".92rem" }}>
+                      Skip — just show my match
+                    </button>
+                  </div>
+                </div>
+              )}
+              {stepIdx !== 8 && (
+                <div style={{ marginTop: 20 }}>
+                  <button className="pp-btn pp-btn-primary pp-btn-lg" onClick={() => triggerAdvance("forward", advance)}>Continue →</button>
+                </div>
+              )}
               <div style={{ marginTop: 10 }}>
                 <button className="linkbtn" onClick={goBack} style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>← Back</button>
               </div>
@@ -169,11 +183,11 @@ export default function QuizFlow() {
             <>
               <h2 style={{ fontSize: "1.7rem", marginBottom: 6 }}>{step.question}</h2>
               {step.subtitle && <p style={{ color: "var(--muted)", marginBottom: 18 }}>{step.subtitle}</p>}
-              <div className="flex flex-col gap-[10px]" style={{ marginTop: 18 }}>
+              <div className="flex flex-wrap gap-[10px]" style={{ marginTop: 18 }}>
                 {step.options.map((opt, i) => {
                   const sel = answers[stepIdx] === i;
                   return (
-                    <div key={i} className={`qopt ${sel ? "sel" : ""}`} onClick={() => handleSingle(i)} role="button" tabIndex={0} onKeyDown={e => e.key === "Enter" && handleSingle(i)}>
+                    <div key={i} className={`qopt ${sel ? "sel" : ""}`} style={{ flex: "1 1 auto", minWidth: 0 }} onClick={() => handleSingle(i)} role="button" tabIndex={0} onKeyDown={e => e.key === "Enter" && handleSingle(i)}>
                       {opt}
                       <span className="ck">✓</span>
                     </div>
@@ -273,7 +287,6 @@ export default function QuizFlow() {
                 if (s.type === "inter") return null;
                 const answered = answers[i] !== null || (i === STEPS.findIndex(x => x.type === "select") && stateVal) || (i === STEPS.findIndex(x => x.type === "email"));
                 const isActive = i === stepIdx;
-                const qIdx = STEPS.slice(0, i + 1).filter(x => x.type !== "inter").length;
                 return (
                   <div key={i}
                     className="rounded-full transition-all"

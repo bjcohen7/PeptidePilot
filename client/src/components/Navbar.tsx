@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Search } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/quiz/flow", label: "Quiz" },
+  { href: "/results", label: "Results" },
   { href: "/about", label: "About" },
-  { href: "/blog", label: "Blog" },
 ];
 
 export default function Navbar() {
@@ -25,12 +25,33 @@ export default function Navbar() {
           backdrop-filter: blur(12px);
           border-bottom: 1px solid var(--line);
         }
+        .nav-search { flex: 1; max-width: 360px; position: relative; }
+        .nav-search input {
+          width: 100%; padding: 11px 16px 11px 40px; border-radius: var(--r-pill);
+          border: 1px solid var(--line); background: var(--secondary); font-size: .92rem; color: var(--ink);
+        }
+        .nav-search input:focus { outline: 2px solid var(--sky); background: #fff; }
+        .nav-search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--muted-foreground); }
+        @media (max-width: 680px) {
+          .nav-links { position: fixed; inset: 70px 0 auto 0; flex-direction: column; align-items: stretch;
+            background: var(--card); border-bottom: 1px solid var(--line); padding: 14px 16px; gap: 4px;
+            box-shadow: var(--shadow-md); transform: translateY(-120%); transition: transform .25s ease; }
+          .nav-links.open { transform: translateY(0); }
+          .nav-links a { padding: 13px; }
+          .hamburger { display: inline-flex !important; }
+          .nav-search { display: none; }
+        }
       `}</style>
       <div className="container">
         <div className="flex items-center gap-[18px] h-[70px]">
           <Link href="/" className="flex items-center gap-[10px] no-underline" style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 700, fontSize: "1.2rem", color: "var(--ink)" }}>
             <PeptidePilotLogo height={30} variant="dark" />
           </Link>
+
+          <div className="nav-search hidden md:block">
+            <Search />
+            <input placeholder="Search providers, drugs, states…" />
+          </div>
 
           <nav className="hidden md:flex items-center gap-[6px]" style={{ marginLeft: "auto" }}>
             {NAV_LINKS.map(({ href, label }) => (
@@ -52,8 +73,8 @@ export default function Navbar() {
           </nav>
 
           <button
-            className="md:hidden flex items-center justify-center w-10 h-10 rounded-xl border ml-auto"
-            style={{ borderColor: "var(--line)", background: "none" }}
+            className="hamburger md:hidden flex items-center justify-center w-10 h-10 rounded-xl border"
+            style={{ borderColor: "var(--line)", background: "none", display: "none" }}
             onClick={() => setMenuOpen(o => !o)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
           >
