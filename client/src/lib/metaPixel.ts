@@ -12,7 +12,8 @@ declare global {
 }
 
 const META_PIXEL_ID =
-  import.meta.env.VITE_META_PIXEL_ID?.trim() || "26875589488702265";
+  (typeof import.meta.env !== "undefined" ? import.meta.env.VITE_META_PIXEL_ID?.trim() : undefined) ||
+  "26875589488702265";
 
 let initialized = false;
 
