@@ -1,14 +1,6 @@
-let quizEntryPromise: Promise<unknown> | null = null;
 let quizFlowPromise: Promise<unknown> | null = null;
 let processingPromise: Promise<unknown> | null = null;
 let resultsPromise: Promise<unknown> | null = null;
-
-export function preloadQuizEntry() {
-  if (!quizEntryPromise) {
-    quizEntryPromise = import("@/pages/QuizEntry");
-  }
-  return quizEntryPromise;
-}
 
 export function preloadQuizFlow() {
   if (!quizFlowPromise) {
@@ -32,7 +24,6 @@ export function preloadResults() {
 }
 
 export function preloadQuizExperience() {
-  void preloadQuizEntry();
   void preloadQuizFlow();
 }
 

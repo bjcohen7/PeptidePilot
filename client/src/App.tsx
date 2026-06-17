@@ -1,21 +1,20 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch, useLocation } from "wouter";
+import { Route, Switch, useLocation, Redirect } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { QuizProvider } from "./contexts/QuizContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import DashboardLayout from "./components/DashboardLayout";
 import SessionTracker from "./components/SessionTracker";
 import Seo from "./components/Seo";
 import { UserSessionProvider } from "./contexts/UserSessionContext";
+import { ExperimentProvider } from "./contexts/ExperimentContext";
 
 // Pages
 const Home = lazy(() => import("./pages/Home"));
-const QuizEntry = lazy(() => import("./pages/QuizEntry"));
 const QuizFlow = lazy(() => import("./pages/QuizFlow"));
 const Processing = lazy(() => import("./pages/Processing"));
 const Results = lazy(() => import("./pages/Results"));
@@ -56,9 +55,10 @@ const ReviewPage = lazy(() => import("./pages/pseo/ReviewPage"));
 const AffiliatePartnersAdmin = lazy(() => import("./pages/admin/AffiliatePartners"));
 const InsightsOverview = lazy(() => import("./pages/admin/InsightsOverview"));
 const SessionDetail = lazy(() => import("./pages/admin/SessionDetail"));
+const ExperimentsAdmin = lazy(() => import("./pages/admin/Experiments"));
 
 // Pages that should NOT show the standard navbar/footer
-const BARE_ROUTES = ["/quiz/flow", "/processing"];
+const BARE_ROUTES = ["/quiz", "/quiz/flow", "/processing", "/results"];
 
 function isBareRoute(path: string) {
   return BARE_ROUTES.some((r) => path.startsWith(r));
@@ -91,17 +91,10 @@ function Router() {
   const [location] = useLocation();
 
   const noindexMeta = (() => {
-    if (location === "/quiz") {
+    if (location.startsWith("/quiz")) {
       return {
-        title: "Take the Quiz — Is GLP-1 the right fit for you? | PeptidePilot",
-        description: "A 22-question clinical-grade intake that matches you to GLP-1 therapy or other peptide protocols, and connects you to vetted licensed providers. 100% independent.",
-      };
-    }
-
-    if (location.startsWith("/quiz/flow")) {
-      return {
-        title: "Quiz Flow",
-        description: "PeptidePilot quiz flow.",
+        title: "Find Your GLP-1 Match — 8-Question Quiz | PeptidePilot",
+        description: "Answer 8 quick questions to get matched with vetted GLP-1 providers. Compare prices, medications, and start today.",
       };
     }
 
@@ -114,8 +107,8 @@ function Router() {
 
     if (location.startsWith("/results")) {
       return {
-        title: "Results",
-        description: "Personalized PeptidePilot results.",
+        title: "Your GLP-1 Match | PeptidePilot",
+        description: "Your personalized provider match and comparison. See vetted GLP-1 providers ranked by your preferences.",
       };
     }
 
@@ -150,11 +143,9 @@ function Router() {
         </PublicLayout>
       </Route>
 
-      {/* Quiz entry — minimal header, no footer */}
+      {/* Quiz — redirects directly to flow */}
       <Route path="/quiz">
-        <Suspense fallback={<RouteFallback />}>
-          <QuizEntry />
-        </Suspense>
+        <Redirect to="/quiz/flow" />
       </Route>
 
       {/* Quiz flow — fully self-contained */}
@@ -407,6 +398,14 @@ function Router() {
         </DashboardLayout>
       </Route>
 
+      <Route path="/admin/experiments">
+        <DashboardLayout>
+          <Suspense fallback={<RouteFallback />}>
+            <ExperimentsAdmin />
+          </Suspense>
+        </DashboardLayout>
+      </Route>
+
       <Route path="/admin">
         <DashboardLayout>
           <Suspense fallback={<RouteFallback />}>
@@ -424,21 +423,17 @@ function Router() {
 }
 
 function App() {
-  useEffect(() => {
-    void import("./pages/QuizEntry");
-  }, []);
-
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
-          <QuizProvider>
-            <UserSessionProvider>
+          <UserSessionProvider>
+            <ExperimentProvider>
               <SessionTracker />
               <Router />
-            </UserSessionProvider>
-          </QuizProvider>
+            </ExperimentProvider>
+          </UserSessionProvider>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

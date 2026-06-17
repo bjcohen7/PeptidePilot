@@ -2,72 +2,49 @@ import { Link } from "wouter";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 
 const PLATFORM_LINKS = [
-  { href: "/quiz", label: "Take the Quiz" },
-  { href: "/results", label: "View My Results" },
-  { href: "/about", label: "About PeptidePilot" },
-  { href: "/learn", label: "Learn" },
+  { href: "/quiz/flow", label: "Take the Quiz" },
+  { href: "/results", label: "My Results" },
+  { href: "/about", label: "About" },
 ];
 
-const RESEARCH_LINKS = [
-  { href: "/peptides", label: "Peptide Library" },
-  { href: "/goals", label: "Goals Guide" },
-  { href: "/compare", label: "Compare Peptides" },
-  { href: "/stacks", label: "Peptide Stacks" },
-];
-
-const LEARN_LINKS = [
-  { href: "/blog", label: "Peptide Science" },
-  { href: "/blog/what-are-peptides", label: "What Are Peptides?" },
-  { href: "/blog/bpc157-complete-guide", label: "BPC-157 Guide" },
-  { href: "/blog/glp1-peptides-explained", label: "GLP-1 Peptides" },
-  { href: "/blog/how-to-source-peptides-safely", label: "Sourcing Guide" },
+const COMPARE_LINKS = [
+  { href: "/peptides", label: "Providers" },
+  { href: "/blog", label: "Blog" },
 ];
 
 const LEGAL_LINKS = [
   { href: "/privacy", label: "Privacy Policy" },
   { href: "/terms", label: "Terms of Service" },
   { href: "/disclaimer", label: "Medical Disclaimer" },
+  { href: "/affiliate-disclosure", label: "Affiliate Disclosure" },
 ];
-
-const TRUST_BADGES = ["100% Independent", "Science-Backed"];
 
 export default function Footer() {
   return (
-    <footer className="mt-auto bg-primary text-primary-foreground">
-      <div className="mx-auto w-full max-w-[1360px] px-6 py-12 sm:px-8 sm:py-14 lg:px-12 lg:py-16">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.35fr_1fr_1fr_1fr_1fr] md:gap-10 lg:gap-12">
-          <div className="max-w-[320px]">
-            <div className="mb-5">
-              <PeptidePilotLogo height={32} variant="light" />
+    <footer style={{ background: "#0a1815", color: "rgba(255,255,255,0.78)" }}>
+      <div className="mx-auto w-full max-w-[1120px] px-5 py-12 sm:px-8 sm:py-14">
+        <div className="grid grid-cols-2 gap-8 md:grid-cols-[1.5fr_1fr_1fr_1.2fr] md:gap-10">
+          <div className="col-span-2 md:col-span-1">
+            <div className="mb-4">
+              <PeptidePilotLogo height={28} variant="light" />
             </div>
-            <p className="text-[15px] leading-8 text-primary-foreground/78">
-              Independent, science-backed peptide recommendations tailored to your unique biology, goals, and lifestyle. We don't sell peptides — we analyze them.
+            <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
+              Independent matching and comparison for GLP-1 treatment. We vet providers so you can start with confidence.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              {TRUST_BADGES.map((badge) => (
-                <span
-                  key={badge}
-                  className="inline-flex min-h-11 items-center rounded-full border border-cyan-500/35 bg-cyan-500/10 px-4 py-2 text-[13px] font-semibold leading-tight text-cyan-300"
-                >
-                  {badge}
-                </span>
-              ))}
-            </div>
           </div>
 
           <FooterColumn title="Platform" links={PLATFORM_LINKS} />
-          <FooterColumn title="Research" links={RESEARCH_LINKS} />
-          <FooterColumn title="Learn" links={LEARN_LINKS} />
-
+          <FooterColumn title="Resources" links={COMPARE_LINKS} />
           <div>
             <FooterColumn title="Legal" links={LEGAL_LINKS} />
-            <div className="mt-6 border-t border-white/12 pt-6">
-              <h4 className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-primary-foreground/45">
+            <div className="mt-6 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+              <h4 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.35)" }}>
                 Contact
               </h4>
               <a
                 href="mailto:hello@peptidepilot.me"
-                className="text-[15px] text-primary-foreground/78 transition-colors hover:text-white"
+                className="text-sm transition-colors"
+                style={{ color: "rgba(255,255,255,0.65)" }}
               >
                 hello@peptidepilot.me
               </a>
@@ -75,39 +52,32 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 border-t border-white/12 pt-8 sm:mt-12 sm:pt-9">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-            <p className="text-xs text-primary-foreground/52">
-            © {new Date().getFullYear()} PeptidePilot. All rights reserved.
-            </p>
-            <p className="max-w-[460px] text-xs leading-7 text-primary-foreground/48 lg:text-right">
-              PeptidePilot provides educational information only. Nothing on this site constitutes medical advice, diagnosis, or treatment. All vendor links are independent third-party references — we have no financial relationship with any vendor. Always consult a qualified healthcare provider before starting any peptide protocol.
-            </p>
-          </div>
+        <div className="mt-10 pt-8 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+          <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+            &copy; {new Date().getFullYear()} PeptidePilot. All rights reserved.
+          </p>
+          <p className="max-w-[520px] text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.3)" }}>
+            PeptidePilot is an independent matching and comparison service. We earn affiliate commissions when you start treatment through our links. Not medical advice. Always consult a qualified healthcare provider before starting any treatment.
+          </p>
         </div>
       </div>
     </footer>
   );
 }
 
-function FooterColumn({
-  title,
-  links,
-}: {
-  title: string;
-  links: { href: string; label: string }[];
-}) {
+function FooterColumn({ title, links }: { title: string; links: { href: string; label: string }[] }) {
   return (
     <div>
-      <h4 className="mb-6 text-xs font-semibold uppercase tracking-[0.22em] text-primary-foreground/45">
+      <h4 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.35)" }}>
         {title}
       </h4>
-      <ul className="space-y-4">
+      <ul className="space-y-2.5">
         {links.map(({ href, label }) => (
           <li key={href}>
             <Link
               href={href}
-              className="text-[15px] text-primary-foreground/78 transition-colors hover:text-white"
+              className="text-sm transition-colors"
+              style={{ color: "rgba(255,255,255,0.65)" }}
             >
               {label}
             </Link>

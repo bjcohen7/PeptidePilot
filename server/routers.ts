@@ -10,6 +10,7 @@ import { publicProcedure, router } from "./_core/trpc";
 import { affiliatesRouter } from "./routers/affiliates";
 import { configRouter } from "./routers/config";
 import { quizRouter } from "./routers/quiz";
+import { experimentsRouter } from "./routers/experiments";
 import * as db from "./db";
 
 const buildLocalAdminOpenId = (email: string) =>
@@ -22,6 +23,7 @@ export const appRouter = router({
   affiliates: affiliatesRouter,
   config: configRouter,
   quiz: quizRouter,
+  experiments: experimentsRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     localAdminLogin: publicProcedure

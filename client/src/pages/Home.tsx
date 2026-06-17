@@ -131,7 +131,7 @@ export default function Home() {
             <span className="text-white font-semibold">100% independent.</span>
           </p>
 
-          <Link href="/quiz">
+          <Link href="/quiz/flow">
             <Button
               size="lg"
               className="bg-white text-primary hover:bg-white/90 transition-all font-semibold text-base px-8 py-5 sm:py-6 h-auto rounded-xl shadow-lg shadow-black/20 group w-full sm:w-auto"
@@ -418,7 +418,7 @@ export default function Home() {
           <p className="text-white/75 text-base sm:text-lg mb-7 sm:mb-8 max-w-lg mx-auto px-2">
             Take 5 minutes. Get a personalized peptide protocol built around your unique biology — completely free.
           </p>
-          <Link href="/quiz">
+          <Link href="/quiz/flow">
             <Button
               size="lg"
               className="bg-white text-primary hover:bg-white/90 font-semibold text-base px-8 py-5 sm:py-6 h-auto rounded-xl shadow-lg shadow-black/20 group w-full sm:w-auto"

@@ -1,415 +1,293 @@
-import { useEffect, useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, Link } from "wouter";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useQuiz } from "@/contexts/QuizContext";
-import { useSwipe } from "@/hooks/useSwipe";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
-import ContraindicationOffRamp from "@/components/bridge/ContraindicationOffRamp";
+import { useExperimentEvent } from "@/contexts/ExperimentContext";
 import { preloadProcessing, preloadResults } from "@/lib/preloadQuiz";
-import { QUIZ_QUESTIONS } from "../../../shared/scoring";
 
-type Direction = "forward" | "backward";
+const STATES = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
 
-// Indices of multi-select questions (0-indexed)
-const MULTI_SELECT_INDICES = new Set([13, 15, 16]); // Q14, Q16, Q17
-const TOP_TWO_INDEX = 19; // Q20
+type Step = {
+  type: "single" | "multi" | "select" | "inter" | "email";
+  question?: string;
+  subtitle?: string;
+  options?: string[];
+  interTitle?: string;
+  interBody?: string;
+  interIcon?: string;
+  interIconBg?: string;
+  interIconColor?: string;
+};
 
-// Q17 contraindication indices
-const PREGNANCY_INDEX = 0;
-const MTC_INDEX = 1;
+const STEPS: Step[] = [
+  { type: "single", question: "Which medication are you considering?", options: ["Semaglutide", "Tirzepatide", "Ozempic", "Wegovy", "Mounjaro", "Zepbound", "Not sure yet"], subtitle: "Not sure is fine — we'll help you compare." },
+  { type: "single", question: "What's your main goal?", options: ["Lose 10–25 lb", "Lose 25–50 lb", "Lose 50+ lb", "Maintain / metabolic health"] },
+  { type: "inter", interIcon: "✓", interIconBg: "var(--tint-mint)", interIconColor: "#138A5E", interTitle: "Nice — that helps", interBody: "Now let's find your best price. A few quick preferences and we'll line up vetted providers side by side. No medical forms — your provider handles that part." },
+  { type: "single", question: "Have you taken a GLP-1 before?", options: ["No, I'm new to this", "Yes, I'm currently on one", "I took one previously"] },
+  { type: "select", question: "Where will you receive your medication?", subtitle: "We detect your state from your location — confirm or change it. Providers are licensed by state, so we only show ones that serve you." },
+  { type: "multi", question: "What matters most to you?", subtitle: "Select all that apply.", options: ["Lowest price", "Fast shipping", "Lots of support & check-ins", "Brand-name medication"] },
+  { type: "multi", question: "How do you want to connect with a provider?", subtitle: "Select all that apply.", options: ["Messaging", "Video visits", "Phone"] },
+  { type: "single", question: "How would you like to pay?", options: ["Lowest-cost compounded (cash-pay)", "Brand-name through insurance", "Not sure — show me both"] },
+  { type: "inter", interIcon: "★", interIconBg: "var(--tint-lav)", interIconColor: "#6B4FD0", interTitle: "All set", interBody: "Your match is ready. We found vetted providers ready to see you this week." },
+  { type: "email", question: "Where should we send your match?", subtitle: "Optional — we'll send your results & price-drop alerts." },
+];
 
-function isMultiSelect(index: number) {
-  return MULTI_SELECT_INDICES.has(index);
-}
+let qCount = 0;
+for (const s of STEPS) { if (s.type !== "inter") qCount++; }
 
-function isTopTwo(index: number) {
-  return index === TOP_TWO_INDEX;
-}
-
-function hasContraindication(answer: number[]): boolean {
-  return answer.includes(PREGNANCY_INDEX) || answer.includes(MTC_INDEX);
+function StepIcon({ step }: { step: Step }) {
+  if (step.type === "inter") {
+    return <span className="ico" style={{ background: step.interIconBg, color: step.interIconColor }}>{step.interIcon}</span>;
+  }
+  return null;
 }
 
 export default function QuizFlow() {
   const [, navigate] = useLocation();
-  const { state, selectAnswer, goTo, completeQuiz, currentQuestion } = useQuiz();
-
-  const { currentIndex, answers, isComplete } = state;
-
-  const totalQuestions = QUIZ_QUESTIONS.length;
-  const isFirst = currentIndex === 0;
-  const multiSelect = isMultiSelect(currentIndex);
-  const topTwo = isTopTwo(currentIndex);
-
-  const [showOffRamp, setShowOffRamp] = useState(false);
-
-  const [animClass, setAnimClass] = useState<string>("quiz-slide-enter-forward");
+  const trackExp = useExperimentEvent();
+  const [stepIdx, setStepIdx] = useState(0);
+  const [answers, setAnswers] = useState<(number | number[] | string)[]>(STEPS.map(() => null));
+  const [stateVal, setStateVal] = useState("New York");
+  const [nameVal, setNameVal] = useState("");
+  const [emailVal, setEmailVal] = useState("");
+  const [animClass, setAnimClass] = useState("quiz-slide-enter-forward");
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const directionRef = useRef<Direction>("forward");
-  const prevIndexRef = useRef(currentIndex);
-
-  // Refs to avoid stale closures in callbacks
-  const answersRef = useRef(answers);
-  answersRef.current = answers;
-  const currentIndexRef = useRef(currentIndex);
-  currentIndexRef.current = currentIndex;
-
-  const [pulseIndex, setPulseIndex] = useState<number | null>(null);
+  const dirRef = useRef<"forward" | "backward">("forward");
+  const startedRef = useRef(false);
 
   useEffect(() => {
-    if (currentIndex !== prevIndexRef.current) {
-      const dir = directionRef.current;
-      setAnimClass(dir === "forward" ? "quiz-slide-enter-forward" : "quiz-slide-enter-backward");
-      prevIndexRef.current = currentIndex;
-      setIsTransitioning(false);
-    }
-  }, [currentIndex]);
+    if (!startedRef.current) { startedRef.current = true; trackExp("quiz_start"); }
+  }, [trackExp]);
 
   useEffect(() => {
-    void preloadProcessing();
-    void preloadResults();
-  }, []);
+    if (stepIdx > 0) trackExp("quiz_question", { question: stepIdx + 1 });
+  }, [stepIdx, trackExp]);
 
-  useEffect(() => {
-    if (isComplete) {
-      navigate("/processing");
-    }
-  }, [isComplete, navigate]);
-
-  const triggerAdvance = useCallback(
-    (dir: Direction, advanceFn: () => void) => {
-      if (isTransitioning) return;
-      directionRef.current = dir;
-      setIsTransitioning(true);
-      setAnimClass(dir === "forward" ? "quiz-slide-exit-forward" : "quiz-slide-exit-backward");
-      setTimeout(() => {
-        advanceFn();
-      }, 220);
-    },
-    [isTransitioning],
-  );
+  useEffect(() => { void preloadProcessing(); void preloadResults(); }, []);
 
   const advance = useCallback(() => {
-    if (currentIndex < totalQuestions - 1) {
-      goTo(currentIndex + 1);
+    if (stepIdx < STEPS.length - 1) {
+      setStepIdx(i => i + 1);
     } else {
-      completeQuiz();
+      trackExp("quiz_complete");
+      const finalAnswers = [...answers];
+      finalAnswers[STEPS.findIndex(s => s.type === "select")] = stateVal;
+      const nameIdx = STEPS.findIndex(s => s.type === "email");
+      if (nameVal || emailVal) {
+        finalAnswers[nameIdx] = [nameVal || "", emailVal || ""];
+      }
+      sessionStorage.setItem("pp_quiz_answers", JSON.stringify(finalAnswers));
+      sessionStorage.setItem("pp_quiz_email", emailVal || "");
+      sessionStorage.setItem("pp_quiz_name", nameVal || "");
+      navigate("/processing");
     }
-  }, [currentIndex, totalQuestions, goTo, completeQuiz]);
+  }, [stepIdx, answers, stateVal, nameVal, emailVal, navigate, trackExp]);
 
   const goBack = useCallback(() => {
-    if (currentIndex > 0) {
-      goTo(currentIndex - 1);
-    }
-  }, [currentIndex, goTo]);
+    if (stepIdx > 0) setStepIdx(i => i - 1);
+  }, [stepIdx]);
 
-  // ── Single-select handler ──────────────────────────────────────────────
+  const triggerAdvance = useCallback((dir: "forward" | "backward", fn: () => void) => {
+    if (isTransitioning) return;
+    dirRef.current = dir;
+    setIsTransitioning(true);
+    setAnimClass(dir === "forward" ? "quiz-slide-exit-forward" : "quiz-slide-exit-backward");
+    setTimeout(() => { fn(); setIsTransitioning(false); setAnimClass(dir === "forward" ? "quiz-slide-enter-forward" : "quiz-slide-enter-backward"); }, 220);
+  }, [isTransitioning]);
 
-  const handleSingleSelect = useCallback(
-    (idx: number) => {
-      if (isTransitioning) return;
-      const val = answersRef.current[currentIndexRef.current];
-      if (val !== null) return;
-      selectAnswer(idx);
-      setTimeout(() => {
-        triggerAdvance("forward", advance);
-      }, 320);
-    },
-    [isTransitioning, selectAnswer, triggerAdvance, advance],
-  );
+  const handleSingle = useCallback((idx: number) => {
+    if (isTransitioning || answers[stepIdx] !== null) return;
+    const next = [...answers]; next[stepIdx] = idx; setAnswers(next);
+    setTimeout(() => triggerAdvance("forward", advance), 320);
+  }, [isTransitioning, answers, stepIdx, triggerAdvance, advance]);
 
-  // ── Multi-select helpers ───────────────────────────────────────────────
-
-  const getCurrentMulti = useCallback((): number[] => {
-    const val = answersRef.current[currentIndexRef.current];
-    return Array.isArray(val) ? val : [];
-  }, []);
-
-  const handleMultiToggle = useCallback(
-    (idx: number) => {
-      if (isTransitioning) return;
-      const current: number[] = getCurrentMulti();
-      const ci = currentIndexRef.current;
-
-      if (topTwo) {
-        // Q20: top-2 behavior
-        if (current.includes(idx)) {
-          const next = current.filter((i) => i !== idx);
-          selectAnswer(next);
-          return;
-        }
-        if (current.length >= 2) {
-          setPulseIndex(idx);
-          setTimeout(() => setPulseIndex(null), 300);
-          return;
-        }
-        const next = [...current, idx];
-        selectAnswer(next);
-        if (next.length === 2) {
-          setTimeout(() => {
-            triggerAdvance("forward", advance);
-          }, 400);
-        }
-        return;
-      }
-
-      // Regular multi-select
-      const optionsLen = QUIZ_QUESTIONS[ci]?.options.length ?? 0;
-      const isNoneIndex = optionsLen - 1;
-      if (idx === isNoneIndex) {
-        selectAnswer([idx]);
-        return;
-      }
-      if (current.includes(isNoneIndex)) {
-        selectAnswer([idx]);
-        return;
-      }
-      if (current.includes(idx)) {
-        selectAnswer(current.filter((i) => i !== idx));
-      } else {
-        selectAnswer([...current, idx]);
-      }
-    },
-    [isTransitioning, selectAnswer, topTwo, triggerAdvance, advance, getCurrentMulti],
-  );
-
-  // ── Multi-select continue ──────────────────────────────────────────────
+  const handleMultiToggle = useCallback((idx: number) => {
+    if (isTransitioning) return;
+    const current = (Array.isArray(answers[stepIdx]) ? answers[stepIdx] : []) as number[];
+    const next = current.includes(idx) ? current.filter(i => i !== idx) : [...current, idx];
+    const a = [...answers]; a[stepIdx] = next; setAnswers(a);
+  }, [isTransitioning, answers, stepIdx]);
 
   const handleMultiContinue = useCallback(() => {
-    const current = getCurrentMulti();
-    const ci = currentIndexRef.current;
-    if (current.length === 0 || isTransitioning) return;
-
-    // Q17: check for contraindications
-    if (ci === 16 && hasContraindication(current)) {
-      setShowOffRamp(true);
-      return;
-    }
-
+    const current = answers[stepIdx];
+    if (!Array.isArray(current) || current.length === 0 || isTransitioning) return;
     triggerAdvance("forward", advance);
-  }, [isTransitioning, triggerAdvance, advance, getCurrentMulti]);
+  }, [answers, stepIdx, isTransitioning, triggerAdvance, advance]);
 
-  // ── Back ───────────────────────────────────────────────────────────────
+  const skipToResults = useCallback(() => {
+    trackExp("quiz_complete");
+    const finalAnswers = [...answers];
+    finalAnswers[STEPS.findIndex(s => s.type === "select")] = stateVal;
+    sessionStorage.setItem("pp_quiz_answers", JSON.stringify(finalAnswers));
+    navigate("/processing");
+  }, [answers, stateVal, navigate, trackExp]);
 
-  const handleBack = useCallback(() => {
-    if (showOffRamp) {
-      setShowOffRamp(false);
-      return;
-    }
-    if (isFirst || isTransitioning) return;
-    triggerAdvance("backward", goBack);
-  }, [showOffRamp, isFirst, isTransitioning, triggerAdvance, goBack]);
-
-  // ── Swipe ──────────────────────────────────────────────────────────────
-
-  const handleSwipeLeft = useCallback(() => {
-    if (showOffRamp) return;
-    if (multiSelect || topTwo) {
-      const current = getCurrentMulti();
-      if (current.length > 0 && !isTransitioning) {
-        handleMultiContinue();
-      }
-      return;
-    }
-    const val = answersRef.current[currentIndexRef.current];
-    if (val !== null && !isTransitioning) {
-      triggerAdvance("forward", advance);
-    }
-  }, [showOffRamp, multiSelect, topTwo, getCurrentMulti, handleMultiContinue, isTransitioning, triggerAdvance, advance]);
-
-  const swipeHandlers = useSwipe({
-    onSwipeLeft: handleSwipeLeft,
-    onSwipeRight: handleBack,
-    threshold: 60,
-    verticalThreshold: 80,
-  });
-
-  if (!currentQuestion) return null;
-
-  const multiSelection = getCurrentMulti();
-  const multiHasSelection = multiSelection.length > 0;
-
-  // ── Off-ramp screen ────────────────────────────────────────────────────
-
-  if (showOffRamp) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col overflow-hidden">
-        <header className="border-b border-border/60 bg-white/95 backdrop-blur-md sticky top-0 z-40">
-          <div className="container">
-            <div className="flex items-center justify-between h-14">
-              <Link href="/" className="flex items-center">
-                <PeptidePilotLogo height={30} variant="dark" />
-              </Link>
-            </div>
-          </div>
-        </header>
-        <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4">
-          <ContraindicationOffRamp />
-        </main>
-      </div>
-    );
-  }
-
-  const singleVal = answersRef.current[currentIndexRef.current];
+  const step = STEPS[stepIdx];
+  const qSoFar = STEPS.slice(0, stepIdx + 1).filter(s => s.type !== "inter").length;
+  const multiSelection = Array.isArray(answers[stepIdx]) ? answers[stepIdx] as number[] : [];
 
   return (
-    <div
-      className="min-h-screen bg-background flex flex-col overflow-hidden"
-      {...swipeHandlers}
-    >
-      <header className="border-b border-border/60 bg-white/95 backdrop-blur-md sticky top-0 z-40">
+    <div className="min-h-screen bg-background flex flex-col overflow-hidden">
+      <header className="border-b sticky top-0 z-40" style={{ borderColor: "var(--line)", background: "rgba(251,252,254,.95)", backdropFilter: "blur(12px)" }}>
         <div className="container">
           <div className="flex items-center justify-between h-14">
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center no-underline">
               <PeptidePilotLogo height={30} variant="dark" />
             </Link>
-            <span className="text-xs sm:text-sm text-muted-foreground font-medium tabular-nums">
-              {currentIndex + 1} <span className="text-border">/</span> {totalQuestions}
-            </span>
+            {step.type !== "inter" && (
+              <span className="font-mono text-xs" style={{ color: "var(--muted)" }}>
+                Question {qSoFar} of {qCount}
+              </span>
+            )}
           </div>
-          <div className="h-1.5 bg-border/50 -mx-4 sm:-mx-6 lg:-mx-8">
-            <div
-              className="progress-bar-fill h-full transition-all duration-500"
-              style={{ width: `${Math.round((currentIndex / totalQuestions) * 100)}%` }}
-            />
-          </div>
+          {step.type !== "inter" && (
+            <div className="h-1.5 -mx-[22px] sm:-mx-[22px]" style={{ background: "var(--secondary)" }}>
+              <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${Math.round((qSoFar / qCount) * 100)}%`, background: "var(--grad-cta)" }} />
+            </div>
+          )}
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4 overflow-hidden">
-        <div key={currentIndex} className={`w-full max-w-2xl ${animClass}`}>
-          <h2
-            className="text-xl sm:text-2xl md:text-3xl font-normal text-foreground mb-7 sm:mb-8 leading-snug"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
-          >
-            {currentQuestion.question}
-          </h2>
+      <main className="flex-1 flex flex-col py-8 sm:py-12 px-4 overflow-hidden" style={{ maxWidth: 600, margin: "30px auto", width: "100%" }}>
+        <div key={stepIdx} className={`w-full ${animClass}`} style={{ animation: animClass.startsWith("quiz-slide-enter") ? animClass.replace("quiz-slide-", "") : "none" }}>
 
-          <div className="space-y-3">
-            {currentQuestion.options.map((option, idx) => {
-              const selected = multiSelect || topTwo
-                ? multiSelection.includes(idx)
-                : singleVal === idx;
-              const showPulse = topTwo && pulseIndex === idx;
-
-              return (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    if (multiSelect || topTwo) {
-                      handleMultiToggle(idx);
-                    } else {
-                      handleSingleSelect(idx);
-                    }
-                  }}
-                  disabled={!multiSelect && !topTwo && (singleVal !== null || isTransitioning)}
-                  aria-pressed={selected}
-                  className={`answer-btn ${multiSelect ? "option-card--compact" : ""} ${selected ? "selected" : ""} ${
-                    showPulse ? "animate-pulse-once" : ""
-                  } ${
-                    !multiSelect && !topTwo && singleVal !== null && !selected
-                      ? "opacity-40 cursor-default"
-                      : ""
-                  }`}
-                  style={{ animationDelay: `${idx * 35}ms` }}
-                >
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <div
-                      className={`${
-                        multiSelect || topTwo
-                          ? "w-5 h-5 sm:w-6 sm:h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all"
-                          : "answer-indicator w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all"
-                      } ${
-                        selected
-                          ? "border-accent bg-accent"
-                          : "border-border"
-                      }`}
-                    >
-                      {selected && (
-                        multiSelect || topTwo ? (
-                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                        ) : (
-                          <div className="w-2 h-2 rounded-full bg-white" />
-                        )
-                      )}
-                    </div>
-                    <span className="text-sm sm:text-base leading-snug text-left flex-1">
-                      {option}
-                    </span>
-                    {selected && !multiSelect && !topTwo ? (
-                      <span className="text-xs font-semibold uppercase tracking-wide text-accent">
-                        Selected
-                      </span>
-                    ) : null}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {(multiSelect || topTwo) && (
-            <div className="mt-6 flex flex-col items-center gap-3">
-              <Button
-                onClick={handleMultiContinue}
-                disabled={!multiHasSelection || isTransitioning}
-                className="gap-2 px-6"
-              >
-                Continue
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-              {topTwo && (
-                <p className="text-xs text-muted-foreground text-center">
-                  Select up to 2 — choose the ones that resonate most.
-                </p>
-              )}
-              {multiSelect && !topTwo && (
-                <p className="text-xs text-muted-foreground text-center">
-                  Select all that apply, then continue.
-                </p>
-              )}
+          {step.type === "inter" && (
+            <div className="inter">
+              <StepIcon step={step} />
+              <span className="pp-eyebrow" style={{ justifyContent: "center", marginBottom: 18 }}>{step.interTitle}</span>
+              <h2 style={{ fontSize: "1.6rem", marginBottom: 8 }}>{step.interTitle}</h2>
+              <p style={{ color: "var(--ink-soft)", maxWidth: 400, margin: "0 auto 6px" }}>{step.interBody}</p>
+              <div style={{ marginTop: 20 }}>
+                <button className="pp-btn pp-btn-primary pp-btn-lg" onClick={() => triggerAdvance("forward", advance)}>Continue →</button>
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <button className="linkbtn" onClick={goBack} style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>← Back</button>
+              </div>
             </div>
           )}
 
+          {step.type === "single" && (
+            <>
+              <h2 style={{ fontSize: "1.7rem", marginBottom: 6 }}>{step.question}</h2>
+              {step.subtitle && <p style={{ color: "var(--muted)", marginBottom: 18 }}>{step.subtitle}</p>}
+              <div className="flex flex-col gap-[10px]" style={{ marginTop: 18 }}>
+                {step.options.map((opt, i) => {
+                  const sel = answers[stepIdx] === i;
+                  return (
+                    <div key={i} className={`qopt ${sel ? "sel" : ""}`} onClick={() => handleSingle(i)} role="button" tabIndex={0} onKeyDown={e => e.key === "Enter" && handleSingle(i)}>
+                      {opt}
+                      <span className="ck">✓</span>
+                    </div>
+                  );
+                })}
+              </div>
+              {stepIdx > 0 && (
+                <div style={{ marginTop: 22 }}>
+                  <button className="linkbtn" onClick={goBack} style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>← Back</button>
+                </div>
+              )}
+            </>
+          )}
+
+          {step.type === "multi" && (
+            <>
+              <h2 style={{ fontSize: "1.7rem", marginBottom: 6 }}>{step.question}</h2>
+              {step.subtitle && <p style={{ color: "var(--muted)", marginBottom: 18 }}>{step.subtitle}</p>}
+              <div className="flex flex-col gap-[10px]" style={{ marginTop: 18 }}>
+                {step.options.map((opt, i) => (
+                  <div key={i} className={`qopt ${multiSelection.includes(i) ? "sel" : ""}`} onClick={() => handleMultiToggle(i)} role="button" tabIndex={0} onKeyDown={e => e.key === "Enter" && handleMultiToggle(i)}>
+                    {opt}
+                    <span className="ck">✓</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 22 }} className="flex items-center justify-between">
+                <button className="linkbtn" onClick={goBack} style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>← Back</button>
+                <button
+                  className="pp-btn pp-btn-primary"
+                  onClick={handleMultiContinue}
+                  disabled={multiSelection.length === 0 || isTransitioning}
+                  style={{ opacity: multiSelection.length === 0 || isTransitioning ? 0.5 : 1 }}
+                >
+                  Continue →
+                </button>
+              </div>
+            </>
+          )}
+
+          {step.type === "select" && (
+            <>
+              <h2 style={{ fontSize: "1.7rem", marginBottom: 6 }}>{step.question}</h2>
+              {step.subtitle && <p style={{ color: "var(--muted)", marginBottom: 18 }}>{step.subtitle}</p>}
+              <select
+                value={stateVal}
+                onChange={e => setStateVal(e.target.value)}
+                className="qsel"
+                style={{ width: "100%", padding: "14px 16px", border: "1.5px solid var(--line)", borderRadius: 14, font: "inherit", marginTop: 18 }}
+              >
+                <option value="">Select your state…</option>
+                {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <p className="small" style={{ color: "var(--sky-deep)", marginTop: 10, fontSize: ".85rem" }}>📍 Detected from your location — change it anytime above.</p>
+              <div style={{ marginTop: 22 }} className="flex items-center justify-between">
+                <button className="linkbtn" onClick={goBack} style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>← Back</button>
+                <button className="pp-btn pp-btn-primary" onClick={() => triggerAdvance("forward", advance)}>Continue</button>
+              </div>
+            </>
+          )}
+
+          {step.type === "email" && (
+            <>
+              <h2 style={{ fontSize: "1.7rem", marginBottom: 6 }}>{step.question} <span style={{ color: "var(--muted)", fontSize: "1rem", fontWeight: 400 }}>(optional)</span></h2>
+              {step.subtitle && <p style={{ color: "var(--muted)", marginBottom: 18 }}>{step.subtitle}</p>}
+              <div className="flex flex-col gap-[10px]" style={{ marginTop: 18 }}>
+                <input
+                  value={nameVal} onChange={e => setNameVal(e.target.value)}
+                  placeholder="First name"
+                  style={{ width: "100%", padding: "14px 16px", border: "1.5px solid var(--line)", borderRadius: 14, font: "inherit" }}
+                />
+                <input
+                  value={emailVal} onChange={e => setEmailVal(e.target.value)}
+                  type="email" placeholder="you@email.com"
+                  style={{ width: "100%", padding: "14px 16px", border: "1.5px solid var(--line)", borderRadius: 14, font: "inherit", marginTop: 10 }}
+                />
+              </div>
+              <div style={{ marginTop: 22 }} className="flex items-center justify-between">
+                <button className="linkbtn" onClick={skipToResults} style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>Skip — show results</button>
+                <button className="pp-btn pp-btn-primary pp-btn-lg" onClick={() => triggerAdvance("forward", advance)}>See my match →</button>
+              </div>
+            </>
+          )}
 
         </div>
       </main>
 
-      <footer className="border-t border-border/60 bg-white/95 backdrop-blur-md sticky bottom-0">
+      <footer className="border-t" style={{ borderColor: "var(--line)", background: "rgba(251,252,254,.95)" }}>
         <div className="container">
           <div className="flex items-center justify-between h-16">
-            <Button
-              variant="ghost"
-              onClick={handleBack}
-              disabled={(isFirst && !showOffRamp) || isTransitioning}
-              className="text-muted-foreground hover:text-foreground gap-2 h-10 px-3 sm:px-4"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm">Back</span>
-            </Button>
+            <button onClick={goBack} disabled={stepIdx === 0 || isTransitioning} className="linkbtn" style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: stepIdx === 0 ? "default" : "pointer", font: "inherit", opacity: stepIdx === 0 ? 0.3 : 1 }}>
+              ← Back
+            </button>
 
             <div className="flex items-center gap-1">
-              {Array.from({ length: totalQuestions }).map((_, i) => {
-                const answered = answers[i] !== null;
-                const isActive = i === currentIndex;
+              {STEPS.map((s, i) => {
+                if (s.type === "inter") return null;
+                const answered = answers[i] !== null || (i === STEPS.findIndex(x => x.type === "select") && stateVal) || (i === STEPS.findIndex(x => x.type === "email"));
+                const isActive = i === stepIdx;
+                const qIdx = STEPS.slice(0, i + 1).filter(x => x.type !== "inter").length;
                 return (
-                  <div
-                    key={i}
-                    className={`rounded-full transition-all ${
-                      isActive
-                        ? "w-4 h-2 bg-accent"
-                        : answered
-                          ? "w-2 h-2 bg-accent/40"
-                          : "w-2 h-2 bg-border"
-                    }`}
+                  <div key={i}
+                    className="rounded-full transition-all"
+                    style={{
+                      width: isActive ? 16 : 8,
+                      height: 8,
+                      background: isActive ? "var(--sky-deep)" : answered ? "var(--sky)" : "var(--line)"
+                    }}
                   />
                 );
               })}
             </div>
 
-            <div className="w-16 sm:w-20" />
+            <div style={{ width: 80 }} />
           </div>
         </div>
       </footer>
