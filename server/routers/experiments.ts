@@ -167,7 +167,7 @@ export const experimentsRouter = router({
             name: v.name,
             label: v.label,
             weight: v.trafficWeight,
-            config: (v.config.funnel ?? []).map((s) => `${s.step} · ${s.template}`),
+            config: v.config,
             funnel: [
               Number(f.sessions ?? 0),
               Number(f.quizStart ?? 0),
@@ -391,7 +391,7 @@ export const experimentsRouter = router({
           .filter((q): q is number => q !== null);
 
         const total = questions.length;
-        const nQ = v.config.funnel.some((s) => s.template.includes("q12")) ? 12 : 22;
+        const nQ = total > 0 ? Math.max(...questions) : 0;
         const data = [];
         for (let i = 1; i <= nQ; i++) {
           const reached = questions.filter((q) => q >= i).length;

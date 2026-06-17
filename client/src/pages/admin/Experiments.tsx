@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { twoPropTest } from "@/lib/stats";
-import type { VariantConfig } from "../../../../drizzle/schema";
 
 const C = {
   bg: "#F6F7F9", card: "#FFFFFF", inner: "#FAFBFC",
@@ -71,13 +70,15 @@ function Bars({ data, color, height = 30 }: { data: number[]; color: string; hei
   );
 }
 
-function Panel({ title, right, children, className = "" }: { title: string; right?: string; children: React.ReactNode; className?: string }) {
+function Panel({ title, right, children, className = "" }: { title?: string; right?: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
     <section className={"rounded-lg border " + className} style={{ borderColor: C.border, background: C.card }}>
-      <div className="flex items-center justify-between px-4 pt-3 pb-2 gap-2">
-        <Micro style={{ color: C.ink, fontSize: 10.5 }}>{title}</Micro>
-        {right && <Micro style={{ color: C.faint, fontWeight: 500, textTransform: "none", letterSpacing: 0 }}>{right}</Micro>}
-      </div>
+      {title && (
+        <div className="flex items-center justify-between px-4 pt-3 pb-2 gap-2">
+          <Micro style={{ color: C.ink, fontSize: 10.5 }}>{title}</Micro>
+          {right && <span style={{ color: C.faint, fontWeight: 500, fontSize: 10, letterSpacing: 0 }}>{right}</span>}
+        </div>
+      )}
       <div className="px-4 pb-4">{children}</div>
     </section>
   );
@@ -192,7 +193,7 @@ function OverviewView({ experiments, goExperiment }: {
   experiments: {
     id: string; name: string; slug: string; status: string; started: string; days: number;
     hypothesis: string; trend: Record<string, string | number>[];
-    variants: { id?: number; name: string; label: string; weight: number; funnel: number[]; config: string[] }[];
+    variants: { id?: number; name: string; label: string; weight: number; funnel: number[]; config: Record<string, unknown> }[];
   }[];
   goExperiment: (id: string) => void;
 }) {
@@ -274,7 +275,7 @@ function ExperimentsView({ experiments, selId, setSelId, openModal }: {
   experiments: {
     id: string; name: string; slug: string; status: string; started: string; days: number;
     hypothesis: string; trend: Record<string, string | number>[];
-    variants: { id?: number; name: string; label: string; weight: number; funnel: number[]; config: string[] }[];
+    variants: { id?: number; name: string; label: string; weight: number; funnel: number[]; config: Record<string, unknown> }[];
   }[];
   selId: string;
   setSelId: (id: string) => void;
@@ -407,7 +408,11 @@ function ExperimentsView({ experiments, selId, setSelId, openModal }: {
               <VChip vi={vi} name={v.name} />
               <span className="text-sm" style={{ color: C.ink }}>{v.label}</span>
               <span className="text-xs" style={{ color: C.faint }}>{v.weight}% traffic</span>
-              <span className="text-xs ml-auto" style={{ color: C.faint }}>{v.config.join(", ") || "—"}</span>
+              <span className="text-xs ml-auto truncate" style={{ color: C.faint, maxWidth: 200 }}>
+                {Object.keys(v.config).length > 0
+                  ? Object.entries(v.config).map(([k, val]) => `${k}: ${val}`).join(", ")
+                  : "—"}
+              </span>
             </div>
           ))}
         </div>
@@ -420,7 +425,7 @@ function FunnelsView({ experiments }: {
   experiments: {
     id: string; name: string; slug: string; status: string; started: string; days: number;
     hypothesis: string; trend: Record<string, string | number>[];
-    variants: { id?: number; name: string; label: string; weight: number; funnel: number[]; config: string[] }[];
+    variants: { id?: number; name: string; label: string; weight: number; funnel: number[]; config: Record<string, unknown> }[];
   }[];
 }) {
   const selExp = experiments[0];
@@ -431,20 +436,15 @@ function FunnelsView({ experiments }: {
     { enabled: Boolean(selExp.id) },
   );
 
-  const maxQ = Math.max(...(dropoff?.map((d) => d.question) ?? [0]));
-  const questionLabels = Array.from({ length: maxQ }, (_, i) => `Q${i + 1}`);
-
-  const allVariantPcts: { vi: number; label: string; vals: number[] }[] = [];
-  const variantSet = new Set(dropoff?.map((d) => d.vi) ?? []);
-  for (const vi of variantSet) {
-    const rows = dropoff?.filter((d) => d.vi === vi) ?? [];
-    const vals = questionLabels.map((_, qi) => {
-      const r = rows.find((d) => d.question === qi + 1);
-      return r ? r.retained : 100;
-    });
-    const label = experiments[0]?.variants[vi]?.label ?? `V${vi}`;
-    allVariantPcts.push({ vi, label, vals });
-  }
+  const allVariantPcts: { vi: number; label: string; vals: number[] }[] = (dropoff ?? []).map((d) => {
+    const vi = selExp.variants.findIndex((v) => v.label === d.variantName || v.name === d.variantName);
+    return {
+      vi: vi >= 0 ? vi : 0,
+      label: selExp.variants[vi]?.label ?? d.variantName,
+      vals: d.data.map((q) => q.pct),
+    };
+  });
+  const questionLabels = dropoff?.[0]?.data.map((q) => q.q.toUpperCase()) ?? [];
 
   const { data: eventRows = [] } = trpc.experiments.events.useQuery({
     limit: 50,
@@ -558,7 +558,7 @@ function EventsView() {
 }
 
 function SessionsView() {
-  const { data: sessions = [] } = trpc.experiments.sessions.useQuery(undefined, { refetchInterval: 10000 });
+  const { data: sessions = [] } = trpc.experiments.sessions.useQuery({}, { refetchInterval: 10000 });
 
   return (
     <div className="rounded-lg border overflow-x-auto" style={{ borderColor: C.border, background: C.card }}>
@@ -578,7 +578,7 @@ function SessionsView() {
           {sessions.map((s, i) => (
             <tr key={i} className="border-b last:border-0" style={{ borderColor: C.innerBorder }}>
               <td className="px-3 py-1.5 whitespace-nowrap" style={{ color: C.faint, fontSize: 11 }}>{s.started}</td>
-              <td className="px-3 py-1.5 font-mono" style={{ color: C.mut, fontSize: 10.5 }}>{s.sessionId?.slice(0, 16)}…</td>
+              <td className="px-3 py-1.5 font-mono" style={{ color: C.mut, fontSize: 10.5 }}>{s.id?.slice(0, 16)}…</td>
               <td className="px-3 py-1.5" style={{ color: C.mut, fontSize: 11 }}>{s.landing}</td>
               <td className="px-3 py-1.5" style={{ color: C.mut, fontSize: 11 }}>{s.ref}</td>
               <td className="px-3 py-1.5" style={{ color: C.mut, fontSize: 11 }}>{s.utm}</td>
@@ -592,7 +592,7 @@ function SessionsView() {
                   {!s.assignments.length && <span style={{ color: C.faint, fontSize: 10.5 }}>—</span>}
                 </div>
               </td>
-              <td className="px-3 py-1.5" style={{ color: C.ink, fontWeight: 600 }}>{s.eventCount}</td>
+              <td className="px-3 py-1.5" style={{ color: C.ink, fontWeight: 600 }}>{s.evts}</td>
             </tr>
           ))}
           {!sessions.length && (
@@ -653,9 +653,12 @@ function NewExperimentModal({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [hypothesis, setHypothesis] = useState("");
-  const [variants, setVariants] = useState([
-    { name: "control", label: "Control", funnel: ["quiz_flow", "quiz_complete", "results", "affiliate_click"], config: {} },
-    { name: "variant_a", label: "Variant A", funnel: ["quiz_flow", "quiz_complete", "results", "affiliate_click"], config: {} },
+  const [variants, setVariants] = useState<{
+    name: string; label: string; config: Record<string, string>;
+    entries: { key: string; value: string }[];
+  }[]>([
+    { name: "control", label: "Control", config: {}, entries: [] },
+    { name: "variant_a", label: "Variant A", config: {}, entries: [] },
   ]);
 
   const handleCreate = () => {
@@ -668,10 +671,18 @@ function NewExperimentModal({ onClose }: { onClose: () => void }) {
       name: name.trim(),
       slug: slug.trim(),
       hypothesis: hypothesis.trim() || undefined,
-      variants: variants.map((v, i) => ({
-        ...v,
-        trafficWeight: Math.round(100 / variants.length) + (i === 0 ? 100 - totalWeight : 0),
-      })),
+      variants: variants.map((v, i) => {
+        const config: Record<string, string> = {};
+        for (const e of v.entries) {
+          if (e.key.trim()) config[e.key.trim()] = e.value;
+        }
+        return {
+          name: v.name,
+          label: v.label,
+          trafficWeight: Math.round(100 / variants.length) + (i === 0 ? 100 - totalWeight : 0),
+          config,
+        };
+      }),
     });
   };
 
@@ -698,16 +709,30 @@ function NewExperimentModal({ onClose }: { onClose: () => void }) {
           <div>
             <Micro>Variants</Micro>
             {variants.map((v, i) => (
-              <div key={i} className="flex items-center gap-2 mt-2">
-                <input value={v.name} onChange={(e) => { const vv = [...variants]; vv[i] = { ...vv[i], name: e.target.value }; setVariants(vv); }} placeholder="name" className="flex-1 rounded-lg border px-2.5 py-1.5 text-sm" style={{ borderColor: C.border, color: C.ink }} />
-                <input value={v.label} onChange={(e) => { const vv = [...variants]; vv[i] = { ...vv[i], label: e.target.value }; setVariants(vv); }} placeholder="label" className="flex-1 rounded-lg border px-2.5 py-1.5 text-sm" style={{ borderColor: C.border, color: C.ink }} />
-                {variants.length > 2 && (
-                  <button onClick={() => setVariants(variants.filter((_, j) => j !== i))} style={{ color: C.red, fontSize: 16, lineHeight: 1 }}>×</button>
-                )}
+              <div key={i} className="mt-2 p-3 rounded-lg border" style={{ borderColor: C.innerBorder, background: C.inner }}>
+                <div className="flex items-center gap-2">
+                  <input value={v.name} onChange={(e) => { const vv = [...variants]; vv[i] = { ...vv[i], name: e.target.value }; setVariants(vv); }} placeholder="name" className="flex-1 rounded-lg border px-2.5 py-1.5 text-sm" style={{ borderColor: C.border, color: C.ink }} />
+                  <input value={v.label} onChange={(e) => { const vv = [...variants]; vv[i] = { ...vv[i], label: e.target.value }; setVariants(vv); }} placeholder="label" className="flex-1 rounded-lg border px-2.5 py-1.5 text-sm" style={{ borderColor: C.border, color: C.ink }} />
+                  {variants.length > 2 && (
+                    <button onClick={() => setVariants(variants.filter((_, j) => j !== i))} style={{ color: C.red, fontSize: 16, lineHeight: 1 }}>×</button>
+                  )}
+                </div>
+                <div className="mt-2 space-y-1">
+                  <Micro style={{ fontSize: 9 }}>Config</Micro>
+                  {v.entries.map((e, ei) => (
+                    <div key={ei} className="flex items-center gap-1.5">
+                      <input value={e.key} onChange={(ev) => { const vv = [...variants]; vv[i].entries[ei] = { ...vv[i].entries[ei], key: ev.target.value }; setVariants(vv); }} placeholder="key" className="flex-1 rounded border px-2 py-1 text-xs" style={{ borderColor: C.border, color: C.ink }} />
+                      <input value={e.value} onChange={(ev) => { const vv = [...variants]; vv[i].entries[ei] = { ...vv[i].entries[ei], value: ev.target.value }; setVariants(vv); }} placeholder="value" className="flex-[2] rounded border px-2 py-1 text-xs" style={{ borderColor: C.border, color: C.ink }} />
+                      <button onClick={() => { const vv = [...variants]; vv[i].entries = vv[i].entries.filter((_, j) => j !== ei); setVariants(vv); }} style={{ color: C.red, fontSize: 14, lineHeight: 1 }}>×</button>
+                    </div>
+                  ))}
+                  <button onClick={() => { const vv = [...variants]; vv[i].entries = [...vv[i].entries, { key: "", value: "" }]; setVariants(vv); }}
+                    className="text-xs font-medium" style={{ color: C.blue }}>+ Add config key</button>
+                </div>
               </div>
             ))}
             {variants.length < 6 && (
-              <button onClick={() => setVariants([...variants, { name: "", label: "", funnel: ["quiz_flow", "quiz_complete", "results", "affiliate_click"], config: {} }])}
+              <button onClick={() => setVariants([...variants, { name: "", label: "", config: {}, entries: [] }])}
                 className="mt-2 text-sm font-medium" style={{ color: C.blue }}>+ Add variant</button>
             )}
           </div>

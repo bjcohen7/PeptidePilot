@@ -186,10 +186,7 @@ export const clickEvents = mysqlTable("click_events", {
 export type ClickEvent = typeof clickEvents.$inferSelect;
 export type InsertClickEvent = typeof clickEvents.$inferInsert;
 
-export type VariantConfig = {
-  funnel: { step: string; page: string; template: string }[];
-  copy?: Record<string, string>;
-};
+export type VariantConfig = Record<string, unknown>;
 
 export const experiments = mysqlTable("experiments", {
   id: int("id").autoincrement().primaryKey(),

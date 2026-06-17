@@ -15,7 +15,7 @@ import GoalPage from "./pages/pseo/GoalPage";
 import ComparisonPage from "./pages/pseo/ComparisonPage";
 import ForConditionPage from "./pages/pseo/ForConditionPage";
 import ReviewPage from "./pages/pseo/ReviewPage";
-import QuizEntry from "./pages/QuizEntry";
+import QuizFlow from "./pages/QuizFlow";
 import { getBlogPost } from "../../shared/blog-content";
 
 function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -191,7 +191,7 @@ export default function AppPrerender({ path }: { path: string }) {
         {/* Noindex routes: prerendered so they get their own HTML with correct
             noindex/canonical tags instead of falling back to the home page */}
         <Route path="/quiz">
-          <QuizEntry />
+          <QuizFlow />
         </Route>
 
         <Route path="/processing">

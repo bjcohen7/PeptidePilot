@@ -189,7 +189,7 @@ export const quizRouter = router({
       z.object({
         email: z.string().email().optional().nullable(),
         consentGiven: z.boolean().optional().default(false),
-        answers: z.array(z.union([z.number().int(), z.array(z.number().int())])).length(QUIZ_QUESTIONS.length),
+        answers: z.array(z.union([z.number().int(), z.array(z.number().int())])),
         sessionId: z.string().min(8).max(64).optional().nullable(),
         meta: z
           .object({
@@ -215,15 +215,17 @@ export const quizRouter = router({
         throw new Error("Consent is required to submit.");
       }
 
-      const matches = calculateMatches(answers);
+      // Determine if answers match the old 22-question scoring format
+      const isOldFormat = answers.length === QUIZ_QUESTIONS.length;
+      const matches = isOldFormat ? calculateMatches(answers) : [];
       const topMatches = matches.slice(0, 5).map((m) => m.peptide.id);
-      const topPeptideMatch = topMatches[0] ?? "unknown";
-      const tier = determineTier(answers as number[]);
+      const topPeptideMatch = topMatches[0] ?? "semaglutide";
+      const tier = isOldFormat ? determineTier(answers as number[]) : 3;
 
       const ageRange = "not-captured";
       const primaryGoal = typeof answers[0] === "number" ? String(answers[0]) : "multi";
       const budget = "not-captured";
-      const isGlp1Lead = topPeptideMatch === "semaglutide";
+      const isGlp1Lead = !isOldFormat || topPeptideMatch === "semaglutide";
 
       const ipAddress =
         (ctx.req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
@@ -442,8 +444,9 @@ export const quizRouter = router({
         ? lead.rawQuizData.map((value: unknown) => (typeof value === "number" ? value : -1))
         : [];
 
-      const matches = calculateMatches(answers);
-      const tier = lead.tier;
+      const isOldFormat = answers.length === QUIZ_QUESTIONS.length;
+      const matches = isOldFormat ? calculateMatches(answers) : [];
+      const tier = lead.tier ?? 3;
       const topPeptideMatch = lead.topPeptideMatch ?? "unknown";
       const isGlp1Lead = topPeptideMatch === "semaglutide";
       const ipAddress =
