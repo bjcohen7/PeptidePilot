@@ -29,8 +29,8 @@ export type GLP1Provider = {
 export const GLP1_PROVIDERS: GLP1Provider[] = [
   {
     id: "gala",
-    name: "Gala",
-    brandName: "Gala",
+    name: "Gala Health",
+    brandName: "Gala Health",
     startingPrice: 179,
     priceTag: "$179/mo",
     positioningTag: "Best Value",
@@ -53,8 +53,8 @@ export const GLP1_PROVIDERS: GLP1Provider[] = [
   },
   {
     id: "direct_med",
-    name: "Direct Med",
-    brandName: "Direct Med",
+    name: "Direct Meds",
+    brandName: "Direct Meds",
     startingPrice: 199,
     priceTag: "$199/mo",
     positioningTag: "Most Trusted",

@@ -13,9 +13,9 @@ function trackProviderClicked(props: { providerId: string; position: number }) {
 const FEATURED_PROVIDER_ID = "gala";
 
 const MOCK_PLAN_PRICES: Record<string, { price: string; save: string }> = {
-  gala: { price: "$89", save: "save 10%" },
-  direct_med: { price: "$109", save: "save 16%" },
-  sprout: { price: "$129", save: "save 13%" },
+  gala: { price: "$89", save: "save 50%" },
+  direct_med: { price: "$109", save: "save 45%" },
+  sprout: { price: "$129", save: "save 35%" },
 };
 
 const MOCK_SHIPPING: Record<string, string> = {
@@ -142,7 +142,7 @@ export default function ProvidersPage({ leadId }: { leadId?: string }) {
           {/* Header */}
           <div className="text-center mb-6" style={{ maxWidth: 680, margin: "0 auto 18px" }}>
             <span className="pp-eyebrow" style={{ justifyContent: "center", margin: "0 auto 12px" }}>Matched to you</span>
-            <h2 style={{ fontSize: "1.9rem", marginBottom: 8 }}>
+            <h2 style={{ fontSize: "clamp(1.3rem, 5vw, 1.9rem)", marginBottom: 8 }}>
               Your {providers.length} trusted providers
             </h2>
             <p className="text-sm" style={{ color: "var(--muted)" }}>
@@ -171,6 +171,7 @@ export default function ProvidersPage({ leadId }: { leadId?: string }) {
                       borderTop: "3px solid var(--mint-deep)",
                       position: "relative",
                       paddingTop: 22,
+                      overflow: "visible",
                     } : {}}>
                       {p.id === FEATURED_PROVIDER_ID && (
                         <span className="toppick" style={{
@@ -184,7 +185,7 @@ export default function ProvidersPage({ leadId }: { leadId?: string }) {
                       )}
                       <div className="prov-h" style={{ display: "flex", alignItems: "center", gap: 9 }}>
                         <span className="pp-mono" style={{ width: 34, height: 34, borderRadius: 9, fontSize: ".85rem" }}>{p.logoMarkFallback}</span>
-                        {p.name}
+                        <span style={{ whiteSpace: "nowrap" }}>{p.name}</span>
                       </div>
                     </th>
                   ))}
@@ -290,9 +291,9 @@ export default function ProvidersPage({ leadId }: { leadId?: string }) {
                         onClick={(e) => handleProviderClick(e, p)}
                         className="pp-btn pp-btn-block"
                         style={{
-                          background: p.id === FEATURED_PROVIDER_ID ? "var(--mint-deep)" : "var(--secondary)",
-                          color: p.id === FEATURED_PROVIDER_ID ? "#fff" : "var(--ink)",
-                          boxShadow: p.id === FEATURED_PROVIDER_ID ? "0 0 0 4px rgba(123,227,181,.35), 0 14px 30px rgba(31,134,199,.28)" : "none",
+                          background: p.id === FEATURED_PROVIDER_ID ? "var(--grad-cta)" : "var(--secondary)",
+                          color: p.id === FEATURED_PROVIDER_ID ? "var(--ink)" : "var(--ink)",
+                          boxShadow: p.id === FEATURED_PROVIDER_ID ? "0 4px 14px rgba(31,134,199,.25)" : "none",
                           textDecoration: "none", textAlign: "center"
                         }}
                       >
@@ -386,8 +387,8 @@ export default function ProvidersPage({ leadId }: { leadId?: string }) {
                     onClick={(e) => handleProviderClick(e, p)}
                     className="pp-btn pp-btn-block"
                     style={{
-                      background: isFeatured ? "var(--mint-deep)" : "var(--secondary)",
-                      color: isFeatured ? "#fff" : "var(--ink)",
+                      background: isFeatured ? "var(--grad-cta)" : "var(--secondary)",
+                      color: isFeatured ? "var(--ink)" : "var(--ink)",
                       textDecoration: "none", textAlign: "center"
                     }}
                   >

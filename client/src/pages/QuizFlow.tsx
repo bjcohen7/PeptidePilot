@@ -150,7 +150,7 @@ export default function QuizFlow() {
           {step.type === "inter" && (
             <div className="inter">
               <StepIcon step={step} />
-              {step.interEyebrow && <span className="pp-mono" style={{ color: "var(--sky-deep)", fontSize: ".72rem", letterSpacing: ".16em", textTransform: "uppercase", fontWeight: 600, display: "block", marginBottom: 18 }}>{step.interEyebrow}</span>}
+              {step.interEyebrow && <span className="pp-eyebrow" style={{ justifyContent: "center", marginBottom: 18 }}>{step.interEyebrow}</span>}
               <h2 style={{ fontSize: "1.6rem", marginBottom: 8 }}>{step.interTitle}</h2>
               <p style={{ color: "var(--ink-soft)", maxWidth: 400, margin: "0 auto 6px" }}>{step.interBody}</p>
               {stepIdx === 8 && (

@@ -45,7 +45,7 @@ export default function Navbar() {
       `}</style>
       <div className="container">
         <div className="flex items-center gap-[18px] h-[70px]">
-          <Link href="/" className="flex items-center gap-[10px] no-underline" style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 700, fontSize: "1.2rem", color: "var(--ink)" }}>
+          <Link href="/" className="no-underline">
             <PeptidePilotLogo height={30} variant="dark" />
           </Link>
 
