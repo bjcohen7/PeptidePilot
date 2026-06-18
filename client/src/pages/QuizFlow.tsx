@@ -27,7 +27,6 @@ const STEPS: Step[] = [
   { type: "select", question: "Where will you receive your medication?", subtitle: "We detect your state from your location — confirm or change it. Providers are licensed by state, so we only show ones that serve you." },
   { type: "multi", question: "What matters most to you?", subtitle: "Select all that apply.", options: ["Lowest price", "Fast shipping", "Lots of support & check-ins", "Brand-name medication"] },
   { type: "multi", question: "How do you want to connect with a provider?", subtitle: "Select all that apply.", options: ["Messaging", "Video visits", "Phone"] },
-  { type: "single", question: "How would you like to pay?", options: ["Lowest-cost compounded (cash-pay)", "Brand-name through insurance", "Not sure — show me both"] },
   { type: "inter", interIcon: "★", interIconBg: "var(--tint-lav)", interIconColor: "#6B4FD0", interEyebrow: "All set", interTitle: "Your match is ready", interBody: "Want your results & price-drop alerts emailed too?" },
   { type: "email", question: "Where should we send your match?", subtitle: "Optional — we'll send your results & price-drop alerts." },
 ];
@@ -153,7 +152,7 @@ export default function QuizFlow() {
               {step.interEyebrow && <span className="pp-eyebrow" style={{ justifyContent: "center", marginBottom: 18 }}>{step.interEyebrow}</span>}
               <h2 style={{ fontSize: "1.6rem", marginBottom: 8 }}>{step.interTitle}</h2>
               <p style={{ color: "var(--ink-soft)", maxWidth: 400, margin: "0 auto 6px" }}>{step.interBody}</p>
-              {stepIdx === 8 && (
+              {stepIdx === 7 && (
                 <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 10, alignItems: "center" }}>
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "1px solid var(--line)", borderRadius: 999, padding: "6px 16px", fontFamily: "Inter, sans-serif", fontSize: ".82rem", color: "var(--ink-soft)", background: "var(--card)" }}>
                     ★ Joined by 12,480 people · live count
@@ -168,7 +167,7 @@ export default function QuizFlow() {
                   </div>
                 </div>
               )}
-              {stepIdx !== 8 && (
+              {stepIdx !== 7 && (
                 <div style={{ marginTop: 20 }}>
                   <button className="pp-btn pp-btn-primary pp-btn-lg" onClick={() => triggerAdvance("forward", advance)}>Continue →</button>
                 </div>
