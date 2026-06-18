@@ -18,6 +18,7 @@ const Home = lazy(() => import("./pages/Home"));
 const QuizFlow = lazy(() => import("./pages/QuizFlow"));
 const Processing = lazy(() => import("./pages/Processing"));
 const Results = lazy(() => import("./pages/Results"));
+const ProvidersPage = lazy(() => import("./pages/ProvidersPage"));
 const About = lazy(() => import("./pages/About"));
 const Blog = lazy(() => import("./pages/Blog"));
 const PrivacyPolicy = lazy(() =>
@@ -173,6 +174,13 @@ function Router() {
       <Route path="/results">
         <Suspense fallback={<RouteFallback />}>
           <Results />
+        </Suspense>
+      </Route>
+
+      {/* Providers comparison */}
+      <Route path="/providers">
+        <Suspense fallback={<RouteFallback />}>
+          <ProvidersPage />
         </Suspense>
       </Route>
 
