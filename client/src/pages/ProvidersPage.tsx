@@ -169,19 +169,16 @@ export default function ProvidersPage({ leadId }: { leadId?: string }) {
                   {providers.map((p) => (
                     <th key={p.id} style={p.id === FEATURED_PROVIDER_ID ? {
                       borderTop: "3px solid var(--mint-deep)",
-                      position: "relative",
-                      paddingTop: 22,
-                      overflow: "visible",
+                      paddingTop: 8,
                     } : {}}>
                       {p.id === FEATURED_PROVIDER_ID && (
-                        <span className="toppick" style={{
-                          position: "absolute", top: -11, left: "50%", transform: "translateX(-50%)",
+                        <div style={{
                           background: "var(--mint-deep)", color: "#fff", fontSize: ".62rem",
                           fontWeight: 700, letterSpacing: ".07em", padding: "4px 13px",
-                          borderRadius: 999, whiteSpace: "nowrap"
+                          borderRadius: 999, textAlign: "center", marginBottom: 8,
                         }}>
                           ★ Top pick · best value
-                        </span>
+                        </div>
                       )}
                       <div className="prov-h" style={{ display: "flex", alignItems: "center", gap: 9 }}>
                         <span className="pp-mono" style={{ width: 34, height: 34, borderRadius: 9, fontSize: ".85rem" }}>{p.logoMarkFallback}</span>
