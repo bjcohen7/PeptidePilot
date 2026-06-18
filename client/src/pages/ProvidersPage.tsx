@@ -255,13 +255,6 @@ export default function ProvidersPage({ leadId }: { leadId?: string }) {
                       {MOCK_PATIENT_NOTE[p.id] ? (
                         <span className="ptest" style={{ fontSize: ".8rem", fontStyle: "italic", color: "var(--ink-soft)" }}>
                           &ldquo;{MOCK_PATIENT_NOTE[p.id]}&rdquo;
-                          <span className="sx" style={{
-                            fontStyle: "normal", fontSize: ".58rem", fontWeight: 700,
-                            color: "var(--blush-deep)", background: "var(--tint-blush)",
-                            padding: "2px 7px", borderRadius: 99, marginLeft: 6
-                          }}>
-                            SAMPLE
-                          </span>
                         </span>
                       ) : (
                         <span style={{ color: "var(--muted)", fontSize: ".8rem" }}>No notes yet</span>
@@ -367,13 +360,6 @@ export default function ProvidersPage({ leadId }: { leadId?: string }) {
                   {MOCK_PATIENT_NOTE[p.id] && (
                     <p className="ptest" style={{ fontSize: ".8rem", fontStyle: "italic", color: "var(--ink-soft)", margin: "6px 0" }}>
                       &ldquo;{MOCK_PATIENT_NOTE[p.id]}&rdquo;
-                      <span className="sx" style={{
-                        fontStyle: "normal", fontSize: ".58rem", fontWeight: 700,
-                        color: "var(--blush-deep)", background: "var(--tint-blush)",
-                        padding: "2px 7px", borderRadius: 99, marginLeft: 6
-                      }}>
-                        SAMPLE
-                      </span>
                     </p>
                   )}
 
