@@ -16,11 +16,15 @@ import ComparisonPage from "./pages/pseo/ComparisonPage";
 import ForConditionPage from "./pages/pseo/ForConditionPage";
 import ReviewPage from "./pages/pseo/ReviewPage";
 import QuizFlow from "./pages/QuizFlow";
+import ProvidersPage from "./pages/ProvidersPage";
 import { getBlogPost } from "../../shared/blog-content";
 
 function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
+      <div style={{ background: "var(--tint-sun)", color: "#6B5200", fontSize: ".82rem", textAlign: "center", padding: "8px 16px", borderBottom: "1px solid #F2E4B8" }}>
+        <strong>PeptidePilot is an information &amp; comparison service.</strong> We earn a commission when you choose a provider. Not medical advice.
+      </div>
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />
@@ -200,6 +204,12 @@ export default function AppPrerender({ path }: { path: string }) {
 
         <Route path="/results">
           <div className="min-h-screen bg-background" />
+        </Route>
+
+        <Route path="/providers">
+          <PublicLayout>
+            <ProvidersPage />
+          </PublicLayout>
         </Route>
 
         {/* Explicit /404 route so the prerender script can generate a 404/index.html

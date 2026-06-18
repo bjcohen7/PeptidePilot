@@ -24,37 +24,37 @@ export type PrerenderRoute = {
 const staticRoutes: PrerenderRoute[] = [
   {
     path: "/",
-    title: "PeptidePilot — GLP-1 matching, from your couch in minutes. 100% independent.",
+    title: "PeptidePilot — Compare GLP-1 providers in minutes. 100% independent.",
     description:
-      "Get matched to GLP-1 therapy in minutes. A short intake finds the right protocol for your body and connects you to a vetted licensed provider — no doctor's office, no waiting. 100% independent.",
+      "See which GLP-1 provider fits your budget and goals. A short quiz matches you to licensed telehealth options — no waiting room, no surprises. 100% independent.",
     type: "website",
   },
   {
     path: "/about",
     title: "About PeptidePilot",
     description:
-      "Learn how PeptidePilot approaches independent, science-backed peptide education and personalized recommendation guidance.",
+      "Learn how PeptidePilot helps you compare GLP-1 providers and find the right fit for your health goals.",
     type: "website",
   },
   {
     path: "/blog",
     title: "Learn | PeptidePilot",
     description:
-      "Peptide science, evidence reviews, and practical educational guides from PeptidePilot.",
+      "GLP-1 guides, treatment overviews, and practical tips from PeptidePilot.",
     type: "website",
   },
   {
     path: "/learn",
     title: "Learn | PeptidePilot",
     description:
-      "Explore PeptidePilot research hubs for peptides, goals, stacks, comparisons, reviews, and educational guides.",
+      "Explore PeptidePilot guides for GLP-1 treatments, provider comparisons, reviews, and educational resources.",
     type: "website",
   },
   {
     path: "/faq",
     title: "Frequently Asked Questions | PeptidePilot",
     description:
-      "Answers to common questions about peptide matching, safety framing, sourcing, and how PeptidePilot works.",
+      "Answers to common questions about GLP-1 provider comparison, pricing, telehealth qualifications, and how PeptidePilot works.",
     type: "website",
   },
   {
@@ -79,22 +79,22 @@ const staticRoutes: PrerenderRoute[] = [
   // instead of falling back to the home page index.html
   {
     path: "/quiz",
-    title: "Personalized Peptide Quiz | PeptidePilot",
-    description: "Take the free 5-minute PeptidePilot quiz to get personalized peptide recommendations.",
+    title: "GLP-1 Provider Quiz | PeptidePilot",
+    description: "Take the free 2-minute PeptidePilot quiz to find your best GLP-1 provider match.",
     type: "website",
     noindex: true,
   },
   {
     path: "/processing",
-    title: "Processing | PeptidePilot",
-    description: "PeptidePilot is processing your quiz responses.",
+    title: "Finding Your Match | PeptidePilot",
+    description: "PeptidePilot is matching you with GLP-1 providers.",
     type: "website",
     noindex: true,
   },
   {
     path: "/results",
-    title: "Your Results | PeptidePilot",
-    description: "Your personalized PeptidePilot peptide recommendations.",
+    title: "Your Matches | PeptidePilot",
+    description: "Your personalized GLP-1 provider matches from PeptidePilot.",
     type: "website",
     noindex: true,
   },
