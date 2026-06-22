@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { trackMetaCustomEvent } from "@/lib/metaPixel";
 import { trpc } from "@/lib/trpc";
+import { TestimonialSection } from "@/components/testimonials/TestimonialSection";
 import { GLP1_PROVIDERS, type GLP1Provider } from "../../../shared/providerData";
 
 function trackProviderClicked(props: { providerId: string; position: number }) {
@@ -9,13 +10,6 @@ function trackProviderClicked(props: { providerId: string; position: number }) {
 }
 
 const FEATURED_PROVIDER_ID = "gala";
-
-const COMFORT_POINTS = [
-  { icon: "✓", bg: "var(--tint-mint)", color: "var(--mint-deep)", title: "US-licensed clinicians", desc: "Real providers review every request." },
-  { icon: "↺", bg: "var(--tint-sky)", color: "var(--sky-deep)", title: "No long-term lock-in", desc: "Cancel or pause anytime." },
-  { icon: "⚲", bg: "var(--tint-lav)", color: "var(--lav-deep)", title: "Discreet shipping", desc: "Plain packaging, tracked." },
-  { icon: "?", bg: "var(--tint-sun)", color: "#8A6A00", title: "Questions answered", desc: "Support before and after you start." },
-];
 
 const EDUCATION_LINKS = [
   { label: "What to expect month one →", href: "#" },
@@ -132,26 +126,13 @@ export default function NewResultsPage({ leadId }: { leadId?: string }) {
         </div>
       </section>
 
-      {/* Comfort points */}
+      {/* Testimonials */}
       <section className="py-10 px-5" style={{ background: "var(--secondary)" }}>
         <div className="max-w-3xl mx-auto text-center">
           <h3 className="text-lg font-semibold mb-4" style={{ color: "var(--ink)" }}>
             You&rsquo;re in good hands
           </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {COMFORT_POINTS.map((pt) => (
-              <div key={pt.title} className="pp-card pp-card-pad" style={{ padding: "16px 12px" }}>
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-2 text-lg font-bold" style={{ background: pt.bg, color: pt.color }}>
-                  {pt.icon}
-                </div>
-                <strong className="text-xs" style={{ color: "var(--ink)" }}>{pt.title}</strong>
-                <p className="text-xs mt-1" style={{ color: "var(--muted)", margin: 0 }}>{pt.desc}</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs mt-3" style={{ color: "var(--muted)" }}>
-            Reassurance points are configurable per provider — keep only what&rsquo;s true for your partners.
-          </p>
+          <TestimonialSection />
         </div>
       </section>
 
