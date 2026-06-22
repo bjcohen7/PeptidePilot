@@ -47,8 +47,9 @@ const MOCK_TAGS: Record<string, string> = {
   sprout: "Fastest shipping",
 };
 
-export default function ProvidersPage({ leadId }: { leadId?: string }) {
+export default function ProvidersPage({ leadId: propLeadId }: { leadId?: string }) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const leadId = propLeadId || sessionStorage.getItem("pp_lead_id") || undefined;
 
   const providers = useMemo(() => {
     return [...GLP1_PROVIDERS].sort((a, b) => {

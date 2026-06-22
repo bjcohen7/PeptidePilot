@@ -18,6 +18,7 @@ export default function Results() {
   const submitQuiz = trpc.quiz.submitQuiz.useMutation({
     onSuccess: (data) => {
       setLeadId(data.leadId);
+      sessionStorage.setItem("pp_lead_id", data.leadId);
       setRevealed(true);
       trackExp("results_view");
       setHasData(true);

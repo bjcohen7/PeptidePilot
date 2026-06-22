@@ -23,8 +23,9 @@ const FAQ_ITEMS = [
   { q: "Are compounded GLP-1s FDA-approved?", a: "No. Compounded medications aren't FDA-approved; we surface the pharmacy and its licensing." },
 ];
 
-export default function NewResultsPage({ leadId }: { leadId?: string }) {
+export default function NewResultsPage({ leadId: propLeadId }: { leadId?: string }) {
   const [, navigate] = useLocation();
+  const leadId = propLeadId || sessionStorage.getItem("pp_lead_id") || undefined;
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
 
   const providers = useMemo(() => {
