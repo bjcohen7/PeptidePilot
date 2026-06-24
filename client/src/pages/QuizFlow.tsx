@@ -25,7 +25,7 @@ const STEPS: Step[] = [
   { type: "single", question: "What's driving you to make a change now?", options: ["Upcoming event or trip", "Health scare or doctor recommended", "Hit a plateau", "Just ready to feel better"] },
   { type: "single", question: "What's your lifestyle like?", options: ["Busy — need convenience", "Active — want to perform better", "Sedentary — looking to start moving", "Flexible — can make time"] },
   { type: "single", question: "What's your main goal?", options: ["Lose 10–25 lb", "Lose 25–50 lb", "Lose 50+ lb", "Maintain / metabolic health"] },
-  { type: "single", question: "Which medication are you considering?", options: ["Semaglutide", "Tirzepatide", "Ozempic", "Wegovy", "Mounjaro", "Zepbound", "Not sure yet"], subtitle: "Not sure is fine — we'll help you compare." },
+  { type: "single", question: "Which treatment are you considering?", options: ["Semaglutide", "Tirzepatide", "Ozempic", "Wegovy", "Mounjaro", "Zepbound", "Not sure yet"], subtitle: "Not sure is fine — we'll help you compare." },
   { type: "inter", interIcon: "✓", interIconBg: "var(--tint-mint)", interIconColor: "#138A5E", interEyebrow: "Nice — that helps", interTitle: "Now let's find your best price", interBody: "A few quick preferences and we'll line up vetted providers side by side. No medical forms — your provider handles that part." },
   { type: "single", question: "Have you taken a GLP-1 before?", options: ["No, I'm new to this", "Yes, I'm currently on one", "I took one previously"] },
   { type: "select", question: "Where will you receive your medication?", subtitle: "We detect your state from your location — confirm or change it. Providers are licensed by state, so we only show ones that serve you." },
