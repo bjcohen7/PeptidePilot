@@ -151,10 +151,7 @@ export default function ProvidersPage({ leadId: propLeadId }: { leadId?: string 
             </p>
           </div>
 
-          {/* Advertising disclosure */}
-          <div style={{ fontSize: ".7rem", color: "var(--muted)", textAlign: "center", maxWidth: 600, margin: "0 auto 12px" }}>
-            PeptidePilot may earn a commission when you choose a provider. This never changes the price you pay or affects our rankings.
-          </div>
+          {/* Advertising disclosure → moved to footer */}
 
           {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
@@ -394,6 +391,10 @@ export default function ProvidersPage({ leadId: propLeadId }: { leadId?: string 
               </button>
             </Link>
           </div>
+
+          <p className="text-center text-xs mt-6" style={{ color: "var(--muted)", maxWidth: 500, margin: "24px auto 0" }}>
+            PeptidePilot may earn a commission when you choose a provider. Prices &amp; availability subject to change.
+          </p>
         </div>
       </section>
     </div>
