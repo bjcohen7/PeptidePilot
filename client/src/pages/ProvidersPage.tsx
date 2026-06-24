@@ -152,13 +152,8 @@ export default function ProvidersPage({ leadId: propLeadId }: { leadId?: string 
           </div>
 
           {/* Advertising disclosure */}
-          <div className="flex gap-3 items-start p-3 rounded-xl mb-5"
-            style={{ background: "var(--secondary)", border: "1px solid var(--line)", fontSize: ".8rem", color: "var(--ink-soft)", maxWidth: 760, margin: "0 auto 20px" }}>
-            <span style={{ flexShrink: 0 }}>ⓘ</span>
-            <span>
-              <strong>Advertising disclosure:</strong> PeptidePilot may earn a commission when you choose a provider through the links below. This never changes the price you pay and never affects our rankings.{" "}
-              <span style={{ textDecoration: "underline" }}>Full disclosure</span>.
-            </span>
+          <div style={{ fontSize: ".7rem", color: "var(--muted)", textAlign: "center", maxWidth: 600, margin: "0 auto 12px" }}>
+            PeptidePilot may earn a commission when you choose a provider. This never changes the price you pay or affects our rankings.
           </div>
 
           {/* Desktop table */}
