@@ -7,7 +7,7 @@ import { preloadProcessing, preloadResults } from "@/lib/preloadQuiz";
 const STATES = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
 
 type Step = {
-  type: "single" | "multi" | "select" | "inter" | "email";
+  type: "single" | "multi" | "select" | "inter";
   question?: string;
   subtitle?: string;
   options?: string[];
@@ -28,7 +28,6 @@ const STEPS: Step[] = [
   { type: "multi", question: "What matters most to you?", subtitle: "Select all that apply.", options: ["Lowest price", "Fast shipping", "Lots of support & check-ins", "Brand-name medication"] },
   { type: "multi", question: "How do you want to connect with a provider?", subtitle: "Select all that apply.", options: ["Messaging", "Video visits", "Phone"] },
   { type: "single", question: "How would you like to pay?", options: ["Lowest-cost compounded (cash-pay)", "Brand-name through insurance", "Not sure — show me both"] },
-  { type: "email", question: "Where should we send your match?", subtitle: "Optional — we'll send your results & price-drop alerts." },
 ];
 
 let qCount = 0;
@@ -47,8 +46,7 @@ export default function QuizFlow() {
   const [stepIdx, setStepIdx] = useState(0);
   const [answers, setAnswers] = useState<(number | number[] | string)[]>(STEPS.map(() => null));
   const [stateVal, setStateVal] = useState("New York");
-  const [nameVal, setNameVal] = useState("");
-  const [emailVal, setEmailVal] = useState("");
+
   const [animClass, setAnimClass] = useState("quiz-slide-enter-forward");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const dirRef = useRef<"forward" | "backward">("forward");
@@ -71,16 +69,10 @@ export default function QuizFlow() {
       trackExp("quiz_complete");
       const finalAnswers = [...answers];
       finalAnswers[STEPS.findIndex(s => s.type === "select")] = stateVal;
-      const nameIdx = STEPS.findIndex(s => s.type === "email");
-      if (nameVal || emailVal) {
-        finalAnswers[nameIdx] = [nameVal || "", emailVal || ""];
-      }
       sessionStorage.setItem("pp_quiz_answers", JSON.stringify(finalAnswers));
-      sessionStorage.setItem("pp_quiz_email", emailVal || "");
-      sessionStorage.setItem("pp_quiz_name", nameVal || "");
       navigate("/processing");
     }
-  }, [stepIdx, answers, stateVal, nameVal, emailVal, navigate, trackExp]);
+  }, [stepIdx, answers, stateVal, navigate, trackExp]);
 
   const goBack = useCallback(() => {
     if (stepIdx > 0) setStepIdx(i => i - 1);
@@ -112,14 +104,6 @@ export default function QuizFlow() {
     if (!Array.isArray(current) || current.length === 0 || isTransitioning) return;
     triggerAdvance("forward", advance);
   }, [answers, stepIdx, isTransitioning, triggerAdvance, advance]);
-
-  const skipToResults = useCallback(() => {
-    trackExp("quiz_complete");
-    const finalAnswers = [...answers];
-    finalAnswers[STEPS.findIndex(s => s.type === "select")] = stateVal;
-    sessionStorage.setItem("pp_quiz_answers", JSON.stringify(finalAnswers));
-    navigate("/processing");
-  }, [answers, stateVal, navigate, trackExp]);
 
   const step = STEPS[stepIdx];
   const qSoFar = STEPS.slice(0, stepIdx + 1).filter(s => s.type !== "inter").length;
@@ -231,29 +215,6 @@ export default function QuizFlow() {
             </>
           )}
 
-          {step.type === "email" && (
-            <>
-              <h2 style={{ fontSize: "1.7rem", marginBottom: 6 }}>{step.question} <span style={{ color: "var(--muted)", fontSize: "1rem", fontWeight: 400 }}>(optional)</span></h2>
-              {step.subtitle && <p style={{ color: "var(--muted)", marginBottom: 18 }}>{step.subtitle}</p>}
-              <div className="flex flex-col gap-[10px]" style={{ marginTop: 18 }}>
-                <input
-                  value={nameVal} onChange={e => setNameVal(e.target.value)}
-                  placeholder="First name"
-                  style={{ width: "100%", padding: "14px 16px", border: "1.5px solid var(--line)", borderRadius: 14, font: "inherit" }}
-                />
-                <input
-                  value={emailVal} onChange={e => setEmailVal(e.target.value)}
-                  type="email" placeholder="you@email.com"
-                  style={{ width: "100%", padding: "14px 16px", border: "1.5px solid var(--line)", borderRadius: 14, font: "inherit", marginTop: 10 }}
-                />
-              </div>
-              <div style={{ marginTop: 22 }} className="flex items-center justify-between">
-                <button className="linkbtn" onClick={skipToResults} style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>Skip — show results</button>
-                <button className="pp-btn pp-btn-primary pp-btn-lg" onClick={() => triggerAdvance("forward", advance)}>See my match →</button>
-              </div>
-            </>
-          )}
-
         </div>
       </main>
 
@@ -267,7 +228,7 @@ export default function QuizFlow() {
             <div className="flex items-center gap-1">
               {STEPS.map((s, i) => {
                 if (s.type === "inter") return null;
-                const answered = answers[i] !== null || (i === STEPS.findIndex(x => x.type === "select") && stateVal) || (i === STEPS.findIndex(x => x.type === "email"));
+                const answered = answers[i] !== null || (i === STEPS.findIndex(x => x.type === "select") && stateVal);
                 const isActive = i === stepIdx;
                 return (
                   <div key={i}
