@@ -211,7 +211,7 @@ export default function QuizFlow() {
                 <option value="">Select your state…</option>
                 {STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              <p className="small" style={{ color: "var(--sky-deep)", marginTop: 10, fontSize: ".85rem" }}>📍 Detected from your location — change it anytime above.</p>
+
               <div style={{ marginTop: 22 }} className="flex items-center justify-between">
                 <button className="linkbtn" onClick={goBack} style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>← Back</button>
                 <button className="pp-btn pp-btn-primary" onClick={() => triggerAdvance("forward", advance)} disabled={!stateVal}
