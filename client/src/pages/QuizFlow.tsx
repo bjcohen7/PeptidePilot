@@ -45,7 +45,7 @@ export default function QuizFlow() {
   const trackExp = useExperimentEvent();
   const [stepIdx, setStepIdx] = useState(0);
   const [answers, setAnswers] = useState<(number | number[] | string)[]>(STEPS.map(() => null));
-  const [stateVal, setStateVal] = useState("New York");
+  const [stateVal, setStateVal] = useState("");
 
   const [animClass, setAnimClass] = useState("quiz-slide-enter-forward");
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -210,7 +210,8 @@ export default function QuizFlow() {
               <p className="small" style={{ color: "var(--sky-deep)", marginTop: 10, fontSize: ".85rem" }}>📍 Detected from your location — change it anytime above.</p>
               <div style={{ marginTop: 22 }} className="flex items-center justify-between">
                 <button className="linkbtn" onClick={goBack} style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>← Back</button>
-                <button className="pp-btn pp-btn-primary" onClick={() => triggerAdvance("forward", advance)}>Continue</button>
+                <button className="pp-btn pp-btn-primary" onClick={() => triggerAdvance("forward", advance)} disabled={!stateVal}
+                  style={{ opacity: stateVal ? 1 : 0.5 }}>Continue</button>
               </div>
             </>
           )}
