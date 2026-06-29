@@ -137,29 +137,6 @@ export default function NewResultsPage({ leadId: propLeadId }: { leadId?: string
         </div>
       </section>
 
-      {/* Partner logos */}
-      <section className="py-8 px-5">
-        <div className="max-w-3xl mx-auto text-center">
-          <p className="small" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 16 }}>
-            Compare {providers.length} vetted providers
-          </p>
-          <div className="flex flex-wrap justify-center gap-3 items-center">
-            {providers.map((p) => (
-              <div key={p.id} className="flex items-center gap-2 px-3 py-2 rounded-xl"
-                style={{ background: "#fff", border: "1px solid var(--line)", filter: "grayscale(1)", opacity: 0.8 }}>
-                <div className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold"
-                  style={{ background: "var(--grad-cta)", color: "var(--ink)" }}>
-                  {p.logoMarkFallback}
-                </div>
-                <span className="text-sm font-semibold" style={{ fontFamily: "'Bricolage Grotesque', sans-serif", color: "var(--ink)" }}>
-                  {p.name}
-                </span>
-              </div>
-            ))}
-            <span className="text-sm" style={{ color: "var(--muted)" }}>+ 15 more</span>
-          </div>
-        </div>
-      </section>
 
       <hr className="border-t border-dashed my-8 mx-auto max-w-xl" style={{ borderColor: "var(--line)" }} />
 
