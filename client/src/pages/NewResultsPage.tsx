@@ -75,7 +75,7 @@ export default function NewResultsPage({ leadId: propLeadId }: { leadId?: string
   return (
     <div className="min-h-screen" style={{ background: "var(--background)", color: "var(--ink)" }}>
       {/* Results header */}
-      <section className="pt-12 pb-8 px-5">
+      <section className="pt-12 pb-4 px-5">
         <div className="max-w-3xl mx-auto text-center">
           <span className="pp-chip pp-chip-mint" style={{ marginBottom: 12 }}>
             Your results
@@ -87,8 +87,19 @@ export default function NewResultsPage({ leadId: propLeadId }: { leadId?: string
             Based on your answers, here&rsquo;s your match — and{" "}
             <strong style={{ color: "var(--ink)" }}>{providers.length} vetted providers ready to see you this week.</strong>
           </p>
+        </div>
+      </section>
 
-          {/* Snapshot + CTA grid */}
+      {/* Testimonials — trust before decision */}
+      <section className="pb-4 px-5">
+        <div className="max-w-3xl mx-auto text-center">
+          <TestimonialSection condensed />
+        </div>
+      </section>
+
+      {/* Snapshot + CTA grid */}
+      <section className="pb-4 px-5">
+        <div className="max-w-3xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center" style={{ maxWidth: 860, margin: "0 auto" }}>
             <div className="pp-card pp-card-pad">
               <span className="pp-eyebrow" style={{ marginBottom: 12 }}>Your snapshot</span>
@@ -126,17 +137,6 @@ export default function NewResultsPage({ leadId: propLeadId }: { leadId?: string
           </div>
         </div>
       </section>
-
-      {/* Testimonials */}
-      <section className="py-10 px-5" style={{ background: "var(--secondary)" }}>
-        <div className="max-w-3xl mx-auto text-center">
-          <h3 className="text-lg font-semibold mb-4" style={{ color: "var(--ink)" }}>
-            You&rsquo;re in good hands
-          </h3>
-          <TestimonialSection />
-        </div>
-      </section>
-
 
       <hr className="border-t border-dashed my-8 mx-auto max-w-xl" style={{ borderColor: "var(--line)" }} />
 

@@ -1,7 +1,11 @@
 import { TESTIMONIALS } from "@shared/testimonialsData";
 import { TestimonialCard } from "./TestimonialCard";
 
-export function TestimonialSection() {
+type Props = {
+  condensed?: boolean;
+};
+
+export function TestimonialSection({ condensed }: Props) {
   const testimonials = TESTIMONIALS.slice(0, 3);
 
   if (process.env.NODE_ENV !== "production" && TESTIMONIALS.length > 3) {
@@ -11,6 +15,19 @@ export function TestimonialSection() {
   }
 
   if (testimonials.length === 0) return null;
+
+  if (condensed) {
+    return (
+      <div className="w-full">
+        <h3 className="text-base font-semibold mb-3" style={{ color: "var(--ink)" }}>
+          You&rsquo;re in good hands
+        </h3>
+        <div className="max-w-md mx-auto">
+          <TestimonialCard testimonial={testimonials[0]} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <section
