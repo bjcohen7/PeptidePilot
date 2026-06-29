@@ -120,7 +120,7 @@ export default function NewResultsPage({ leadId: propLeadId }: { leadId?: string
                 </button>
               </Link>
               <p className="small muted" style={{ marginTop: 12 }}>
-                ★ Joined by 12,480 people · live count from your data
+                ★ Joined by 12,480 people
               </p>
             </div>
           </div>
