@@ -372,10 +372,6 @@ export default function ProvidersPage({ leadId: propLeadId }: { leadId?: string 
             })}
           </div>
 
-          {/* Footer note */}
-          <p className="text-center text-xs mt-4" style={{ color: "var(--muted)" }}>
-            Patient notes &amp; testimonials populate from verified UGC — never fabricated.
-          </p>
 
           {/* Restart */}
           <div className="text-center mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
