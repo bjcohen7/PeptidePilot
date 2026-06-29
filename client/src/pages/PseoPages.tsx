@@ -572,7 +572,7 @@ export function PseoHub() {
       <section className="py-16">
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {pseoSections.map((section) => (
+            {pseoSections.filter(s => s.key !== "peptides").map((section) => (
               <Link key={section.key} href={section.path}>
                 <article className="group h-full bg-white border border-border/60 rounded-xl p-6 hover:border-accent/40 hover:shadow-md transition-all">
                   <div className="mb-5">
