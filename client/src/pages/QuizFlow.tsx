@@ -66,6 +66,19 @@ export default function QuizFlow() {
 
   useEffect(() => { void preloadProcessing(); void preloadResults(); }, []);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("https://ip-api.com/json/", { signal: AbortSignal.timeout(3000) });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.countryCode === "US" && data.region && STATES.includes(data.region)) {
+          setStateVal(data.region);
+        }
+      } catch { /* silently fail — user can pick manually */ }
+    })();
+  }, []);
+
   const advance = useCallback(() => {
     if (stepIdx < STEPS.length - 1) {
       setStepIdx(i => i + 1);
