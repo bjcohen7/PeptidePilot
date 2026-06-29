@@ -42,7 +42,7 @@ const MOCK_PATIENT_NOTE: Record<string, string> = {
 };
 
 const MOCK_TAGS: Record<string, string> = {
-  gala: "★ Top pick · best value",
+  gala: "★ Best match for your goals",
   direct_med: "Lifestyle support",
   sprout: "Fastest shipping",
 };
@@ -170,7 +170,7 @@ export default function ProvidersPage({ leadId: propLeadId }: { leadId?: string 
                           fontWeight: 700, letterSpacing: ".07em", padding: "4px 13px",
                           borderRadius: 999, textAlign: "center", marginBottom: 8,
                         }}>
-                          ★ Top pick · best value
+                          ★ Best match for your goals
                         </div>
                       )}
                       <div className="prov-h" style={{ display: "flex", alignItems: "center", gap: 9 }}>
@@ -264,7 +264,7 @@ export default function ProvidersPage({ leadId: propLeadId }: { leadId?: string 
                     } : {}}>
                       {idx === 0 && (
                         <div className="most" style={{ fontSize: ".7rem", fontWeight: 700, color: "var(--mint-deep)", textAlign: "center", marginBottom: 7 }}>
-                          ★ Most chosen by people like you
+                          ★ Best match for your goals
                         </div>
                       )}
                       <a
@@ -384,10 +384,16 @@ export default function ProvidersPage({ leadId: propLeadId }: { leadId?: string 
           </p>
 
           {/* Restart */}
-          <div className="text-center mt-6">
+          <div className="text-center mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/quiz/flow">
               <button className="pp-btn pp-btn-ghost">
                 ↺ Restart the experience
+              </button>
+            </Link>
+            <span className="text-xs" style={{ color: "var(--muted)" }}>or</span>
+            <Link href="/quiz/flow">
+              <button className="pp-btn pp-btn-soft" style={{ fontSize: ".85rem" }}>
+                Not what you expected? Try different priorities →
               </button>
             </Link>
           </div>
