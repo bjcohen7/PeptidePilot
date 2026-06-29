@@ -25,6 +25,7 @@ export type PseoContentRecord = {
 };
 
 import { batch5ContentRecords } from "./pseoContent-batch-5";
+import { batch6ContentRecords } from "./pseoContent-batch-6";
 
 export const pseoContentRecords: Record<string, PseoContentRecord> = {
   "/compare/bpc-157-vs-tb-500": {
@@ -487,6 +488,7 @@ export const pseoContentRecords: Record<string, PseoContentRecord> = {
     ],
   },
   ...batch5ContentRecords,
+  ...batch6ContentRecords,
 };
 
 export function getPseoContent(path: string) {
