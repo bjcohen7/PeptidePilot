@@ -147,7 +147,7 @@ export default function ProvidersPage({ leadId: propLeadId }: { leadId?: string 
               Your {providers.length} trusted providers
             </h2>
             <p className="text-sm" style={{ color: "var(--muted)" }}>
-              Compounded semaglutide · ships to New York · sorted by best value.
+              Compounded semaglutide · ships to {sessionStorage.getItem("pp_quiz_state") || "New York"} · sorted by best value.
             </p>
           </div>
 

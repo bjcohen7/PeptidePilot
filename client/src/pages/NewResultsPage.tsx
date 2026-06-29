@@ -102,7 +102,7 @@ export default function NewResultsPage({ leadId: propLeadId }: { leadId?: string
               </div>
               <div className="flex justify-between py-1.5" style={{ borderBottom: "1px solid var(--line)" }}>
                 <span className="text-xs font-medium" style={{ color: "var(--muted)" }}>State</span>
-                <strong className="text-sm">New York</strong>
+                <strong className="text-sm">{sessionStorage.getItem("pp_quiz_state") || "New York"}</strong>
               </div>
               <div className="flex justify-between py-1.5">
                 <span className="text-xs font-medium" style={{ color: "var(--muted)" }}>Pay path</span>

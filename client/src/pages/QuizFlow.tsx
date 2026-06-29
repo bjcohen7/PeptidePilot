@@ -87,6 +87,7 @@ export default function QuizFlow() {
       const finalAnswers = [...answers];
       finalAnswers[STEPS.findIndex(s => s.type === "select")] = stateVal;
       sessionStorage.setItem("pp_quiz_answers", JSON.stringify(finalAnswers));
+      sessionStorage.setItem("pp_quiz_state", stateVal);
       navigate("/processing");
     }
   }, [stepIdx, answers, stateVal, navigate, trackExp]);
