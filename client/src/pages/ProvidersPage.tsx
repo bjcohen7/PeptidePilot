@@ -282,9 +282,6 @@ export default function ProvidersPage({ leadId: propLeadId }: { leadId?: string 
                       >
                         Get started →
                       </a>
-                      <div className="spons" style={{ fontSize: ".66rem", color: "var(--muted)", textAlign: "center", marginTop: 5 }}>
-                        Sponsored link · we may earn a fee
-                      </div>
                     </td>
                   ))}
                 </tr>
@@ -370,9 +367,6 @@ export default function ProvidersPage({ leadId: propLeadId }: { leadId?: string 
                   >
                     Get started →
                   </a>
-                  <div className="spons" style={{ fontSize: ".66rem", color: "var(--muted)", textAlign: "center", marginTop: 3 }}>
-                    Sponsored · we may earn a fee
-                  </div>
                 </div>
               );
             })}
