@@ -9,7 +9,10 @@ import { appRouter } from "../routers";
 import { ensureAffiliateWorkspaceSchema, ensureExperimentSchema } from "../db";
 import { createContext } from "./context";
 import { ENV } from "./env";
-import { recordClickEvent, recordPageView, startVisitorSession } from "../routers/analytics";
+import { recordClickEvent, recordFunnelEvent, recordPageView, startVisitorSession } from "../routers/analytics";
+import { providers, providerClickLogs, leads } from "../../drizzle/schema";
+import { eq, sql } from "drizzle-orm";
+import { getDb } from "../db";
 import { serveStatic, setupVite } from "./vite";
 import capiRouter from "../routes/capi";
 import { prerenderRoutes, SITE_URL } from "../../scripts/prerender-routes";
@@ -173,6 +176,68 @@ async function startServer() {
     } catch (error) {
       console.error("[Analytics] Failed to record click:", error);
       res.status(400).json({ error: "invalid_click_event" });
+    }
+  });
+  // Affiliate go-link: logs click then redirects
+  app.get("/go/:provider/:publicId", async (req, res) => {
+    const { provider, publicId } = req.params;
+    const position = (req.query.position as string) || "hero";
+    if (!provider || !publicId) {
+      res.status(400).send("Missing provider or publicId");
+      return;
+    }
+    try {
+      const db = await getDb();
+      if (db) {
+        const pRows = await db
+          .select()
+          .from(providers)
+          .where(eq(providers.slug, provider))
+          .limit(1);
+        const p = pRows[0];
+
+        const leadRows = await db
+          .select({ id: leads.id, experimentVariant: leads.experimentVariant })
+          .from(leads)
+          .where(eq(leads.publicId, publicId))
+          .limit(1);
+        const lead = leadRows[0];
+
+        if (p) {
+          const subid = `${publicId}-${provider}`;
+          const url = p.affiliateUrlTemplate.replace(/\{subid\}/g, subid);
+
+          // Log the click
+          await db.insert(providerClickLogs).values({
+            leadId: lead?.id ?? null,
+            publicId,
+            providerSlug: provider,
+            position,
+            experimentVariant: lead?.experimentVariant ?? null,
+          });
+
+          res.redirect(302, url);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("[GoLink] Error:", err);
+    }
+    // Fallback: redirect to home
+    res.redirect(302, "/");
+  });
+
+  app.post("/api/analytics/funnel-event", express.json({ limit: "1mb" }), async (req, res) => {
+    try {
+      await recordFunnelEvent({
+        sessionId: String(req.body?.sessionId ?? ""),
+        event: String(req.body?.event ?? ""),
+        data: req.body?.data ?? null,
+      });
+      res.status(204).end();
+    } catch (error) {
+      console.error("[Analytics] Failed to record funnel event:", error);
+      res.status(400).json({ error: "invalid_funnel_event" });
     }
   });
   app.get("/api/health", (_req, res) => {

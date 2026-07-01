@@ -57,7 +57,7 @@ function getLibraryBackedMatches(answers: number[]) {
   );
 }
 
-function LeadCaptureGate({
+export function LeadCaptureGate({
   onReveal,
   isLoading,
   previewMatches,
@@ -411,7 +411,7 @@ function ProviderCard({
   );
 }
 
-function ResultsDisplay({
+export function ResultsDisplay({
   leadId,
   sessionId,
   onRetake,
@@ -515,6 +515,9 @@ function ResultsDisplay({
 export default function Results() {
   const [, navigate] = useLocation();
   const { state, reset } = useQuiz();
+  const storedPublicId = typeof window !== "undefined"
+    ? sessionStorage.getItem("peptidepilot_last_public_id")
+    : null;
   const {
     session,
     isLoading: isReturningSessionLoading,
@@ -532,6 +535,7 @@ export default function Results() {
     completeRegistration: string;
     viewContent: string;
   } | null>(null);
+  const [showRecovery, setShowRecovery] = useState(false);
 
   const submitQuiz = trpc.quiz.submitQuiz.useMutation({
     onSuccess: (data) => {
@@ -599,14 +603,37 @@ export default function Results() {
   const activeLeadId = revealed ? leadId : session?.leadId ?? "";
   const activeMatches = revealed ? matches : restoredMatches;
   const isReturningUser = !revealed && Boolean(session && !session.justCompletedQuiz);
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [recoverySent, setRecoverySent] = useState(false);
+  const recoverByEmail = trpc.quiz.recoverLeadByEmail.useQuery(
+    { email: recoveryEmail },
+    { enabled: false },
+  );
+
+  const handleRecoverySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const result = await recoverByEmail.refetch();
+    if (result.data?.found && result.data.publicId) {
+      navigate(`/results/${result.data.publicId}`);
+    } else {
+      setRecoverySent(true);
+    }
+  };
 
   useEffect(() => {
     if (hasFreshQuizState) return;
     if (sessionStatus === "pending") return;
     if (sessionStatus === "restored") return;
 
-    navigate("/quiz");
-  }, [hasFreshQuizState, navigate, sessionStatus]);
+    // If we have a stored publicId, redirect to the server-persisted results page
+    if (storedPublicId && storedPublicId.length > 0) {
+      navigate(`/results/${storedPublicId}`);
+      return;
+    }
+
+    // Show recovery form instead of immediately redirecting to /quiz
+    setShowRecovery(true);
+  }, [hasFreshQuizState, navigate, sessionStatus, storedPublicId]);
 
   const handleReveal = (email: string, consent: boolean) => {
     const eventIds = {
@@ -645,6 +672,18 @@ export default function Results() {
     );
   }
 
+  if (showRecovery) {
+    return (
+      <ResultsRecoveryForm
+        recoveryEmail={recoveryEmail}
+        setRecoveryEmail={setRecoveryEmail}
+        recoverySent={recoverySent}
+        onSubmit={handleRecoverySubmit}
+        onRetake={() => { reset(); navigate("/quiz"); }}
+      />
+    );
+  }
+
   if (activeMatches.length > 0) {
     return (
       <ResultsDisplay
@@ -663,5 +702,71 @@ export default function Results() {
       isLoading={submitQuiz.isPending}
       previewMatches={previewMatches}
     />
+  );
+}
+
+function ResultsRecoveryForm({
+  recoveryEmail,
+  setRecoveryEmail,
+  recoverySent,
+  onSubmit,
+  onRetake,
+}: {
+  recoveryEmail: string;
+  setRecoveryEmail: (v: string) => void;
+  recoverySent: boolean;
+  onSubmit: (e: React.FormEvent) => void;
+  onRetake: () => void;
+}) {
+  return (
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
+      <div className="w-full max-w-md text-center space-y-6">
+        <h1 className="text-xl font-semibold" style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}>
+          Find Your Results
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Enter the email you used when you took the quiz and we&apos;ll send you a link to your results.
+        </p>
+        {recoverySent ? (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-border/60 bg-muted/30 px-4 py-5 text-sm text-muted-foreground">
+              If an account exists with that email, your results link has been sent. Check your inbox.
+            </div>
+            <button
+              onClick={onRetake}
+              className="text-sm text-accent hover:underline"
+            >
+              Retake the quiz
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={onSubmit} className="space-y-4">
+            <input
+              type="email"
+              placeholder="your@email.com"
+              value={recoveryEmail}
+              onChange={(e) => setRecoveryEmail(e.target.value)}
+              className="w-full rounded-xl h-12 px-4 text-base border border-border/60 bg-background"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full rounded-xl h-12 font-semibold text-base text-white bg-accent hover:opacity-90 transition-all"
+            >
+              Send Results Link
+            </button>
+            <div>
+              <button
+                type="button"
+                onClick={onRetake}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                Take the quiz again
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
   );
 }

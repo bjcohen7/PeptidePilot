@@ -1,4 +1,4 @@
-import { and, desc, eq, sql, inArray } from "drizzle-orm";
+import { and, desc, eq, sql, inArray, count } from "drizzle-orm";
 import { z } from "zod";
 import {
   experiments,
@@ -8,6 +8,7 @@ import {
   visitorSessions,
   affiliateClicks,
   leads,
+  providerClickLogs,
 } from "../../drizzle/schema";
 import { getDb } from "../db";
 import { adminProcedure, publicProcedure, router } from "../_core/trpc";
@@ -486,5 +487,48 @@ export const experimentsRouter = router({
 
       await db.update(experiments).set(update).where(eq(experiments.id, input.id));
       return { success: true };
+    }),
+
+  providerClickStats: adminProcedure
+    .query(async () => {
+      const db = await getDb();
+      if (!db) return [];
+
+      // Per-variant click stats from providerClickLogs + leads
+      const leadCounts = await db
+        .select({
+          variant: leads.experimentVariant,
+          total: sql<number>`COUNT(*)`,
+        })
+        .from(leads)
+        .where(sql`${leads.experimentVariant} IS NOT NULL`)
+        .groupBy(leads.experimentVariant);
+
+      const clickStats = await db
+        .select({
+          variant: providerClickLogs.experimentVariant,
+          totalClicks: sql<number>`COUNT(*)`,
+          uniqueClickers: sql<number>`COUNT(DISTINCT ${providerClickLogs.publicId})`,
+        })
+        .from(providerClickLogs)
+        .where(sql`${providerClickLogs.experimentVariant} IS NOT NULL`)
+        .groupBy(providerClickLogs.experimentVariant);
+
+      const allVariants = ["control", "verdict"];
+      return allVariants.map((v) => {
+        const lc = leadCounts.find((l) => l.variant === v);
+        const cs = clickStats.find((c) => c.variant === v);
+        const total = Number(lc?.total ?? 0);
+        const clicks = Number(cs?.totalClicks ?? 0);
+        const uniqueClickers = Number(cs?.uniqueClickers ?? 0);
+        return {
+          variant: v,
+          totalLeads: total,
+          totalClicks: clicks,
+          uniqueClickers: uniqueClickers,
+          clickRate: total ? (clicks / total) * 100 : 0,
+          clicksPerClicker: uniqueClickers ? (clicks / uniqueClickers) : 0,
+        };
+      });
     }),
 });

@@ -19,7 +19,8 @@ export type InsertUser = typeof users.$inferInsert;
  * Leads table — stores every quiz submission with full compliance data.
  */
 export const leads = mysqlTable("leads", {
-  id: varchar("id", { length: 36 }).primaryKey(), // UUID
+  id: varchar("id", { length: 36 }).primaryKey(), // internal nanoid
+  publicId: varchar("publicId", { length: 36 }).notNull().unique(), // URL-safe public id
   email: varchar("email", { length: 320 }).notNull(),
   sessionId: varchar("sessionId", { length: 64 }),
   returningToken: varchar("returningToken", { length: 128 }),
@@ -35,6 +36,9 @@ export const leads = mysqlTable("leads", {
   ipAddress: varchar("ipAddress", { length: 64 }).notNull(),
   source: varchar("source", { length: 64 }),
   rawQuizData: json("rawQuizData").notNull(), // array of quiz answer indices
+  results: json("results"), // persisted ReturningMatchSummary[]
+  providerMatches: json("provider_matches"), // persisted ProviderMatchResult[]
+  experimentVariant: varchar("experiment_variant", { length: 16 }), // 'control' | 'verdict'
 });
 
 export type Lead = typeof leads.$inferSelect;
@@ -247,3 +251,37 @@ export type ExperimentAssignment = typeof experimentAssignments.$inferSelect;
 export type InsertExperimentAssignment = typeof experimentAssignments.$inferInsert;
 export type ExperimentEvent = typeof experimentEvents.$inferSelect;
 export type InsertExperimentEvent = typeof experimentEvents.$inferInsert;
+
+export const providerClickLogs = mysqlTable("provider_click_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  leadId: varchar("lead_id", { length: 36 }),
+  publicId: varchar("public_id", { length: 36 }).notNull(),
+  providerSlug: varchar("provider_slug", { length: 64 }).notNull(),
+  position: varchar("position", { length: 16 }).notNull(), // 'hero' | 'alt'
+  experimentVariant: varchar("experiment_variant", { length: 16 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const providers = mysqlTable("providers", {
+  id: int("id").autoincrement().primaryKey(),
+  slug: varchar("slug", { length: 64 }).notNull().unique(),
+  displayName: varchar("display_name", { length: 128 }).notNull(),
+  priceFromCents: int("price_from_cents").notNull(),
+  priceNote: varchar("price_note", { length: 255 }),
+  included: json("included").$type<string[]>().notNull(),
+  medsOffered: mysqlEnum("meds_offered", ["oral", "injectable", "both"]).notNull(),
+  statesAvailable: json("states_available").$type<string[] | "ALL">().notNull(),
+  cashPayFriendly: boolean("cash_pay_friendly").notNull().default(true),
+  shipDaysEstimate: int("ship_days_estimate"),
+  affiliateUrlTemplate: varchar("affiliate_url_template", { length: 1024 }).notNull(),
+  bountyCents: int("bounty_cents"),
+  promoCode: varchar("promo_code", { length: 64 }),
+  active: boolean("active").notNull().default(true),
+  sortPriority: int("sort_priority").notNull().default(50),
+  complianceNote: text("compliance_note"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Provider = typeof providers.$inferSelect;
+export type InsertProvider = typeof providers.$inferInsert;

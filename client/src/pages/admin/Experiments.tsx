@@ -27,6 +27,7 @@ const NAV = [
   { group: "Analytics", items: [{ key: "overview", label: "Overview" }] },
   { group: "Testing", items: [{ key: "experiments", label: "Experiments" }, { key: "funnels", label: "Funnels" }, { key: "events", label: "Events" }] },
   { group: "System", items: [{ key: "sessions", label: "Sessions" }, { key: "config", label: "Config" }] },
+  { group: "Content", items: [{ key: "providers", label: "Providers" }] },
 ];
 
 const fmt = (n: number) => n.toLocaleString();
@@ -268,6 +269,43 @@ function OverviewView({ experiments, goExperiment }: {
         </div>
       </Panel>
     </div>
+  );
+}
+
+function ProviderClickStats() {
+  const { data: stats = [] } = trpc.experiments.providerClickStats.useQuery(undefined, {
+    refetchInterval: 15000,
+  });
+
+  if (!stats.length) return null;
+
+  return (
+    <Panel title="Provider Verdict — Variant Results" right="control vs verdict">
+      <table className="w-full text-sm">
+        <thead>
+          <tr>
+            <th className="text-left pb-2" style={{ color: C.faint, fontWeight: 600, fontSize: 10.5, letterSpacing: "0.07em" }}>VARIANT</th>
+            <th className="text-right pb-2" style={{ color: C.faint, fontWeight: 600, fontSize: 10.5, letterSpacing: "0.07em" }}>LEADS</th>
+            <th className="text-right pb-2" style={{ color: C.faint, fontWeight: 600, fontSize: 10.5, letterSpacing: "0.07em" }}>CLICKS</th>
+            <th className="text-right pb-2" style={{ color: C.faint, fontWeight: 600, fontSize: 10.5, letterSpacing: "0.07em" }}>CLICKERS</th>
+            <th className="text-right pb-2" style={{ color: C.faint, fontWeight: 600, fontSize: 10.5, letterSpacing: "0.07em" }}>CLICK RATE</th>
+            <th className="text-right pb-2" style={{ color: C.faint, fontWeight: 600, fontSize: 10.5, letterSpacing: "0.07em" }}>CLICKS/CLICKER</th>
+          </tr>
+        </thead>
+        <tbody>
+          {stats.map((s, vi) => (
+            <tr key={s.variant} className="border-b" style={{ borderColor: C.innerBorder }}>
+              <td className="py-1.5"><VChip vi={vi} name={s.variant} /></td>
+              <td className="text-right py-1.5" style={{ color: C.ink }}>{fmt(s.totalLeads)}</td>
+              <td className="text-right py-1.5" style={{ color: C.ink }}>{fmt(s.totalClicks)}</td>
+              <td className="text-right py-1.5" style={{ color: C.ink }}>{fmt(s.uniqueClickers)}</td>
+              <td className="text-right py-1.5 font-semibold" style={{ color: C.ink }}>{s.clickRate.toFixed(1)}%</td>
+              <td className="text-right py-1.5 font-semibold" style={{ color: C.ink }}>{s.clicksPerClicker.toFixed(1)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Panel>
   );
 }
 
@@ -641,6 +679,167 @@ function ConfigView() {
   );
 }
 
+function ProvidersView() {
+  const utils = trpc.useUtils();
+  const { data: rows = [] } = trpc.providers.adminList.useQuery();
+  const [editing, setEditing] = useState<Record<string, string | number | boolean | string[]> | null>(null);
+
+  const upsert = trpc.providers.adminUpsert.useMutation({
+    onSuccess: () => { utils.providers.adminList.invalidate(); setEditing(null); },
+  });
+  const setActive = trpc.providers.adminSetActive.useMutation({
+    onSuccess: () => utils.providers.adminList.invalidate(),
+  });
+
+  const handleSave = (form: Record<string, unknown>) => {
+    upsert.mutate(form as any);
+  };
+
+  if (!rows.length) return <div style={{ color: C.faint, fontSize: 13 }}>No providers yet. Seed them via SQL migration.</div>;
+
+  return (
+    <div className="space-y-4">
+      {editing && (
+        <ProviderEditModal
+          initial={editing}
+          onSave={handleSave}
+          onClose={() => setEditing(null)}
+          isPending={upsert.isPending}
+        />
+      )}
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b" style={{ borderColor: C.border }}>
+            <th className="text-left pb-2" style={{ color: C.faint, fontWeight: 600, fontSize: 10.5, letterSpacing: "0.07em" }}>SLUG</th>
+            <th className="text-left pb-2" style={{ color: C.faint, fontWeight: 600, fontSize: 10.5, letterSpacing: "0.07em" }}>NAME</th>
+            <th className="text-right pb-2" style={{ color: C.faint, fontWeight: 600, fontSize: 10.5, letterSpacing: "0.07em" }}>PRICE</th>
+            <th className="text-center pb-2" style={{ color: C.faint, fontWeight: 600, fontSize: 10.5, letterSpacing: "0.07em" }}>ACTIVE</th>
+            <th className="text-right pb-2" style={{ color: C.faint, fontWeight: 600, fontSize: 10.5, letterSpacing: "0.07em" }}>PRIORITY</th>
+            <th className="text-right pb-2" style={{ color: C.faint, fontWeight: 600, fontSize: 10.5, letterSpacing: "0.07em" }}></th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.id} className="border-b" style={{ borderColor: C.innerBorder }}>
+              <td className="py-1.5 font-mono" style={{ color: C.mut, fontSize: 11 }}>{r.slug}</td>
+              <td className="py-1.5" style={{ color: C.ink }}>{r.displayName}</td>
+              <td className="py-1.5 text-right" style={{ color: C.ink }}>${(r.priceFromCents / 100).toFixed(0)}/mo</td>
+              <td className="py-1.5 text-center">
+                <button
+                  onClick={() => setActive.mutate({ id: r.id, active: !r.active })}
+                  className="rounded px-2 py-0.5 text-xs font-semibold"
+                  style={{ background: r.active ? C.greenBg : "#EFF1F5", color: r.active ? C.green : C.mut }}
+                >
+                  {r.active ? "ON" : "OFF"}
+                </button>
+              </td>
+              <td className="py-1.5 text-right" style={{ color: C.mut }}>{r.sortPriority}</td>
+              <td className="py-1.5 text-right">
+                <button
+                  onClick={() => setEditing(r as any)}
+                  className="text-xs font-medium" style={{ color: C.blue }}
+                >
+                  Edit
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ProviderEditModal({
+  initial,
+  onSave,
+  onClose,
+  isPending,
+}: {
+  initial: Record<string, string | number | boolean | string[]>;
+  onSave: (data: Record<string, unknown>) => void;
+  onClose: () => void;
+  isPending: boolean;
+}) {
+  const [form, setForm] = useState<Record<string, string>>(() => {
+    const out: Record<string, string> = {};
+    for (const [k, v] of Object.entries(initial)) {
+      out[k] = typeof v === "object" ? JSON.stringify(v) : String(v ?? "");
+    }
+    return out;
+  });
+
+  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const fields = [
+    { key: "slug", label: "Slug" },
+    { key: "displayName", label: "Display Name" },
+    { key: "priceFromCents", label: "Price (cents)" },
+    { key: "priceNote", label: "Price Note" },
+    { key: "included", label: "Included (JSON array)" },
+    { key: "medsOffered", label: "Meds Offered" },
+    { key: "statesAvailable", label: "States (JSON or ALL)" },
+    { key: "shipDaysEstimate", label: "Ship Days Estimate" },
+    { key: "affiliateUrlTemplate", label: "Affiliate URL Template" },
+    { key: "bountyCents", label: "Bounty (cents)" },
+    { key: "promoCode", label: "Promo Code" },
+    { key: "sortPriority", label: "Sort Priority" },
+    { key: "complianceNote", label: "Compliance Note" },
+    { key: "cashPayFriendly", label: "Cash Pay Friendly" },
+  ];
+
+  const handleSubmit = () => {
+    const payload: Record<string, unknown> = {};
+    if (initial.id) payload.id = initial.id;
+    payload.slug = form.slug;
+    payload.displayName = form.displayName;
+    payload.priceFromCents = parseInt(form.priceFromCents, 10) || 0;
+    payload.priceNote = form.priceNote || null;
+    try { payload.included = JSON.parse(form.included); } catch { payload.included = []; }
+    payload.medsOffered = form.medsOffered as "oral" | "injectable" | "both";
+    try { payload.statesAvailable = JSON.parse(form.statesAvailable); } catch { payload.statesAvailable = "ALL"; }
+    payload.shipDaysEstimate = form.shipDaysEstimate ? parseInt(form.shipDaysEstimate, 10) : null;
+    payload.affiliateUrlTemplate = form.affiliateUrlTemplate;
+    payload.bountyCents = form.bountyCents ? parseInt(form.bountyCents, 10) : null;
+    payload.promoCode = form.promoCode || null;
+    payload.sortPriority = parseInt(form.sortPriority, 10) || 50;
+    payload.complianceNote = form.complianceNote || null;
+    payload.cashPayFriendly = form.cashPayFriendly === "true";
+    payload.active = initial.active ?? true;
+    onSave(payload);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
+      <div className="rounded-xl border shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto" style={{ borderColor: C.border, background: C.card }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b sticky top-0" style={{ borderColor: C.border, background: C.card }}>
+          <span style={{ fontWeight: 700, color: C.ink }}>{initial.id ? "Edit Provider" : "New Provider"}</span>
+          <button onClick={onClose} style={{ color: C.faint, fontSize: 18, lineHeight: 1 }}>×</button>
+        </div>
+        <div className="px-5 py-4 space-y-3">
+          {fields.map((f) => (
+            <div key={f.key}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.mut, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{f.label}</div>
+              <input
+                value={form[f.key] ?? ""}
+                onChange={(e) => set(f.key, e.target.value)}
+                className="w-full rounded-lg border px-3 py-2 text-sm"
+                style={{ borderColor: C.border, color: C.ink, background: C.card }}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-end gap-2 px-5 py-4 border-t" style={{ borderColor: C.border }}>
+          <button onClick={onClose} className="rounded-lg px-4 py-2 text-sm font-medium" style={{ color: C.mut }}>Cancel</button>
+          <button onClick={handleSubmit} className="rounded-lg px-4 py-2 text-sm font-medium text-white" style={{ background: C.blue }}>
+            {isPending ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function NewExperimentModal({ onClose }: { onClose: () => void }) {
   const utils = trpc.useUtils();
   const create = trpc.experiments.create.useMutation({
@@ -803,6 +1002,7 @@ export default function ExperimentsPage() {
             {view === "events" && <EventsView />}
             {view === "sessions" && <SessionsView />}
             {view === "config" && <ConfigView />}
+            {view === "providers" && <ProvidersView />}
           </main>
         </div>
       </div>

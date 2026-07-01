@@ -19,6 +19,7 @@ const Home = lazy(() => import("./pages/Home"));
 const QuizFlow = lazy(() => import("./pages/QuizFlow"));
 const Processing = lazy(() => import("./pages/Processing"));
 const Results = lazy(() => import("./pages/Results"));
+const ResultsByPublicId = lazy(() => import("./pages/ResultsByPublicId"));
 const ProvidersPage = lazy(() => import("./pages/ProvidersPage"));
 const About = lazy(() => import("./pages/About"));
 const Blog = lazy(() => import("./pages/Blog"));
@@ -58,6 +59,7 @@ const AffiliatePartnersAdmin = lazy(() => import("./pages/admin/AffiliatePartner
 const InsightsOverview = lazy(() => import("./pages/admin/InsightsOverview"));
 const SessionDetail = lazy(() => import("./pages/admin/SessionDetail"));
 const ExperimentsAdmin = lazy(() => import("./pages/admin/Experiments"));
+const LeakAudit = lazy(() => import("./pages/admin/LeakAudit"));
 
 // Pages that should NOT show the standard navbar/footer
 const BARE_ROUTES = ["/quiz", "/quiz/flow", "/processing", "/results"];
@@ -179,6 +181,15 @@ function Router() {
           <QuizProvider>
             <Results />
           </QuizProvider>
+        </Suspense>
+      </Route>
+
+      {/* Results by publicId — server-persisted, cold-loadable */}
+      <Route path="/results/:publicId">
+        <Suspense fallback={<RouteFallback />}>
+          <ErrorBoundary>
+            <ResultsByPublicId />
+          </ErrorBoundary>
         </Suspense>
       </Route>
 
@@ -422,6 +433,14 @@ function Router() {
         <DashboardLayout>
           <Suspense fallback={<RouteFallback />}>
             <ExperimentsAdmin />
+          </Suspense>
+        </DashboardLayout>
+      </Route>
+
+      <Route path="/admin/leak-audit">
+        <DashboardLayout>
+          <Suspense fallback={<RouteFallback />}>
+            <LeakAudit />
           </Suspense>
         </DashboardLayout>
       </Route>

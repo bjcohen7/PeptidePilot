@@ -181,6 +181,36 @@ export async function recordClickEvent(input: ClickEventPayload) {
     .where(eq(visitorSessions.id, input.sessionId));
 }
 
+type FunnelEventPayload = {
+  sessionId: string;
+  event: string;
+  data: Record<string, unknown> | null;
+};
+
+export async function recordFunnelEvent(input: FunnelEventPayload) {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    const existing = await db
+      .select()
+      .from(visitorSessions)
+      .where(eq(visitorSessions.id, input.sessionId))
+      .limit(1);
+    const leadId = existing[0]?.leadId ?? null;
+
+    await db.insert(clickEvents).values({
+      sessionId: input.sessionId,
+      leadId,
+      path: `/processing/${input.event}`,
+      label: input.event,
+      targetHref: input.data ? JSON.stringify(input.data) : null,
+      eventType: "funnel",
+    });
+  } catch (err) {
+    console.error("[Analytics] Failed to record funnel event:", err);
+  }
+}
+
 function decodeQuizAnswers(rawQuizData: unknown) {
   if (!Array.isArray(rawQuizData)) return [];
 
@@ -447,6 +477,12 @@ async function buildSessionTableRows(sessionRows: Array<typeof visitorSessions.$
   });
 }
 
+const funnelEventInput = z.object({
+  sessionId: z.string().min(1).max(64),
+  event: z.string().min(1).max(128),
+  data: z.record(z.unknown()).optional(),
+});
+
 export const analyticsRouter = router({
   startSession: publicProcedure.input(sessionStartInput).mutation(async ({ input }) => {
     await startVisitorSession(input);
@@ -460,6 +496,15 @@ export const analyticsRouter = router({
 
   trackClick: publicProcedure.input(clickEventInput).mutation(async ({ input }) => {
     await recordClickEvent(input);
+    return { status: "ok" as const };
+  }),
+
+  trackFunnelEvent: publicProcedure.input(funnelEventInput).mutation(async ({ input }) => {
+    await recordFunnelEvent({
+      sessionId: input.sessionId,
+      event: input.event,
+      data: input.data ?? null,
+    });
     return { status: "ok" as const };
   }),
 

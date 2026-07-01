@@ -1,17 +1,21 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { adminProcedure, publicProcedure, router } from "../_core/trpc";
 import { ensureAffiliateWorkspaceSchema, getDb } from "../db";
-import { leads, affiliateClicks, visitorSessions } from "../../drizzle/schema";
+import { leads, affiliateClicks, visitorSessions, pageVisits } from "../../drizzle/schema";
 import {
   calculateMatches,
   determineTier,
   QUIZ_QUESTIONS,
   toReturningMatchSummary,
+  type ReturningMatchSummary,
 } from "../../shared/scoring";
 import { nanoid } from "nanoid";
+import { matchProviders } from "../../shared/providerMatching";
+import { providers } from "../../drizzle/schema";
+import { eq } from "drizzle-orm";
 import { notifyOwner } from "../_core/notification";
-import { eq, sql } from "drizzle-orm";
+import { desc, eq, sql, inArray } from "drizzle-orm";
 import { sendMetaServerEvents } from "../_core/meta";
 import { ENV } from "../_core/env";
 import { randomBytes } from "crypto";
@@ -44,9 +48,11 @@ async function insertLead(
 ) {
   const db = await getDb();
   if (!db) return false;
+  const publicId = values.publicId ?? values.id;
   await db.execute(sql`
     insert into leads (
       id,
+      publicId,
       email,
       ageRange,
       primaryGoal,
@@ -57,9 +63,11 @@ async function insertLead(
       consentTimestamp,
       ipAddress,
       rawQuizData,
-      source
+      source,
+      results
     ) values (
       ${values.id},
+      ${publicId},
       ${values.email},
       ${values.ageRange},
       ${values.primaryGoal},
@@ -70,7 +78,8 @@ async function insertLead(
       ${values.consentTimestamp},
       ${values.ipAddress},
       ${JSON.stringify(values.rawQuizData)},
-      ${values.source ?? null}
+      ${values.source ?? null},
+      ${values.results ? JSON.stringify(values.results) : null}
     )
   `);
   return true;
@@ -184,6 +193,110 @@ export const quizRouter = router({
       };
     }),
 
+  getResultsByPublicId: publicProcedure
+    .input(z.object({ publicId: z.string().min(8).max(64) }))
+    .query(async ({ input }) => {
+      await ensureAffiliateWorkspaceSchema();
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available." });
+      }
+
+      const rows = await db
+        .select({
+          id: leads.id,
+          publicId: leads.publicId,
+          email: leads.email,
+          results: leads.results,
+          rawQuizData: leads.rawQuizData,
+          topPeptideMatch: leads.topPeptideMatch,
+          tier: leads.tier,
+          consentGiven: leads.consentGiven,
+          providerMatches: leads.providerMatches,
+          experimentVariant: leads.experimentVariant,
+        })
+        .from(leads)
+        .where(eq(leads.publicId, input.publicId))
+        .limit(1);
+
+      const lead = rows[0];
+      if (!lead) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Results not found." });
+      }
+
+      // If results column is populated, use it; otherwise recompute from rawQuizData
+      let results = lead.results as ReturningMatchSummary[] | null;
+      if (!results || results.length === 0) {
+        const answers = Array.isArray(lead.rawQuizData)
+          ? lead.rawQuizData.map((value: unknown) => {
+              if (Array.isArray(value)) return value.filter((v) => typeof v === "number");
+              if (typeof value === "number") return value;
+              return -1;
+            })
+          : [];
+
+        if (answers.length === QUIZ_QUESTIONS.length) {
+          results = calculateMatches(answers).slice(0, 5).map(toReturningMatchSummary);
+        }
+      }
+
+      // Load provider details for matched providers
+      const providerMatchResults = lead.providerMatches as unknown as Array<{
+        slug: string; displayName: string; fitScore: number; whyMatch: string[];
+      }> | null;
+      let providerDetails = null;
+      if (providerMatchResults && providerMatchResults.length > 0) {
+        const slugs = providerMatchResults.map((m) => m.slug);
+        const pRows = await db
+          .select()
+          .from(providers)
+          .where(inArray(providers.slug, slugs));
+        providerDetails = pRows.map((p) => ({
+          slug: p.slug,
+          displayName: p.displayName,
+          priceFromCents: p.priceFromCents,
+          priceNote: p.priceNote,
+          included: p.included,
+          medsOffered: p.medsOffered,
+          cashPayFriendly: p.cashPayFriendly,
+          shipDaysEstimate: p.shipDaysEstimate,
+          affiliateUrlTemplate: p.affiliateUrlTemplate,
+          promoCode: p.promoCode,
+          complianceNote: p.complianceNote,
+        }));
+      }
+
+      return {
+        leadId: lead.id,
+        publicId: lead.publicId,
+        email: lead.email,
+        hasRealEmail: !lead.email.startsWith("anonymous+"),
+        consentGiven: lead.consentGiven,
+        topPeptideMatch: lead.topPeptideMatch,
+        tier: lead.tier,
+        results: results ?? [],
+        providerMatches: providerMatchResults ?? [],
+        providerDetails: providerDetails ?? [],
+        experimentVariant: lead.experimentVariant ?? null,
+      };
+    }),
+
+  recoverLeadByEmail: publicProcedure
+    .input(z.object({ email: z.string().email() }))
+    .query(async ({ input }) => {
+      await ensureAffiliateWorkspaceSchema();
+      const db = await getDb();
+      if (!db) return { found: false };
+      const rows = await db
+        .select({ publicId: leads.publicId })
+        .from(leads)
+        .where(eq(leads.email, input.email.trim().toLowerCase()))
+        .orderBy(desc(leads.createdAt))
+        .limit(1);
+      if (!rows[0]) return { found: false };
+      return { found: true, publicId: rows[0].publicId };
+    }),
+
   submitQuiz: publicProcedure
     .input(
       z.object({
@@ -233,15 +346,36 @@ export const quizRouter = router({
         "unknown";
 
       const leadId = nanoid();
+      const publicId = nanoid();
+      const returningResults = matches.slice(0, 5).map(toReturningMatchSummary);
       const leadEmail = hasProvidedEmail
         ? normalizedEmail
         : `anonymous+${leadId}@peptidepilot.local`;
       const consentTimestamp = new Date();
 
       const db = await getDb();
+
+      // Compute provider matches and experiment variant
+      let providerMatchResults = null;
+      let experimentVariant: string | null = null;
+      if (db) {
+        const activeProviders = await db
+          .select()
+          .from(providers)
+          .where(eq(providers.active, true))
+          .orderBy(providers.sortPriority);
+        if (activeProviders.length > 0) {
+          providerMatchResults = matchProviders(answers as number[], activeProviders);
+          // A/B assignment: deterministic 50/50 split based on leadId hash
+          const hash = leadId.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+          experimentVariant = hash % 2 === 0 ? "control" : "verdict";
+        }
+      }
+
       if (db) {
         await insertLead({
           id: leadId,
+          publicId,
           email: leadEmail,
           ageRange,
           primaryGoal,
@@ -252,7 +386,20 @@ export const quizRouter = router({
           consentTimestamp,
           ipAddress,
           rawQuizData: answers,
+          results: returningResults,
         });
+
+        // Store providerMatches and experimentVariant
+        if (providerMatchResults || experimentVariant) {
+          const updateData: Record<string, unknown> = {};
+          if (providerMatchResults) updateData.providerMatches = providerMatchResults;
+          if (experimentVariant) updateData.experimentVariant = experimentVariant;
+          try {
+            await db.update(leads).set(updateData).where(eq(leads.id, leadId));
+          } catch (e) {
+            console.error("[submitQuiz] Failed to set provider/experiment data:", e);
+          }
+        }
 
         // Update sessionId separately
         if (sessionId) {
@@ -377,9 +524,12 @@ export const quizRouter = router({
       return {
         status: "success" as const,
         leadId,
+        publicId,
         topMatches,
         returningToken,
-        returningResults: matches.slice(0, 5).map(toReturningMatchSummary),
+        returningResults,
+        providerMatches: providerMatchResults,
+        experimentVariant,
       };
     }),
 
@@ -632,4 +782,43 @@ export const quizRouter = router({
 
       return { status: "ok" as const };
     }),
+
+  listLeadsWithoutResultsView: adminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+
+    const rows = await db.execute(sql`
+      SELECT
+        l.id,
+        l.publicId,
+        l.email,
+        l.createdAt,
+        l.ipAddress,
+        l.source,
+        l.rawQuizData,
+        vs.userAgent,
+        (SELECT pv.createdAt FROM page_visits pv WHERE pv.sessionId = l.sessionId AND pv.path LIKE concat('%', '/results', '%') ORDER BY pv.createdAt DESC LIMIT 1) AS lastResultsViewAt,
+        (SELECT pv.path FROM page_visits pv WHERE pv.sessionId = l.sessionId ORDER BY pv.createdAt DESC LIMIT 1) AS lastPath
+      FROM leads l
+      LEFT JOIN visitor_sessions vs ON vs.id = l.sessionId
+      WHERE l.email NOT LIKE 'anonymous+%'
+        AND l.createdAt > DATE_SUB(NOW(), INTERVAL 30 DAY)
+      ORDER BY l.createdAt DESC
+      LIMIT 200
+    `);
+
+    return rows.map((row: any) => ({
+      leadId: row.id,
+      publicId: row.publicId,
+      email: row.email,
+      createdAt: row.createdAt,
+      ipAddress: row.ipAddress,
+      source: row.source,
+      userAgent: row.userAgent ?? null,
+      lastResultsViewAt: row.lastResultsViewAt ?? null,
+      lastPath: row.lastPath ?? null,
+      sawResults: row.lastResultsViewAt !== null,
+      resultsUrl: `/results/${row.publicId}`,
+    }));
+  }),
 });
