@@ -84,7 +84,7 @@ function sendSessionStart(payload: {
 
 export default function SessionTracker() {
   const [location] = useLocation();
-  const trackPageView = trpc.analytics.trackPageView.useMutation();
+  const trackPageViewRef = useRef(trpc.analytics.trackPageView.useMutation());
   const sessionId = useMemo(() => getOrCreateVisitorSessionId(), []);
   const currentPathRef = useRef(normalizePath(location));
   const enteredAtRef = useRef(Date.now());
@@ -120,7 +120,7 @@ export default function SessionTracker() {
 
     if (previousPath !== nextPath && shouldTrackPath(previousPath)) {
       const durationMs = Math.max(0, Date.now() - previousEnteredAt);
-      trackPageView.mutate({
+      trackPageViewRef.current.mutate({
         sessionId,
         path: previousPath,
         durationMs,
@@ -134,7 +134,7 @@ export default function SessionTracker() {
     if (shouldTrackPath(nextPath)) {
       trackMetaPageView();
     }
-  }, [location, sessionId, trackPageView]);
+  }, [location, sessionId]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

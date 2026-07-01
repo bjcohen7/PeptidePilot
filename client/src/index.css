@@ -276,6 +276,7 @@
 
   /* ── Hero section ── */
   .pp-hero { position: relative; overflow: hidden; background: var(--grad-hero); }
+  .bg-brand-gradient { background: linear-gradient(135deg, #0c1929 0%, #0f2a3f 40%, #0d2137 100%); }
   .pp-hero::after {
     content: ""; position: absolute; inset: 0;
     background:

@@ -176,7 +176,9 @@ function Router() {
       {/* Results — manages its own header */}
       <Route path="/results">
         <Suspense fallback={<RouteFallback />}>
-          <Results />
+          <QuizProvider>
+            <Results />
+          </QuizProvider>
         </Suspense>
       </Route>
 
