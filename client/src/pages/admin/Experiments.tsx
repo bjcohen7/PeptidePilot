@@ -991,22 +991,7 @@ export default function ExperimentsPage() {
 
   const goExperiment = (id: string) => { setSelId(id); setView("experiments"); };
 
-  if (!experiments.length) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Experiments</h1>
-            <p className="text-sm text-muted-foreground mt-1">No experiments yet. Create your first A/B test.</p>
-          </div>
-          <button onClick={() => setModal(true)} className="rounded-lg px-4 py-2 text-white" style={{ background: C.blue, fontSize: 13, fontWeight: 600 }}>+ New experiment</button>
-        </div>
-        {modal && <NewExperimentModal onClose={() => setModal(false)} />}
-      </div>
-    );
-  }
-
-  const safeSelId = selId ?? experiments[0].id;
+  const safeSelId = selId ?? experiments[0]?.id;
 
   return (
     <div className="min-h-screen" style={{ background: C.bg, color: C.ink }}>
@@ -1022,8 +1007,8 @@ export default function ExperimentsPage() {
             <span className="rounded-lg border px-3 py-1.5" style={{ borderColor: C.border, fontSize: 12, fontWeight: 600, color: C.mut, background: C.card }}>All time</span>
           </header>
           <main className="p-5 max-w-7xl">
-            {view === "overview" && <OverviewView experiments={experiments} goExperiment={goExperiment} />}
-            {view === "experiments" && <ExperimentsView experiments={experiments} selId={safeSelId} setSelId={setSelId} openModal={() => setModal(true)} />}
+            {view === "overview" && experiments.length > 0 && <OverviewView experiments={experiments} goExperiment={goExperiment} />}
+            {view === "experiments" && experiments.length > 0 && <ExperimentsView experiments={experiments} selId={safeSelId!} setSelId={setSelId} openModal={() => setModal(true)} />}
             {view === "funnels" && <FunnelsView experiments={experiments} />}
             {view === "events" && <EventsView />}
             {view === "sessions" && <SessionsView />}
