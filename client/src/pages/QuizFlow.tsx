@@ -1,268 +1,448 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useCallback, useMemo, useRef, useState } from "react";
 import { useLocation, Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useQuiz } from "@/contexts/QuizContext";
+import { useSwipe } from "@/hooks/useSwipe";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
-import { useExperimentEvent } from "@/contexts/ExperimentContext";
-import { preloadProcessing, preloadResults } from "@/lib/preloadQuiz";
+import {
+  PRIMARY_GOAL_OPTIONS,
+  QUIZ_INDEX,
+  QUIZ_QUESTIONS,
+} from "../../../shared/scoring";
 
-const STATES = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+type Direction = "forward" | "backward";
 
-type Step = {
-  type: "single" | "multi" | "select" | "inter";
-  question?: string;
-  subtitle?: string;
-  options?: string[];
-  interEyebrow?: string;
-  interTitle?: string;
-  interBody?: string;
-  interIcon?: string;
-  interIconBg?: string;
-  interIconColor?: string;
+const WEIGHT_LOSS_GOAL_INDEX = PRIMARY_GOAL_OPTIONS.indexOf(
+  "Lose body fat and improve body composition",
+);
+
+const SECTION_BREATHERS: Record<
+  string,
+  { label: string; headline: string; body: string }
+> = {
+  "Body & Fitness": {
+    label: "Body Composition",
+    headline: "Individual biology determines individual outcomes.",
+    body: "The same peptide protocol can produce meaningfully different results across individuals. This assessment evaluates your goals, physiology, and lifestyle in combination — not any single factor in isolation.",
+  },
+  "Metabolic Health": {
+    label: "Metabolic Health",
+    headline: "Prescription GLP-1 fit depends on more than just weight-loss interest.",
+    body: "For weight-loss users, we add a short eligibility layer so your results can better distinguish metabolic-health candidates from general fat-loss support options.",
+  },
+  "Age & Hormones": {
+    label: "Endocrine Health",
+    headline: "Hormones govern nearly every physiological process.",
+    body: "Peptides interact directly with the endocrine system. Accurately mapping your hormonal profile is essential to identifying protocols with the highest probability of clinical relevance for your specific situation.",
+  },
+  "Sleep & Recovery": {
+    label: "Recovery & Regeneration",
+    headline: "Restorative sleep is a primary driver of tissue repair.",
+    body: "Sleep quality influences growth hormone secretion, inflammatory regulation, and cellular regeneration. Targeted peptide support can meaningfully improve the depth and efficiency of your recovery cycles.",
+  },
+  "Pain & Injury": {
+    label: "Musculoskeletal Health",
+    headline: "Regenerative peptides operate at the cellular level.",
+    body: "Compounds such as BPC-157 and TB-500 have demonstrated tissue-repair and anti-inflammatory properties in preclinical and clinical research. Understanding the nature and history of your injury guides accurate protocol selection.",
+  },
+  "Cognition & Mood": {
+    label: "Neurological Function",
+    headline: "Cognitive performance is a measurable, trainable variable.",
+    body: "Select peptides support neuroplasticity, neurotransmitter regulation, and cerebral blood flow. This section establishes your cognitive baseline so the algorithm can weight neuroprotective compounds appropriately.",
+  },
+  "Skin, Hair & Appearance": {
+    label: "Dermal & Aesthetic Health",
+    headline: "Biological aging is a process that can be modulated.",
+    body: "Collagen-stimulating peptides and growth-factor analogs have demonstrated measurable effects on dermal thickness, hair follicle cycling, and tissue elasticity. Your responses here refine the aesthetic component of your match.",
+  },
+  "Lifestyle & Preferences": {
+    label: "Final Section",
+    headline: "Practical factors determine long-term adherence.",
+    body: "Protocol compliance is as important as protocol selection. This final section captures your lifestyle context and preferences so your matches reflect what you will realistically sustain — not just what is theoretically optimal.",
+  },
 };
 
-const STEPS: Step[] = [
-  { type: "single", question: "What's the main thing you want to achieve?", options: ["Lose weight", "Boost energy", "Improve metabolic health", "Lower A1C", "Feel better overall", "Other"] },
-  { type: "single", question: "What's your biggest struggle right now?", options: ["Can't lose weight despite diet & exercise", "Food noise / constant cravings", "Low energy", "Stubborn belly fat", "Blood sugar concerns"] },
-  { type: "single", question: "What's driving you to make a change now?", options: ["Upcoming event or trip", "Health scare or doctor recommended", "Hit a plateau", "Just ready to feel better"] },
-  { type: "single", question: "What's your lifestyle like?", options: ["Busy — need convenience", "Active — want to perform better", "Sedentary — looking to start moving", "Flexible — can make time"] },
-  { type: "single", question: "What's your main goal?", options: ["Lose 10–25 lb", "Lose 25–50 lb", "Lose 50+ lb", "Maintain / metabolic health"] },
-  { type: "single", question: "Which treatment are you considering?", options: ["Semaglutide", "Tirzepatide", "Ozempic", "Wegovy", "Mounjaro", "Zepbound", "Not sure yet"], subtitle: "Not sure is fine — we'll help you compare." },
-  { type: "inter", interIcon: "✓", interIconBg: "var(--tint-mint)", interIconColor: "#138A5E", interEyebrow: "Nice — that helps", interTitle: "Now let's find your best price", interBody: "A few quick preferences and we'll line up vetted providers side by side. No medical forms — your provider handles that part." },
-  { type: "single", question: "Have you taken a GLP-1 before?", options: ["No, I'm new to this", "Yes, I'm currently on one", "I took one previously"] },
-  { type: "select", question: "Where will you receive your medication?", subtitle: "We detect your state from your location — confirm or change it. Providers are licensed by state, so we only show ones that serve you." },
-  { type: "multi", question: "What matters most to you?", subtitle: "Select all that apply.", options: ["Lowest price", "Fast shipping", "Lots of support & check-ins", "Brand-name medication"] },
-  { type: "multi", question: "How do you want to connect with a provider?", subtitle: "Select all that apply.", options: ["Messaging", "Video visits", "Phone"] },
-  { type: "single", question: "How would you like to pay?", options: ["Lowest-cost compounded (cash-pay)", "Brand-name through insurance", "Not sure — show me both"] },
-];
+function getVisibleQuestionIndices(isWeightLossGoal: boolean): number[] {
+  return QUIZ_QUESTIONS.map((_, index) => index).filter((index) => {
+    if (isWeightLossGoal) return true;
+    return (
+      index !== QUIZ_INDEX.GLP1_BMI && index !== QUIZ_INDEX.GLP1_INSURANCE
+    );
+  });
+}
 
-let qCount = 0;
-for (const s of STEPS) { if (s.type !== "inter") qCount++; }
-
-function StepIcon({ step }: { step: Step }) {
-  if (step.type === "inter") {
-    return <span className="ico" style={{ background: step.interIconBg, color: step.interIconColor }}>{step.interIcon}</span>;
+function getBreatherIndices(questionIndices: number[]): Set<number> {
+  const indices = new Set<number>();
+  let lastSection = QUIZ_QUESTIONS[questionIndices[0] ?? 0]?.section ?? "";
+  for (let i = 1; i < questionIndices.length; i++) {
+    const section = QUIZ_QUESTIONS[questionIndices[i] ?? 0]?.section ?? "";
+    if (section !== lastSection) {
+      indices.add(i);
+      lastSection = section;
+    }
   }
-  return null;
+  return indices;
 }
 
 export default function QuizFlow() {
   const [, navigate] = useLocation();
-  const trackExp = useExperimentEvent();
-  const [stepIdx, setStepIdx] = useState(0);
-  const [answers, setAnswers] = useState<(number | number[] | string)[]>(STEPS.map(() => null));
-  const [stateVal, setStateVal] = useState("");
+  const {
+    state,
+    selectAnswer,
+    goTo,
+    completeQuiz,
+    currentQuestion,
+  } = useQuiz();
 
-  const [animClass, setAnimClass] = useState("quiz-slide-enter-forward");
+  const { currentIndex, answers, isComplete } = state;
+  const isWeightLossGoal = answers[QUIZ_INDEX.PRIMARY_GOAL] === WEIGHT_LOSS_GOAL_INDEX;
+  const visibleQuestionIndices = useMemo(
+    () => getVisibleQuestionIndices(isWeightLossGoal),
+    [isWeightLossGoal],
+  );
+  const breatherIndices = useMemo(
+    () => getBreatherIndices(visibleQuestionIndices),
+    [visibleQuestionIndices],
+  );
+  const totalQuestions = visibleQuestionIndices.length;
+  const currentVisibleIndex = Math.max(
+    0,
+    visibleQuestionIndices.indexOf(currentIndex),
+  );
+  const selectedAnswer = answers[currentIndex];
+  const isFirst = currentVisibleIndex === 0;
+
+  const currentSectionQuestions = visibleQuestionIndices.filter(
+    (index) => QUIZ_QUESTIONS[index]?.section === currentQuestion.section,
+  ).length;
+  const currentSectionIndex = visibleQuestionIndices
+    .slice(0, currentVisibleIndex + 1)
+    .filter((index) => QUIZ_QUESTIONS[index]?.section === currentQuestion.section)
+    .length;
+
+  const nextQuestionIndex = visibleQuestionIndices[currentVisibleIndex + 1];
+  const previousQuestionIndex = visibleQuestionIndices[currentVisibleIndex - 1];
+
+  const [showBreather, setShowBreather] = useState(false);
+  const [breatherSection, setBreatherSection] = useState<string>("");
+
+  const [animClass, setAnimClass] = useState<string>("quiz-slide-enter-forward");
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const dirRef = useRef<"forward" | "backward">("forward");
-  const startedRef = useRef(false);
+  const directionRef = useRef<Direction>("forward");
+  const prevIndexRef = useRef(currentIndex);
 
   useEffect(() => {
-    if (!startedRef.current) { startedRef.current = true; trackExp("quiz_start"); }
-  }, [trackExp]);
+    if (currentIndex !== prevIndexRef.current) {
+      const dir = directionRef.current;
+      setAnimClass(dir === "forward" ? "quiz-slide-enter-forward" : "quiz-slide-enter-backward");
+      prevIndexRef.current = currentIndex;
+      setIsTransitioning(false);
+    }
+  }, [currentIndex]);
 
   useEffect(() => {
-    if (stepIdx > 0) trackExp("quiz_question", { question: stepIdx + 1 });
-  }, [stepIdx, trackExp]);
-
-  useEffect(() => { void preloadProcessing(); void preloadResults(); }, []);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("https://ip-api.com/json/", { signal: AbortSignal.timeout(3000) });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.countryCode === "US" && data.region && STATES.includes(data.region)) {
-          setStateVal(data.region);
-        }
-      } catch { /* silently fail — user can pick manually */ }
-    })();
+    void import("./Processing");
   }, []);
 
-  const advance = useCallback(() => {
-    if (stepIdx < STEPS.length - 1) {
-      setStepIdx(i => i + 1);
-    } else {
-      trackExp("quiz_complete");
-      const finalAnswers = [...answers];
-      finalAnswers[STEPS.findIndex(s => s.type === "select")] = stateVal;
-      sessionStorage.setItem("pp_quiz_answers", JSON.stringify(finalAnswers));
-      sessionStorage.setItem("pp_quiz_state", stateVal);
+  useEffect(() => {
+    if (!visibleQuestionIndices.includes(currentIndex)) {
+      goTo(visibleQuestionIndices[0] ?? 0);
+    }
+  }, [currentIndex, goTo, visibleQuestionIndices]);
+
+  useEffect(() => {
+    if (isComplete) {
       navigate("/processing");
     }
-  }, [stepIdx, answers, stateVal, navigate, trackExp]);
+  }, [isComplete, navigate]);
 
-  const goBack = useCallback(() => {
-    if (stepIdx > 0) setStepIdx(i => i - 1);
-  }, [stepIdx]);
+  const triggerAdvance = useCallback(
+    (dir: Direction, advanceFn: () => void) => {
+      if (isTransitioning) return;
+      directionRef.current = dir;
+      setIsTransitioning(true);
+      setAnimClass(dir === "forward" ? "quiz-slide-exit-forward" : "quiz-slide-exit-backward");
+      setTimeout(() => {
+        advanceFn();
+      }, 220);
+    },
+    [isTransitioning],
+  );
 
-  const triggerAdvance = useCallback((dir: "forward" | "backward", fn: () => void) => {
-    if (isTransitioning) return;
-    dirRef.current = dir;
-    setIsTransitioning(true);
-    setAnimClass(dir === "forward" ? "quiz-slide-exit-forward" : "quiz-slide-exit-backward");
-    setTimeout(() => { fn(); setIsTransitioning(false); setAnimClass(dir === "forward" ? "quiz-slide-enter-forward" : "quiz-slide-enter-backward"); }, 220);
-  }, [isTransitioning]);
+  const moveForward = useCallback(() => {
+    if (typeof nextQuestionIndex === "number") {
+      goTo(nextQuestionIndex);
+      return;
+    }
+    completeQuiz();
+  }, [completeQuiz, goTo, nextQuestionIndex]);
 
-  const handleSingle = useCallback((idx: number) => {
-    if (isTransitioning || answers[stepIdx] !== null) return;
-    const next = [...answers]; next[stepIdx] = idx; setAnswers(next);
-    setTimeout(() => triggerAdvance("forward", advance), 320);
-  }, [isTransitioning, answers, stepIdx, triggerAdvance, advance]);
+  const moveBackward = useCallback(() => {
+    if (typeof previousQuestionIndex === "number") {
+      goTo(previousQuestionIndex);
+    }
+  }, [goTo, previousQuestionIndex]);
 
-  const handleMultiToggle = useCallback((idx: number) => {
-    if (isTransitioning) return;
-    const current = (Array.isArray(answers[stepIdx]) ? answers[stepIdx] : []) as number[];
-    const next = current.includes(idx) ? current.filter(i => i !== idx) : [...current, idx];
-    const a = [...answers]; a[stepIdx] = next; setAnswers(a);
-  }, [isTransitioning, answers, stepIdx]);
+  const handleSelectAnswer = useCallback(
+    (idx: number) => {
+      if (isTransitioning || selectedAnswer !== null) return;
+      selectAnswer(idx);
 
-  const handleMultiContinue = useCallback(() => {
-    const current = answers[stepIdx];
-    if (!Array.isArray(current) || current.length === 0 || isTransitioning) return;
-    triggerAdvance("forward", advance);
-  }, [answers, stepIdx, isTransitioning, triggerAdvance, advance]);
+      if (
+        typeof nextQuestionIndex === "number" &&
+        breatherIndices.has(currentVisibleIndex + 1)
+      ) {
+        const nextSection = QUIZ_QUESTIONS[nextQuestionIndex]?.section ?? "";
+        setTimeout(() => {
+          setBreatherSection(nextSection);
+          setShowBreather(true);
+          setIsTransitioning(false);
+        }, 320);
+        return;
+      }
 
-  const step = STEPS[stepIdx];
-  const qSoFar = STEPS.slice(0, stepIdx + 1).filter(s => s.type !== "inter").length;
-  const multiSelection = Array.isArray(answers[stepIdx]) ? answers[stepIdx] as number[] : [];
+      setTimeout(() => {
+        triggerAdvance("forward", moveForward);
+      }, 320);
+    },
+    [
+      isTransitioning,
+      selectedAnswer,
+      selectAnswer,
+      nextQuestionIndex,
+      breatherIndices,
+      currentVisibleIndex,
+      triggerAdvance,
+      moveForward,
+    ],
+  );
+
+  const handleBreatherContinue = useCallback(() => {
+    setShowBreather(false);
+    setTimeout(() => {
+      triggerAdvance("forward", moveForward);
+    }, 80);
+  }, [triggerAdvance, moveForward]);
+
+  const handleBack = useCallback(() => {
+    if (showBreather) {
+      setShowBreather(false);
+      return;
+    }
+    if (isFirst || isTransitioning) return;
+    triggerAdvance("backward", moveBackward);
+  }, [showBreather, isFirst, isTransitioning, triggerAdvance, moveBackward]);
+
+  const handleSwipeLeft = useCallback(() => {
+    if (showBreather) {
+      handleBreatherContinue();
+      return;
+    }
+    if (selectedAnswer !== null && !isTransitioning) {
+      triggerAdvance("forward", moveForward);
+    }
+  }, [
+    showBreather,
+    handleBreatherContinue,
+    selectedAnswer,
+    isTransitioning,
+    triggerAdvance,
+    moveForward,
+  ]);
+
+  const swipeHandlers = useSwipe({
+    onSwipeLeft: handleSwipeLeft,
+    onSwipeRight: handleBack,
+    threshold: 60,
+    verticalThreshold: 80,
+  });
+
+  if (!currentQuestion) return null;
+
+  const breatherData = SECTION_BREATHERS[breatherSection];
+  const effectiveProgress = Math.round(
+    ((currentVisibleIndex + (showBreather ? 0.5 : 0)) / totalQuestions) * 100,
+  );
+  const progressDotIndex = Math.floor((currentVisibleIndex / totalQuestions) * 10);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col overflow-hidden">
-      <header className="border-b sticky top-0 z-40" style={{ borderColor: "var(--line)", background: "rgba(251,252,254,.95)", backdropFilter: "blur(12px)" }}>
+    <div
+      className="min-h-screen bg-background flex flex-col overflow-hidden"
+      {...swipeHandlers}
+    >
+      <header className="border-b border-border/60 bg-white/95 backdrop-blur-md sticky top-0 z-40">
         <div className="container">
           <div className="flex items-center justify-between h-14">
-            <Link href="/" className="flex items-center no-underline">
+            <Link href="/" className="flex items-center">
               <PeptidePilotLogo height={30} variant="dark" />
             </Link>
-            <span className="font-mono text-xs" style={{ color: step.type !== "inter" ? "var(--muted)" : "transparent" }}>
-              Question {qSoFar} of {qCount}
-            </span>
+            {!showBreather && (
+              <span className="text-xs sm:text-sm text-muted-foreground font-medium tabular-nums">
+                {currentVisibleIndex + 1} <span className="text-border">/</span> {totalQuestions}
+              </span>
+            )}
+            {showBreather && (
+              <span className="text-xs sm:text-sm text-muted-foreground font-medium">
+                New section
+              </span>
+            )}
           </div>
-          <div className="h-1.5 -mx-[22px] sm:-mx-[22px]" style={{ background: "var(--secondary)" }}>
-            <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${Math.round((qSoFar / qCount) * 100)}%`, background: "var(--grad-cta)" }} />
+          <div className="h-1.5 bg-border/50 -mx-4 sm:-mx-6 lg:-mx-8">
+            <div
+              className="progress-bar-fill h-full transition-all duration-500"
+              style={{ width: `${effectiveProgress}%` }}
+            />
           </div>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col py-8 sm:py-12 px-4 overflow-hidden" style={{ maxWidth: 600, margin: "30px auto", width: "100%" }}>
-        <div key={stepIdx} className={`w-full ${animClass}`} style={{ animation: animClass.startsWith("quiz-slide-enter") ? animClass.replace("quiz-slide-", "") : "none" }}>
-
-          {step.type === "inter" && (
-            <div className="inter">
-              <StepIcon step={step} />
-              {step.interEyebrow && <span className="pp-eyebrow" style={{ justifyContent: "center", marginBottom: 18 }}>{step.interEyebrow}</span>}
-              <h2 style={{ fontSize: "1.6rem", marginBottom: 8 }}>{step.interTitle}</h2>
-              <p style={{ color: "var(--ink-soft)", maxWidth: 400, margin: "0 auto 6px" }}>{step.interBody}</p>
-              <div style={{ marginTop: 20 }}>
-                <button className="pp-btn pp-btn-primary pp-btn-lg" onClick={() => triggerAdvance("forward", advance)}>Continue →</button>
+      <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4 overflow-hidden">
+        {showBreather && breatherData && (
+          <div className="w-full max-w-lg quiz-slide-enter-forward">
+            <div
+              className="rounded-2xl p-8 sm:p-10 text-center text-white shadow-2xl"
+              style={{
+                background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f2744 100%)",
+              }}
+            >
+              <div className="flex items-center justify-center mb-6">
+                <span
+                  className="text-xs font-semibold tracking-widest uppercase px-4 py-1.5 rounded-full"
+                  style={{
+                    background: "rgba(56,189,248,0.15)",
+                    color: "#38bdf8",
+                    letterSpacing: "0.12em",
+                    border: "1px solid rgba(56,189,248,0.25)",
+                  }}
+                >
+                  {breatherData.label}
+                </span>
               </div>
-              <div style={{ marginTop: 10 }}>
-                <button className="linkbtn" onClick={goBack} style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>← Back</button>
+
+              <div
+                className="w-12 h-0.5 mx-auto mb-6 rounded-full"
+                style={{ background: "linear-gradient(90deg, #38bdf8, #818cf8)" }}
+              />
+
+              <h2
+                className="text-2xl sm:text-3xl font-normal mb-4 leading-snug"
+                style={{ fontFamily: "'DM Serif Display', serif" }}
+              >
+                {breatherData.headline}
+              </h2>
+              <p className="text-slate-300 text-base sm:text-lg leading-relaxed mb-8">
+                {breatherData.body}
+              </p>
+              <button
+                onClick={handleBreatherContinue}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95"
+                style={{
+                  background: "linear-gradient(135deg, #38bdf8, #818cf8)",
+                }}
+              >
+                Continue
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!showBreather && (
+          <div key={currentIndex} className={`w-full max-w-2xl ${animClass}`}>
+            <div className="mb-5 sm:mb-6">
+              <span className="section-badge">{currentQuestion.section}</span>
+              <div className="mt-2 text-xs font-medium text-muted-foreground">
+                {currentSectionIndex} of {currentSectionQuestions} in this section
               </div>
             </div>
-          )}
 
-          {step.type === "single" && (
-            <>
-              <h2 style={{ fontSize: "1.7rem", marginBottom: 6 }}>{step.question}</h2>
-              {step.subtitle && <p style={{ color: "var(--muted)", marginBottom: 18 }}>{step.subtitle}</p>}
-              <div className="flex flex-wrap gap-[10px]" style={{ marginTop: 18 }}>
-                {step.options.map((opt, i) => {
-                  const sel = answers[stepIdx] === i;
-                  return (
-                    <div key={i} className={`qopt ${sel ? "sel" : ""}`} style={{ flex: "1 1 auto", minWidth: 0 }} onClick={() => handleSingle(i)} role="button" tabIndex={0} onKeyDown={e => e.key === "Enter" && handleSingle(i)}>
-                      {opt}
-                      <span className="ck">✓</span>
-                    </div>
-                  );
-                })}
-              </div>
-              {stepIdx > 0 && (
-                <div style={{ marginTop: 22 }}>
-                  <button className="linkbtn" onClick={goBack} style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>← Back</button>
-                </div>
-              )}
-            </>
-          )}
+            <h2
+              className="text-xl sm:text-2xl md:text-3xl font-normal text-foreground mb-7 sm:mb-8 leading-snug"
+              style={{ fontFamily: "'DM Serif Display', serif" }}
+            >
+              {currentQuestion.question}
+            </h2>
 
-          {step.type === "multi" && (
-            <>
-              <h2 style={{ fontSize: "1.7rem", marginBottom: 6 }}>{step.question}</h2>
-              {step.subtitle && <p style={{ color: "var(--muted)", marginBottom: 18 }}>{step.subtitle}</p>}
-              <div className="flex flex-col gap-[10px]" style={{ marginTop: 18 }}>
-                {step.options.map((opt, i) => (
-                  <div key={i} className={`qopt ${multiSelection.includes(i) ? "sel" : ""}`} onClick={() => handleMultiToggle(i)} role="button" tabIndex={0} onKeyDown={e => e.key === "Enter" && handleMultiToggle(i)}>
-                    {opt}
-                    <span className="ck">✓</span>
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: 22 }} className="flex items-center justify-between">
-                <button className="linkbtn" onClick={goBack} style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>← Back</button>
+            <div className="space-y-3">
+              {currentQuestion.options.map((option, idx) => (
                 <button
-                  className="pp-btn pp-btn-primary"
-                  onClick={handleMultiContinue}
-                  disabled={multiSelection.length === 0 || isTransitioning}
-                  style={{ opacity: multiSelection.length === 0 || isTransitioning ? 0.5 : 1 }}
+                  key={idx}
+                  onClick={() => handleSelectAnswer(idx)}
+                  disabled={selectedAnswer !== null || isTransitioning}
+                  aria-pressed={selectedAnswer === idx}
+                  className={`answer-btn ${selectedAnswer === idx ? "selected" : ""} ${
+                    selectedAnswer !== null && selectedAnswer !== idx
+                      ? "opacity-40 cursor-default"
+                      : ""
+                  }`}
+                  style={{ animationDelay: `${idx * 35}ms` }}
                 >
-                  Continue →
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div
+                      className={`answer-indicator w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${
+                        selectedAnswer === idx
+                          ? "border-accent bg-accent"
+                          : "border-border"
+                      }`}
+                    >
+                      {selectedAnswer === idx && (
+                        <div className="w-2 h-2 rounded-full bg-white" />
+                      )}
+                    </div>
+                    <span className="text-sm sm:text-base leading-snug text-left flex-1">
+                      {option}
+                    </span>
+                    {selectedAnswer === idx ? (
+                      <span className="text-xs font-semibold uppercase tracking-wide text-accent">
+                        Selected
+                      </span>
+                    ) : null}
+                  </div>
                 </button>
-              </div>
-            </>
-          )}
+              ))}
+            </div>
 
-          {step.type === "select" && (
-            <>
-              <h2 style={{ fontSize: "1.7rem", marginBottom: 6 }}>{step.question}</h2>
-              {step.subtitle && <p style={{ color: "var(--muted)", marginBottom: 18 }}>{step.subtitle}</p>}
-              <select
-                value={stateVal}
-                onChange={e => setStateVal(e.target.value)}
-                className="qsel"
-                style={{ width: "100%", padding: "14px 16px", border: "1.5px solid var(--line)", borderRadius: 14, font: "inherit", marginTop: 18 }}
-              >
-                <option value="">Select your state…</option>
-                {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-
-              <div style={{ marginTop: 22 }} className="flex items-center justify-between">
-                <button className="linkbtn" onClick={goBack} style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>← Back</button>
-                <button className="pp-btn pp-btn-primary" onClick={() => triggerAdvance("forward", advance)} disabled={!stateVal}
-                  style={{ opacity: stateVal ? 1 : 0.5 }}>Continue</button>
-              </div>
-            </>
-          )}
-
-        </div>
+            <p className="text-xs text-muted-foreground text-center mt-5 animate-fade-in">
+              Select one answer and we&apos;ll keep things moving. Swipe right to go back.
+            </p>
+          </div>
+        )}
       </main>
 
-      <footer className="border-t" style={{ borderColor: "var(--line)", background: "rgba(251,252,254,.95)" }}>
+      <footer className="border-t border-border/60 bg-white/95 backdrop-blur-md sticky bottom-0">
         <div className="container">
           <div className="flex items-center justify-between h-16">
-            <button onClick={goBack} disabled={stepIdx === 0 || isTransitioning} className="linkbtn" style={{ background: "none", border: "none", color: "var(--muted)", textDecoration: "underline", cursor: stepIdx === 0 ? "default" : "pointer", font: "inherit", opacity: stepIdx === 0 ? 0.3 : 1 }}>
-              ← Back
-            </button>
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              disabled={(isFirst && !showBreather) || isTransitioning}
+              className="text-muted-foreground hover:text-foreground gap-2 h-10 px-3 sm:px-4"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm">Back</span>
+            </Button>
 
             <div className="flex items-center gap-1">
-              {STEPS.map((s, i) => {
-                if (s.type === "inter") return null;
-                const answered = answers[i] !== null || (i === STEPS.findIndex(x => x.type === "select") && stateVal);
-                const isActive = i === stepIdx;
+              {Array.from({ length: Math.min(totalQuestions, 10) }).map((_, i) => {
+                const isActive = i === progressDotIndex;
+                const isPast = i < progressDotIndex;
                 return (
-                  <div key={i}
-                    className="rounded-full transition-all"
-                    style={{
-                      width: isActive ? 16 : 8,
-                      height: 8,
-                      background: isActive ? "var(--sky-deep)" : answered ? "var(--sky)" : "var(--line)"
-                    }}
+                  <div
+                    key={i}
+                    className={`rounded-full transition-all ${
+                      isActive
+                        ? "w-4 h-2 bg-accent"
+                        : isPast
+                          ? "w-2 h-2 bg-accent/40"
+                          : "w-2 h-2 bg-border"
+                    }`}
                   />
                 );
               })}
             </div>
 
-            <div style={{ width: 80 }} />
+            <div className="w-16 sm:w-20" />
           </div>
         </div>
       </footer>

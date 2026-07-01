@@ -2,14 +2,14 @@ import { createContext, useContext, useState, useCallback, ReactNode, useEffect 
 import { QUIZ_QUESTIONS } from "../../../shared/scoring";
 
 export interface QuizState {
-  answers: (number | number[] | null)[];
+  answers: (number | null)[];
   currentIndex: number;
   isComplete: boolean;
 }
 
 interface QuizContextValue {
   state: QuizState;
-  selectAnswer: (answer: number | number[]) => void;
+  selectAnswer: (answerIndex: number) => void;
   goNext: () => void;
   goBack: () => void;
   goTo: (questionIndex: number) => void;
@@ -17,11 +17,12 @@ interface QuizContextValue {
   reset: () => void;
   currentQuestion: typeof QUIZ_QUESTIONS[0];
   progress: number; // 0–100
+  currentSection: string;
   totalQuestions: number;
 }
 
 const QuizContext = createContext<QuizContextValue | null>(null);
-const QUIZ_STORAGE_KEY = "peptidepilot_quiz_state_v3";
+const QUIZ_STORAGE_KEY = "peptidepilot_quiz_state_v1";
 
 function persistQuizState(state: QuizState) {
   if (typeof window === "undefined") return;
@@ -45,9 +46,7 @@ function getInitialQuizState(totalQuestions: number): QuizState {
 
     const answers = new Array(totalQuestions).fill(null).map((_, index) => {
       const value = parsed.answers?.[index];
-      if (typeof value === "number") return value;
-      if (Array.isArray(value)) return value;
-      return null;
+      return typeof value === "number" ? value : null;
     });
 
     const safeIndex =
@@ -74,10 +73,10 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     persistQuizState(state);
   }, [state]);
 
-  const selectAnswer = useCallback((answer: number | number[]) => {
+  const selectAnswer = useCallback((answerIndex: number) => {
     setState((prev) => {
       const answers = [...prev.answers];
-      answers[prev.currentIndex] = answer;
+      answers[prev.currentIndex] = answerIndex;
       const nextState = { ...prev, answers };
       persistQuizState(nextState);
       return nextState;
@@ -143,6 +142,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 
   const currentQuestion = QUIZ_QUESTIONS[state.currentIndex];
   const progress = Math.round(((state.currentIndex) / totalQuestions) * 100);
+  const currentSection = currentQuestion?.section ?? "";
 
   return (
     <QuizContext.Provider
@@ -156,6 +156,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         reset,
         currentQuestion,
         progress,
+        currentSection,
         totalQuestions,
       }}
     >

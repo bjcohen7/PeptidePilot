@@ -12,6 +12,7 @@ import SessionTracker from "./components/SessionTracker";
 import Seo from "./components/Seo";
 import { UserSessionProvider } from "./contexts/UserSessionContext";
 import { ExperimentProvider } from "./contexts/ExperimentContext";
+import { QuizProvider } from "./contexts/QuizContext";
 
 // Pages
 const Home = lazy(() => import("./pages/Home"));
@@ -159,7 +160,9 @@ function Router() {
       {/* Quiz flow — fully self-contained */}
       <Route path="/quiz/flow">
         <Suspense fallback={<RouteFallback />}>
-          <QuizFlow />
+          <QuizProvider>
+            <QuizFlow />
+          </QuizProvider>
         </Suspense>
       </Route>
 
