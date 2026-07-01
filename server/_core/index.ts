@@ -183,9 +183,17 @@ async function startServer() {
     try {
       const db = await getDb();
       if (!db) { res.status(500).json({ error: "no db" }); return; }
-      const [existing] = await db.execute(sql`SELECT COUNT(*) as cnt FROM providers`);
-      if (Array.isArray(existing) && existing.length > 0 && (existing[0] as any).cnt > 0) {
-        res.json({ message: "Already seeded", count: (existing[0] as any).cnt });
+      // Check if table exists and has rows
+      let alreadySeeded = false;
+      try {
+        const [existing] = await db.execute(sql`SELECT COUNT(*) as cnt FROM providers`);
+        if (Array.isArray(existing) && existing.length > 0 && (existing[0] as any).cnt > 0) {
+          alreadySeeded = true;
+        }
+      } catch { /* table doesn't exist yet — will create below */ }
+      if (alreadySeeded) {
+        const [rows] = await db.execute(sql`SELECT slug, display_name, price_from_cents, promo_code, active, sort_priority FROM providers ORDER BY sort_priority`);
+        res.json({ message: "Already seeded", providers: rows });
         return;
       }
       await db.execute(sql`
