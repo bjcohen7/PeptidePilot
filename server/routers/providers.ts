@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { providers } from "../../drizzle/schema";
 import { getDb } from "../db";
 import { adminProcedure, publicProcedure, router } from "../_core/trpc";
@@ -92,5 +92,48 @@ export const providersRouter = router({
       if (!db) throw new Error("Database not available");
       await db.update(providers).set({ active: input.active }).where(eq(providers.id, input.id));
       return { success: true };
+    }),
+
+  importSeedRows: adminProcedure
+    .mutation(async () => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Ensure the table exists first
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS providers (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          slug VARCHAR(64) NOT NULL UNIQUE,
+          display_name VARCHAR(128) NOT NULL,
+          price_from_cents INT NOT NULL,
+          price_note VARCHAR(255),
+          included JSON NOT NULL,
+          meds_offered ENUM('oral','injectable','both') NOT NULL,
+          states_available JSON NOT NULL,
+          cash_pay_friendly BOOLEAN NOT NULL DEFAULT TRUE,
+          ship_days_estimate INT,
+          affiliate_url_template VARCHAR(1024) NOT NULL,
+          bounty_cents INT,
+          promo_code VARCHAR(64),
+          active BOOLEAN NOT NULL DEFAULT TRUE,
+          sort_priority INT NOT NULL DEFAULT 50,
+          compliance_note TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+
+      const rows = [
+        { slug: 'gala', displayName: 'Gala Health', priceFromCents: 17900, priceNote: 'per month with yearly plan', included: ['Personalized provider match','Unlimited follow-up visits','Medication shipped to your door','Ongoing care coordination'], medsOffered: 'both' as const, statesAvailable: '"ALL"', cashPayFriendly: true, shipDaysEstimate: 4, affiliateUrlTemplate: 'https://galaglp1.com/lp/glp1?a=price&_ef_transaction_id=&oid=1&affid=13&sub1={subid}', bountyCents: null, promoCode: null, active: true, sortPriority: 1, complianceNote: 'Compounded medications are not FDA-approved finished drug products.' },
+        { slug: 'medvi', displayName: 'Medvi', priceFromCents: 19900, priceNote: 'per month', included: ['Board-certified provider','Prescription management','Monthly follow-ups','Medication shipped free'], medsOffered: 'both' as const, statesAvailable: '"ALL"', cashPayFriendly: true, shipDaysEstimate: 4, affiliateUrlTemplate: 'https://track.revoffers.com/aff_c?offer_id=1304&aff_id=12185&subid1={subid}', bountyCents: null, promoCode: null, active: true, sortPriority: 2, complianceNote: null },
+        { slug: 'direct_med', displayName: 'Direct Meds', priceFromCents: 19900, priceNote: 'per month', included: ['Board-certified MD oversight','Prescription management','Monthly follow-ups','Medication shipped free'], medsOffered: 'both' as const, statesAvailable: '"ALL"', cashPayFriendly: true, shipDaysEstimate: 4, affiliateUrlTemplate: 'https://track.revoffers.com/aff_c?offer_id=1304&aff_id=12185&subid1={subid}', bountyCents: null, promoCode: 'PILOT50', active: true, sortPriority: 3, complianceNote: 'Compounded medications are not FDA-approved finished drug products.' },
+        { slug: 'sprout', displayName: 'Sprout', priceFromCents: 19900, priceNote: 'per month', included: ['Patient care team','Prescription management','No long-term contracts','Free shipping'], medsOffered: 'both' as const, statesAvailable: '"ALL"', cashPayFriendly: true, shipDaysEstimate: 5, affiliateUrlTemplate: 'https://track.revoffers.com/aff_c?offer_id=1286&aff_id=12185&subid1={subid}', bountyCents: null, promoCode: null, active: true, sortPriority: 4, complianceNote: 'Compounded medications are not FDA-approved finished drug products.' },
+      ];
+      let inserted = 0;
+      for (const r of rows) {
+        await db.insert(providers).values(r).onDuplicateKeyUpdate({ set: { displayName: r.displayName } });
+        inserted++;
+      }
+      return { inserted, message: `Done — ${inserted} providers seeded` };
     }),
 });

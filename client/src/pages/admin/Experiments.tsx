@@ -690,15 +690,41 @@ function ProvidersView() {
   const setActive = trpc.providers.adminSetActive.useMutation({
     onSuccess: () => utils.providers.adminList.invalidate(),
   });
+  const seedRows = trpc.providers.importSeedRows.useMutation({
+    onSuccess: (data) => { alert(data.message); utils.providers.adminList.invalidate(); },
+    onError: (err) => alert('Seed failed: ' + err.message),
+  });
 
   const handleSave = (form: Record<string, unknown>) => {
     upsert.mutate(form as any);
   };
 
-  if (!rows.length) return <div style={{ color: C.faint, fontSize: 13 }}>No providers yet. Seed them via SQL migration.</div>;
+  if (!rows.length) return (
+    <div className="space-y-4">
+      <div style={{ color: C.faint, fontSize: 13 }}>No providers yet.</div>
+      <button
+        onClick={() => seedRows.mutate()}
+        disabled={seedRows.isPending}
+        className="rounded-lg px-4 py-2 text-white font-semibold text-sm"
+        style={{ background: C.blue }}
+      >
+        {seedRows.isPending ? 'Seeding...' : 'Seed Default Providers'}
+      </button>
+    </div>
+  );
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => seedRows.mutate()}
+          disabled={seedRows.isPending}
+          className="rounded-lg px-3 py-1.5 text-white font-semibold text-xs ml-auto"
+          style={{ background: C.blue }}
+        >
+          {seedRows.isPending ? 'Seeding...' : 'Reseed Providers'}
+        </button>
+      </div>
       {editing && (
         <ProviderEditModal
           initial={editing}
