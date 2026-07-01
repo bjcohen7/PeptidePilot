@@ -178,6 +178,52 @@ async function startServer() {
       res.status(400).json({ error: "invalid_click_event" });
     }
   });
+  // One-shot seed endpoint: creates providers table + inserts 4 seed rows
+  app.get("/api/seed-providers", async (req, res) => {
+    try {
+      const db = await getDb();
+      if (!db) { res.status(500).json({ error: "no db" }); return; }
+      const [existing] = await db.execute(sql`SELECT COUNT(*) as cnt FROM providers`);
+      if (Array.isArray(existing) && existing.length > 0 && (existing[0] as any).cnt > 0) {
+        res.json({ message: "Already seeded", count: (existing[0] as any).cnt });
+        return;
+      }
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS providers (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          slug VARCHAR(64) NOT NULL UNIQUE,
+          display_name VARCHAR(128) NOT NULL,
+          price_from_cents INT NOT NULL,
+          price_note VARCHAR(255),
+          included JSON NOT NULL,
+          meds_offered ENUM('oral','injectable','both') NOT NULL,
+          states_available JSON NOT NULL,
+          cash_pay_friendly BOOLEAN NOT NULL DEFAULT TRUE,
+          ship_days_estimate INT,
+          affiliate_url_template VARCHAR(1024) NOT NULL,
+          bounty_cents INT,
+          promo_code VARCHAR(64),
+          active BOOLEAN NOT NULL DEFAULT TRUE,
+          sort_priority INT NOT NULL DEFAULT 50,
+          compliance_note TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+      await db.insert(providers).values([
+        { slug: 'gala', displayName: 'Gala Health', priceFromCents: 17900, priceNote: null, included: ['Personalized provider match','Unlimited follow-up visits','Medication shipped to your door','Ongoing care coordination'], medsOffered: 'both', statesAvailable: '"ALL"', cashPayFriendly: true, shipDaysEstimate: 4, affiliateUrlTemplate: 'https://galaglp1.com/lp/glp1?a=price&_ef_transaction_id=&oid=1&affid=13&sub1={subid}', bountyCents: null, promoCode: null, active: true, sortPriority: 1, complianceNote: 'PRICE UNVERIFIED — reported at $179/mo. Compounded medications are not FDA-approved finished drug products.' },
+        { slug: 'medvi', displayName: 'Medvi', priceFromCents: 19900, priceNote: null, included: ['Board-certified provider','Prescription management','Monthly follow-ups','Medication shipped free'], medsOffered: 'both', statesAvailable: '"ALL"', cashPayFriendly: true, shipDaysEstimate: 4, affiliateUrlTemplate: 'https://track.revoffers.com/aff_c?offer_id=1304&aff_id=12185&subid1={subid}', bountyCents: null, promoCode: null, active: false, sortPriority: 2, complianceNote: null },
+        { slug: 'direct_med', displayName: 'Direct Meds', priceFromCents: 19900, priceNote: null, included: ['Board-certified MD oversight','Prescription management','Monthly follow-ups','Medication shipped free'], medsOffered: 'both', statesAvailable: '"ALL"', cashPayFriendly: true, shipDaysEstimate: 4, affiliateUrlTemplate: 'https://track.revoffers.com/aff_c?offer_id=1304&aff_id=12185&subid1={subid}', bountyCents: null, promoCode: null, active: true, sortPriority: 3, complianceNote: 'Compounded medications are not FDA-approved finished drug products.' },
+        { slug: 'sprout', displayName: 'Sprout', priceFromCents: 19900, priceNote: null, included: ['Patient care team','Prescription management','No long-term contracts','Free shipping'], medsOffered: 'both', statesAvailable: '"ALL"', cashPayFriendly: true, shipDaysEstimate: 5, affiliateUrlTemplate: 'https://track.revoffers.com/aff_c?offer_id=1286&aff_id=12185&subid1={subid}', bountyCents: null, promoCode: null, active: true, sortPriority: 4, complianceNote: 'Compounded medications are not FDA-approved finished drug products.' },
+      ]);
+      const [rows] = await db.execute(sql`SELECT slug, display_name, price_from_cents, promo_code, active, sort_priority FROM providers ORDER BY sort_priority`);
+      res.json({ message: "Seeded", providers: rows });
+    } catch (err) {
+      console.error("[Seed] Error:", err);
+      res.status(500).json({ error: String(err) });
+    }
+  });
+
   // Affiliate go-link: logs click then redirects
   app.get("/go/:provider/:publicId", async (req, res) => {
     const { provider, publicId } = req.params;
