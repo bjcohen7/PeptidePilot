@@ -389,19 +389,23 @@ function ProviderCard({
           </button>
         )}
 
-        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
-          GLP-1 medications require clinician review, prescription eligibility, and individualized medical guidance.
-        </div>
-
         <a
           href={provider.affiliateUrl}
           rel="noopener noreferrer"
           onClick={handleProviderClick}
-          className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2.5 sm:py-2 rounded-lg border border-accent/30 text-accent hover:bg-accent hover:text-white transition-all sm:text-xs sm:px-3"
+          className={`flex items-center justify-center gap-2 font-bold rounded-xl shadow-md transition-all w-full ${
+            isTop
+              ? "text-base sm:text-lg py-4 px-6 bg-gradient-to-r from-teal-600 to-cyan-600 text-white hover:from-teal-700 hover:to-cyan-700 hover:scale-[1.02]"
+              : "text-sm sm:text-base py-4 px-6 bg-teal-600 text-white hover:bg-teal-700 hover:scale-[1.01]"
+          }`}
         >
-          <ExternalLink className="w-3.5 h-3.5" />
+          <ExternalLink className={`${isTop ? "w-5 h-5" : "w-4 h-4"} flex-shrink-0`} />
           Check Eligibility with {provider.name}
         </a>
+
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+          GLP-1 medications require clinician review, prescription eligibility, and individualized medical guidance.
+        </div>
       </div>
     </div>
   );
