@@ -294,40 +294,7 @@ async function startServer() {
       res.status(400).json({ error: "invalid_funnel_event" });
     }
   });
-  app.get("/api/diag/funnel-gap", async (_req, res) => {
-    try {
-      const db = await getDb();
-      if (!db) { res.json({ error: "no db" }); return; }
-      const [started] = await db.execute(sql`
-        SELECT COUNT(*) as cnt FROM click_events
-        WHERE eventType = 'funnel' AND label = 'ProcessingStarted'
-        AND createdAt >= '2026-07-01 17:00:00' AND createdAt < '2026-07-02 13:00:00'
-      `);
-      const [completed] = await db.execute(sql`
-        SELECT COUNT(*) as cnt FROM click_events
-        WHERE eventType = 'funnel' AND label = 'ProcessingComplete'
-        AND createdAt >= '2026-07-01 17:00:00' AND createdAt < '2026-07-02 13:00:00'
-      `);
-      const s = Array.isArray(started) ? Number((started[0] as any)?.cnt ?? 0) : 0;
-      const c = Array.isArray(completed) ? Number((completed[0] as any)?.cnt ?? 0) : 0;
-      res.json({ started: s, completed: c, failed: s - c });
-    } catch (e) {
-      res.json({ error: String(e) });
-    }
-  });
-  app.get("/api/diag/click-logs", async (_req, res) => {
-    try {
-      const db = await getDb();
-      if (!db) { res.json({ error: "no db" }); return; }
-      const [rows] = await db.execute(sql`
-        SELECT id, public_id, provider_slug, position, experiment_variant, created_at
-        FROM provider_click_logs ORDER BY id DESC LIMIT 5
-      `);
-      res.json({ rows });
-    } catch (e) {
-      res.json({ error: String(e) });
-    }
-  });
+  // Diagnostic endpoints removed before production ship.
   app.get("/api/health", (_req, res) => {
     res.json({
       status: "ok",
