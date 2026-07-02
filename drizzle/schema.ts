@@ -315,14 +315,24 @@ export const conversions = mysqlTable(
     amountCents: int("amount_cents"), // nullable
     occurredAt: timestamp("occurred_at").notNull(),
     source: mysqlEnum("source", ["postback", "manual"]).notNull(),
+    // The network's identity for the sale — retries carry the same txid, rebills a new one.
+    transactionId: varchar("transaction_id", { length: 191 }),
+    // 'initial' | 'rebill' | 'unknown' — from the postback's type param.
+    conversionType: varchar("conversion_type", { length: 16 }).notNull().default("unknown"),
+    // Idempotency key: "tx:<txid>" when present, else "st:<subid>:<minute>".
+    dedupeKey: varchar("dedupe_key", { length: 191 }).notNull(),
+    // True when we had no txid and fell back to the time-bucketed key.
+    needsReview: boolean("needs_review").notNull().default(false),
     rawPayload: json("raw_payload"), // nullable — full postback query/body for audit
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => ({
-    // Idempotency: the same subid + occurred_at never double-counts.
-    uqSubidOccurred: uniqueIndex("uq_conv_subid_occurred").on(t.subid, t.occurredAt),
+    // Idempotency keyed on the network's conversion identity (provider + dedupeKey):
+    // retries dedupe, rebills insert as new rows.
+    uqProviderDedupe: uniqueIndex("uq_conv_provider_dedupe").on(t.providerSlug, t.dedupeKey),
     ixProvider: index("ix_conv_provider").on(t.providerSlug),
     ixLead: index("ix_conv_lead").on(t.leadId),
+    ixTxid: index("ix_conv_txid").on(t.providerSlug, t.transactionId),
   }),
 );
 

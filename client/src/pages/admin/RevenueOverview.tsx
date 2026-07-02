@@ -230,7 +230,7 @@ export default function RevenueOverview() {
           <table className="w-full text-sm">
             <thead><tr className="text-left text-muted-foreground border-b">
               <th className="py-2 pr-4">When</th><th className="py-2 pr-4">Provider</th><th className="py-2 pr-4">subid</th>
-              <th className="py-2 pr-4">Amount</th><th className="py-2 pr-4">Source</th><th className="py-2 pr-4">Lead</th>
+              <th className="py-2 pr-4">Type</th><th className="py-2 pr-4">Amount</th><th className="py-2 pr-4">Source</th><th className="py-2 pr-4">Lead</th>
             </tr></thead>
             <tbody>
               {(recent.data ?? []).map((c: any) => (
@@ -238,12 +238,16 @@ export default function RevenueOverview() {
                   <td className="py-2 pr-4 whitespace-nowrap">{new Date(c.occurredAt).toLocaleString()}</td>
                   <td className="py-2 pr-4">{c.providerSlug}</td>
                   <td className="py-2 pr-4 font-mono text-xs">{c.subid}</td>
+                  <td className="py-2 pr-4">
+                    {c.conversionType === "rebill" ? <span className="text-blue-600">rebill</span> : c.conversionType}
+                    {c.needsReview && <span className="ml-1 text-amber-600" title="No transaction id — dedup fell back to time bucket">⚑</span>}
+                  </td>
                   <td className="py-2 pr-4">{usd(c.amountCents)}</td>
                   <td className="py-2 pr-4">{c.source}</td>
                   <td className="py-2 pr-4">{c.resolved ? (c.email ?? c.leadId) : <span className="text-amber-600">unresolved</span>}</td>
                 </tr>
               ))}
-              {!recent.data?.length && <tr><td colSpan={6} className="py-3 text-muted-foreground">No conversions yet.</td></tr>}
+              {!recent.data?.length && <tr><td colSpan={7} className="py-3 text-muted-foreground">No conversions yet.</td></tr>}
             </tbody>
           </table>
         </div>

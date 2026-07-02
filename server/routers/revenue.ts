@@ -4,19 +4,13 @@ import { adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { conversions } from "../../drizzle/schema";
 import { cancelSequenceForLead } from "../email/queue";
+import { parseSubid, computeDedupe } from "../lib/subid";
 
 function extractRows<T = any>(result: unknown): T[] {
   if (Array.isArray(result)) return (Array.isArray(result[0]) ? result[0] : result) as T[];
   return [];
 }
 const num = (v: unknown) => Number(v ?? 0);
-
-/** subid = {publicId}-{providerSlug}; providerSlug has no hyphen. */
-function parseSubid(subid: string): { publicId: string; providerSlug: string } | null {
-  const i = subid.lastIndexOf("-");
-  if (i <= 0 || i === subid.length - 1) return null;
-  return { publicId: subid.slice(0, i), providerSlug: subid.slice(i + 1) };
-}
 const esc = (s: string) => s.replace(/'/g, "''");
 
 export const revenueRouter = router({
@@ -157,7 +151,9 @@ export const revenueRouter = router({
     if (!db) return [];
     return extractRows(await db.execute(sql.raw(`
       SELECT c.id, c.subid, c.lead_id AS leadId, c.provider_slug AS providerSlug,
-             c.amount_cents AS amountCents, c.occurred_at AS occurredAt, c.source, l.email
+             c.amount_cents AS amountCents, c.occurred_at AS occurredAt, c.source,
+             c.conversion_type AS conversionType, c.needs_review AS needsReview,
+             c.transaction_id AS transactionId, l.email
       FROM conversions c
       LEFT JOIN leads l ON l.id = c.lead_id
       ORDER BY c.occurred_at DESC
@@ -166,6 +162,9 @@ export const revenueRouter = router({
       id: num(r.id), subid: r.subid, leadId: r.leadId, providerSlug: r.providerSlug,
       amountCents: r.amountCents == null ? null : num(r.amountCents),
       occurredAt: r.occurredAt, source: r.source, email: r.email ?? null,
+      conversionType: r.conversionType ?? "unknown",
+      needsReview: Boolean(num(r.needsReview)),
+      transactionId: r.transactionId ?? null,
       resolved: Boolean(r.leadId),
     }));
   }),
@@ -187,7 +186,8 @@ export const revenueRouter = router({
       let leadId: string | null = null;
 
       if (subid) {
-        const parsed = parseSubid(subid);
+        // Provider is known here (admin selected it) — match the subid suffix against it.
+        const parsed = parseSubid(subid, [input.providerSlug]);
         if (parsed) {
           const rows = extractRows(await db.execute(sql.raw(
             `SELECT id FROM leads WHERE publicId = '${esc(parsed.publicId)}' LIMIT 1`
@@ -210,6 +210,10 @@ export const revenueRouter = router({
       const occurredAt = input.date ? new Date(input.date) : new Date();
       if (isNaN(occurredAt.getTime())) throw new Error("Invalid date.");
 
+      // Manual entries are namespaced ("man") so they never collide with postback
+      // keys; idempotent on (provider_slug, dedupe_key) at the minute granularity.
+      const { dedupeKey } = computeDedupe({ subid, occurredAt, keyspace: "man" });
+
       try {
         await db.insert(conversions).values({
           subid,
@@ -218,6 +222,10 @@ export const revenueRouter = router({
           amountCents,
           occurredAt,
           source: "manual",
+          transactionId: null,
+          conversionType: "initial",
+          dedupeKey,
+          needsReview: false,
           rawPayload: { manual: true },
         });
       } catch (err: any) {

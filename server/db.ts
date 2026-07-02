@@ -413,7 +413,9 @@ export async function ensureAffiliateWorkspaceSchema() {
 
       // Conversions table (leg-6) — affiliate revenue joined back via subid.
       // Explicit utf8mb4 / utf8mb4_0900_ai_ci to match `leads` (AGENTS.md).
-      // The (subid, occurred_at) unique key makes postbacks idempotent.
+      // Idempotency is keyed on the network's conversion identity
+      // (provider_slug, dedupe_key): "tx:<transaction_id>" when present, else
+      // "st:<subid>:<occurred-minute>". Retries dedupe; rebills (new txid) insert.
       await db.execute(sql.raw(
         "CREATE TABLE IF NOT EXISTS `conversions` (" +
         "`id` int AUTO_INCREMENT NOT NULL, " +
@@ -423,14 +425,24 @@ export async function ensureAffiliateWorkspaceSchema() {
         "`amount_cents` int, " +
         "`occurred_at` timestamp NOT NULL, " +
         "`source` enum('postback','manual') NOT NULL, " +
+        "`transaction_id` varchar(191), " +
+        "`conversion_type` varchar(16) NOT NULL DEFAULT 'unknown', " +
+        "`dedupe_key` varchar(191) NOT NULL, " +
+        "`needs_review` boolean NOT NULL DEFAULT false, " +
         "`raw_payload` json, " +
         "`created_at` timestamp NOT NULL DEFAULT (now()), " +
         "CONSTRAINT `conversions_id` PRIMARY KEY(`id`), " +
-        "UNIQUE KEY `uq_conv_subid_occurred` (`subid`, `occurred_at`), " +
+        "UNIQUE KEY `uq_conv_provider_dedupe` (`provider_slug`, `dedupe_key`), " +
         "KEY `ix_conv_provider` (`provider_slug`), " +
-        "KEY `ix_conv_lead` (`lead_id`)" +
+        "KEY `ix_conv_lead` (`lead_id`), " +
+        "KEY `ix_conv_txid` (`provider_slug`, `transaction_id`)" +
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci"
       ));
+      // Defensive column adds (for any env that created an earlier conversions table).
+      await addColumnIfMissing(db, "conversions", "transaction_id", "`transaction_id` varchar(191)");
+      await addColumnIfMissing(db, "conversions", "conversion_type", "`conversion_type` varchar(16) NOT NULL DEFAULT 'unknown'");
+      await addColumnIfMissing(db, "conversions", "dedupe_key", "`dedupe_key` varchar(191) NOT NULL DEFAULT ''");
+      await addColumnIfMissing(db, "conversions", "needs_review", "`needs_review` boolean NOT NULL DEFAULT false");
 
       // Fix gala compliance note (remove price verification flag — customer-facing)
       try {
