@@ -289,9 +289,52 @@ export const providers = mysqlTable("providers", {
   active: boolean("active").notNull().default(true),
   sortPriority: int("sort_priority").notNull().default(50),
   complianceNote: text("compliance_note"),
+  // Per-provider postback field-name mapping (networks name fields differently:
+  // Everflow sub1, RevOffers/TUNE subid1/sub1). e.g. { "subid": "sub1", "amount": "payout" }.
+  postbackParamMap: json("postback_param_map").$type<Record<string, string>>(),
+  // Affiliate cookie window in days — used to flag stale click→conversion gaps.
+  cookieWindowDays: int("cookie_window_days"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
 
 export type Provider = typeof providers.$inferSelect;
 export type InsertProvider = typeof providers.$inferInsert;
+
+/**
+ * Affiliate conversions joined back to sessions via subid ({publicId}-{providerSlug}).
+ * utf8mb4_0900_ai_ci to match `leads` (see server/db.ts ensureConversionsSchema).
+ */
+export const conversions = mysqlTable(
+  "conversions",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    subid: varchar("subid", { length: 128 }).notNull(),
+    leadId: varchar("lead_id", { length: 36 }), // resolved from subid; NULL if unresolvable
+    providerSlug: varchar("provider_slug", { length: 64 }).notNull(),
+    amountCents: int("amount_cents"), // nullable
+    occurredAt: timestamp("occurred_at").notNull(),
+    source: mysqlEnum("source", ["postback", "manual"]).notNull(),
+    // The network's identity for the sale — retries carry the same txid, rebills a new one.
+    transactionId: varchar("transaction_id", { length: 191 }),
+    // 'initial' | 'rebill' | 'unknown' — from the postback's type param.
+    conversionType: varchar("conversion_type", { length: 16 }).notNull().default("unknown"),
+    // Idempotency key: "tx:<txid>" when present, else "st:<subid>:<minute>".
+    dedupeKey: varchar("dedupe_key", { length: 191 }).notNull(),
+    // True when we had no txid and fell back to the time-bucketed key.
+    needsReview: boolean("needs_review").notNull().default(false),
+    rawPayload: json("raw_payload"), // nullable — full postback query/body for audit
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    // Idempotency keyed on the network's conversion identity (provider + dedupeKey):
+    // retries dedupe, rebills insert as new rows.
+    uqProviderDedupe: uniqueIndex("uq_conv_provider_dedupe").on(t.providerSlug, t.dedupeKey),
+    ixProvider: index("ix_conv_provider").on(t.providerSlug),
+    ixLead: index("ix_conv_lead").on(t.leadId),
+    ixTxid: index("ix_conv_txid").on(t.providerSlug, t.transactionId),
+  }),
+);
+
+export type Conversion = typeof conversions.$inferSelect;
+export type InsertConversion = typeof conversions.$inferInsert;

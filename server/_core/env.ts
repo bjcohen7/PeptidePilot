@@ -30,6 +30,8 @@ export const ENV = {
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean),
+  // Shared secret required on /api/postback (affiliate conversion callbacks).
+  postbackSecret: process.env.POSTBACK_SECRET ?? "",
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",

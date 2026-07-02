@@ -16,6 +16,7 @@ import { getDb } from "../db";
 import { serveStatic, setupVite } from "./vite";
 
 import capiRouter from "../routes/capi";
+import { postbackRouter } from "../routes/postback";
 import emailWebhookRouter from "../email/webhook";
 import emailUnsubscribeRouter from "../email/unsubscribe";
 import { ensureEmailSchema } from "../email/schema";
@@ -361,6 +362,8 @@ async function startServer() {
   // Email webhook (Resend) and unsubscribe
   app.use("/api/email/webhook", express.json({ limit: "1mb" }), emailWebhookRouter);
   app.use("/api/email/unsubscribe", emailUnsubscribeRouter);
+  // Affiliate conversion postbacks (GET or POST; query or form-encoded body).
+  app.use("/api/postback", express.urlencoded({ extended: false }), express.json(), postbackRouter);
 
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
