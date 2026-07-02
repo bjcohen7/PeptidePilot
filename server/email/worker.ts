@@ -261,7 +261,8 @@ async function buildPersonalization(
       publicId,
       providerName: topMatch.displayName || provider.displayName || topMatch.name || topPeptideMatch,
       matchScore: Math.round((topMatch.fitScore || topMatch.score || 0) * 100),
-      priceFrom: provider.priceFromCents ? `$${Math.round(provider.priceFromCents / 100)}/mo` : "$199/mo",
+      // Bare dollar amount only — templates own the "/month" suffix (avoids "$179/mo/month").
+      priceFrom: provider.priceFromCents ? `$${Math.round(provider.priceFromCents / 100)}` : "$199",
       shipDays: provider.shipDaysEstimate || 4,
       answerEcho: "", // Will be populated from rawQuizData if needed
       whyRow1: topMatch.whyMatch?.[0] || "Matches your stated goals and budget",

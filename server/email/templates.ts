@@ -48,9 +48,22 @@ function renderFooter(p: EmailPersonalization): string {
     </div>`;
 }
 
+/**
+ * Render the match-score compatibility clause, or "" when the score is falsy.
+ * Mirrors the answer_echo drop: a 0/null/undefined score drops the entire
+ * clause (connector + "N% compatibility" + suffix) so zero never renders.
+ */
+function compatClause(p: EmailPersonalization, prefix: string, suffix: string): string {
+  return p.matchScore ? `${prefix}${p.matchScore}% compatibility${suffix}` : "";
+}
+
 function layout(content: string, p: EmailPersonalization, preheader: string): string {
   const siteUrl = getSiteUrl();
   const unsubUrl = getUnsubUrl(p.leadId);
+
+  // Invisible padding pushes body/logo text out of the inbox snippet so the
+  // preheader is what the client previews.
+  const preheaderPad = "&#847;&zwnj;&nbsp;".repeat(30);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -83,6 +96,7 @@ function layout(content: string, p: EmailPersonalization, preheader: string): st
   </style>
 </head>
 <body>
+  <div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;color:transparent;">${preheader}${preheaderPad}</div>
   <div class="container">
     <div class="header">
       <a href="${siteUrl}" class="logo">PeptidePilot</a>
@@ -103,11 +117,11 @@ export function email0(p: EmailPersonalization, variant: "A" | "B"): { subject: 
   const preheader = "Based on your answers — saved at your personal link.";
   if (variant === "B") {
     return {
-      subject: `Your match: ${p.providerName} (${p.matchScore}% fit)`,
+      subject: p.matchScore ? `Your match: ${p.providerName} (${p.matchScore}% fit)` : `Your match: ${p.providerName}`,
       preheader,
       html: layout(`
 <p>Your results are in.</p>
-<p>Based on your answers, your top match is <strong>${p.providerName}</strong> — ${p.matchScore}% compatibility. ${p.answerEcho}</p>
+<p>Based on your answers, your top match is <strong>${p.providerName}</strong>${compatClause(p, " — ", "")}. ${p.answerEcho}</p>
 <p>Your full breakdown — why it fits, what it costs, and two alternatives — is saved at your personal link:</p>
 <p><a href="${p.resultsUrl}" class="cta">View my results →</a></p>
 <p>This link is yours; it works on any device, anytime.</p>
@@ -120,7 +134,7 @@ export function email0(p: EmailPersonalization, variant: "A" | "B"): { subject: 
     preheader,
     html: layout(`
 <p>Your results are in.</p>
-<p>Based on your answers, your top match is <strong>${p.providerName}</strong> — ${p.matchScore}% compatibility. ${p.answerEcho}</p>
+<p>Based on your answers, your top match is <strong>${p.providerName}</strong>${compatClause(p, " — ", "")}. ${p.answerEcho}</p>
 <p>Your full breakdown — why it fits, what it costs, and two alternatives — is saved at your personal link:</p>
 <p><a href="${p.resultsUrl}" class="cta">View my results →</a></p>
 <p>This link is yours; it works on any device, anytime.</p>
@@ -300,7 +314,7 @@ export function email6(p: EmailPersonalization, variant: "A" | "B"): { subject: 
       subject: "Most people who match start within two weeks",
       preheader,
       html: layout(`
-<p>Two weeks ago you asked us which GLP-1 provider fits you. The answer hasn't changed: <strong>${p.providerName}</strong>, from ${p.priceFrom}/month, ${p.matchScore}% compatibility with your profile.</p>
+<p>Two weeks ago you asked us which GLP-1 provider fits you. The answer hasn't changed: <strong>${p.providerName}</strong>, from ${p.priceFrom}/month${compatClause(p, ", ", " with your profile")}.</p>
 ${promoBlock}
 <p>This is the last email in this series — we don't believe in drip campaigns that never end. Your results stay saved at your link, and we'll only reach out monthly with pricing changes and research updates.</p>
 <p><a href="${p.goUrl}" class="cta">Claim my match at ${p.providerName} →</a></p>
@@ -312,7 +326,7 @@ ${promoBlock}
     subject: "Your match, one more time",
     preheader,
     html: layout(`
-<p>Two weeks ago you asked us which GLP-1 provider fits you. The answer hasn't changed: <strong>${p.providerName}</strong>, from ${p.priceFrom}/month, ${p.matchScore}% compatibility with your profile.</p>
+<p>Two weeks ago you asked us which GLP-1 provider fits you. The answer hasn't changed: <strong>${p.providerName}</strong>, from ${p.priceFrom}/month${compatClause(p, ", ", " with your profile")}.</p>
 ${promoBlock}
 <p>This is the last email in this series — we don't believe in drip campaigns that never end. Your results stay saved at your link, and we'll only reach out monthly with pricing changes and research updates.</p>
 <p><a href="${p.goUrl}" class="cta">Claim my match at ${p.providerName} →</a></p>
@@ -378,7 +392,7 @@ export function emailBackfillA(p: EmailPersonalization, variant: "A" | "B"): { s
       preheader,
       html: layout(`
 <p>You took our GLP-1 matching quiz recently — and in case the results never reached you properly, here they are again.</p>
-<p>Your top match: <strong>${p.providerName}</strong>, ${p.matchScore}% compatibility. ${p.answerEcho}</p>
+<p>Your top match: <strong>${p.providerName}</strong>${compatClause(p, ", ", "")}. ${p.answerEcho}</p>
 <p><a href="${p.resultsUrl}" class="cta">View my results →</a></p>
 `, p, preheader),
     };
@@ -388,7 +402,7 @@ export function emailBackfillA(p: EmailPersonalization, variant: "A" | "B"): { s
     preheader,
     html: layout(`
 <p>You took our GLP-1 matching quiz recently — and in case the results never reached you properly, here they are again.</p>
-<p>Your top match: <strong>${p.providerName}</strong>, ${p.matchScore}% compatibility. ${p.answerEcho}</p>
+<p>Your top match: <strong>${p.providerName}</strong>${compatClause(p, ", ", "")}. ${p.answerEcho}</p>
 <p><a href="${p.resultsUrl}" class="cta">View my results →</a></p>
 `, p, preheader),
   };
@@ -437,7 +451,7 @@ export function emailBackfillC(p: EmailPersonalization, variant: "A" | "B"): { s
       preheader,
       html: layout(`
 <p>Some time ago you took our GLP-1 matching quiz and gave us your email — and because of a technical issue on our side, there's a good chance you never actually saw your results. That's on us, and it's fixed.</p>
-<p>Here's what you were owed: your top match is <strong>${p.providerName}</strong> (${p.matchScore}% compatibility for your profile), with two ranked alternatives, current pricing, and the full reasoning — all saved at your personal link:</p>
+<p>Here's what you were owed: your top match is <strong>${p.providerName}</strong>${compatClause(p, " (", " for your profile)")}, with two ranked alternatives, current pricing, and the full reasoning — all saved at your personal link:</p>
 <p><a href="${p.resultsUrl}" class="cta">See my results →</a></p>
 <p>If GLP-1s are no longer on your radar, the unsubscribe below works in one click — no hard feelings.</p>
 `, p, preheader),
@@ -448,7 +462,7 @@ export function emailBackfillC(p: EmailPersonalization, variant: "A" | "B"): { s
     preheader,
     html: layout(`
 <p>Some time ago you took our GLP-1 matching quiz and gave us your email — and because of a technical issue on our side, there's a good chance you never actually saw your results. That's on us, and it's fixed.</p>
-<p>Here's what you were owed: your top match is <strong>${p.providerName}</strong> (${p.matchScore}% compatibility for your profile), with two ranked alternatives, current pricing, and the full reasoning — all saved at your personal link:</p>
+<p>Here's what you were owed: your top match is <strong>${p.providerName}</strong>${compatClause(p, " (", " for your profile)")}, with two ranked alternatives, current pricing, and the full reasoning — all saved at your personal link:</p>
 <p><a href="${p.resultsUrl}" class="cta">See my results →</a></p>
 <p>If GLP-1s are no longer on your radar, the unsubscribe below works in one click — no hard feelings.</p>
 `, p, preheader),
