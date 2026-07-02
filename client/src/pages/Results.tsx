@@ -278,16 +278,20 @@ function ProviderCard({
   rank,
   leadId,
   userEmail,
+  publicId,
 }: {
   provider: GLP1Provider;
   rank: number;
   leadId: string;
   userEmail?: string;
+  publicId?: string;
 }) {
   const isTop = rank === 1;
   const [isExpanded, setIsExpanded] = useState(false);
 
   const trackClick = trpc.quiz.trackAffiliateClick.useMutation();
+
+  const goUrl = publicId ? `/go/${provider.id}/${publicId}?position=provider-${rank}` : provider.affiliateUrl;
 
   const handleProviderClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -320,7 +324,7 @@ function ProviderCard({
     } catch (err) {
       console.warn("[CAPI] Affiliate click tracking failed:", err);
     } finally {
-      window.open(provider.affiliateUrl, "_blank", "noopener,noreferrer");
+      window.open(goUrl, "_blank", "noopener,noreferrer");
     }
   };
 
@@ -390,7 +394,7 @@ function ProviderCard({
         )}
 
         <a
-          href={provider.affiliateUrl}
+          href={goUrl}
           rel="noopener noreferrer"
           onClick={handleProviderClick}
           className={`flex items-center justify-center gap-2 font-bold rounded-xl shadow-md transition-all w-full ${
@@ -417,12 +421,14 @@ export function ResultsDisplay({
   onRetake,
   isReturningUser,
   userEmail,
+  publicId,
 }: {
   leadId: string;
   sessionId: string;
   onRetake: () => void;
   isReturningUser: boolean;
   userEmail?: string;
+  publicId?: string;
 }) {
   return (
     <div className="min-h-screen bg-background">
@@ -476,7 +482,7 @@ export function ResultsDisplay({
                 className="animate-fade-in-up"
                 style={{ animationDelay: `${0.1 + idx * 0.07}s` }}
               >
-                <ProviderCard provider={provider} rank={idx + 1} leadId={leadId} userEmail={userEmail} />
+                <ProviderCard provider={provider} rank={idx + 1} leadId={leadId} userEmail={userEmail} publicId={publicId} />
               </div>
             ))}
           </div>

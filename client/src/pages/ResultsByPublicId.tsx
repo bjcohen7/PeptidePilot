@@ -161,6 +161,7 @@ export default function ResultsByPublicId() {
         onRetake={handleRetake}
         isReturningUser={false}
         userEmail={data.email || submittedEmail || undefined}
+        publicId={publicId}
       />
     );
   }
