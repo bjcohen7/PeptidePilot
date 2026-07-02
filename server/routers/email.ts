@@ -1,13 +1,66 @@
 import { z } from "zod";
 import { adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { getEmailMetrics, enqueueBackfillDrip, cancelPendingEmails, suppressLead, cancelSequenceForLead } from "../email/queue";
+import { getEmailMetrics, enqueueBackfillDrip, cancelPendingEmails, suppressLead, cancelSequenceForLead, enqueueEmailSequence } from "../email/queue";
 import { sql } from "drizzle-orm";
 import { getResend, getEmailFrom } from "../email/resend";
 import { getEmailTemplate, isPostConversionTemplate, type EmailPersonalization } from "../email/templates";
 import { ENV } from "../_core/env";
 
 export const emailRouter = router({
+  /**
+   * Admin: Create a test lead and enqueue the full 7-email sequence.
+   * Email 0 fires in 30s, email 6 fires in 60s (both bypass send window).
+   * All other emails stay pending for their normal scheduled times.
+   */
+  createTestLead: adminProcedure
+    .input(z.object({
+      email: z.string().email(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const leadId = crypto.randomUUID();
+      const publicId = "test-" + Date.now();
+
+      // Insert test lead — use minimal columns that exist
+      await db.execute(sql.raw(`
+        INSERT INTO leads (id, publicId, email, createdAt, updatedAt)
+        VALUES ('${leadId}', '${publicId}', '${input.email}', NOW(), NOW())
+      `));
+      console.log(`[TestSend] Created test lead ${leadId} (${publicId}) → ${input.email}`);
+
+      // Enqueue full 7-email sequence
+      await enqueueEmailSequence(leadId, new Date());
+      console.log(`[TestSend] Enqueued 7 emails for lead ${leadId}`);
+
+      // Set email_0 and email_6 to fire in 30s (bypass send window via test_* prefix)
+      const nextTick = new Date(Date.now() + 30_000).toISOString().slice(0, 19).replace("T", " ");
+      await db.execute(sql.raw(`
+        UPDATE email_queue
+        SET scheduled_at = '${nextTick}'
+        WHERE lead_id = '${leadId}'
+          AND email_slug IN ('email_0_instant', 'email_6_closer')
+      `));
+
+      // Fetch all queue rows for the lead
+      const [rows] = await db.execute(sql.raw(`
+        SELECT id, email_slug, subject_variant, scheduled_at, status
+        FROM email_queue
+        WHERE lead_id = '${leadId}'
+        ORDER BY scheduled_at ASC
+      `));
+      const queueRows = (Array.isArray(rows) ? (Array.isArray(rows[0]) ? rows[0] : rows) : []) as any[];
+
+      return {
+        leadId,
+        publicId,
+        email: input.email,
+        queueRows,
+      };
+    }),
+
   /**
    * Admin: Get email metrics for dashboard.
    */

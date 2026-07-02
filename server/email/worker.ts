@@ -107,8 +107,9 @@ async function processEmailBatch() {
     for (const row of pending) {
       const r = row as any;
 
-      // Skip emails 1-6 if outside send window (email 0 is instant, always send)
-      if (r.email_slug !== "email_0_instant" && r.email_slug !== "post_conversion" && r.email_slug !== "nudge_still_deciding") {
+      // Skip emails 1-5 if outside send window (email 0 is instant, always send)
+      // post-conversion and nudge also bypass the window
+      if (r.email_slug !== "email_0_instant" && r.email_slug !== "email_6_closer" && r.email_slug !== "post_conversion" && r.email_slug !== "nudge_still_deciding") {
         if (!isWithinSendWindow()) {
           continue; // skip — will be picked up next tick within window
         }
