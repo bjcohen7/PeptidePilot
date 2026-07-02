@@ -426,14 +426,18 @@ export const emailRouter = router({
       if (!db) throw new Error("Database not available");
 
       const [leadRows] = await db.execute(sql.raw(`
-        SELECT id, createdAt FROM leads WHERE id = '${input.leadId}'
+        SELECT id, createdAt, quiz_stale FROM leads WHERE id = '${input.leadId}'
       `));
       const leads = Array.isArray(leadRows) ? (Array.isArray(leadRows[0]) ? leadRows[0] : leadRows) : [];
       if (leads.length === 0) throw new Error("Lead not found");
 
       const lead = leads[0] as any;
-      const count = await enqueueBackfillDrip(lead.id, new Date(lead.createdAt), input.startAfterDays);
-      return { queued: count };
+      const isStale = lead.quiz_stale === 1 || lead.quiz_stale === true;
+      // Older-quiz leads get the retake template; everyone else the normal drip.
+      const count = isStale
+        ? await enqueueBackfillCampaign(lead.id, "backfill_stale", new Date(lead.createdAt))
+        : await enqueueBackfillDrip(lead.id, new Date(lead.createdAt), input.startAfterDays);
+      return { queued: count, template: isStale ? "backfill_stale" : "drip" };
     }),
 
   /**
@@ -487,10 +491,11 @@ export const emailRouter = router({
       let totalQueued = 0;
       for (const lead of eligibleLeads) {
         const isStale = lead.quiz_stale === 1 || lead.quiz_stale === true;
-        // Older-quiz leads can't be shown a match — send the retake-framed variant
-        // (backfill_b) instead of the normal "here are your results" drip.
+        // Older-quiz leads can't be shown a match — send the dedicated retake
+        // template (backfill_stale) instead of the normal "here are your results"
+        // drip, whose copy would falsely promise saved results.
         const count = isStale
-          ? await enqueueBackfillCampaign(lead.id, "backfill_b", new Date(lead.createdAt))
+          ? await enqueueBackfillCampaign(lead.id, "backfill_stale", new Date(lead.createdAt))
           : await enqueueBackfillDrip(lead.id, new Date(lead.createdAt), 3);
         totalQueued += count;
       }

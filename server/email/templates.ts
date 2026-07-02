@@ -471,6 +471,27 @@ export function emailBackfillC(p: EmailPersonalization, variant: "A" | "B"): { s
 }
 
 // ─────────────────────────────────────────────
+// BACKFILL STALE — leads whose quiz answers are from an older version and
+// cannot be rendered into a match. CTA lands on the retake view.
+// ─────────────────────────────────────────────
+export function emailBackfillStale(p: EmailPersonalization, variant: "A" | "B"): { subject: string; preheader: string; html: string } {
+  const preheader = "4 minutes to an updated GLP-1 match.";
+  const subject = variant === "B"
+    ? "We updated our matching — your answers are from the old version"
+    : "Your quiz answers need a refresh";
+  return {
+    subject,
+    preheader,
+    html: layout(`
+<p>A while back you took our GLP-1 matching quiz. Since then we've rebuilt how we match people to providers — and your answers are from the older version, so we can't honestly hand you a match without a quick refresh.</p>
+<p>The new quiz takes about 4 minutes, and you'll get a personalized provider match with pricing the moment you finish.</p>
+<p><a href="${p.resultsUrl}" class="cta">Retake the quiz →</a></p>
+<p>No pressure either way — and the unsubscribe below always works in one click.</p>
+`, p, preheader),
+  };
+}
+
+// ─────────────────────────────────────────────
 // Template lookup
 // ─────────────────────────────────────────────
 type TemplateFn = (p: EmailPersonalization, variant: "A" | "B") => { subject: string; preheader: string; html: string };
@@ -492,6 +513,7 @@ const TRIGGERED_TEMPLATES: Record<string, TemplateFn | PostConversionFn> = {
   backfill_a: emailBackfillA,
   backfill_b: emailBackfillB,
   backfill_c: emailBackfillC,
+  backfill_stale: emailBackfillStale,
 };
 
 export function getEmailTemplate(slug: string): TemplateFn | PostConversionFn | null {
