@@ -20,6 +20,7 @@ const QuizFlow = lazy(() => import("./pages/QuizFlow"));
 const Processing = lazy(() => import("./pages/Processing"));
 const Results = lazy(() => import("./pages/Results"));
 const ResultsByPublicId = lazy(() => import("./pages/ResultsByPublicId"));
+const Match = lazy(() => import("./pages/Match"));
 const ProvidersPage = lazy(() => import("./pages/ProvidersPage"));
 const About = lazy(() => import("./pages/About"));
 const Blog = lazy(() => import("./pages/Blog"));
@@ -186,6 +187,18 @@ function Router() {
           <ErrorBoundary>
             <ResultsByPublicId />
           </ErrorBoundary>
+        </Suspense>
+      </Route>
+
+      {/* Bridge landing (paid traffic) — no site nav; alias /peptides-for-weight-loss */}
+      <Route path="/match">
+        <Suspense fallback={<RouteFallback />}>
+          <Match />
+        </Suspense>
+      </Route>
+      <Route path="/peptides-for-weight-loss">
+        <Suspense fallback={<RouteFallback />}>
+          <Match />
         </Suspense>
       </Route>
 
