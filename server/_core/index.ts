@@ -305,7 +305,7 @@ async function startServer() {
         SELECT
           SUM(CASE WHEN label = 'ProcessingStarted' THEN 1 ELSE 0 END) AS started,
           SUM(CASE WHEN label = 'ProcessingComplete' THEN 1 ELSE 0 END) AS completed
-        FROM clickEvents
+        FROM click_events
         WHERE eventType = 'funnel'
           AND createdAt >= NOW() - INTERVAL 30 DAY
       \`);
