@@ -238,7 +238,9 @@ async function buildPersonalization(
     if (leadArr.length === 0) return null;
     const lead = leadArr[0] as any;
 
-    const providerMatches = JSON.parse(lead.provider_matches || "[]");
+    const providerMatches = typeof lead.provider_matches === "string"
+      ? JSON.parse(lead.provider_matches || "[]")
+      : Array.isArray(lead.provider_matches) ? lead.provider_matches : [];
     const topMatch = providerMatches[0] || {};
     const alt1 = providerMatches[1] || {};
     const alt2 = providerMatches[2] || {};
