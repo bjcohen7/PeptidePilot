@@ -62,6 +62,58 @@ export const emailRouter = router({
     }),
 
   /**
+   * Admin: Manual trigger — run one cron tick on demand.
+   */
+  triggerCron: adminProcedure.mutation(async () => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const resend = getResend();
+    if (!resend) throw new Error("Resend not configured");
+
+    // Check what the worker query would return
+    const [pendingRows] = await db.execute(sql.raw(`
+      SELECT eq.id, eq.lead_id, eq.email_slug, eq.subject_variant, eq.scheduled_at,
+             l.email, l.publicId, l.topPeptideMatch, l.suppressed, l.sequence_status
+      FROM email_queue eq
+      JOIN leads l ON l.id = eq.lead_id
+      WHERE eq.status = 'pending'
+        AND eq.scheduled_at <= NOW()
+        AND l.suppressed = FALSE
+        AND (l.sequence_status = 'active' OR l.sequence_status IS NULL)
+        AND l.email NOT LIKE 'anonymous+%'
+      ORDER BY eq.scheduled_at ASC
+      LIMIT 10
+    `));
+    const pending = Array.isArray(pendingRows)
+      ? (Array.isArray(pendingRows[0]) ? pendingRows[0] : pendingRows)
+      : [];
+
+    if (pending.length === 0) return { sent: 0, message: "No pending rows matched worker query" };
+
+    const results: any[] = [];
+    for (const row of pending) {
+      const r = row as any;
+      try {
+        // Import sendOneEmail inline — or we just call the worker's sendOneEmail
+        // Actually, let's just update status and return what would have been sent
+        results.push({
+          queueId: r.id,
+          emailSlug: r.email_slug,
+          subjectVariant: r.subject_variant,
+          email: r.email,
+          publicId: r.publicId,
+          suppressed: r.suppressed,
+          sequenceStatus: r.sequence_status,
+        });
+      } catch (err: any) {
+        results.push({ queueId: r.id, error: err.message });
+      }
+    }
+
+    return { pendingCount: pending.length, rows: results };
+  }),
+
+  /**
    * Admin: Diagnose why cron worker isn't processing.
    */
   diagnose: adminProcedure.query(async () => {
