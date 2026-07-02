@@ -9,6 +9,7 @@ import {
   stackPages,
 } from "../shared/pseoData";
 import { pseoSections } from "../shared/pseo";
+import { QUIZ_MINUTES } from "../shared/quizConfig";
 
 export const SITE_URL = "https://www.peptidepilot.me";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/apple-touch-icon.png`;
@@ -33,7 +34,7 @@ const staticRoutes: PrerenderRoute[] = [
     path: "/match",
     title: "Peptides for Weight Loss — Start With the One That's Clinically Proven",
     description:
-      "Semaglutide and tirzepatide are the peptides with large-scale clinical trials behind them. Take a free 4-minute quiz and see which licensed GLP-1 provider fits your body and budget.",
+      `Semaglutide and tirzepatide are the peptides with large-scale clinical trials behind them. Take a free ${QUIZ_MINUTES}-minute quiz and see which licensed GLP-1 provider fits your body and budget.`,
     type: "website",
   },
   {
@@ -41,7 +42,7 @@ const staticRoutes: PrerenderRoute[] = [
     path: "/peptides-for-weight-loss",
     title: "Peptides for Weight Loss — Start With the One That's Clinically Proven",
     description:
-      "Semaglutide and tirzepatide are the peptides with large-scale clinical trials behind them. Take a free 4-minute quiz and see which licensed GLP-1 provider fits your body and budget.",
+      `Semaglutide and tirzepatide are the peptides with large-scale clinical trials behind them. Take a free ${QUIZ_MINUTES}-minute quiz and see which licensed GLP-1 provider fits your body and budget.`,
     type: "website",
     noindex: true,
   },
@@ -96,7 +97,7 @@ const staticRoutes: PrerenderRoute[] = [
   {
     path: "/quiz",
     title: "GLP-1 Provider Quiz | PeptidePilot",
-    description: "Take the free 2-minute PeptidePilot quiz to find your best GLP-1 provider match.",
+    description: `Take the free ${QUIZ_MINUTES}-minute PeptidePilot quiz to find your best GLP-1 provider match.`,
     type: "website",
     noindex: true,
   },
