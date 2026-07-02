@@ -9,6 +9,7 @@ import Blog from "./pages/Blog";
 import { BlogArticleView } from "./pages/BlogArticle";
 import { PrivacyPolicy, TermsOfService, MedicalDisclaimer } from "./pages/Legal";
 import { PseoHub, PseoSectionPage, PseoDetailPage, FAQPage } from "./pages/PseoPages";
+import Match from "./pages/Match";
 import GuidePage from "./pages/pseo/GuidePage";
 import StackPage from "./pages/pseo/StackPage";
 import GoalPage from "./pages/pseo/GoalPage";
@@ -210,6 +211,15 @@ export default function AppPrerender({ path }: { path: string }) {
           <PublicLayout>
             <ProvidersPage />
           </PublicLayout>
+        </Route>
+
+        {/* Bridge landing (paid traffic) — prerendered for instant first paint;
+            no PublicLayout (no site nav), manages its own footer disclosure. */}
+        <Route path="/match">
+          <Match />
+        </Route>
+        <Route path="/peptides-for-weight-loss">
+          <Match />
         </Route>
 
         {/* Explicit /404 route so the prerender script can generate a 404/index.html

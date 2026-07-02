@@ -30,6 +30,22 @@ const staticRoutes: PrerenderRoute[] = [
     type: "website",
   },
   {
+    path: "/match",
+    title: "Peptides for Weight Loss — Start With the One That's Clinically Proven",
+    description:
+      "Semaglutide and tirzepatide are the peptides with large-scale clinical trials behind them. Take a free 4-minute quiz and see which licensed GLP-1 provider fits your body and budget.",
+    type: "website",
+  },
+  {
+    // Ad alias of /match. noindex to avoid duplicate content; /match is canonical.
+    path: "/peptides-for-weight-loss",
+    title: "Peptides for Weight Loss — Start With the One That's Clinically Proven",
+    description:
+      "Semaglutide and tirzepatide are the peptides with large-scale clinical trials behind them. Take a free 4-minute quiz and see which licensed GLP-1 provider fits your body and budget.",
+    type: "website",
+    noindex: true,
+  },
+  {
     path: "/about",
     title: "About PeptidePilot",
     description:
