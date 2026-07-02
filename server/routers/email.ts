@@ -24,10 +24,16 @@ export const emailRouter = router({
       const leadId = crypto.randomUUID();
       const publicId = "test-" + Date.now();
 
-      // Insert test lead — match exact columns from the leads table
+      // Insert test lead with realistic quiz data so buildPersonalization works
+      const providerMatches = JSON.stringify([
+        { slug: "gala", displayName: "Gala Health", fitScore: 0.92, score: 0.92, name: "Gala Health", whyMatch: ["Best price-to-care ratio for your budget", "Available in your state with fast shipping", "Includes unlimited follow-up visits"] },
+        { slug: "sprout", displayName: "Sprout", fitScore: 0.85, score: 0.85, name: "Sprout", whyMatch: ["No long-term contracts", "Free shipping on all orders", "Board-certified providers"] },
+        { slug: "direct_med", displayName: "Direct Meds", fitScore: 0.81, score: 0.81, name: "Direct Meds", whyMatch: ["Board-certified MD oversight", "Competitive pricing", "Fast turnaround"] },
+      ]);
+      const rawQuizData = JSON.stringify([0, 1, 2, 1, 0, 2, 1, 0]);
       await db.execute(sql.raw(`
-        INSERT INTO leads (id, publicId, email, ageRange, primaryGoal, budget, topPeptideMatch, tier, consentGiven, consentTimestamp, ipAddress, rawQuizData, source)
-        VALUES ('${leadId}', '${publicId}', '${input.email}', '25-34', 'general', 'standard', 'gala', 1, TRUE, NOW(), '127.0.0.1', '[]', 'email_test')
+        INSERT INTO leads (id, publicId, email, ageRange, primaryGoal, budget, topPeptideMatch, tier, consentGiven, consentTimestamp, ipAddress, rawQuizData, source, provider_matches)
+        VALUES ('${leadId}', '${publicId}', '${input.email}', '25-34', 'weight-management', 'standard', 'gala', 1, TRUE, NOW(), '127.0.0.1', '${rawQuizData}', 'email_test', '${providerMatches}')
       `));
       console.log(`[TestSend] Created test lead ${leadId} (${publicId}) → ${input.email}`);
 
@@ -143,6 +149,46 @@ export const emailRouter = router({
     }
 
     return { joinError, emailQueueCreate, leadsCreate };
+  }),
+
+  /**
+   * Admin: Fix collation on a table to match leads (utf8mb4_0900_ai_ci).
+   */
+  fixCollation: adminProcedure
+    .input(z.object({ tableName: z.string().min(1).max(64) }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      try {
+        await db.execute(sql.raw(
+          "ALTER TABLE `" + input.tableName + "` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci"
+        ));
+        return { success: true, table: input.tableName };
+      } catch (err: any) {
+        return { success: false, error: err?.sqlMessage || err?.message };
+      }
+    }),
+
+  /**
+   * Admin: Sweep all tables for collation mismatches vs leads table.
+   */
+  sweepCollations: adminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return { error: "no db" };
+
+    const [rows] = await db.execute(sql.raw("SHOW TABLE STATUS"));
+    const tables = (Array.isArray(rows) ? (Array.isArray(rows[0]) ? rows[0] : rows) : []) as any[];
+
+    const leadsCollation = "utf8mb4_0900_ai_ci";
+    const results = tables.map((t: any) => ({
+      table: t.Name,
+      collation: t.Collation,
+      match: t.Collation === leadsCollation,
+    }));
+
+    const mismatches = results.filter((r: any) => !r.match);
+    return { leadsCollation, allTables: results, mismatches };
   }),
 
   /**
