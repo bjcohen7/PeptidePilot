@@ -255,30 +255,9 @@ export const resultsVendorPresentation: ResultsVendorPresentation[] = [
     sourceStatus: "manual-review",
     notes: "Public site and pricing pages are live. Brand should be normalized separately from tracked RevOffers destination URLs.",
   },
-  {
-    id: "medvi",
-    name: "Medvi",
-    category: "telehealth",
-    officialUrl: "https://glp.medvi.org/",
-    logoUrl: "/partner-logos/medvi.png",
-    logoAlt: "Medvi",
-    logoMarkFallback: "MV",
-    cardBadge: "From $179",
-    cardFeatures: ["Video Visits", "Dedicated Care Team", "Prescription Support", "Lab Review"],
-    defaultOffer: {
-      headlineValue: "From $179",
-      headlineUnit: "first month",
-      promoText: "Refills locked at $299",
-    },
-    differentiatorBadge: "From $179",
-    headline: "GLP-1 care, locked-in savings",
-    promo: "Start at $179 for your first month with refills locked at $299 — transparent pricing from a dedicated telehealth team.",
-    trustSignals: ["Price Locked", "Transparent Fee", "Telehealth Visit"],
-    secondaryHeadline: "From $179 first month",
-    secondaryCtaLabel: "View Offer",
-    sourceStatus: "manual-review",
-    notes: "Live GLP results-card affiliate. Logo and pricing normalization still pending.",
-  },
+  // medvi RETIRED per partner decision — presentation entry removed so it can
+  // never render branded on a results card (falls back to safe defaults if ever
+  // referenced). The real render gate is providers.active=false (never matched).
   {
     id: "skinnyrx",
     name: "SkinnyRX",
