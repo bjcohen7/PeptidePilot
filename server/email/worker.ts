@@ -84,19 +84,19 @@ async function processEmailBatch() {
     const batchSize = Math.min(BATCH_SIZE, remaining);
 
     // Fetch pending emails that are due
-    const [pendingRows] = await db.execute(sql.raw(`
-      SELECT eq.id, eq.lead_id, eq.email_slug, eq.subject_variant, eq.scheduled_at,
-             l.email, l.publicId, l.topPeptideMatch, l.suppressed, l.sequence_status
-      FROM email_queue eq
-      JOIN leads l ON l.id = eq.lead_id
-      WHERE eq.status = 'pending'
-        AND eq.scheduled_at <= NOW()
-        AND l.suppressed = FALSE
-        AND (l.sequence_status = 'active' OR l.sequence_status IS NULL)
-        AND l.email NOT LIKE 'anonymous+%'
-      ORDER BY eq.scheduled_at ASC
-      LIMIT ${batchSize}
-    `));
+    const [pendingRows] = await db.execute(sql.raw(
+      "SELECT eq.id, eq.lead_id, eq.email_slug, eq.subject_variant, eq.scheduled_at, " +
+      "l.email, l.`publicId`, l.`topPeptideMatch`, l.suppressed, l.sequence_status " +
+      "FROM email_queue eq " +
+      "JOIN leads l ON l.id = eq.lead_id " +
+      "WHERE eq.status = 'pending' " +
+      "AND eq.scheduled_at <= NOW() " +
+      "AND (l.suppressed IS NULL OR l.suppressed = 0) " +
+      "AND (l.sequence_status = 'active' OR l.sequence_status IS NULL) " +
+      "AND l.email NOT LIKE 'anonymous+%' " +
+      "ORDER BY eq.scheduled_at ASC " +
+      "LIMIT " + batchSize
+    ));
 
     const pending = Array.isArray(pendingRows)
       ? (Array.isArray(pendingRows[0]) ? pendingRows[0] : pendingRows)
@@ -147,22 +147,22 @@ async function checkNudgeTriggers(
   resend: NonNullable<ReturnType<typeof getResend>>
 ) {
   try {
-    const [clickRows] = await db.execute(sql.raw(`
-      SELECT DISTINCT l.id, l.publicId, l.topPeptideMatch, pcl.provider_slug
-      FROM leads l
-      JOIN provider_click_logs pcl ON pcl.lead_id = l.id
-      WHERE l.conversion_at IS NULL
-        AND l.nudge_sent = FALSE
-        AND l.email NOT LIKE 'anonymous+%'
-        AND l.suppressed = FALSE
-        AND (l.sequence_status = 'active' OR l.sequence_status IS NULL)
-        AND pcl.created_at <= DATE_SUB(NOW(), INTERVAL 3 DAY)
-        AND NOT EXISTS (
-          SELECT 1 FROM email_queue eq
-          WHERE eq.lead_id = l.id AND eq.email_slug = 'nudge_still_deciding'
-        )
-      LIMIT 10
-    `));
+    const [clickRows] = await db.execute(sql.raw(
+      "SELECT DISTINCT l.id, l.`publicId`, l.`topPeptideMatch`, pcl.provider_slug " +
+      "FROM leads l " +
+      "JOIN provider_click_logs pcl ON pcl.lead_id = l.id " +
+      "WHERE l.conversion_at IS NULL " +
+      "AND l.nudge_sent = 0 " +
+      "AND l.email NOT LIKE 'anonymous+%' " +
+      "AND (l.suppressed IS NULL OR l.suppressed = 0) " +
+      "AND (l.sequence_status = 'active' OR l.sequence_status IS NULL) " +
+      "AND pcl.created_at <= DATE_SUB(NOW(), INTERVAL 3 DAY) " +
+      "AND NOT EXISTS (" +
+        "SELECT 1 FROM email_queue eq " +
+        "WHERE eq.lead_id = l.id AND eq.email_slug = 'nudge_still_deciding'" +
+      ") " +
+      "LIMIT 10"
+    ));
 
     const leads = Array.isArray(clickRows)
       ? (Array.isArray(clickRows[0]) ? clickRows[0] : clickRows)
@@ -222,10 +222,10 @@ async function buildPersonalization(
   topPeptideMatch: string
 ): Promise<EmailPersonalization | null> {
   try {
-    const [leadRows] = await db.execute(sql.raw(`
-      SELECT id, publicId, email, topPeptideMatch, provider_matches, rawQuizData
-      FROM leads WHERE id = '${leadId}' LIMIT 1
-    `));
+    const [leadRows] = await db.execute(sql.raw(
+      "SELECT id, `publicId`, email, `topPeptideMatch`, `provider_matches`, `rawQuizData` " +
+      "FROM leads WHERE id = '" + leadId + "' LIMIT 1"
+    ));
     const leadArr = Array.isArray(leadRows) ? (Array.isArray(leadRows[0]) ? leadRows[0] : leadRows) : [];
     if (leadArr.length === 0) return null;
     const lead = leadArr[0] as any;
@@ -236,10 +236,10 @@ async function buildPersonalization(
     const alt2 = providerMatches[2] || {};
 
     // Get provider details from DB
-    const [providerRows] = await db.execute(sql.raw(`
-      SELECT slug, displayName, priceFromCents, shipDaysEstimate, promoCode, complianceNote
-      FROM providers WHERE slug = '${topMatch.slug || topPeptideMatch}' LIMIT 1
-    `));
+    const [providerRows] = await db.execute(sql.raw(
+      "SELECT slug, `displayName`, `priceFromCents`, `shipDaysEstimate`, `promoCode`, `complianceNote` " +
+      "FROM providers WHERE slug = '" + (topMatch.slug || topPeptideMatch) + "' LIMIT 1"
+    ));
     const provArr = Array.isArray(providerRows) ? (Array.isArray(providerRows[0]) ? providerRows[0] : providerRows) : [];
     const provider = provArr[0] as any || {};
 
