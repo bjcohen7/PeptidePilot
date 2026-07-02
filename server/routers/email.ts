@@ -170,7 +170,8 @@ export const emailRouter = router({
         const topMatch = providerMatches?.[0] || {};
         const slug = topMatch.slug || lead.topPeptideMatch;
         const [provRows] = await db.execute(sql.raw(
-          "SELECT slug, `displayName`, `priceFromCents`, `shipDaysEstimate`, `promoCode`, `complianceNote` " +
+          "SELECT `slug`, `display_name` AS `displayName`, `price_from_cents` AS `priceFromCents`, " +
+          "`ship_days_estimate` AS `shipDaysEstimate`, `promo_code` AS `promoCode`, `compliance_note` AS `complianceNote` " +
           "FROM providers WHERE slug = '" + slug + "' LIMIT 1"
         ));
         const provArr = Array.isArray(provRows) ? (Array.isArray(provRows[0]) ? provRows[0] : provRows) : [];

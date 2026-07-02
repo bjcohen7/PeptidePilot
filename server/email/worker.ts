@@ -247,7 +247,8 @@ async function buildPersonalization(
 
     // Get provider details from DB
     const [providerRows] = await db.execute(sql.raw(
-      "SELECT slug, `displayName`, `priceFromCents`, `shipDaysEstimate`, `promoCode`, `complianceNote` " +
+      "SELECT `slug`, `display_name` AS `displayName`, `price_from_cents` AS `priceFromCents`, " +
+      "`ship_days_estimate` AS `shipDaysEstimate`, `promo_code` AS `promoCode`, `compliance_note` AS `complianceNote` " +
       "FROM providers WHERE slug = '" + (topMatch.slug || topPeptideMatch) + "' LIMIT 1"
     ));
     const provArr = Array.isArray(providerRows) ? (Array.isArray(providerRows[0]) ? providerRows[0] : providerRows) : [];
