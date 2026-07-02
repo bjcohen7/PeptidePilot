@@ -14,6 +14,8 @@ import { providers, providerClickLogs, leads } from "../../drizzle/schema";
 import { eq, sql } from "drizzle-orm";
 import { getDb } from "../db";
 import { serveStatic, setupVite } from "./vite";
+import { calculateMatches, determineTier, toReturningMatchSummary } from "../../shared/scoring";
+import { matchProviders } from "../../shared/providerMatching";
 import capiRouter from "../routes/capi";
 import { prerenderRoutes, SITE_URL } from "../../scripts/prerender-routes";
 
@@ -127,9 +129,8 @@ async function startServer() {
     }
     return next();
   });
-  // Configure body parser with larger size limit for file uploads
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  // Body parser is applied per-route below so it does not interfere with
+  // tRPC v11's raw body consumption via createBody() in incomingMessageToRequest.
   app.post("/api/analytics/session-start", express.json({ limit: "1mb" }), async (req, res) => {
     try {
       await startVisitorSession({
@@ -401,7 +402,7 @@ async function startServer() {
       .send(["User-agent: *", "Allow: /", `Sitemap: ${siteUrl}/sitemap.xml`, ""].join("\n"));
   });
   // Facebook Conversions API — server-side affiliate click tracking
-  app.use("/api/capi", capiRouter);
+  app.use("/api/capi", express.json({ limit: "50mb" }), capiRouter);
 
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
