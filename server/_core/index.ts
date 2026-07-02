@@ -16,6 +16,10 @@ import { getDb } from "../db";
 import { serveStatic, setupVite } from "./vite";
 
 import capiRouter from "../routes/capi";
+import emailWebhookRouter from "../email/webhook";
+import emailUnsubscribeRouter from "../email/unsubscribe";
+import { ensureEmailSchema } from "../email/schema";
+import { startEmailCron } from "../email/worker";
 import { prerenderRoutes, SITE_URL } from "../../scripts/prerender-routes";
 
 // Previously /quiz was listed here as a static sitemap path, but it is now a
@@ -110,6 +114,15 @@ async function startServer() {
   } catch (error) {
     console.error("[Bootstrap] Failed to ensure experiment schema:", error);
   }
+
+  try {
+    await ensureEmailSchema();
+  } catch (error) {
+    console.error("[Bootstrap] Failed to ensure email schema:", error);
+  }
+
+  // Start email cron worker after schema is ready
+  startEmailCron();
 
   const app = express();
   const server = createServer(app);
@@ -306,6 +319,7 @@ async function startServer() {
         jwtSecret: Boolean(ENV.cookieSecret),
         siteUrl: Boolean(process.env.SITE_URL || process.env.VITE_SITE_URL),
         metaCapi: Boolean(process.env.META_CAPI_TOKEN),
+        resend: Boolean(process.env.RESEND_API_KEY),
         tierWebhooks: {
           tier1: Boolean(process.env.WEBHOOK_TIER1_URL),
           tier2: Boolean(process.env.WEBHOOK_TIER2_URL),
@@ -325,6 +339,10 @@ async function startServer() {
   });
   // Facebook Conversions API — server-side affiliate click tracking
   app.use("/api/capi", express.json({ limit: "50mb" }), capiRouter);
+
+  // Email webhook (Resend) and unsubscribe
+  app.use("/api/email/webhook", express.json({ limit: "1mb" }), emailWebhookRouter);
+  app.use("/api/email/unsubscribe", emailUnsubscribeRouter);
 
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);

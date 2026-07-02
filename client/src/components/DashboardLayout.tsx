@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sidebar";
 import { canUseOauthLogin, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { Beaker, Handshake, LayoutDashboard, LogOut, PanelLeft } from "lucide-react";
+import { Beaker, Handshake, LayoutDashboard, LogOut, Mail, PanelLeft } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -34,6 +34,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Sessions", path: "/admin/sessions" },
   { icon: Handshake, label: "Partners", path: "/admin/partners" },
   { icon: Beaker, label: "Experiments", path: "/admin/experiments" },
+  { icon: Mail, label: "Email", path: "/admin/email" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";

@@ -16,13 +16,13 @@ import {
 import { nanoid } from "nanoid";
 import { matchProviders } from "../../shared/providerMatching";
 import { providers } from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
 import { notifyOwner } from "../_core/notification";
 import { desc, eq, sql, inArray } from "drizzle-orm";
 import { sendMetaServerEvents } from "../_core/meta";
 import { ENV } from "../_core/env";
 import { randomBytes } from "crypto";
 import { sendTelegramMessage } from "../_core/telegram";
+import { enqueueEmailSequence } from "../email/queue";
 
 const TIER1_WEBHOOK = process.env.WEBHOOK_TIER1_URL;
 const TIER2_WEBHOOK = process.env.WEBHOOK_TIER2_URL;
@@ -227,6 +227,22 @@ export const quizRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Results not found." });
       }
 
+      // Fetch email_delivered and suppressed via raw SQL (columns added at runtime)
+      let emailDelivered = false;
+      let suppressed = false;
+      try {
+        const [extraRows] = await db.execute(sql.raw(
+          `SELECT email_delivered, suppressed FROM leads WHERE publicId = '${input.publicId}' LIMIT 1`
+        ));
+        const extra = (Array.isArray(extraRows) ? (Array.isArray(extraRows[0]) ? extraRows[0] : extraRows) : [])[0] as any;
+        if (extra) {
+          emailDelivered = extra.email_delivered === 1 || extra.email_delivered === true;
+          suppressed = extra.suppressed === 1 || extra.suppressed === true;
+        }
+      } catch {
+        // Columns may not exist yet — fall back to defaults
+      }
+
       // If results column is populated, use it; otherwise recompute from rawQuizData
       let results = lead.results as ReturningMatchSummary[] | null;
       if (!results || results.length === 0) {
@@ -289,7 +305,7 @@ export const quizRouter = router({
         providerMatches: providerMatchResults ?? [],
         providerDetails: providerDetails ?? [],
         experimentVariant: lead.experimentVariant ?? null,
-        emailDelivered: false,
+        emailDelivered,
         leadQuizData: {
           primaryGoal: goalIdx >= 0 && goalIdx < PRIMARY_GOAL_OPTIONS.length
             ? PRIMARY_GOAL_OPTIONS[goalIdx]
@@ -437,6 +453,13 @@ export const quizRouter = router({
           } catch (e) {
             console.error("[submitQuiz] Failed to set sessionId:", e);
           }
+        }
+
+        // Enqueue email drip sequence (email 0 instant, 1-6 on schedule)
+        try {
+          await enqueueEmailSequence(leadId, consentTimestamp);
+        } catch (e) {
+          console.error("[submitQuiz] Failed to enqueue emails:", e);
         }
 
         if (sessionId) {
