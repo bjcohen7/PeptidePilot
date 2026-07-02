@@ -123,7 +123,10 @@ export function serveStatic(app: Express) {
   ];
 
   app.use("*", (req, res) => {
-    const normalizedPath = req.path.length > 1 ? req.path.replace(/\/+$/, "") : req.path;
+    // Under an app.use("*") mount, req.path is "/" (stripped of the matched
+    // mount) — use req.originalUrl to recover the real request path.
+    const rawPath = (req.originalUrl || req.url || "/").split("?")[0];
+    const normalizedPath = rawPath.length > 1 ? rawPath.replace(/\/+$/, "") : rawPath;
     const prerenderedFile =
       normalizedPath === "/"
         ? path.resolve(distPath, "index.html")
