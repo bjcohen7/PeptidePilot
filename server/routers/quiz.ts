@@ -373,21 +373,26 @@ export const quizRouter = router({
       }
 
       if (db) {
-        await insertLead({
-          id: leadId,
-          publicId,
-          email: leadEmail,
-          ageRange,
-          primaryGoal,
-          budget,
-          topPeptideMatch,
-          tier,
-          consentGiven: hasProvidedEmail ? consentGiven : false,
-          consentTimestamp,
-          ipAddress,
-          rawQuizData: answers,
-          results: returningResults,
-        });
+        try {
+          await insertLead({
+            id: leadId,
+            publicId,
+            email: leadEmail,
+            ageRange,
+            primaryGoal,
+            budget,
+            topPeptideMatch,
+            tier,
+            consentGiven: hasProvidedEmail ? consentGiven : false,
+            consentTimestamp,
+            ipAddress,
+            rawQuizData: answers,
+            results: returningResults,
+          });
+        } catch (e) {
+          console.error("[submitQuiz] insertLead failed:", e);
+          throw e;
+        }
 
         // Store providerMatches and experimentVariant
         if (providerMatchResults || experimentVariant) {
