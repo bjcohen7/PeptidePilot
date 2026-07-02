@@ -121,6 +121,14 @@ async function startServer() {
     console.error("[Bootstrap] Failed to ensure email schema:", error);
   }
 
+  // Log email env var presence (never log values)
+  console.log("[EmailEnv] RESEND_API_KEY:", Boolean(process.env.RESEND_API_KEY));
+  console.log("[EmailEnv] RESEND_WEBHOOK_SECRET:", Boolean(process.env.RESEND_WEBHOOK_SECRET));
+  console.log("[EmailEnv] EMAIL_FROM_ADDRESS:", Boolean(process.env.EMAIL_FROM_ADDRESS));
+  console.log("[EmailEnv] EMAIL_DAILY_CAP:", Boolean(process.env.EMAIL_DAILY_CAP));
+  console.log("[EmailEnv] UNSUBSCRIBE_SECRET:", Boolean(process.env.UNSUBSCRIBE_SECRET));
+  console.log("[EmailEnv] EMAIL_PHYSICAL_ADDRESS:", Boolean(process.env.EMAIL_PHYSICAL_ADDRESS));
+
   // Start email cron worker after schema is ready
   startEmailCron();
 
@@ -320,6 +328,11 @@ async function startServer() {
         siteUrl: Boolean(process.env.SITE_URL || process.env.VITE_SITE_URL),
         metaCapi: Boolean(process.env.META_CAPI_TOKEN),
         resend: Boolean(process.env.RESEND_API_KEY),
+        resendWebhookSecret: Boolean(process.env.RESEND_WEBHOOK_SECRET),
+        emailFromAddress: Boolean(process.env.EMAIL_FROM_ADDRESS),
+        emailDailyCap: Boolean(process.env.EMAIL_DAILY_CAP),
+        unsubscribeSecret: Boolean(process.env.UNSUBSCRIBE_SECRET),
+        emailPhysicalAddress: Boolean(process.env.EMAIL_PHYSICAL_ADDRESS),
         tierWebhooks: {
           tier1: Boolean(process.env.WEBHOOK_TIER1_URL),
           tier2: Boolean(process.env.WEBHOOK_TIER2_URL),
