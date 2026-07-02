@@ -296,6 +296,7 @@ async function startServer() {
     }
   });
   // TEMP: funnel gap diagnostic
+  app.get("/api/ping", (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
   app.get("/api/diag/funnel-gap", async (req, res) => {
     try {
       const db = await getDb();
