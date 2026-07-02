@@ -10,7 +10,7 @@ import { ENV } from "../_core/env";
 export const emailRouter = router({
   /**
    * Admin: Create a test lead and enqueue the full 7-email sequence.
-   * Email 0 fires in 30s, email 6 fires in 60s (both bypass send window).
+   * Email 0 fires in 30s, email 6 fires in 30s (both bypass send window).
    * All other emails stay pending for their normal scheduled times.
    */
   createTestLead: adminProcedure
@@ -35,7 +35,7 @@ export const emailRouter = router({
       await enqueueEmailSequence(leadId, new Date());
       console.log(`[TestSend] Enqueued 7 emails for lead ${leadId}`);
 
-      // Set email_0 and email_6 to fire in 30s (bypass send window via test_* prefix)
+      // Set email_0 and email_6 to fire in 30s (bypass send window via slug exemption)
       const nextTick = new Date(Date.now() + 30_000).toISOString().slice(0, 19).replace("T", " ");
       await db.execute(sql.raw(`
         UPDATE email_queue
@@ -60,6 +60,47 @@ export const emailRouter = router({
         queueRows,
       };
     }),
+
+  /**
+   * Admin: Diagnose why cron worker isn't processing.
+   */
+  diagnose: adminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return { error: "no db" };
+
+    // Check if suppressed/sequence_status columns exist on leads
+    const [cols] = await db.execute(sql.raw(`SHOW COLUMNS FROM leads`));
+    const colRows = Array.isArray(cols) ? (Array.isArray(cols[0]) ? cols[0] : cols) : [];
+    const colNames = colRows.map((c: any) => c.Field);
+
+    // Check cron-eligible rows (same query as worker)
+    const [eligible] = await db.execute(sql.raw(`
+      SELECT eq.id, eq.email_slug, eq.scheduled_at, eq.status,
+             l.email, l.suppressed, l.sequence_status
+      FROM email_queue eq
+      JOIN leads l ON l.id = eq.lead_id
+      WHERE eq.status = 'pending'
+        AND eq.scheduled_at <= NOW()
+      LIMIT 5
+    `));
+    const eligibleRows = Array.isArray(eligible) ? (Array.isArray(eligible[0]) ? eligible[0] : eligible) : [];
+
+    // Check daily cap
+    const [todayCount] = await db.execute(sql.raw(`
+      SELECT COUNT(*) as cnt FROM email_queue WHERE status = 'sent' AND sent_at >= CURDATE()
+    `));
+    const cntRows = Array.isArray(todayCount) ? (Array.isArray(todayCount[0]) ? todayCount[0] : todayCount) : [];
+
+    return {
+      leadsColumns: colNames,
+      hasSuppressed: colNames.includes("suppressed"),
+      hasSequenceStatus: colNames.includes("sequence_status"),
+      cronEligibleRows: eligibleRows,
+      sentToday: (cntRows[0] as any)?.cnt ?? 0,
+      dailyCap: parseInt(process.env.EMAIL_DAILY_CAP || "50", 10),
+      hasResendKey: Boolean(process.env.RESEND_API_KEY),
+    };
+  }),
 
   /**
    * Admin: Get email metrics for dashboard.
