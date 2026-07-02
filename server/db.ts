@@ -377,6 +377,25 @@ export async function ensureAffiliateWorkspaceSchema() {
       if (!(await hasColumn(db, "leads", "experiment_variant"))) {
         await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `experiment_variant` varchar(16)"));
       }
+
+      // Create provider_click_logs table for /go/ click tracking
+      await db.execute(sql.raw(`
+        CREATE TABLE IF NOT EXISTS \`provider_click_logs\` (
+          \`id\` int AUTO_INCREMENT NOT NULL,
+          \`lead_id\` varchar(36),
+          \`public_id\` varchar(36) NOT NULL,
+          \`provider_slug\` varchar(64) NOT NULL,
+          \`position\` varchar(16) DEFAULT NULL,
+          \`experiment_variant\` varchar(16) DEFAULT NULL,
+          \`created_at\` timestamp NOT NULL DEFAULT (now()),
+          CONSTRAINT \`provider_click_logs_id\` PRIMARY KEY(\`id\`)
+        )
+      `));
+
+      // Fix gala compliance note (remove price verification flag — customer-facing)
+      try {
+        await db.execute(sql.raw("UPDATE `providers` SET `compliance_note` = 'Compounded medications are not FDA-approved finished drug products.' WHERE `slug` = 'gala' AND `compliance_note` LIKE '%PRICE UNVERIFIED%'"));
+      } catch {}
     })().catch((error) => {
       affiliateWorkspaceBootstrap = null;
       throw error;
