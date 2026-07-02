@@ -254,7 +254,7 @@ async function buildPersonalization(
     const provArr = Array.isArray(providerRows) ? (Array.isArray(providerRows[0]) ? providerRows[0] : providerRows) : [];
     const provider = provArr[0] as any || {};
 
-    const siteUrl = ENV.siteUrl || "https://www.peptidepilot.me";
+    const siteUrl = ENV.appBaseUrl;
 
     return {
       leadId,
@@ -373,5 +373,5 @@ async function sendOneEmail(
 
 function generateUnsubHeader(leadId: string): string {
   const token = generateUnsubscribeToken(leadId);
-  return `${ENV.siteUrl || "https://www.peptidepilot.me"}/api/email/unsubscribe?token=${token}`;
+  return `${ENV.appBaseUrl}/api/email/unsubscribe?token=${token}`;
 }

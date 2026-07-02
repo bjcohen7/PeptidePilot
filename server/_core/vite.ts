@@ -144,6 +144,13 @@ export function serveStatic(app: Express) {
       return res.status(404).send("Not Found");
     }
 
+    // Dynamic client-rendered routes (e.g. /results/:publicId) get the clean SPA
+    // shell (empty #root) rather than the prerendered home page, so they never
+    // flash home-page content before the SPA renders the correct route.
+    const appShell = path.resolve(distPath, "app-shell.html");
+    if (fs.existsSync(appShell)) {
+      return res.sendFile(appShell);
+    }
     return res.sendFile(path.resolve(distPath, "index.html"));
   });
 }

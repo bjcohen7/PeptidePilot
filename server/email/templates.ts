@@ -29,7 +29,8 @@ export type EmailPersonalization = {
 };
 
 function getSiteUrl(): string {
-  return ENV.siteUrl || "https://www.peptidepilot.me";
+  // Canonical, always-https+www base for every email link (results, go, unsubscribe, logo).
+  return ENV.appBaseUrl;
 }
 
 function getUnsubUrl(leadId: string): string {

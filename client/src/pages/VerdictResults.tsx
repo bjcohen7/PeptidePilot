@@ -164,6 +164,9 @@ export default function VerdictResults({
           <p className="text-xs text-muted-foreground/60 text-center mt-2">
             10-min intake &middot; provider review in 24&ndash;48h &middot; meds shipped
           </p>
+          <p className="text-[11px] text-muted-foreground/70 text-center mt-1.5">
+            Affiliate link &mdash; we may earn a commission at no extra cost to you. Not medical advice.
+          </p>
 
           {heroDetail.complianceNote && (
             <p className="text-xs text-muted-foreground/50 text-center mt-3 leading-relaxed">

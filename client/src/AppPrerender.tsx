@@ -23,9 +23,6 @@ import { getBlogPost } from "../../shared/blog-content";
 function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
-      <div style={{ background: "var(--tint-sun)", color: "#6B5200", fontSize: ".82rem", textAlign: "center", padding: "8px 16px", borderBottom: "1px solid #F2E4B8" }}>
-        <strong>PeptidePilot is an information &amp; comparison service.</strong> We earn a commission when you choose a provider. Not medical advice.
-      </div>
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />

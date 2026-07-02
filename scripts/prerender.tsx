@@ -59,6 +59,12 @@ async function writeRouteHtml(routePath: string, html: string) {
 async function main() {
   const template = await fs.readFile(TEMPLATE_PATH, "utf8");
 
+  // Preserve the clean SPA shell (empty #root) BEFORE index.html is overwritten
+  // with the prerendered home page. Dynamic app routes (e.g. /results/:publicId)
+  // are served this shell so they never flash home-page content before the SPA
+  // boots — they paint blank → the client renders the correct route.
+  await fs.writeFile(path.join(DIST_PUBLIC, "app-shell.html"), template, "utf8");
+
   for (const route of prerenderRoutes) {
     const body = renderToString(<AppPrerender path={route.path} />);
     const head = buildHeadTags(route);
