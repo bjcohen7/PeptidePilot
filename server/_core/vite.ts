@@ -123,6 +123,12 @@ export function serveStatic(app: Express) {
   ];
 
   app.use("*", (req, res) => {
+    // Every response from this fall-through is HTML (prerendered page, SPA shell,
+    // or 404). express.static's setHeaders does NOT apply to res.sendFile() here,
+    // so set the HTML cache policy explicitly: revalidate on every request so a
+    // deploy is never masked by an edge/browser-cached stale page. Hashed assets
+    // (served by express.static above) keep long max-age + immutable.
+    res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
     // Under an app.use("*") mount, req.path is "/" (stripped of the matched
     // mount) — use req.originalUrl to recover the real request path.
     const rawPath = (req.originalUrl || req.url || "/").split("?")[0];
