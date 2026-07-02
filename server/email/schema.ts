@@ -14,29 +14,36 @@ export async function ensureEmailSchema() {
 
   if (!_emailSchemaBootstrap) {
     _emailSchemaBootstrap = (async () => {
-      // 1. Create email_queue table
-      await db.execute(sql`
-        CREATE TABLE IF NOT EXISTS \`email_queue\` (
-          \`id\` int AUTO_INCREMENT NOT NULL,
-          \`lead_id\` varchar(36) NOT NULL,
-          \`email_slug\` varchar(64) NOT NULL,
-          \`subject_variant\` enum('A','B') NOT NULL DEFAULT 'A',
-          \`scheduled_at\` timestamp NOT NULL,
-          \`sent_at\` timestamp NULL,
-          \`opened_at\` timestamp NULL,
-          \`clicked_at\` timestamp NULL,
-          \`bounced_at\` timestamp NULL,
-          \`complained_at\` timestamp NULL,
-          \`status\` enum('pending','sent','failed','cancelled','bounced','complained') NOT NULL DEFAULT 'pending',
-          \`error\` text,
-          \`resend_id\` varchar(128),
-          \`created_at\` timestamp NOT NULL DEFAULT (now()),
-          CONSTRAINT \`email_queue_id\` PRIMARY KEY(\`id\`),
-          KEY \`ix_eq_lead_id\` (\`lead_id\`),
-          KEY \`ix_eq_status_scheduled\` (\`status\`, \`scheduled_at\`),
-          KEY \`ix_eq_resend_id\` (\`resend_id\`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-      `);
+      // 1. Create email_queue table (with leads-matching collation)
+      await db.execute(sql.raw(
+        "CREATE TABLE IF NOT EXISTS `email_queue` (" +
+        "`id` int AUTO_INCREMENT NOT NULL, " +
+        "`lead_id` varchar(36) NOT NULL, " +
+        "`email_slug` varchar(64) NOT NULL, " +
+        "`subject_variant` enum('A','B') NOT NULL DEFAULT 'A', " +
+        "`scheduled_at` timestamp NOT NULL, " +
+        "`sent_at` timestamp NULL, " +
+        "`opened_at` timestamp NULL, " +
+        "`clicked_at` timestamp NULL, " +
+        "`bounced_at` timestamp NULL, " +
+        "`complained_at` timestamp NULL, " +
+        "`status` enum('pending','sent','failed','cancelled','bounced','complained') NOT NULL DEFAULT 'pending', " +
+        "`error` text, " +
+        "`resend_id` varchar(128), " +
+        "`created_at` timestamp NOT NULL DEFAULT (now()), " +
+        "CONSTRAINT `email_queue_id` PRIMARY KEY(`id`), " +
+        "KEY `ix_eq_lead_id` (`lead_id`), " +
+        "KEY `ix_eq_status_scheduled` (`status`, `scheduled_at`), " +
+        "KEY `ix_eq_resend_id` (`resend_id`)" +
+        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci"
+      ));
+
+      // Fix collation mismatch on existing table — must match leads table (utf8mb4_0900_ai_ci)
+      try {
+        await db.execute(sql.raw("ALTER TABLE `email_queue` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci"));
+      } catch (e: any) {
+        console.error("[EmailSchema] Collation fix failed:", e?.sqlMessage || e?.cause?.sqlMessage || e);
+      }
 
       // 2. Add columns to email_queue if missing
       const addQueueColumn = async (col: string, def: string) => {
