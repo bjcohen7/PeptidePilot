@@ -73,17 +73,14 @@ export const emailRouter = router({
     const colRows = Array.isArray(cols) ? (Array.isArray(cols[0]) ? cols[0] : cols) : [];
     const colNames = colRows.map((c: any) => c.Field);
 
-    // Check cron-eligible rows (same query as worker)
-    const [eligible] = await db.execute(sql.raw(`
-      SELECT eq.id, eq.email_slug, eq.scheduled_at, eq.status,
-             l.email, l.suppressed, l.sequence_status
-      FROM email_queue eq
-      JOIN leads l ON l.id = eq.lead_id
-      WHERE eq.status = 'pending'
-        AND eq.scheduled_at <= NOW()
+    // Check pending queue rows (no JOIN to avoid column errors)
+    const [pending] = await db.execute(sql.raw(`
+      SELECT id, lead_id, email_slug, subject_variant, scheduled_at, status
+      FROM email_queue
+      WHERE status = 'pending' AND scheduled_at <= NOW()
       LIMIT 5
     `));
-    const eligibleRows = Array.isArray(eligible) ? (Array.isArray(eligible[0]) ? eligible[0] : eligible) : [];
+    const pendingRows = Array.isArray(pending) ? (Array.isArray(pending[0]) ? pending[0] : pending) : [];
 
     // Check daily cap
     const [todayCount] = await db.execute(sql.raw(`
@@ -95,7 +92,7 @@ export const emailRouter = router({
       leadsColumns: colNames,
       hasSuppressed: colNames.includes("suppressed"),
       hasSequenceStatus: colNames.includes("sequence_status"),
-      cronEligibleRows: eligibleRows,
+      pendingDueRows: pendingRows,
       sentToday: (cntRows[0] as any)?.cnt ?? 0,
       dailyCap: parseInt(process.env.EMAIL_DAILY_CAP || "50", 10),
       hasResendKey: Boolean(process.env.RESEND_API_KEY),
