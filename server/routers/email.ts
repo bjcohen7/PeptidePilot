@@ -102,6 +102,41 @@ export const emailRouter = router({
   }),
 
   /**
+   * Admin: Debug personalization for a lead.
+   */
+  debugPersonalization: adminProcedure
+    .input(z.object({ leadId: z.string().min(8).max(64) }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return { error: "no db" };
+
+      const [rows] = await db.execute(sql.raw(
+        "SELECT id, `publicId`, email, `topPeptideMatch`, `provider_matches`, `rawQuizData` " +
+        "FROM leads WHERE id = '" + input.leadId + "' LIMIT 1"
+      ));
+      const arr = Array.isArray(rows) ? (Array.isArray(rows[0]) ? rows[0] : rows) : [];
+      if (arr.length === 0) return { error: "lead not found" };
+
+      const lead = arr[0] as any;
+      let providerMatches = null;
+      try { providerMatches = JSON.parse(lead.provider_matches || "[]"); } catch (e) { providerMatches = { parseError: String(e) }; }
+
+      let provider = null;
+      try {
+        const topMatch = providerMatches?.[0] || {};
+        const slug = topMatch.slug || lead.topPeptideMatch;
+        const [provRows] = await db.execute(sql.raw(
+          "SELECT slug, `displayName`, `priceFromCents`, `shipDaysEstimate`, `promoCode`, `complianceNote` " +
+          "FROM providers WHERE slug = '" + slug + "' LIMIT 1"
+        ));
+        const provArr = Array.isArray(provRows) ? (Array.isArray(provRows[0]) ? provRows[0] : provRows) : [];
+        provider = provArr[0] || null;
+      } catch (e) { provider = { error: String(e) }; }
+
+      return { lead: { id: lead.id, email: lead.email, publicId: lead.publicId, topPeptideMatch: lead.topPeptideMatch }, providerMatches, provider };
+    }),
+
+  /**
    * Admin: Surface the raw MySQL error from the JOIN query.
    */
   debugJoin: adminProcedure.query(async () => {
