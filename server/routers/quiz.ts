@@ -6,7 +6,10 @@ import { leads, affiliateClicks, visitorSessions, pageVisits } from "../../drizz
 import {
   calculateMatches,
   determineTier,
+  QUIZ_INDEX,
   QUIZ_QUESTIONS,
+  PRIMARY_GOAL_OPTIONS,
+  BUDGET_OPTIONS,
   toReturningMatchSummary,
   type ReturningMatchSummary,
 } from "../../shared/scoring";
@@ -266,6 +269,14 @@ export const quizRouter = router({
         }));
       }
 
+      // Build personalization data from rawQuizData
+      const rawAnswers = Array.isArray(lead.rawQuizData)
+        ? lead.rawQuizData.map((v: unknown) => (typeof v === "number" ? v : -1))
+        : [];
+      const goalIdx = rawAnswers[QUIZ_INDEX.PRIMARY_GOAL] ?? -1;
+      const budgetIdx = rawAnswers[QUIZ_INDEX.BUDGET] ?? -1;
+      const insuranceIdx = rawAnswers[QUIZ_INDEX.GLP1_INSURANCE] ?? -1;
+
       return {
         leadId: lead.id,
         publicId: lead.publicId,
@@ -278,6 +289,19 @@ export const quizRouter = router({
         providerMatches: providerMatchResults ?? [],
         providerDetails: providerDetails ?? [],
         experimentVariant: lead.experimentVariant ?? null,
+        emailDelivered: false,
+        leadQuizData: {
+          primaryGoal: goalIdx >= 0 && goalIdx < PRIMARY_GOAL_OPTIONS.length
+            ? PRIMARY_GOAL_OPTIONS[goalIdx]
+            : null,
+          budget: budgetIdx >= 0 && budgetIdx < BUDGET_OPTIONS.length
+            ? BUDGET_OPTIONS[budgetIdx]
+            : null,
+          insurance: insuranceIdx === 0 ? "commercial"
+            : insuranceIdx === 1 ? "medicare"
+            : insuranceIdx === 2 ? "uninsured"
+            : null,
+        },
       };
     }),
 

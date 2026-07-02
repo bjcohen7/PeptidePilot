@@ -27,11 +27,19 @@ export default function VerdictResults({
   providerDetails,
   publicId,
   leadId,
+  emailDelivered = false,
+  leadQuizData,
 }: {
   providerMatches: ProviderMatch[];
   providerDetails: ProviderDetail[];
   publicId: string;
   leadId: string;
+  emailDelivered?: boolean;
+  leadQuizData?: {
+    primaryGoal: string | null;
+    budget: string | null;
+    insurance: string | null;
+  };
 }) {
   const [altOpen, setAltOpen] = useState(false);
 
@@ -45,6 +53,15 @@ export default function VerdictResults({
 
   const buildGoUrl = (slug: string, position: "hero" | "alt") =>
     `/go/${slug}/${publicId}?position=${position}`;
+
+  const goalLabel = leadQuizData?.primaryGoal;
+  const budgetLabel = leadQuizData?.budget;
+  const insuranceLabel = leadQuizData?.insurance === "uninsured" ? "no insurance" : null;
+
+  const personalizationPieces = [goalLabel, budgetLabel, insuranceLabel].filter(Boolean) as string[];
+  const personalizationEcho = personalizationPieces.length > 0
+    ? `Matched for ${personalizationPieces.join(", ").toLowerCase()}`
+    : null;
 
   if (!heroMatch || !heroDetail) {
     return (
@@ -69,11 +86,13 @@ export default function VerdictResults({
             {heroMatch.displayName}
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            {heroMatch.whyMatch[0] ?? `Matched to your health profile and budget.`}
+            {heroMatch.whyMatch[0] ?? personalizationEcho ?? `Matched to your health profile and budget.`}
           </p>
-          <p className="text-xs text-muted-foreground/60 mt-3">
-            Your results are saved at this link — we&apos;ve also emailed them to you.
-          </p>
+          {emailDelivered && (
+            <p className="text-xs text-muted-foreground/60 mt-3">
+              Your results are saved at this link — we&apos;ve also emailed them to you.
+            </p>
+          )}
         </div>
 
         {/* Hero Provider Card */}
@@ -82,12 +101,23 @@ export default function VerdictResults({
           style={{ borderColor: "var(--accent)" }}
         >
           <div className="flex items-center justify-between mb-4">
-            <h2
-              className="text-xl font-normal text-foreground"
-              style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
-            >
-              {heroDetail.displayName}
-            </h2>
+            <div className="flex items-center gap-3">
+              <h2
+                className="text-xl font-normal text-foreground"
+                style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
+              >
+                {heroDetail.displayName}
+              </h2>
+              <span
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wider uppercase"
+                style={{
+                  background: "var(--accent)",
+                  color: "#fff",
+                }}
+              >
+                {heroMatch.fitScore}/5
+              </span>
+            </div>
             <div className="text-right">
               <div
                 className="text-2xl font-bold text-accent leading-none"
@@ -122,8 +152,6 @@ export default function VerdictResults({
 
           <a
             href={buildGoUrl(heroDetail.slug, "hero")}
-            target="_blank"
-            rel="noopener noreferrer"
             className="block w-full rounded-xl font-bold text-center text-white transition-all hover:opacity-90 active:scale-[0.99]"
             style={{
               padding: "18px 24px",
@@ -145,24 +173,22 @@ export default function VerdictResults({
         </div>
 
         {/* Why This Match */}
-        {heroMatch.whyMatch.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-sm font-semibold text-foreground mb-3">Why this match</h3>
-            <div className="space-y-3">
-              {heroMatch.whyMatch.map((reason, i) => (
-                <div key={i} className="flex items-start gap-3 bg-muted/50 rounded-xl p-3.5">
-                  <span
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                    style={{ background: "var(--accent)" }}
-                  >
-                    {i + 1}
-                  </span>
-                  <p className="text-sm text-foreground leading-relaxed">{reason}</p>
-                </div>
-              ))}
-            </div>
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-foreground mb-3">Why this match</h3>
+          <div className="space-y-3">
+            {(heroMatch.whyMatch.length > 0 ? heroMatch.whyMatch : [personalizationEcho ?? `Matched to your health profile and budget.`]).map((reason, i) => (
+              <div key={i} className="flex items-start gap-3 border border-border/60 rounded-xl p-3.5">
+                <span
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                  style={{ background: "var(--accent)" }}
+                >
+                  {i + 1}
+                </span>
+                <p className="text-sm text-foreground leading-relaxed">{reason}</p>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
 
         {/* What Happens After You Click */}
         <div className="mb-6">
@@ -173,7 +199,7 @@ export default function VerdictResults({
               { step: "2", title: "Provider review", desc: "24–48h clinical review" },
               { step: "3", title: "Medication ships", desc: "Free delivery to your door" },
             ].map((s) => (
-              <div key={s.step} className="bg-muted/50 rounded-xl p-3 text-center">
+              <div key={s.step} className="border border-border/60 rounded-xl p-3 text-center">
                 <span
                   className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-white mx-auto mb-1.5"
                   style={{ background: "var(--accent)" }}
@@ -199,7 +225,7 @@ export default function VerdictResults({
               body: `${heroDetail.displayName} is cash-pay friendly. No prior authorization or insurance needed to start.`,
             },
           ].map((card) => (
-            <div key={card.title} className="bg-muted/50 rounded-xl p-3">
+            <div key={card.title} className="border border-border/60 rounded-xl p-3">
               <div className="text-xs font-semibold text-foreground mb-1">{card.title}</div>
               <p className="text-[11px] text-muted-foreground leading-relaxed">{card.body}</p>
             </div>
@@ -211,7 +237,7 @@ export default function VerdictResults({
           <div className="mb-8">
             <button
               onClick={() => setAltOpen(!altOpen)}
-              className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-muted/30 border border-border/60 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="w-full flex items-center justify-between py-3 px-4 rounded-xl border border-border/60 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <span className="font-medium">{altDetails.length} other strong {altDetails.length === 1 ? "fit" : "fits"}</span>
               <span className={`transition-transform ${altOpen ? "rotate-180" : ""}`}>&#9660;</span>
@@ -238,8 +264,6 @@ export default function VerdictResults({
                       )}
                       <a
                         href={buildGoUrl(alt.slug, "alt")}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="block w-full rounded-lg text-center text-sm font-semibold text-white py-3 transition-all hover:opacity-90"
                         style={{ background: "var(--accent)" }}
                       >

@@ -151,6 +151,8 @@ export default function ResultsByPublicId() {
           providerDetails={data.providerDetails}
           publicId={data.publicId}
           leadId={data.leadId}
+          emailDelivered={data.emailDelivered}
+          leadQuizData={data.leadQuizData}
         />
       );
     }
