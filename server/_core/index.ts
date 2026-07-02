@@ -297,6 +297,25 @@ async function startServer() {
   });
   // Diagnostic endpoints removed before production ship.
 
+  // DEBUG: inspect req.body and raw stream for tRPC body parsing diagnosis
+  app.post("/api/debug-trpc-body", async (req, res) => {
+    const chunks: Buffer[] = [];
+    req.on("data", (c) => chunks.push(c));
+    req.on("end", () => {
+      const rawBody = Buffer.concat(chunks).toString("utf-8");
+      res.json({
+        hasBodyProp: "body" in req,
+        bodyValue: (req as any).body,
+        bodyType: typeof (req as any).body,
+        bodyIsUndefined: (req as any).body === void 0,
+        rawBodyLength: rawBody.length,
+        rawBodyPreview: rawBody.slice(0, 200),
+        contentType: req.headers["content-type"],
+      });
+    });
+    req.on("error", () => res.status(500).json({ error: "stream error" }));
+  });
+
   // TEMP: test quiz submission (bypasses tRPC v11 POST body parsing conflict)
   app.post("/api/test-submit-quiz", express.json(), async (req, res) => {
     try {
