@@ -14,8 +14,7 @@ import { providers, providerClickLogs, leads } from "../../drizzle/schema";
 import { eq, sql } from "drizzle-orm";
 import { getDb } from "../db";
 import { serveStatic, setupVite } from "./vite";
-import { calculateMatches, determineTier, toReturningMatchSummary } from "../../shared/scoring";
-import { matchProviders } from "../../shared/providerMatching";
+
 import capiRouter from "../routes/capi";
 import { prerenderRoutes, SITE_URL } from "../../scripts/prerender-routes";
 
@@ -295,108 +294,6 @@ async function startServer() {
       res.status(400).json({ error: "invalid_funnel_event" });
     }
   });
-  // TEMP: funnel gap diagnostic
-  app.get("/api/ping", (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
-  app.get("/api/diag/funnel-gap", async (req, res) => {
-    try {
-      const db = await getDb();
-      if (!db) { res.status(500).json({ error: "no db" }); return; }
-      const result = await db.execute(sql\`
-        SELECT
-          SUM(CASE WHEN label = 'ProcessingStarted' THEN 1 ELSE 0 END) AS started,
-          SUM(CASE WHEN label = 'ProcessingComplete' THEN 1 ELSE 0 END) AS completed
-        FROM click_events
-        WHERE eventType = 'funnel'
-          AND createdAt >= NOW() - INTERVAL 30 DAY
-      \`);
-      const [row] = Array.isArray(result) ? result : [result[0] || {}];
-      const started = Number(row?.started ?? 0);
-      const completed = Number(row?.completed ?? 0);
-      res.json({
-        last30Days: { started, completed, gap: started - completed },
-        raw: row,
-      });
-    } catch (e) {
-      res.status(500).json({ error: String(e) });
-    }
-  });
-
-
-  // TEMP: test quiz submission (bypasses tRPC v11 POST body parsing conflict)
-  app.post("/api/test-submit-quiz", express.json(), async (req, res) => {
-    try {
-      const db = await getDb();
-      if (!db) { res.status(500).json({ error: "no db" }); return; }
-      const { answers } = req.body;
-      if (!Array.isArray(answers) || answers.length === 0) {
-        res.status(400).json({ error: "invalid answers" }); return;
-      }
-
-      const { nanoid } = await import("nanoid");
-      const leadId = nanoid();
-      const publicId = nanoid();
-      const returnedEmail = `anonymous+${leadId}@peptidepilot.local`;
-
-      const matches = calculateMatches(answers);
-      const topMatches = matches.slice(0, 5).map((m) => m.peptide.id);
-      const topPeptideMatch = topMatches[0] ?? "semaglutide";
-      const returningResults = matches.slice(0, 5).map(toReturningMatchSummary);
-      const tier = determineTier(answers as number[]);
-      const ageRange = "not-captured";
-      const primaryGoal = typeof answers[0] === "number" ? String(answers[0]) : "multi";
-      const budget = "not-captured";
-
-      const activeProviders = await db
-        .select()
-        .from(providers)
-        .where(eq(providers.active, true))
-        .orderBy(providers.sortPriority);
-
-      let providerMatchResults = null;
-      let experimentVariant: string | null = null;
-      if (activeProviders.length > 0) {
-        providerMatchResults = matchProviders(answers as number[], activeProviders);
-        const hash = leadId.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-        experimentVariant = hash % 2 === 0 ? "control" : "verdict";
-      }
-
-      await import("../../drizzle/schema").then(async ({ leads }) => {
-        await db.insert(leads).values({
-          id: leadId,
-          publicId,
-          email: returnedEmail,
-          ageRange,
-          primaryGoal,
-          budget,
-          topPeptideMatch,
-          tier,
-          consentGiven: false,
-          consentTimestamp: new Date(),
-          ipAddress: req.ip ?? "unknown",
-          rawQuizData: answers,
-          results: returningResults,
-        });
-        if (providerMatchResults || experimentVariant) {
-          const updateData: Record<string, unknown> = {};
-          if (providerMatchResults) updateData.providerMatches = providerMatchResults;
-          if (experimentVariant) updateData.experimentVariant = experimentVariant;
-          await db.update(leads).set(updateData).where(eq(leads.id, leadId));
-        }
-      });
-
-      res.json({
-        ok: true,
-        leadId,
-        publicId,
-        experimentVariant,
-        providerMatches: providerMatchResults,
-        resultsUrl: `/results/${publicId}`,
-      });
-    } catch (e) {
-      res.status(500).json({ error: String(e) });
-    }
-  });
-
   app.get("/api/health", (_req, res) => {
     res.json({
       status: "ok",
