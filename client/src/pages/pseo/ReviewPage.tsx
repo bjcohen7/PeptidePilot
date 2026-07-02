@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, CheckCircle, XCircle, ChevronRight, Star } from "lucide-react";
+import { Glp1ContentCta, isGlp1Topical } from "@/components/Glp1ContentCta";
 
 function RatingBar({ label, value }: { label: string; value: number }) {
   return (
@@ -50,6 +51,12 @@ export default function ReviewPage() {
       </div>
     );
   }
+
+  const topical = isGlp1Topical({
+    glp1Topical: review.glp1Topical,
+    categories: [review.category],
+    peptideSlugs: [review.peptideSlug],
+  });
 
   const reviewSchema = {
     "@context": "https://schema.org",
@@ -114,6 +121,8 @@ export default function ReviewPage() {
             This is an independent, vendor-neutral assessment for educational purposes. Peptides discussed are research compounds, not FDA-approved medications (unless noted). Consult a qualified healthcare provider before use.
           </AlertDescription>
         </Alert>
+
+        {topical && <Glp1ContentCta topical placement="inline" />}
 
         {/* ── Rating Breakdown ── */}
         <section className="mb-10">
@@ -252,15 +261,11 @@ export default function ReviewPage() {
         )}
 
         {/* ── Quiz CTA ── */}
-        <section className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-8 text-center">
-          <h2 className="text-xl font-bold mb-2">Is {review.peptideName} right for your biology?</h2>
-          <p className="text-muted-foreground mb-4">Take our 5-minute quiz to get a personalized peptide recommendation based on your specific goals and health profile.</p>
-          <Link href="/quiz">
-            <Button size="lg" className="font-semibold">
-              Take the Free Quiz <ChevronRight className="ml-1 w-4 h-4" />
-            </Button>
-          </Link>
-        </section>
+        {topical ? (
+          <Glp1ContentCta topical placement="end" />
+        ) : (
+          <Glp1ContentCta topical={false} placement="footer" />
+        )}
       </div>
     </div>
   );

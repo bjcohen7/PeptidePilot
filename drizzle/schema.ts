@@ -53,6 +53,10 @@ export const affiliateClicks = mysqlTable("affiliate_clicks", {
   peptideId: varchar("peptideId", { length: 64 }).notNull(),
   vendor: varchar("vendor", { length: 128 }).notNull(),
   clickedAt: timestamp("clickedAt").defaultNow().notNull(),
+  // 'funnel' | 'library' | 'bridge'
+  sourceSurface: varchar("source_surface", { length: 32 }),
+  // 'glp1_provider' | 'peptide_vendor' | 'other'
+  clickType: varchar("click_type", { length: 64 }),
 });
 
 export type AffiliateClick = typeof affiliateClicks.$inferSelect;
@@ -157,6 +161,8 @@ export const visitorSessions = mysqlTable("visitor_sessions", {
   userAgent: text("userAgent"),
   pageViewCount: int("pageViewCount").notNull().default(0),
   totalDurationMs: int("totalDurationMs").notNull().default(0),
+  // Surface the session entered on: 'funnel' | 'library' | 'bridge' (leg-5).
+  sourceSurface: varchar("source_surface", { length: 32 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -184,6 +190,8 @@ export const clickEvents = mysqlTable("click_events", {
   label: varchar("label", { length: 255 }).notNull(),
   targetHref: varchar("targetHref", { length: 1024 }),
   eventType: varchar("eventType", { length: 64 }).notNull(),
+  sourceSurface: varchar("source_surface", { length: 32 }),
+  clickType: varchar("click_type", { length: 64 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -259,6 +267,8 @@ export const providerClickLogs = mysqlTable("provider_click_logs", {
   providerSlug: varchar("provider_slug", { length: 64 }).notNull(),
   position: varchar("position", { length: 16 }).notNull(), // 'hero' | 'alt'
   experimentVariant: varchar("experiment_variant", { length: 16 }),
+  sourceSurface: varchar("source_surface", { length: 32 }), // 'funnel' | 'library' | 'bridge'
+  clickType: varchar("click_type", { length: 64 }), // 'glp1_provider' | 'peptide_vendor' | 'other'
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { getStackBySlug, stackPages } from "../../../../shared/pseoData";
+import { Glp1ContentCta, isGlp1Topical } from "@/components/Glp1ContentCta";
+import { QUIZ_MINUTES } from "@shared/quizConfig";
 
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
@@ -49,6 +51,12 @@ export default function StackPage({ params }: { params: { slug: string } }) {
       </div>
     );
   }
+
+  const topical = isGlp1Topical({
+    glp1Topical: stack.glp1Topical,
+    goalSlugs: stack.goalSlugs,
+    peptideSlugs: stack.peptides,
+  });
 
   return (
     <>
@@ -200,32 +208,11 @@ export default function StackPage({ params }: { params: { slug: string } }) {
             </section>
 
             {/* Quiz CTA */}
-            <div className="rounded-2xl bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-mid)] text-white p-8">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-widest text-[var(--brand-teal-light)] mb-2">
-                    Free Personalized Analysis
-                  </p>
-                  <h3 className="text-2xl font-bold mb-2">
-                    Is this stack right for your biology?
-                  </h3>
-                  <p className="text-white/70 max-w-md">
-                    Take the 5-minute PeptidePilot quiz to get a personalized
-                    peptide recommendation based on your goals, body, and
-                    lifestyle. Vendor-neutral.
-                  </p>
-                </div>
-                <Link href="/quiz">
-                  <Button
-                    size="lg"
-                    className="bg-[var(--brand-teal)] hover:bg-[var(--brand-teal-light)] text-white font-semibold whitespace-nowrap shrink-0"
-                  >
-                    Take the 5-Minute Quiz
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
+            {topical ? (
+              <Glp1ContentCta topical placement="inline" />
+            ) : (
+              <Glp1ContentCta topical={false} placement="footer" />
+            )}
 
             {/* FAQ */}
             {stack.faqItems.length > 0 && (
@@ -253,7 +240,7 @@ export default function StackPage({ params }: { params: { slug: string } }) {
                 Is this stack right for you?
               </h3>
               <p className="text-white/70 text-sm mb-4">
-                5-minute quiz. Personalized, vendor-neutral results.
+                {QUIZ_MINUTES}-minute quiz. Personalized, vendor-neutral results.
               </p>
               <Link href="/quiz">
                 <Button className="w-full bg-[var(--brand-teal)] hover:bg-[var(--brand-teal-light)] text-white">
@@ -352,6 +339,8 @@ export default function StackPage({ params }: { params: { slug: string } }) {
               ))}
           </div>
         </section>
+
+        {topical && <Glp1ContentCta topical placement="end" />}
       </div>
     </>
   );

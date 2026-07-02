@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, ChevronRight, Activity, Pill, FlaskConical, Star } from "lucide-react";
+import { Glp1ContentCta, isGlp1Topical } from "@/components/Glp1ContentCta";
 
 const EVIDENCE_COLOR: Record<string, string> = {
   "Strong human (FDA approved)": "bg-emerald-100 text-emerald-800",
@@ -32,6 +33,12 @@ export default function ForConditionPage() {
       </div>
     );
   }
+
+  const topical = isGlp1Topical({
+    glp1Topical: page.glp1Topical,
+    categories: [page.category],
+    peptideSlugs: page.topPeptides.map((p) => p.peptideSlug),
+  });
 
   const conditionSchema = {
     "@context": "https://schema.org",
@@ -92,6 +99,8 @@ export default function ForConditionPage() {
           <h2 className="text-xl font-bold mb-3">Understanding {page.condition}</h2>
           <p className="text-muted-foreground leading-relaxed">{page.conditionOverview}</p>
         </section>
+
+        {topical && <Glp1ContentCta topical placement="inline" />}
 
         {/* ── Symptoms — symptom-first, key differentiator from Profile pages ── */}
         <section className="mb-10">
@@ -220,16 +229,11 @@ export default function ForConditionPage() {
         )}
 
         {/* ── Quiz CTA ── */}
-        <section className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-8 text-center">
-          <Star className="w-8 h-8 text-primary mx-auto mb-3" />
-          <h2 className="text-xl font-bold mb-2">Find the right peptide for your biology</h2>
-          <p className="text-muted-foreground mb-4">Take our 5-minute quiz to get a personalized peptide recommendation based on your specific goals and health profile.</p>
-          <Link href="/quiz">
-            <Button size="lg" className="font-semibold">
-              Take the Free Quiz <ChevronRight className="ml-1 w-4 h-4" />
-            </Button>
-          </Link>
-        </section>
+        {topical ? (
+          <Glp1ContentCta topical placement="end" />
+        ) : (
+          <Glp1ContentCta topical={false} placement="footer" />
+        )}
       </div>
     </div>
   );

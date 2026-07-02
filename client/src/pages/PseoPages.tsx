@@ -8,6 +8,7 @@ import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
 import { getPseoEntry, getPseoSection, pseoSections, type PseoSectionKey } from "@/data/pseo";
 import type { PseoContentRecord } from "@shared/pseoContent";
 import { peptideProfiles } from "../../../shared/scoring";
+import { QUIZ_MINUTES, QUIZ_MINUTES_LABEL } from "@shared/quizConfig";
 
 const SECTION_COPY: Record<
   PseoSectionKey,
@@ -788,10 +789,10 @@ export function PseoDetailPage({
           ? `Is ${primaryProfile.name} right for your biology?`
           : `Is this ${sectionSingularLabel(sectionKey).toLowerCase()} right for your biology?`;
   const ctaBody = isGoals
-    ? 'Take the 5-minute PeptidePilot quiz to get a personalized peptide recommendation based on your goals, body, and lifestyle.'
+    ? `Take the ${QUIZ_MINUTES_LABEL} PeptidePilot quiz to get a personalized peptide recommendation based on your goals, body, and lifestyle.`
     : isCompare
-      ? 'Take the 5-minute PeptidePilot quiz. Our algorithm evaluates your goals, body, and lifestyle to recommend the right peptide for you vendor-neutral.'
-      : 'Take the 5-minute PeptidePilot quiz to get a personalized peptide recommendation based on your goals, body, and lifestyle. Vendor-neutral.';
+      ? `Take the ${QUIZ_MINUTES_LABEL} PeptidePilot quiz. Our algorithm evaluates your goals, body, and lifestyle to recommend the right peptide for you vendor-neutral.`
+      : `Take the ${QUIZ_MINUTES_LABEL} PeptidePilot quiz to get a personalized peptide recommendation based on your goals, body, and lifestyle. Vendor-neutral.`;
   const cautionTitle = isGoals ? 'Educational Content Only' : isStacks ? 'Advanced Protocol' : isCompare ? 'Independent Analysis' : 'Research Compound Notice';
   const exploreCards = siblingLinks.map((item, index) => ({
     ...item,
@@ -935,7 +936,7 @@ export function PseoDetailPage({
             <h2 className="mt-3 text-2xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>
               {sidebarTitle}
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-white/75">5-minute quiz. Personalized, vendor-neutral results.</p>
+            <p className="mt-3 text-sm leading-relaxed text-white/75">{QUIZ_MINUTES_LABEL} quiz. Personalized, vendor-neutral results.</p>
             <Link href="/quiz">
               <Button className="mt-5 w-full bg-teal-500 text-white hover:bg-teal-400">Take the Quiz</Button>
             </Link>
@@ -1006,7 +1007,7 @@ export function PseoDetailPage({
                       <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
                     </div>
                     <Link href="/quiz">
-                      <Button className="w-full bg-teal-500 text-white hover:bg-teal-400 sm:w-auto sm:min-w-[220px]">Take the 5-Minute Quiz</Button>
+                      <Button className="w-full bg-teal-500 text-white hover:bg-teal-400 sm:w-auto sm:min-w-[220px]">Take the {QUIZ_MINUTES}-Minute Quiz</Button>
                     </Link>
                   </div>
                 </div>
@@ -1097,7 +1098,7 @@ export function PseoDetailPage({
                       <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
                     </div>
                     <Link href="/quiz">
-                      <Button className="w-full bg-teal-500 text-white hover:bg-teal-400 sm:w-auto sm:min-w-[220px]">Take the 5-Minute Quiz</Button>
+                      <Button className="w-full bg-teal-500 text-white hover:bg-teal-400 sm:w-auto sm:min-w-[220px]">Take the {QUIZ_MINUTES}-Minute Quiz</Button>
                     </Link>
                   </div>
                 </div>
@@ -1287,7 +1288,7 @@ export function PseoDetailPage({
                           <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
                         </div>
                         <Link href="/quiz">
-                          <Button className="w-full bg-teal-500 text-white hover:bg-teal-400 sm:w-auto sm:min-w-[220px]">Take the 5-Minute Quiz</Button>
+                          <Button className="w-full bg-teal-500 text-white hover:bg-teal-400 sm:w-auto sm:min-w-[220px]">Take the {QUIZ_MINUTES}-Minute Quiz</Button>
                         </Link>
                       </div>
                     </div>
@@ -1329,7 +1330,7 @@ export function PseoDetailPage({
                         <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
                       </div>
                       <Link href="/quiz">
-                        <Button className="w-full bg-teal-500 text-white hover:bg-teal-400 sm:w-auto sm:min-w-[220px]">Take the 5-Minute Quiz</Button>
+                        <Button className="w-full bg-teal-500 text-white hover:bg-teal-400 sm:w-auto sm:min-w-[220px]">Take the {QUIZ_MINUTES}-Minute Quiz</Button>
                       </Link>
                     </div>
                   </div>

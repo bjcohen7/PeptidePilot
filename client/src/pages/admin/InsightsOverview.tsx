@@ -142,6 +142,18 @@ export default function InsightsOverview() {
       icon: ExternalLink,
       note: "Tracked outbound partner clicks",
     },
+    {
+      label: "GLP-1 Provider Clicks",
+      value: summary.data?.clickBreakdown?.glp1Provider ?? 0,
+      icon: ExternalLink,
+      note: "Monetizable — funnel + library GLP-1 clicks",
+    },
+    {
+      label: "Peptide Vendor Clicks",
+      value: summary.data?.clickBreakdown?.peptideVendor ?? 0,
+      icon: ExternalLink,
+      note: "Research-peptide vendor clicks (non-monetizing)",
+    },
   ];
 
   return (

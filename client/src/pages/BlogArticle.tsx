@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
 import { useStaticBlogPost } from "@/lib/staticContent";
 import { getBlogPostSummary, type BlogPost } from "../../../shared/blog";
+import { Glp1ContentCta, isGlp1Topical } from "@/components/Glp1ContentCta";
 
 interface BlogArticleProps {
   params: { slug: string };
@@ -29,6 +30,10 @@ function ArticleNotFound() {
 
 export function BlogArticleView({ article }: { article: BlogPost }) {
   const summary = article;
+  const topical = isGlp1Topical({
+    glp1Topical: article.glp1Topical,
+    categories: [article.category],
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -115,19 +120,11 @@ export function BlogArticleView({ article }: { article: BlogPost }) {
           </div>
 
           {/* CTA */}
-          <div className="mt-12 p-6 bg-secondary/50 rounded-2xl border border-border/60 text-center">
-            <h3 className="text-xl font-normal text-foreground mb-2" style={{ fontFamily: "'DM Serif Display', serif" }}>
-              Find Your Personalized Match
-            </h3>
-            <p className="text-muted-foreground text-sm mb-5">
-              Take the free 5-minute quiz to discover which peptides are most relevant for your specific biology and goals.
-            </p>
-            <Link href="/quiz">
-              <Button className="bg-brand-gradient text-white hover:opacity-90 font-semibold">
-                Take the Free Quiz
-              </Button>
-            </Link>
-          </div>
+          {topical ? (
+            <Glp1ContentCta topical placement="end" />
+          ) : (
+            <Glp1ContentCta topical={false} placement="footer" />
+          )}
         </div>
       </section>
     </div>

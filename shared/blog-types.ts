@@ -11,6 +11,8 @@ export type BlogPostSummary = {
   readTime: string;
   date: string;
   publishedAt: string;
+  /** Per-page GLP-1 topicality override. Optional — the isGlp1Topical() classifier supplies the default when unset. */
+  glp1Topical?: boolean;
 };
 
 export type LegacyBlogPost = BlogPostSummary & {

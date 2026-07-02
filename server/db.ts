@@ -392,6 +392,21 @@ export async function ensureAffiliateWorkspaceSchema() {
         )
       `));
 
+      // Source-surface / click-type tagging so the dashboard can separate
+      // monetizable GLP-1 provider clicks (funnel) from research-peptide vendor
+      // clicks (library). New varchar columns inherit the table's
+      // utf8mb4_0900_ai_ci collation (matches `leads`); errors are surfaced by
+      // addColumnIfMissing (never swallowed) per AGENTS.md.
+      // source_surface: 'funnel' | 'library' | 'bridge'
+      // click_type:     'glp1_provider' | 'peptide_vendor' | 'other'
+      await addColumnIfMissing(db, "provider_click_logs", "source_surface", "`source_surface` varchar(32) DEFAULT 'funnel'");
+      await addColumnIfMissing(db, "provider_click_logs", "click_type", "`click_type` varchar(64) DEFAULT 'glp1_provider'");
+      await addColumnIfMissing(db, "affiliate_clicks", "source_surface", "`source_surface` varchar(32) DEFAULT NULL");
+      await addColumnIfMissing(db, "affiliate_clicks", "click_type", "`click_type` varchar(64) DEFAULT NULL");
+      await addColumnIfMissing(db, "click_events", "source_surface", "`source_surface` varchar(32) DEFAULT NULL");
+      await addColumnIfMissing(db, "click_events", "click_type", "`click_type` varchar(64) DEFAULT NULL");
+      await addColumnIfMissing(db, "visitor_sessions", "source_surface", "`source_surface` varchar(32) DEFAULT NULL");
+
       // Fix gala compliance note (remove price verification flag — customer-facing)
       try {
         await db.execute(sql.raw("UPDATE `providers` SET `compliance_note` = 'Compounded medications are not FDA-approved finished drug products.' WHERE `slug` = 'gala' AND `compliance_note` LIKE '%PRICE UNVERIFIED%'"));

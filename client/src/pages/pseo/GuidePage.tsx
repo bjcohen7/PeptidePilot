@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, AlertTriangle, Lightbulb, Clock, BarChart2, ChevronRight, BookOpen } from "lucide-react";
+import { Glp1ContentCta, isGlp1Topical } from "@/components/Glp1ContentCta";
+import { QUIZ_MINUTES } from "@shared/quizConfig";
 
 const DIFFICULTY_COLOR: Record<string, string> = {
   Beginner: "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -27,6 +29,12 @@ export default function GuidePage() {
       </div>
     );
   }
+
+  const topical = isGlp1Topical({
+    glp1Topical: guide.glp1Topical,
+    categories: [guide.category],
+    peptideSlugs: guide.targetPeptides,
+  });
 
   const howToSchema = {
     "@context": "https://schema.org",
@@ -91,6 +99,8 @@ export default function GuidePage() {
           <h2 className="text-xl font-bold mb-3">Overview</h2>
           <p className="text-muted-foreground leading-relaxed">{guide.overview}</p>
         </section>
+
+        {topical && <Glp1ContentCta topical placement="inline" />}
 
         {/* ── What You Need ── */}
         <section className="mb-10">
@@ -213,15 +223,11 @@ export default function GuidePage() {
         )}
 
         {/* ── Quiz CTA ── */}
-        <section className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-8 text-center">
-          <h2 className="text-xl font-bold mb-2">Not sure which peptide is right for you?</h2>
-          <p className="text-muted-foreground mb-4">Take our 5-minute quiz to get a personalized peptide recommendation based on your biology and goals.</p>
-          <Link href="/quiz">
-            <Button size="lg" className="font-semibold">
-              Take the Free Quiz <ChevronRight className="ml-1 w-4 h-4" />
-            </Button>
-          </Link>
-        </section>
+        {topical ? (
+          <Glp1ContentCta topical placement="end" />
+        ) : (
+          <Glp1ContentCta topical={false} placement="footer" />
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
+import { SiteDisclosure } from "@/components/SiteDisclosure";
 
 const PLATFORM_LINKS = [
   { href: "/quiz/flow", label: "Quiz" },
@@ -8,6 +9,7 @@ const PLATFORM_LINKS = [
 ];
 
 const RESOURCES_LINKS = [
+  { href: "/learn", label: "Learn" },
   { href: "/about", label: "About" },
   { href: "/blog", label: "Blog" },
 ];
@@ -56,9 +58,7 @@ export default function Footer() {
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
             &copy; {new Date().getFullYear()} PeptidePilot. All rights reserved.
           </p>
-          <p className="max-w-[520px] text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.3)" }}>
-            PeptidePilot is an independent matching and comparison service. We earn affiliate commissions when you start treatment through our links. Not medical advice. Always consult a qualified healthcare provider before starting any treatment.
-          </p>
+          <SiteDisclosure className="max-w-[520px] text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.3)" }} />
         </div>
       </div>
     </footer>

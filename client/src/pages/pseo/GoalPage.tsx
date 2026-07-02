@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { getGoalBySlug, goalPages } from "../../../../shared/pseoData";
+import { Glp1ContentCta, isGlp1Topical } from "@/components/Glp1ContentCta";
+import { QUIZ_MINUTES } from "@shared/quizConfig";
 
 const EVIDENCE_COLOR: Record<string, string> = {
   "Strong Human Clinical": "bg-emerald-100 text-emerald-800",
@@ -54,6 +56,12 @@ export default function GoalPage({ params }: { params: { slug: string } }) {
       </div>
     );
   }
+
+  const topical = isGlp1Topical({
+    glp1Topical: goal.glp1Topical,
+    goalSlugs: [goal.slug],
+    peptideSlugs: goal.topPeptides.map((p) => p.peptideSlug),
+  });
 
   return (
     <>
@@ -201,31 +209,11 @@ export default function GoalPage({ params }: { params: { slug: string } }) {
             </section>
 
             {/* Quiz CTA */}
-            <div className="rounded-2xl bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-mid)] text-white p-8">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-widest text-[var(--brand-teal-light)] mb-2">
-                    Free Personalized Analysis
-                  </p>
-                  <h3 className="text-2xl font-bold mb-2">
-                    Which peptide matches your biology?
-                  </h3>
-                  <p className="text-white/70 max-w-md">
-                    Take the 5-minute PeptidePilot quiz to get a personalized
-                    recommendation based on your goals, body, and lifestyle.
-                  </p>
-                </div>
-                <Link href="/quiz">
-                  <Button
-                    size="lg"
-                    className="bg-[var(--brand-teal)] hover:bg-[var(--brand-teal-light)] text-white font-semibold whitespace-nowrap shrink-0"
-                  >
-                    Take the 5-Minute Quiz
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
+            {topical ? (
+              <Glp1ContentCta topical placement="inline" />
+            ) : (
+              <Glp1ContentCta topical={false} placement="footer" />
+            )}
 
             {/* Comparison dimensions */}
             <section>
@@ -287,7 +275,7 @@ export default function GoalPage({ params }: { params: { slug: string } }) {
                 Find your peptide match
               </h3>
               <p className="text-white/70 text-sm mb-4">
-                5-minute quiz. Personalized, vendor-neutral results.
+                {QUIZ_MINUTES}-minute quiz. Personalized, vendor-neutral results.
               </p>
               <Link href="/quiz">
                 <Button className="w-full bg-[var(--brand-teal)] hover:bg-[var(--brand-teal-light)] text-white">
@@ -367,6 +355,8 @@ export default function GoalPage({ params }: { params: { slug: string } }) {
               ))}
           </div>
         </section>
+
+        {topical && <Glp1ContentCta topical placement="end" />}
       </div>
     </>
   );

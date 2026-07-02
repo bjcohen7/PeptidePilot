@@ -58,6 +58,9 @@ export function GLP1PromoBox({ leadId, sessionId }: GLP1PromoBoxProps) {
         leadId,
         peptideId: "glp1_promo",
         vendor: vendor.name,
+        // GLP-1 provider promoted from a library/content page.
+        sourceSurface: "library",
+        clickType: "glp1_provider",
       });
     }
 

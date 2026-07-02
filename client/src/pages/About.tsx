@@ -2,6 +2,7 @@ import { CheckCircle2, FlaskConical, ShieldCheck, Users } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
+import { QUIZ_QUESTION_COUNT } from "@shared/quizConfig";
 
 export default function About() {
   return (
@@ -41,10 +42,10 @@ export default function About() {
             The peptide industry is growing rapidly — and with that growth comes noise. Proprietary quiz funnels that recommend the same products regardless of your profile. Marketing dressed up as science. Affiliate-first recommendations masquerading as personalized advice.
           </p>
           <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-            PeptidePilot was built as a direct response to this. We are an independent analysis platform. We don't manufacture peptides. We don't have exclusive relationships with any vendor. We don't have a proprietary product line to push. Our only objective is to match your unique biological profile to the compounds most supported by current research.
+            PeptidePilot was built as a direct response to this. We are an independent matching service. We don't manufacture or sell medications, and no provider pays us for a higher ranking. We do earn a referral commission when you start treatment through our links — that's how the service stays free — and it never changes who we rank first. Our only objective is to match you to the licensed GLP-1 provider that best fits your goals, budget, and state.
           </p>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            When we recommend BPC-157 for joint recovery or Selank for anxiety, it's because the data supports it for your specific profile — not because we have inventory to move.
+            When we rank a provider first, it's because they fit your profile — your goals, your budget, your state — not because we have inventory to move or a placement to sell.
           </p>
         </div>
       </section>
@@ -60,7 +61,7 @@ export default function About() {
               {
                 icon: ShieldCheck,
                 title: "Radical Independence",
-                body: "We have no financial relationships with any single peptide manufacturer or vendor. Our recommendations are driven by your profile, not our partnerships.",
+                body: "No provider pays us for placement, and we don't manufacture or sell medications. We earn a referral commission when you start treatment through our links — always disclosed, and never a factor in how we rank.",
               },
               {
                 icon: FlaskConical,
@@ -69,8 +70,8 @@ export default function About() {
               },
               {
                 icon: Users,
-                title: "Your Biology, Not a Template",
-                body: "Our 40-question quiz evaluates 27 distinct health aspects to build a genuinely personalized profile — not a generic archetype.",
+                title: "Your Profile, Not a Template",
+                body: `Our ${QUIZ_QUESTION_COUNT}-question quiz builds a genuinely personalized match to your goals, budget, and state — not a generic archetype.`,
               },
             ].map(({ icon: Icon, title, body }) => (
               <div key={title} className="bg-white rounded-2xl p-6 border border-border/60">

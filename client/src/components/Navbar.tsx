@@ -3,9 +3,10 @@ import { Link, useLocation } from "wouter";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { Menu, X, Search } from "lucide-react";
 
+// Library/blog/stacks/guides are demoted under a single "Learn" entry (→ /learn hub).
 const NAV_LINKS = [
   { href: "/quiz/flow", label: "Quiz" },
-  { href: "/results", label: "Results" },
+  { href: "/learn", label: "Learn" },
   { href: "/about", label: "About" },
 ];
 

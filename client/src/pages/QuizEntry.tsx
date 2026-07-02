@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Ban, Clock, ShieldCheck, Zap } from "lucide-react";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { QUIZ_QUESTIONS, peptideProfiles } from "../../../shared/scoring";
+import { QUIZ_QUESTION_COUNT, QUIZ_MINUTES } from "@shared/quizConfig";
 import { preloadQuizCompletionExperience, preloadQuizFlow } from "@/lib/preloadQuiz";
 
 const STEPS = [
@@ -81,7 +82,7 @@ export default function QuizEntry() {
               lineHeight: 1.6,
             }}
           >
-            22 questions. A clinical-grade intake that maps your body to GLP-1 therapy — and connects you to vetted licensed providers.
+            {QUIZ_QUESTION_COUNT} questions. A clinical-grade intake that maps your body to GLP-1 therapy — and connects you to vetted licensed providers.
           </p>
 
           {/* Steps */}
@@ -129,7 +130,7 @@ export default function QuizEntry() {
           <div className="flex flex-wrap items-center justify-center gap-4 mt-6 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
             <div className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5" />
-              Takes about 4 minutes
+              Takes about {QUIZ_MINUTES} minutes
             </div>
             <div className="flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5" />

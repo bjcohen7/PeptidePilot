@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import { affiliateClicks, clickEvents, pageVisits, leads, visitorSessions } from "../../drizzle/schema";
+import { affiliateClicks, clickEvents, pageVisits, leads, visitorSessions, providerClickLogs } from "../../drizzle/schema";
 import { QUIZ_QUESTIONS, calculateAspectScores } from "../../shared/scoring";
 import { getDb } from "../db";
 import { adminProcedure, publicProcedure, router } from "../_core/trpc";
@@ -69,6 +69,21 @@ function normalizePath(path: string) {
   return path.startsWith("/") ? path : `/${path}`;
 }
 
+const LIBRARY_PREFIXES = ["/peptides", "/goals", "/compare", "/stacks", "/guides", "/for", "/reviews", "/blog", "/learn"];
+
+/**
+ * Classify the surface a session landed on so the dashboard can compare
+ * bridge-entry vs direct-entry vs library-entry lead rates.
+ * 'bridge' = the /match paid-traffic landing page (leg-5); 'library' = pSEO
+ * content; 'funnel' = homepage/quiz/results/providers.
+ */
+function classifySurface(path: string): "funnel" | "library" | "bridge" {
+  const p = normalizePath(path).toLowerCase();
+  if (p === "/match" || p.startsWith("/match/") || p.startsWith("/peptides-for-weight-loss")) return "bridge";
+  if (LIBRARY_PREFIXES.some((prefix) => p === prefix || p.startsWith(prefix + "/"))) return "library";
+  return "funnel";
+}
+
 export async function startVisitorSession(input: SessionStartPayload) {
   const db = await getDb();
   if (!db) return;
@@ -101,6 +116,7 @@ export async function startVisitorSession(input: SessionStartPayload) {
     utmContent: input.utmContent ?? null,
     utmTerm: input.utmTerm ?? null,
     userAgent: input.userAgent ?? null,
+    sourceSurface: classifySurface(input.landingPath),
   });
 }
 
@@ -523,6 +539,7 @@ export const analyticsRouter = router({
           avgEngagementSeconds: 0,
           topReferrers: [],
           totalClicks: 0,
+          clickBreakdown: { glp1Provider: 0, peptideVendor: 0, other: 0 },
         };
       }
 
@@ -566,6 +583,31 @@ export const analyticsRouter = router({
         .from(pageVisits)
         .where(and(eq(pageVisits.path, "/quiz/flow"), ...tc(pageVisits.createdAt)));
 
+      // GLP-1-vs-peptide click split so the dashboard separates monetizable
+      // GLP-1 provider clicks from research-peptide vendor noise.
+      const affiliateByType = await db
+        .select({
+          clickType: sql<string>`coalesce(${affiliateClicks.clickType}, 'glp1_provider')`,
+          count: sql<number>`count(*)`,
+        })
+        .from(affiliateClicks)
+        .where(and(...tc(affiliateClicks.clickedAt)))
+        .groupBy(sql`1`);
+
+      const [providerLogCount] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(providerClickLogs)
+        .where(and(...tc(providerClickLogs.createdAt)));
+
+      const byType = new Map<string, number>();
+      for (const row of affiliateByType) byType.set(String(row.clickType), Number(row.count ?? 0));
+      const clickBreakdown = {
+        // provider_click_logs are all monetizable GLP-1 provider clicks (/go/ redirects)
+        glp1Provider: (byType.get("glp1_provider") ?? 0) + Number(providerLogCount?.count ?? 0),
+        peptideVendor: byType.get("peptide_vendor") ?? 0,
+        other: byType.get("other") ?? 0,
+      };
+
       const referrerRows = await db
         .select({
           referrer: visitorSessions.referrer,
@@ -594,6 +636,7 @@ export const analyticsRouter = router({
         totalAffiliateClicks: Number(affiliateClickStats?.totalAffiliateClicks ?? 0),
         leadsWithAffiliateClicks: Number(affiliateClickStats?.leadsWithAffiliateClicks ?? 0),
         totalClicks: Number(clickStats?.totalClicks ?? 0),
+        clickBreakdown,
         quizCompletionRate: totalSessions ? Math.round((completedSessions / totalSessions) * 100) : 0,
         avgEngagementSeconds: totalSessions ? Math.round(totalDurationMs / totalSessions / 1000) : 0,
         topReferrers: referrerRows.map((row) => ({

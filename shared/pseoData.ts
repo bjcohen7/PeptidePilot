@@ -47,6 +47,8 @@ export interface PeptidePageData {
   stackPartners: string[];        // slugs
   vendors: Array<{ name: string; url: string }>;
   faqItems: Array<{ q: string; a: string }>;
+  /** Per-page GLP-1 topicality override. Optional — the isGlp1Topical() classifier supplies the default when unset. */
+  glp1Topical?: boolean;
 }
 
 export const peptidePages: PeptidePageData[] = [
@@ -1607,6 +1609,8 @@ export interface GoalPageData {
   relatedStacks: string[];
   relatedGoals: string[];
   faqItems: Array<{ q: string; a: string }>;
+  /** Per-page GLP-1 topicality override. Optional — the isGlp1Topical() classifier supplies the default when unset. */
+  glp1Topical?: boolean;
 }
 
 export const goalPages: GoalPageData[] = [
@@ -2006,6 +2010,8 @@ export interface ComparisonPageData {
   considerBothIf: string | undefined;
   relatedComparisons: string[];
   faqItems: Array<{ q: string; a: string }>;
+  /** Per-page GLP-1 topicality override. Optional — the isGlp1Topical() classifier supplies the default when unset. */
+  glp1Topical?: boolean;
 }
 
 export const comparisonPages: ComparisonPageData[] = [
@@ -3798,6 +3804,8 @@ export interface StackPageData {
   evidenceBase: string;
   costEstimate: string;
   faqItems: Array<{ q: string; a: string }>;
+  /** Per-page GLP-1 topicality override. Optional — the isGlp1Topical() classifier supplies the default when unset. */
+  glp1Topical?: boolean;
 }
 
 export const stackPages: StackPageData[] = [
@@ -4046,6 +4054,8 @@ export interface GuidePageData {
   faqItems: Array<{ q: string; a: string }>;
   relatedGuides: string[];
   relatedPeptides: string[];
+  /** Per-page GLP-1 topicality override. Optional — the isGlp1Topical() classifier supplies the default when unset. */
+  glp1Topical?: boolean;
 }
 
 export const guidePages: GuidePageData[] = [
@@ -7064,6 +7074,8 @@ export interface ForConditionPageData {
   importantCaveats: string;
   faqItems: Array<{ q: string; a: string }>;
    relatedConditions: string[];
+  /** Per-page GLP-1 topicality override. Optional — the isGlp1Topical() classifier supplies the default when unset. */
+  glp1Topical?: boolean;
 }
 export const forConditionPages: ForConditionPageData[] = [
   {
@@ -8869,6 +8881,8 @@ export interface ReviewPageData {
   cycleLength?: string;
   stacksWith?: string[];
   faqItems?: Array<{ q: string; a: string }>;
+  /** Per-page GLP-1 topicality override. Optional — the isGlp1Topical() classifier supplies the default when unset. */
+  glp1Topical?: boolean;
 }
 export const reviewPages: ReviewPageData[] = [
   {

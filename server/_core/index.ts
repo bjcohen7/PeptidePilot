@@ -257,6 +257,9 @@ async function startServer() {
   app.get("/go/:provider/:publicId", async (req, res) => {
     const { provider, publicId } = req.params;
     const position = (req.query.position as string) || "hero";
+    // /go/ always redirects to a GLP-1 provider; surface says where the click
+    // came from (results page = 'funnel', bridge page = 'bridge'). Default funnel.
+    const surface = (req.query.surface as string) || "funnel";
     if (!provider || !publicId) {
       res.status(400).send("Missing provider or publicId");
       return;
@@ -282,13 +285,15 @@ async function startServer() {
           const subid = `${publicId}-${provider}`;
           const url = p.affiliateUrlTemplate.replace(/\{subid\}/g, subid);
 
-          // Log the click
+          // Log the click — tagged as a monetizable GLP-1 provider click.
           await db.insert(providerClickLogs).values({
             leadId: lead?.id ?? null,
             publicId,
             providerSlug: provider,
             position,
             experimentVariant: lead?.experimentVariant ?? null,
+            sourceSurface: surface,
+            clickType: "glp1_provider",
           });
 
           res.redirect(302, url);

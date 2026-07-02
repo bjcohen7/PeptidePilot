@@ -784,6 +784,10 @@ export const quizRouter = router({
         vendor: z.string(),
         experimentId: z.number().optional(),
         variantId: z.number().optional(),
+        // Where the click happened and what kind, so the dashboard can separate
+        // monetizable GLP-1 provider clicks from research-peptide vendor noise.
+        sourceSurface: z.enum(["funnel", "library", "bridge"]).optional(),
+        clickType: z.enum(["glp1_provider", "peptide_vendor", "other"]).optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -794,6 +798,9 @@ export const quizRouter = router({
           leadId: input.leadId,
           peptideId: input.peptideId,
           vendor: input.vendor,
+          // Default to the monetizable funnel case; callers on library surfaces override.
+          sourceSurface: input.sourceSurface ?? "funnel",
+          clickType: input.clickType ?? "glp1_provider",
         };
         if (input.experimentId !== undefined) values.experimentId = input.experimentId;
         if (input.variantId !== undefined) values.variantId = input.variantId;

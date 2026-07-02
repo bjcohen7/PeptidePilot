@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { getPeptideBySlug, peptidePages } from "../../../../shared/pseoData";
+import { Glp1ContentCta, isGlp1Topical } from "@/components/Glp1ContentCta";
+import { QUIZ_MINUTES } from "@shared/quizConfig";
 
 const EVIDENCE_COLOR: Record<string, string> = {
   "Strong Human Clinical": "bg-emerald-100 text-emerald-800",
@@ -22,37 +24,6 @@ const EVIDENCE_COLOR: Record<string, string> = {
   "Moderate Preclinical / Emerging Human": "bg-amber-100 text-amber-800",
   "Preclinical Only": "bg-gray-100 text-gray-700",
 };
-
-function QuizCTA({ peptideName }: { peptideName: string }) {
-  return (
-    <div className="rounded-2xl bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-mid)] text-white p-8 my-10">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-widest text-[var(--brand-teal-light)] mb-2">
-            Free Personalized Analysis
-          </p>
-          <h3 className="text-2xl font-bold mb-2">
-            Is {peptideName} right for your biology?
-          </h3>
-          <p className="text-white/70 max-w-md">
-            Take the 5-minute PeptidePilot quiz to get a personalized peptide
-            match based on your goals, body, and lifestyle. Independent and
-            vendor-neutral.
-          </p>
-        </div>
-        <Link href="/quiz">
-          <Button
-            size="lg"
-            className="bg-[var(--brand-teal)] hover:bg-[var(--brand-teal-light)] text-white font-semibold whitespace-nowrap shrink-0"
-          >
-            Take the 5-Minute Quiz
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
-      </div>
-    </div>
-  );
-}
 
 function Disclaimer() {
   return (
@@ -107,6 +78,13 @@ export default function PeptideProfile({ params }: { params: { slug: string } })
       </div>
     );
   }
+
+  const topical = isGlp1Topical({
+    glp1Topical: peptide.glp1Topical,
+    categories: peptide.categories,
+    primaryGoals: peptide.primaryGoals,
+    peptideSlugs: [peptide.slug],
+  });
 
   return (
     <>
@@ -288,7 +266,11 @@ export default function PeptideProfile({ params }: { params: { slug: string } })
               )}
             </section>
 
-            <QuizCTA peptideName={peptide.name} />
+            {topical ? (
+              <Glp1ContentCta topical placement="inline" />
+            ) : (
+              <Glp1ContentCta topical={false} placement="footer" />
+            )}
 
             {/* Safety */}
             <section>
@@ -350,8 +332,8 @@ export default function PeptideProfile({ params }: { params: { slug: string } })
                 Is {peptide.name} right for you?
               </h3>
               <p className="text-white/70 text-sm mb-4">
-                Take our 5-minute quiz for a personalized, vendor-neutral
-                recommendation.
+                Take our {QUIZ_MINUTES}-minute quiz for a personalized,
+                vendor-neutral recommendation.
               </p>
               <Link href="/quiz">
                 <Button className="w-full bg-[var(--brand-teal)] hover:bg-[var(--brand-teal-light)] text-white">
@@ -461,6 +443,8 @@ export default function PeptideProfile({ params }: { params: { slug: string } })
               ))}
           </div>
         </section>
+
+        {topical && <Glp1ContentCta topical placement="end" />}
       </div>
     </>
   );
