@@ -295,26 +295,31 @@ async function startServer() {
       res.status(400).json({ error: "invalid_funnel_event" });
     }
   });
-  // Diagnostic endpoints removed before production ship.
-
-  // DEBUG: inspect req.body and raw stream for tRPC body parsing diagnosis
-  app.post("/api/debug-trpc-body", async (req, res) => {
-    const chunks: Buffer[] = [];
-    req.on("data", (c) => chunks.push(c));
-    req.on("end", () => {
-      const rawBody = Buffer.concat(chunks).toString("utf-8");
+  // TEMP: funnel gap diagnostic
+  app.get("/api/diag/funnel-gap", async (req, res) => {
+    try {
+      const db = await getDb();
+      if (!db) { res.status(500).json({ error: "no db" }); return; }
+      const result = await db.execute(sql\`
+        SELECT
+          SUM(CASE WHEN label = 'ProcessingStarted' THEN 1 ELSE 0 END) AS started,
+          SUM(CASE WHEN label = 'ProcessingComplete' THEN 1 ELSE 0 END) AS completed
+        FROM clickEvents
+        WHERE eventType = 'funnel'
+          AND createdAt >= NOW() - INTERVAL 30 DAY
+      \`);
+      const [row] = Array.isArray(result) ? result : [result[0] || {}];
+      const started = Number(row?.started ?? 0);
+      const completed = Number(row?.completed ?? 0);
       res.json({
-        hasBodyProp: "body" in req,
-        bodyValue: (req as any).body,
-        bodyType: typeof (req as any).body,
-        bodyIsUndefined: (req as any).body === void 0,
-        rawBodyLength: rawBody.length,
-        rawBodyPreview: rawBody.slice(0, 200),
-        contentType: req.headers["content-type"],
+        last30Days: { started, completed, gap: started - completed },
+        raw: row,
       });
-    });
-    req.on("error", () => res.status(500).json({ error: "stream error" }));
+    } catch (e) {
+      res.status(500).json({ error: String(e) });
+    }
   });
+
 
   // TEMP: test quiz submission (bypasses tRPC v11 POST body parsing conflict)
   app.post("/api/test-submit-quiz", express.json(), async (req, res) => {
