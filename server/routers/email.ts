@@ -24,10 +24,10 @@ export const emailRouter = router({
       const leadId = crypto.randomUUID();
       const publicId = "test-" + Date.now();
 
-      // Insert test lead — use minimal columns that exist
+      // Insert test lead — match exact columns from the leads table
       await db.execute(sql.raw(`
-        INSERT INTO leads (id, publicId, email, createdAt, updatedAt)
-        VALUES ('${leadId}', '${publicId}', '${input.email}', NOW(), NOW())
+        INSERT INTO leads (id, publicId, email, ageRange, primaryGoal, budget, topPeptideMatch, tier, consentGiven, consentTimestamp, ipAddress, rawQuizData, source)
+        VALUES ('${leadId}', '${publicId}', '${input.email}', '25-34', 'general', 'standard', 'gala', 1, TRUE, NOW(), '127.0.0.1', '[]', 'email_test')
       `));
       console.log(`[TestSend] Created test lead ${leadId} (${publicId}) → ${input.email}`);
 
