@@ -315,6 +315,19 @@ async function startServer() {
       res.json({ error: String(e) });
     }
   });
+  app.get("/api/diag/click-logs", async (_req, res) => {
+    try {
+      const db = await getDb();
+      if (!db) { res.json({ error: "no db" }); return; }
+      const [rows] = await db.execute(sql`
+        SELECT id, public_id, provider_slug, position, experiment_variant, created_at
+        FROM provider_click_logs ORDER BY id DESC LIMIT 5
+      `);
+      res.json({ rows });
+    } catch (e) {
+      res.json({ error: String(e) });
+    }
+  });
   app.get("/api/health", (_req, res) => {
     res.json({
       status: "ok",
