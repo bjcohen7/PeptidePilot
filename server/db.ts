@@ -361,7 +361,9 @@ export async function ensureAffiliateWorkspaceSchema() {
         await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `publicId` varchar(36) NOT NULL"));
       } else {
         // Widen publicId column if too short (nanoid is 21 chars)
-        try { await db.execute(sql.raw("ALTER TABLE `leads` MODIFY COLUMN `publicId` varchar(36) NOT NULL")); } catch {}
+        try { await db.execute(sql.raw("ALTER TABLE `leads` MODIFY COLUMN `publicId` varchar(36)")); } catch (e: any) {
+          console.log("[DB] MODIFY COLUMN publicId failed:", e?.sqlMessage || e);
+        }
       }
 
       if (!(await hasColumn(db, "leads", "results"))) {
