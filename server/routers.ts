@@ -13,6 +13,7 @@ import { quizRouter } from "./routers/quiz";
 import { experimentsRouter } from "./routers/experiments";
 import { providersRouter } from "./routers/providers";
 import { emailRouter } from "./routers/email";
+import { revenueRouter } from "./routers/revenue";
 import * as db from "./db";
 
 const buildLocalAdminOpenId = (email: string) =>
@@ -28,6 +29,7 @@ export const appRouter = router({
   experiments: experimentsRouter,
   providers: providersRouter,
   email: emailRouter,
+  revenue: revenueRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     localAdminLogin: publicProcedure

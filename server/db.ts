@@ -407,6 +407,31 @@ export async function ensureAffiliateWorkspaceSchema() {
       await addColumnIfMissing(db, "click_events", "click_type", "`click_type` varchar(64) DEFAULT NULL");
       await addColumnIfMissing(db, "visitor_sessions", "source_surface", "`source_surface` varchar(32) DEFAULT NULL");
 
+      // Per-provider postback config (leg-6). Networks name fields differently.
+      await addColumnIfMissing(db, "providers", "postback_param_map", "`postback_param_map` json");
+      await addColumnIfMissing(db, "providers", "cookie_window_days", "`cookie_window_days` int");
+
+      // Conversions table (leg-6) — affiliate revenue joined back via subid.
+      // Explicit utf8mb4 / utf8mb4_0900_ai_ci to match `leads` (AGENTS.md).
+      // The (subid, occurred_at) unique key makes postbacks idempotent.
+      await db.execute(sql.raw(
+        "CREATE TABLE IF NOT EXISTS `conversions` (" +
+        "`id` int AUTO_INCREMENT NOT NULL, " +
+        "`subid` varchar(128) NOT NULL, " +
+        "`lead_id` varchar(36), " +
+        "`provider_slug` varchar(64) NOT NULL, " +
+        "`amount_cents` int, " +
+        "`occurred_at` timestamp NOT NULL, " +
+        "`source` enum('postback','manual') NOT NULL, " +
+        "`raw_payload` json, " +
+        "`created_at` timestamp NOT NULL DEFAULT (now()), " +
+        "CONSTRAINT `conversions_id` PRIMARY KEY(`id`), " +
+        "UNIQUE KEY `uq_conv_subid_occurred` (`subid`, `occurred_at`), " +
+        "KEY `ix_conv_provider` (`provider_slug`), " +
+        "KEY `ix_conv_lead` (`lead_id`)" +
+        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci"
+      ));
+
       // Fix gala compliance note (remove price verification flag — customer-facing)
       try {
         await db.execute(sql.raw("UPDATE `providers` SET `compliance_note` = 'Compounded medications are not FDA-approved finished drug products.' WHERE `slug` = 'gala' AND `compliance_note` LIKE '%PRICE UNVERIFIED%'"));

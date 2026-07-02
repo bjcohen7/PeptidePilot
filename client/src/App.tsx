@@ -62,6 +62,7 @@ const SessionDetail = lazy(() => import("./pages/admin/SessionDetail"));
 const ExperimentsAdmin = lazy(() => import("./pages/admin/Experiments"));
 const LeakAudit = lazy(() => import("./pages/admin/LeakAudit"));
 const EmailMetrics = lazy(() => import("./pages/admin/EmailMetrics"));
+const RevenueOverview = lazy(() => import("./pages/admin/RevenueOverview"));
 
 // Pages that should NOT show the standard navbar/footer
 const BARE_ROUTES = ["/quiz", "/quiz/flow", "/processing", "/results"];
@@ -450,6 +451,14 @@ function Router() {
         <DashboardLayout>
           <Suspense fallback={<RouteFallback />}>
             <EmailMetrics />
+          </Suspense>
+        </DashboardLayout>
+      </Route>
+
+      <Route path="/admin/revenue">
+        <DashboardLayout>
+          <Suspense fallback={<RouteFallback />}>
+            <RevenueOverview />
           </Suspense>
         </DashboardLayout>
       </Route>
