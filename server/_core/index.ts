@@ -295,6 +295,82 @@ async function startServer() {
     }
   });
   // Diagnostic endpoints removed before production ship.
+
+  // TEMP: test quiz submission (bypasses tRPC v11 POST body parsing conflict)
+  app.post("/api/test-submit-quiz", express.json(), async (req, res) => {
+    try {
+      const db = await getDb();
+      if (!db) { res.status(500).json({ error: "no db" }); return; }
+      const { answers } = req.body;
+      if (!Array.isArray(answers) || answers.length === 0) {
+        res.status(400).json({ error: "invalid answers" }); return;
+      }
+
+      const { nanoid } = await import("nanoid");
+      const leadId = nanoid();
+      const publicId = nanoid();
+      const returnedEmail = `anonymous+${leadId}@peptidepilot.local`;
+
+      const matches = calculateMatches(answers);
+      const topMatches = matches.slice(0, 5).map((m) => m.peptide.id);
+      const topPeptideMatch = topMatches[0] ?? "semaglutide";
+      const returningResults = matches.slice(0, 5).map(toReturningMatchSummary);
+      const tier = determineTier(answers as number[]);
+      const ageRange = "not-captured";
+      const primaryGoal = typeof answers[0] === "number" ? String(answers[0]) : "multi";
+      const budget = "not-captured";
+
+      const activeProviders = await db
+        .select()
+        .from(providers)
+        .where(eq(providers.active, true))
+        .orderBy(providers.sortPriority);
+
+      let providerMatchResults = null;
+      let experimentVariant: string | null = null;
+      if (activeProviders.length > 0) {
+        providerMatchResults = matchProviders(answers as number[], activeProviders);
+        const hash = leadId.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+        experimentVariant = hash % 2 === 0 ? "control" : "verdict";
+      }
+
+      await import("../../drizzle/schema").then(async ({ leads }) => {
+        await db.insert(leads).values({
+          id: leadId,
+          publicId,
+          email: returnedEmail,
+          ageRange,
+          primaryGoal,
+          budget,
+          topPeptideMatch,
+          tier,
+          consentGiven: false,
+          consentTimestamp: new Date(),
+          ipAddress: req.ip ?? "unknown",
+          rawQuizData: answers,
+          results: returningResults,
+        });
+        if (providerMatchResults || experimentVariant) {
+          const updateData: Record<string, unknown> = {};
+          if (providerMatchResults) updateData.providerMatches = providerMatchResults;
+          if (experimentVariant) updateData.experimentVariant = experimentVariant;
+          await db.update(leads).set(updateData).where(eq(leads.id, leadId));
+        }
+      });
+
+      res.json({
+        ok: true,
+        leadId,
+        publicId,
+        experimentVariant,
+        providerMatches: providerMatchResults,
+        resultsUrl: `/results/${publicId}`,
+      });
+    } catch (e) {
+      res.status(500).json({ error: String(e) });
+    }
+  });
+
   app.get("/api/health", (_req, res) => {
     res.json({
       status: "ok",
