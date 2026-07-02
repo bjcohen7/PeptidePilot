@@ -83,6 +83,9 @@ export async function ensureEmailSchema() {
       await addLeadColumn("last_email_sent_at", "`last_email_sent_at` TIMESTAMP NULL");
       await addLeadColumn("nudge_sent", "`nudge_sent` BOOLEAN NOT NULL DEFAULT FALSE");
       await addLeadColumn("conversion_at", "`conversion_at` TIMESTAMP NULL");
+      // Tags leads whose rawQuizData is from an older quiz version and can't be
+      // rendered into a match — routes backfill to a retake-framed email variant.
+      await addLeadColumn("quiz_stale", "`quiz_stale` BOOLEAN NOT NULL DEFAULT FALSE");
     })().catch((error) => {
       _emailSchemaBootstrap = null;
       console.error("[EmailSchema] Bootstrap failed:", error);

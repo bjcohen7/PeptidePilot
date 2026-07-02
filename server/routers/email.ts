@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { getEmailMetrics, enqueueBackfillDrip, cancelPendingEmails, suppressLead, cancelSequenceForLead, enqueueEmailSequence } from "../email/queue";
+import { getEmailMetrics, enqueueBackfillDrip, enqueueBackfillCampaign, cancelPendingEmails, suppressLead, cancelSequenceForLead, enqueueEmailSequence } from "../email/queue";
 import { sql } from "drizzle-orm";
 import { getResend, getEmailFrom } from "../email/resend";
 import { getEmailTemplate, isPostConversionTemplate, type EmailPersonalization } from "../email/templates";
@@ -462,7 +462,7 @@ export const emailRouter = router({
       }
 
       const [leadRows] = await db.execute(sql.raw(`
-        SELECT l.id, l.createdAt
+        SELECT l.id, l.createdAt, l.quiz_stale
         FROM leads l
         WHERE l.email NOT LIKE 'anonymous+%'
           AND l.suppressed = FALSE
@@ -473,26 +473,34 @@ export const emailRouter = router({
       `));
 
       const eligibleLeads = (Array.isArray(leadRows) ? (Array.isArray(leadRows[0]) ? leadRows[0] : leadRows) : []) as any[];
+      const staleCount = eligibleLeads.filter((l) => l.quiz_stale === 1 || l.quiz_stale === true).length;
 
       if (input.dryRun) {
         return {
           eligibleCount: eligibleLeads.length,
+          staleCount,
           dryRun: true,
-          message: `Found ${eligibleLeads.length} eligible leads in ${input.segment} segment. Set dryRun=false to enqueue.`,
+          message: `Found ${eligibleLeads.length} eligible leads in ${input.segment} segment (${staleCount} stale → retake email). Set dryRun=false to enqueue.`,
         };
       }
 
       let totalQueued = 0;
       for (const lead of eligibleLeads) {
-        const count = await enqueueBackfillDrip(lead.id, new Date(lead.createdAt), 3);
+        const isStale = lead.quiz_stale === 1 || lead.quiz_stale === true;
+        // Older-quiz leads can't be shown a match — send the retake-framed variant
+        // (backfill_b) instead of the normal "here are your results" drip.
+        const count = isStale
+          ? await enqueueBackfillCampaign(lead.id, "backfill_b", new Date(lead.createdAt))
+          : await enqueueBackfillDrip(lead.id, new Date(lead.createdAt), 3);
         totalQueued += count;
       }
 
       return {
         eligibleCount: eligibleLeads.length,
+        staleCount,
         totalQueued,
         dryRun: false,
-        message: `Enqueued ${totalQueued} emails across ${eligibleLeads.length} leads.`,
+        message: `Enqueued ${totalQueued} emails across ${eligibleLeads.length} leads (${staleCount} routed to retake email).`,
       };
     }),
 
@@ -531,7 +539,7 @@ export const emailRouter = router({
       }
 
       const [rows] = await db.execute(sql.raw(`
-        SELECT l.id, l.publicId, l.email, l.createdAt, l.topPeptideMatch, l.tier,
+        SELECT l.id, l.publicId, l.email, l.createdAt, l.topPeptideMatch, l.tier, l.quiz_stale,
           (SELECT COUNT(*) FROM email_queue eq WHERE eq.lead_id = l.id) as queueCount
         FROM leads l
         WHERE l.email NOT LIKE 'anonymous+%'

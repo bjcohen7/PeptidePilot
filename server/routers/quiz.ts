@@ -302,6 +302,9 @@ export const quizRouter = router({
         topPeptideMatch: lead.topPeptideMatch,
         tier: lead.tier,
         results: results ?? [],
+        // False when we have neither stored results nor a rawQuizData vector we
+        // can recompute (older quiz versions). Drives the retake view — never an error.
+        renderable: (results ?? []).length > 0,
         providerMatches: providerMatchResults ?? [],
         providerDetails: providerDetails ?? [],
         experimentVariant: lead.experimentVariant ?? null,

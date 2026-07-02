@@ -139,6 +139,12 @@ export default function ResultsByPublicId() {
     );
   }
 
+  // Valid lead, but their answers are from an older quiz version we can no longer
+  // render into a match. Never show an error — invite a quick retake.
+  if (data.renderable === false || !data.results || data.results.length === 0) {
+    return <RetakeView onRetake={handleRetake} />;
+  }
+
   const hasRealEmail = data.hasRealEmail;
   const showGate = !hasRealEmail && !emailAttached;
 
@@ -178,13 +184,27 @@ export default function ResultsByPublicId() {
     );
   }
 
+  // Reachable only for a lead that has results but no gate/verdict/display match;
+  // treat like an older-quiz lead and invite a retake rather than showing an error.
+  return <RetakeView onRetake={handleRetake} />;
+}
+
+function RetakeView({ onRetake }: { onRetake: () => void }) {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="text-center space-y-4">
-        <p className="text-sm text-muted-foreground">
-          Something went wrong loading your results.
+      <div className="text-center space-y-5 max-w-sm">
+        <h1 className="text-xl font-semibold text-foreground">Let&apos;s refresh your match</h1>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Your answers are from an older version of our quiz. Retake it in about 4 minutes
+          and we&apos;ll give you an updated, personalized provider match.
         </p>
-        <EmailRecoveryForm publicId={publicId} />
+        <button
+          type="button"
+          onClick={onRetake}
+          className="w-full rounded-xl h-12 font-semibold text-base text-white bg-accent hover:opacity-90 transition-all"
+        >
+          Retake the quiz &rarr;
+        </button>
       </div>
     </div>
   );
