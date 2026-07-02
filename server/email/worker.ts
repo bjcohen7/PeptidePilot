@@ -134,8 +134,16 @@ async function processEmailBatch() {
     // Check nudge triggers (every tick)
     await checkNudgeTriggers(db, resend);
 
-  } catch (error) {
-    console.error("[EmailCron] Batch processing error:", error);
+  } catch (error: any) {
+    console.error("[EmailCron] Batch processing error:", error?.message);
+    console.error("[EmailCron] error.code:", error?.code);
+    console.error("[EmailCron] error.errno:", error?.errno);
+    console.error("[EmailCron] error.sqlState:", error?.sqlState);
+    console.error("[EmailCron] error.sqlMessage:", error?.sqlMessage);
+    console.error("[EmailCron] error.cause:", error?.cause?.message);
+    console.error("[EmailCron] error.cause.code:", error?.cause?.code);
+    console.error("[EmailCron] error.cause.sqlMessage:", error?.cause?.sqlMessage);
+    console.error("[EmailCron] error.cause.errno:", error?.cause?.errno);
   }
 }
 

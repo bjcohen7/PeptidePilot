@@ -96,6 +96,56 @@ export const emailRouter = router({
   }),
 
   /**
+   * Admin: Surface the raw MySQL error from the JOIN query.
+   */
+  debugJoin: adminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return { error: "no db" };
+
+    // 1. Minimal JOIN — surface the actual error
+    let joinError: any = null;
+    try {
+      await db.execute(sql.raw(
+        "SELECT eq.id FROM email_queue eq JOIN leads l ON l.id = eq.lead_id LIMIT 1"
+      ));
+    } catch (err: any) {
+      joinError = {
+        message: err?.message,
+        code: err?.code,
+        errno: err?.errno,
+        sqlState: err?.sqlState,
+        sqlMessage: err?.sqlMessage,
+        causeMessage: err?.cause?.message,
+        causeCode: err?.cause?.code,
+        causeSqlMessage: err?.cause?.sqlMessage,
+        causeErrno: err?.cause?.errno,
+      };
+    }
+
+    // 2. SHOW CREATE TABLE email_queue
+    let emailQueueCreate: any = null;
+    try {
+      const [rows] = await db.execute(sql.raw("SHOW CREATE TABLE email_queue"));
+      const arr = Array.isArray(rows) ? (Array.isArray(rows[0]) ? rows[0] : rows) : [];
+      emailQueueCreate = arr[0] || null;
+    } catch (err: any) {
+      emailQueueCreate = { error: err?.message };
+    }
+
+    // 3. SHOW CREATE TABLE leads
+    let leadsCreate: any = null;
+    try {
+      const [rows] = await db.execute(sql.raw("SHOW CREATE TABLE leads"));
+      const arr = Array.isArray(rows) ? (Array.isArray(rows[0]) ? rows[0] : rows) : [];
+      leadsCreate = arr[0] || null;
+    } catch (err: any) {
+      leadsCreate = { error: err?.message };
+    }
+
+    return { joinError, emailQueueCreate, leadsCreate };
+  }),
+
+  /**
    * Admin: Diagnose why cron worker isn't processing.
    */
   diagnose: adminProcedure.query(async () => {
