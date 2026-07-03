@@ -26,9 +26,9 @@ export const emailRouter = router({
 
       // Insert test lead with realistic quiz data so buildPersonalization works
       const providerMatches = JSON.stringify([
-        { slug: "gala", displayName: "Gala Health", fitScore: 0.92, score: 0.92, name: "Gala Health", whyMatch: ["Best price-to-care ratio for your budget", "Available in your state with fast shipping", "Includes unlimited follow-up visits"] },
-        { slug: "sprout", displayName: "Sprout", fitScore: 0.85, score: 0.85, name: "Sprout", whyMatch: ["No long-term contracts", "Free shipping on all orders", "Board-certified providers"] },
-        { slug: "direct_med", displayName: "Direct Meds", fitScore: 0.81, score: 0.81, name: "Direct Meds", whyMatch: ["Board-certified MD oversight", "Competitive pricing", "Fast turnaround"] },
+        { slug: "gala", displayName: "Gala Health", fitScore: 8, score: 8, name: "Gala Health", whyMatch: ["Best price-to-care ratio for your budget", "Available in your state with fast shipping", "Includes unlimited follow-up visits"] },
+        { slug: "sprout", displayName: "Sprout", fitScore: 6, score: 6, name: "Sprout", whyMatch: ["No long-term contracts", "Free shipping on all orders", "Board-certified providers"] },
+        { slug: "direct_med", displayName: "Direct Meds", fitScore: 5, score: 5, name: "Direct Meds", whyMatch: ["Board-certified MD oversight", "Competitive pricing", "Fast turnaround"] },
       ]);
       const rawQuizData = JSON.stringify([0, 1, 2, 1, 0, 2, 1, 0]);
       await db.execute(sql.raw(`
@@ -133,9 +133,9 @@ export const emailRouter = router({
 
       // Use a Drizzle sql tagged template for proper parameterization
       const matches = [
-        { slug: "gala", displayName: "Gala Health", fitScore: 0.92, score: 0.92, name: "Gala Health", whyMatch: ["Best price-to-care ratio for your budget", "Available in your state with fast shipping", "Includes unlimited follow-up visits"] },
-        { slug: "sprout", displayName: "Sprout", fitScore: 0.85, score: 0.85, name: "Sprout", whyMatch: ["No long-term contracts", "Free shipping on all orders", "Board-certified providers"] },
-        { slug: "direct_med", displayName: "Direct Meds", fitScore: 0.81, score: 0.81, name: "Direct Meds", whyMatch: ["Board-certified MD oversight", "Competitive pricing", "Fast turnaround"] },
+        { slug: "gala", displayName: "Gala Health", fitScore: 8, score: 8, name: "Gala Health", whyMatch: ["Best price-to-care ratio for your budget", "Available in your state with fast shipping", "Includes unlimited follow-up visits"] },
+        { slug: "sprout", displayName: "Sprout", fitScore: 6, score: 6, name: "Sprout", whyMatch: ["No long-term contracts", "Free shipping on all orders", "Board-certified providers"] },
+        { slug: "direct_med", displayName: "Direct Meds", fitScore: 5, score: 5, name: "Direct Meds", whyMatch: ["Board-certified MD oversight", "Competitive pricing", "Fast turnaround"] },
       ];
       const matchesJson = JSON.stringify(matches).replace(/'/g, "\\'");
 

@@ -5,21 +5,35 @@
 // fitScore/5.
 //
 // providerMatching.ts scores fitScore as a points sum in [0, MAX_FIT_SCORE]
-// (budget +3, insurance +2, weight-loss +2, meds-both +1). Legacy/test data
-// stored fitScore as a 0-1 fraction. Both normalize to a 0-100 integer %.
-// Returns null when the input can't produce a sane % so callers DROP the clause
-// — no surface may ever render a percentage above 100 or below 1.
+// (budget +3, insurance +2, weight-loss +2, meds-both +1). This is the ONLY
+// scale — there is no legacy 0–1 fraction branch: a value of exactly 1 is a
+// (worst) points value → 13%, not 100%. (The only 0.92 test rows in prod were
+// normalized to points.)
 export const MAX_FIT_SCORE = 8;
 
+// Business rule: never volunteer a weak match number in a persuasion context.
+// Below this, drop the % entirely (don't inflate, don't floor — just omit).
+export const MIN_DISPLAY_PERCENT = 60;
+
+/** Normalize a raw fitScore (points, [0,8]) to a (0,100] integer %, or null. */
 export function matchPercentFromFitScore(raw: unknown): number | null {
   const n = typeof raw === "number" ? raw : Number(raw);
   if (!Number.isFinite(n) || n <= 0) return null;
-  const pct = n <= 1 ? Math.round(n * 100) : Math.round((n / MAX_FIT_SCORE) * 100);
+  const pct = Math.round((n / MAX_FIT_SCORE) * 100);
   if (pct < 1 || pct > 100) return null; // hard sanity clamp: (0, 100] only
   return pct;
 }
 
-/** True only when v is a real percentage in (0, 100] — the template drop rule. */
+/** Range validity only — a real % in (0, 100]. */
 export function isValidMatchPercent(v: unknown): v is number {
   return typeof v === "number" && Number.isFinite(v) && v > 0 && v <= 100;
+}
+
+/**
+ * Display gate for the compatibility clause / % subject / verdict badge:
+ * a valid % that is also persuasive (>= MIN_DISPLAY_PERCENT). Below the floor,
+ * callers drop the clause via the existing mechanism.
+ */
+export function shouldDisplayMatchPercent(v: unknown): v is number {
+  return isValidMatchPercent(v) && (v as number) >= MIN_DISPLAY_PERCENT;
 }

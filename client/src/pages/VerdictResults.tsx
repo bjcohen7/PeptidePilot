@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { matchPercentFromFitScore } from "@shared/matchDisplay";
+import { matchPercentFromFitScore, shouldDisplayMatchPercent } from "@shared/matchDisplay";
 
 type ProviderDetail = {
   slug: string;
@@ -109,7 +109,7 @@ export default function VerdictResults({
               >
                 {heroDetail.displayName}
               </h2>
-              {matchPercentFromFitScore(heroMatch.fitScore) != null && (
+              {shouldDisplayMatchPercent(matchPercentFromFitScore(heroMatch.fitScore)) && (
                 <span
                   className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wider uppercase"
                   style={{

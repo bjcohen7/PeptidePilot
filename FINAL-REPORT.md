@@ -139,3 +139,28 @@ reads); `answerEcho` is empty-in-email by design (benign absence).
 **Deferred/notes:** `answerEcho` still empty in emails (pre-existing TODO, unrelated). Test-data
 generators in `server/routers/email.ts` still use 0–1 fractions — harmless (the deriver normalizes
 them), left as-is to avoid churn.
+
+---
+
+## Hotfix review round 2 (Fable) — closures
+
+**1. Deriver ambiguity fixed.** The `<=1` legacy-fraction branch mapped a valid points value of `1`
+(worst match) to 100%. Prod audit: only **2** non-integer fitScores existed (both cohen test leads,
+0.92); **zero real leads**. So the fraction branch was **deleted entirely** — `matchPercentFromFitScore`
+is now points-only (`1 → 13%`, `8 → 100%`). The 2 test rows were normalized to points (8/6/5) and the
+test-data generators in `server/routers/email.ts` now emit points. Tests added for `fitScore=1` (→13)
+and `0.92` (→12, points).
+
+**2. Business display gate (>= 60).** New `shouldDisplayMatchPercent()` (MIN_DISPLAY_PERCENT=60) —
+the compatibility clause, the email0-B `% fit` subject, AND the verdict-page badge render **only** when
+the derived % is ≥ 60. Weak matches (fitScore ≤4 → ≤50%) show no number (never inflate, never floor,
+just omit). Tests at 59/60/61.
+
+**3. Other raw-fitScore render sites:** none beyond email + the VerdictResults badge (both routed
+through the deriver). `admin/SessionDetail.tsx` `{item.score}/{item.max}` renders quiz **dimension**
+scores, not the provider fitScore — left as-is.
+
+**Cloudflare item — RESOLVED/CLOSED.** Cloudflare rules were checked (no HTML cache rule existed), a
+purge was performed, and the earlier stale reads were the reviewer's own fetch cache — not an edge/origin
+problem. The origin header hardening (catch-all HTML `max-age=0, must-revalidate`; assets immutable)
+remains as correct defense-in-depth. No further action.
