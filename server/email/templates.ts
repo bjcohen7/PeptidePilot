@@ -1,6 +1,7 @@
 import { generateUnsubscribeToken } from "./schema";
 import { getPhysicalAddress } from "./resend";
 import { ENV } from "../_core/env";
+import { isValidMatchPercent } from "../../shared/matchDisplay";
 
 /**
  * Full personalization for email templates.
@@ -55,7 +56,10 @@ function renderFooter(p: EmailPersonalization): string {
  * clause (connector + "N% compatibility" + suffix) so zero never renders.
  */
 function compatClause(p: EmailPersonalization, prefix: string, suffix: string): string {
-  return p.matchScore ? `${prefix}${p.matchScore}% compatibility${suffix}` : "";
+  // Hard sanity clamp: only render when match_score is a real % in (0, 100].
+  // 0 / null / NaN / >100 (e.g. a raw fitScore that slipped through) all DROP
+  // the entire clause — no email ever shows "600%" or "0%".
+  return isValidMatchPercent(p.matchScore) ? `${prefix}${p.matchScore}% compatibility${suffix}` : "";
 }
 
 function layout(content: string, p: EmailPersonalization, preheader: string): string {
@@ -118,7 +122,7 @@ export function email0(p: EmailPersonalization, variant: "A" | "B"): { subject: 
   const preheader = "Based on your answers — saved at your personal link.";
   if (variant === "B") {
     return {
-      subject: p.matchScore ? `Your match: ${p.providerName} (${p.matchScore}% fit)` : `Your match: ${p.providerName}`,
+      subject: isValidMatchPercent(p.matchScore) ? `Your match: ${p.providerName} (${p.matchScore}% fit)` : `Your match: ${p.providerName}`,
       preheader,
       html: layout(`
 <p>Your results are in.</p>

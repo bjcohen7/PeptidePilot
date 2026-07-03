@@ -6,6 +6,7 @@ import { generateUnsubscribeToken } from "./schema";
 import { ENV } from "../_core/env";
 import { EMAIL_SEQUENCE, SEND_WINDOW } from "../../shared/emailSequence";
 import { checkStopOnSilence } from "./queue";
+import { matchPercentFromFitScore } from "../../shared/matchDisplay";
 
 const SEND_INTERVAL_MS = 15_000;
 const BATCH_SIZE = 10;
@@ -260,7 +261,9 @@ async function buildPersonalization(
       leadId,
       publicId,
       providerName: topMatch.displayName || provider.displayName || topMatch.name || topPeptideMatch,
-      matchScore: Math.round((topMatch.fitScore || topMatch.score || 0) * 100),
+      // Single source: same display % the results page renders (never fitScore*100,
+      // which produced 300–800% for real leads whose fitScore is a 0–8 points sum).
+      matchScore: matchPercentFromFitScore(topMatch.fitScore ?? topMatch.score) ?? 0,
       // Bare dollar amount only — templates own the "/month" suffix (avoids "$179/mo/month").
       priceFrom: provider.priceFromCents ? `$${Math.round(provider.priceFromCents / 100)}` : "$199",
       shipDays: provider.shipDaysEstimate || 4,
