@@ -98,3 +98,44 @@ txid record with `needs_review=true`. Per-provider field remaps go in `providers
   lead-quality, alerts, manual entry) live; stop-on-conversion wired.
 - **Email engine:** unchanged except the postback → `cancelSequenceForLead` wiring. No sends performed.
 - **Env:** `POSTBACK_SECRET` set in Railway (fail-closed if unset).
+
+---
+
+## HOTFIX (post-merge, 2026-07-03) — match_score display % (commit 0e63be8)
+
+**Severity:** a real new lead's email 0 rendered "600% fit" / "600% compatibility". Live production
+bug affecting the pending drips of many real leads.
+
+**Root cause — two paths, two truths on one field.** `shared/providerMatching.ts` scores `fitScore`
+as a raw points sum in [0, 8] (budget +3, insurance +2, weight-loss +2, meds-both +1). The email path
+(`buildPersonalization`) did `fitScore * 100` → 300–800% for real leads; the results page did
+`fitScore/5` → "8/5". The earlier test sends showed 92% only because the test data stored `fitScore`
+as a 0–1 fraction (0.92), not points.
+
+**Fix:**
+- `shared/matchDisplay.ts` — single source `matchPercentFromFitScore()`: normalizes points [0,8] and
+  legacy 0–1 fractions to a (0,100] integer %, returns `null` otherwise. Used by BOTH
+  `buildPersonalization` (all email paths) and the `VerdictResults` badge.
+- Template hard clamp (`templates.ts`): `compatClause` + email-0-B subject render only when
+  `match_score ∈ (0,100]`; 0 / NaN / null / >100 DROP the clause. No email can ever show 600% or 0%.
+- No data migration — `buildPersonalization` re-derives at send time, so all pending drips for existing
+  real leads render correctly. Pending sends were NOT cancelled (14 leads × 6 drips left intact).
+- `client/src/pages/VerdictResults.tsx` badge changed from `{fitScore}/5` to `{pct}% match`.
+
+**Field audit (only match_score diverged):** price / shipDays / promo / compliance come from the DB
+`providers` table (same as the page); `whyMatch` + names from `provider_matches` (same field the page
+reads); `answerEcho` is empty-in-email by design (benign absence).
+
+**Evidence:**
+- Real prod data render: fitScore 3→38%, 5→63%, 8→100% (were 300/500/800%); forced `matchScore=600` →
+  clause dropped.
+- Live verdict page badge now "92% match" (test lead; real points leads → "100% match" etc.).
+- Tests: `server/matchDisplay.test.ts` (13) — normalization + clamp; 38 total pass. tsc clean; vite +
+  esbuild OK. Deploy 0e63be8 SUCCESS; safety-rail plain curls green (/, /match, /results → 200).
+
+**Files:** new `shared/matchDisplay.ts`, `server/matchDisplay.test.ts`; modified `server/email/worker.ts`,
+`server/email/templates.ts`, `client/src/pages/VerdictResults.tsx`.
+
+**Deferred/notes:** `answerEcho` still empty in emails (pre-existing TODO, unrelated). Test-data
+generators in `server/routers/email.ts` still use 0–1 fractions — harmless (the deriver normalizes
+them), left as-is to avoid churn.
