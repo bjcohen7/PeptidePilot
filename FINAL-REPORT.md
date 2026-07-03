@@ -164,3 +164,8 @@ scores, not the provider fitScore — left as-is.
 purge was performed, and the earlier stale reads were the reviewer's own fetch cache — not an edge/origin
 problem. The origin header hardening (catch-all HTML `max-age=0, must-revalidate`; assets immutable)
 remains as correct defense-in-depth. No further action.
+
+**Blog "5-minute" count debt — CLOSED (standalone commit).** Mechanical replace of the hyphenated
+"5-minute" quiz claim → "4-minute": 163 occurrences in `shared/blog-content.generated.ts` (all quiz
+CTAs) + the About-page CTA (now `{QUIZ_MINUTES}`). Non-quiz time mentions (dosing "45 minutes",
+guide "15 minutes", "3-5 minutes") use spaces and were untouched. Full-route crawl is now count-clean.

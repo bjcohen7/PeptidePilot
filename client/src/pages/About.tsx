@@ -2,7 +2,7 @@ import { CheckCircle2, FlaskConical, ShieldCheck, Users } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
-import { QUIZ_QUESTION_COUNT } from "@shared/quizConfig";
+import { QUIZ_QUESTION_COUNT, QUIZ_MINUTES } from "@shared/quizConfig";
 
 export default function About() {
   return (
@@ -127,7 +127,7 @@ export default function About() {
           <h2 className="text-3xl font-normal mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
             Ready to Find Your Match?
           </h2>
-          <p className="text-white/75 mb-8">Take the free 5-minute quiz and get your personalized peptide profile.</p>
+          <p className="text-white/75 mb-8">Take the free {QUIZ_MINUTES}-minute quiz and get your personalized peptide profile.</p>
           <Link href="/quiz">
             <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold px-8 py-6 h-auto rounded-xl">
               Take the Quiz
