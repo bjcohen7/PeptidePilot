@@ -116,7 +116,7 @@ export const revenueRouter = router({
   /** Alerting: conversions whose subid has no logged click, or whose click→conversion gap exceeds the cookie window. */
   alerts: adminProcedure.query(async () => {
     const db = await getDb();
-    if (!db) return { noClick: [], staleGap: [] };
+    if (!db) return { noClick: [], staleGap: [], shellLeads: [] };
     const noClick = extractRows(await db.execute(sql.raw(`
       SELECT c.id, c.subid, c.provider_slug AS providerSlug, c.occurred_at AS occurredAt,
              c.amount_cents AS amountCents, (c.lead_id IS NOT NULL) AS resolved
@@ -142,7 +142,40 @@ export const revenueRouter = router({
       LIMIT 100
     `))).map((r: any) => ({ id: num(r.id), subid: r.subid, providerSlug: r.providerSlug, gapDays: num(r.gapDays), windowDays: num(r.windowDays) }));
 
-    return { noClick, staleGap };
+    // Lead-capture leak: real, consented leads >1h old where the pipeline never
+    // finished (NULL provider_matches or zero queued emails). The email cron
+    // self-heals these hourly; this surfaces any currently outstanding so the
+    // failure class is visible in the admin, not just the logs.
+    const shellLeads = extractRows(await db.execute(sql.raw(`
+      SELECT l.id, l.email, l.createdAt,
+             (l.provider_matches IS NULL) AS nullMatches,
+             ((SELECT COUNT(*) FROM email_queue q WHERE q.lead_id = l.id) = 0) AS noEmails
+      FROM leads l
+      WHERE l.createdAt <= NOW() - INTERVAL 1 HOUR
+        AND l.createdAt >= NOW() - INTERVAL 30 DAY
+        AND l.consentGiven = 1
+        AND l.email NOT LIKE 'anonymous+%'
+        AND l.email NOT LIKE '%@peptidepilot.local'
+        AND l.email NOT LIKE '%@example.com'
+        AND l.email <> 'test@test.com'
+        AND l.email <> 'cohen.benjacob@gmail.com'
+        AND (l.source IS NULL OR l.source NOT IN ('email_test', 'glp1_offramp'))
+        AND (l.publicId IS NULL OR l.publicId NOT LIKE 'test-%')
+        AND (
+          l.provider_matches IS NULL
+          OR (SELECT COUNT(*) FROM email_queue q WHERE q.lead_id = l.id) = 0
+        )
+      ORDER BY l.createdAt DESC
+      LIMIT 100
+    `))).map((r: any) => ({
+      id: r.id,
+      email: r.email,
+      createdAt: r.createdAt,
+      nullMatches: Boolean(num(r.nullMatches)),
+      noEmails: Boolean(num(r.noEmails)),
+    }));
+
+    return { noClick, staleGap, shellLeads };
   }),
 
   /** Recent conversions (for the admin table; unresolved subids are flagged). */

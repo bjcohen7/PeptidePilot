@@ -67,7 +67,9 @@ async function insertLead(
       ipAddress,
       rawQuizData,
       source,
-      results
+      results,
+      provider_matches,
+      experiment_variant
     ) values (
       ${values.id},
       ${publicId},
@@ -82,7 +84,9 @@ async function insertLead(
       ${values.ipAddress},
       ${JSON.stringify(values.rawQuizData)},
       ${values.source ?? null},
-      ${values.results ? JSON.stringify(values.results) : null}
+      ${values.results ? JSON.stringify(values.results) : null},
+      ${values.providerMatches ? JSON.stringify(values.providerMatches) : null},
+      ${values.experimentVariant ?? null}
     )
   `);
   return true;
@@ -417,6 +421,12 @@ export const quizRouter = router({
 
       if (db) {
         try {
+          // providerMatches + experimentVariant are written atomically with the
+          // lead row. Previously these were a separate best-effort UPDATE that
+          // could silently fail on a transient DB blip, leaving a "shell" lead
+          // (email captured, but NULL provider_matches / no variant / no emails).
+          // See reconcileIncompleteLeads() for the safety net that catches any
+          // that still slip through (e.g. a failed enqueue below).
           await insertLead({
             id: leadId,
             publicId,
@@ -431,22 +441,12 @@ export const quizRouter = router({
             ipAddress,
             rawQuizData: answers,
             results: returningResults,
+            providerMatches: providerMatchResults ?? undefined,
+            experimentVariant: experimentVariant ?? undefined,
           });
         } catch (e) {
           console.error("[submitQuiz] insertLead failed:", e);
           throw e;
-        }
-
-        // Store providerMatches and experimentVariant
-        if (providerMatchResults || experimentVariant) {
-          const updateData: Record<string, unknown> = {};
-          if (providerMatchResults) updateData.providerMatches = providerMatchResults;
-          if (experimentVariant) updateData.experimentVariant = experimentVariant;
-          try {
-            await db.update(leads).set(updateData).where(eq(leads.id, leadId));
-          } catch (e) {
-            console.error("[submitQuiz] Failed to set provider/experiment data:", e);
-          }
         }
 
         // Update sessionId separately

@@ -6,12 +6,23 @@ import { generateUnsubscribeToken } from "./schema";
 import { ENV } from "../_core/env";
 import { EMAIL_SEQUENCE, SEND_WINDOW } from "../../shared/emailSequence";
 import { checkStopOnSilence } from "./queue";
+import { reconcileIncompleteLeads } from "./reconcile";
 import { matchPercentFromFitScore } from "../../shared/matchDisplay";
 
 const SEND_INTERVAL_MS = 15_000;
 const BATCH_SIZE = 10;
+const RECONCILE_INTERVAL_MS = 60 * 60 * 1000; // hourly leak-alarm sweep
 
 let _cronTimer: ReturnType<typeof setInterval> | null = null;
+let _reconcileTimer: ReturnType<typeof setInterval> | null = null;
+
+async function runReconcile() {
+  try {
+    await reconcileIncompleteLeads();
+  } catch (err) {
+    console.error("[LeakAlarm] reconcile sweep crashed:", err);
+  }
+}
 
 export function startEmailCron() {
   if (_cronTimer) return;
@@ -23,6 +34,11 @@ export function startEmailCron() {
   console.log("[EmailCron] Starting email cron worker (every 15s)");
   _cronTimer = setInterval(processEmailBatch, SEND_INTERVAL_MS);
   setTimeout(processEmailBatch, 5_000);
+
+  // Leak-alarm safety net: hourly sweep that detects + self-heals shell leads
+  // (email captured but pipeline incomplete) and loudly logs the failure class.
+  _reconcileTimer = setInterval(runReconcile, RECONCILE_INTERVAL_MS);
+  setTimeout(runReconcile, 90_000);
 }
 
 export function stopEmailCron() {
@@ -30,6 +46,10 @@ export function stopEmailCron() {
     clearInterval(_cronTimer);
     _cronTimer = null;
     console.log("[EmailCron] Stopped email cron worker");
+  }
+  if (_reconcileTimer) {
+    clearInterval(_reconcileTimer);
+    _reconcileTimer = null;
   }
 }
 
