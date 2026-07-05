@@ -243,6 +243,13 @@ toggle, not a webhook bug) — Resend never sends `email.opened`. `email.deliver
 (`delivered_at`; was a no-op), and bounce/complaint events flow (drive suppression + the guard below).
 Action item for Ben: enable Open/Click Tracking in Resend to light up the opened/clicked metrics.
 
+**Click tracking vs. /go/ subid attribution — unaffected.** Resend's click tracking rewrites the email's
+links to route through its own redirect domain before landing on the final URL. This does NOT touch our
+revenue attribution: the `/go/{slug}/{publicId}` subid lives inside our own redirect on peptidepilot.me
+(the email CTA points at `/results/{publicId}`, and the `/go/` subid is formed on the results page at click
+time), so Resend wrapping the outer link never strips or alters the subid. Open/click metrics and subid
+attribution are independent.
+
 **Sequence-priority + cap-exemption guards.** The worker batches in phases: Phase 0 dispatches
 transactional `email_0_instant` + `post_conversion` UNCAPPED (they never count toward the bulk cap);
 Phase A sends the rest of the sequence up to the remaining cap; Phase B sends backfill only from the cap
