@@ -12,6 +12,18 @@ import { enqueueEmailSequence, enqueueBackfillCampaign } from "./queue";
 // so a cron backlog/outage can never blast a stale sequence at old leads.
 const WARM_ENQUEUE_HOURS = 96;
 
+// Circuit breaker: a healthy system produces a trickle of shells (a rare
+// transient enqueue miss). A large batch means something is broken upstream —
+// healing them would auto-send email to many people on a bad assumption. Above
+// this count we heal NONE, fire the alarm, and wait for a human.
+const MAX_HEALS_PER_SWEEP = 10;
+
+// Lead ids are nanoids. They flow into raw-SQL enqueue helpers (queue.ts), so
+// validate the charset before any id is used — defense against a malformed id
+// ever reaching an interpolated query. (Integer validation would be wrong here:
+// ids are strings like "6QsM-lJ-DYZzky39UW37j".)
+const LEAD_ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
+
 // ─────────────────────────────────────────────
 // Lead-capture leak: detect + self-heal + self-announce
 //
@@ -101,18 +113,31 @@ export async function reconcileIncompleteLeads(): Promise<{
   healed: string[];
   cold: string[];
   unscorable: string[];
+  circuitBroken: boolean;
 }> {
   const db = await getDb();
-  if (!db) return { scanned: 0, healed: [], cold: [], unscorable: [] };
+  if (!db) return { scanned: 0, healed: [], cold: [], unscorable: [], circuitBroken: false };
 
   const shells = await findShellLeads();
-  if (shells.length === 0) return { scanned: 0, healed: [], cold: [], unscorable: [] };
+  if (shells.length === 0) return { scanned: 0, healed: [], cold: [], unscorable: [], circuitBroken: false };
 
   // The leak alarm — this MUST be loud. If it fires, a capture path is broken.
   console.error(
     `[LeakAlarm] ${shells.length} shell lead(s) detected ` +
       `(email captured, pipeline incomplete): ${shells.map((s) => s.email).join(", ")}`
   );
+
+  // Circuit breaker — refuse to mass-heal. A spike means an upstream regression;
+  // auto-sending to everyone in it would compound the mistake. Heal nothing and
+  // escalate.
+  if (shells.length > MAX_HEALS_PER_SWEEP) {
+    console.error(
+      `[LeakAlarm] CIRCUIT BREAKER TRIPPED — ${shells.length} shells exceeds the ` +
+        `${MAX_HEALS_PER_SWEEP}/sweep limit. Healing NONE; a human must investigate ` +
+        `the capture pipeline before recovery runs.`
+    );
+    return { scanned: shells.length, healed: [], cold: [], unscorable: [], circuitBroken: true };
+  }
 
   // Active providers, fetched once for the whole sweep.
   const [praw] = await db.execute(sql.raw(
@@ -135,14 +160,18 @@ export async function reconcileIncompleteLeads(): Promise<{
 
   for (const lead of shells) {
     try {
+      // Guard the id before it reaches any raw-SQL enqueue helper downstream.
+      if (!LEAD_ID_RE.test(lead.id)) {
+        console.error(`[LeakAlarm] skipping lead with malformed id ${JSON.stringify(lead.id)} (${lead.email})`);
+        continue;
+      }
+
       // Unscorable answers = an older quiz version's shape. We can't compute a
       // current match, so we don't auto-send. Instead we tag quiz_stale so the
       // lead joins the Segment C backfill cohort (retake / "your answers need a
       // refresh") and stops re-alarming on every sweep.
       if (!lead.scorable) {
-        // quiz_stale is a runtime-added column (not in the drizzle schema), so
-        // write it with raw SQL. lead.id is a server-generated nanoid.
-        await db.execute(sql.raw(`UPDATE leads SET quiz_stale = TRUE WHERE id = '${lead.id}'`));
+        await db.update(leads).set({ quizStale: true }).where(eq(leads.id, lead.id));
         unscorable.push(lead.email);
         console.error(
           `[LeakAlarm] lead ${lead.id} (${lead.email}) has unscorable answers ` +
@@ -197,5 +226,5 @@ export async function reconcileIncompleteLeads(): Promise<{
   console.error(
     `[LeakAlarm] reconcile complete — scanned=${shells.length} warm=${healed.length} cold=${cold.length} unscorable=${unscorable.length}`
   );
-  return { scanned: shells.length, healed, cold, unscorable };
+  return { scanned: shells.length, healed, cold, unscorable, circuitBroken: false };
 }

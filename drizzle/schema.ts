@@ -39,6 +39,7 @@ export const leads = mysqlTable("leads", {
   results: json("results"), // persisted ReturningMatchSummary[]
   providerMatches: json("provider_matches"), // persisted ProviderMatchResult[]
   experimentVariant: varchar("experiment_variant", { length: 16 }), // 'control' | 'verdict'
+  quizStale: boolean("quiz_stale").notNull().default(false), // answers from an older quiz version → retake cohort
 });
 
 export type Lead = typeof leads.$inferSelect;
