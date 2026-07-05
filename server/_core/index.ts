@@ -359,8 +359,11 @@ async function startServer() {
   // Facebook Conversions API — server-side affiliate click tracking
   app.use("/api/capi", express.json({ limit: "50mb" }), capiRouter);
 
-  // Email webhook (Resend) and unsubscribe
-  app.use("/api/email/webhook", express.json({ limit: "1mb" }), emailWebhookRouter);
+  // Email webhook (Resend) and unsubscribe.
+  // Svix signature verification needs the EXACT raw request bytes — parsing with
+  // express.json() first and re-serializing produces different bytes and fails
+  // verification (the old 0-opens bug). Capture the raw Buffer instead.
+  app.use("/api/email/webhook", express.raw({ type: "*/*", limit: "1mb" }), emailWebhookRouter);
   app.use("/api/email/unsubscribe", emailUnsubscribeRouter);
   // Affiliate conversion postbacks (GET or POST; query or form-encoded body).
   app.use("/api/postback", express.urlencoded({ extended: false }), express.json(), postbackRouter);

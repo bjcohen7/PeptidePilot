@@ -153,6 +153,7 @@ export const revenueRouter = router({
       FROM leads l
       WHERE l.createdAt <= NOW() - INTERVAL 1 HOUR
         AND l.createdAt >= NOW() - INTERVAL 30 DAY
+        AND (l.quiz_stale IS NULL OR l.quiz_stale = 0)
         AND l.consentGiven = 1
         AND l.email NOT LIKE 'anonymous+%'
         AND l.email NOT LIKE '%@peptidepilot.local'

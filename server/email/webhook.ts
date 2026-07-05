@@ -30,16 +30,24 @@ webhookRouter.post("/", async (req, res) => {
     return;
   }
 
-  // Re-serialize body for verification (express.json() already parsed it)
-  const body = JSON.stringify(req.body);
+  // The route is mounted with express.raw(), so req.body is the raw Buffer of
+  // the exact bytes Resend signed. Verify against those bytes — NOT a
+  // re-serialized copy, which would never match the signature.
+  const rawBody = Buffer.isBuffer(req.body)
+    ? req.body.toString("utf8")
+    : typeof req.body === "string"
+      ? req.body
+      : JSON.stringify(req.body);
 
   const wh = new Webhook(secret);
+  let event: { type?: string; data?: { email_id?: string } };
   try {
-    wh.verify(body, {
+    // svix's verify() both checks the signature and returns the parsed payload.
+    event = wh.verify(rawBody, {
       "svix-id": svixId,
       "svix-timestamp": svixTimestamp,
       "svix-signature": svixSignature,
-    });
+    }) as { type?: string; data?: { email_id?: string } };
   } catch (err) {
     console.warn("[EmailWebhook] Signature verification failed:", err);
     res.status(401).json({ error: "invalid signature" });
@@ -47,7 +55,7 @@ webhookRouter.post("/", async (req, res) => {
   }
 
   // Signature valid — process event
-  const { type, data } = req.body;
+  const { type, data } = event;
   const resendId = data?.email_id;
 
   if (!type || !resendId) {

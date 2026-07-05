@@ -4,7 +4,13 @@ import { getDb } from "../db";
 import { leads } from "../../drizzle/schema";
 import { matchProviders } from "../../shared/providerMatching";
 import { QUIZ_QUESTION_COUNT } from "../../shared/quizConfig";
-import { enqueueEmailSequence } from "./queue";
+import { enqueueEmailSequence, enqueueBackfillCampaign } from "./queue";
+
+// Only leads captured within this window get the standard "your match is ready"
+// drip. Older (cold) shells are still healed + recovered, but with the gentler
+// backfill_c ("we owe you your results") framing instead of the urgent drip —
+// so a cron backlog/outage can never blast a stale sequence at old leads.
+const WARM_ENQUEUE_HOURS = 96;
 
 // ─────────────────────────────────────────────
 // Lead-capture leak: detect + self-heal + self-announce
@@ -58,6 +64,7 @@ export async function findShellLeads(): Promise<ShellLead[]> {
     FROM leads l
     WHERE l.createdAt <= NOW() - INTERVAL 1 HOUR
       AND l.createdAt >= NOW() - INTERVAL 30 DAY
+      AND (l.quiz_stale IS NULL OR l.quiz_stale = 0)
       AND ${REAL_LEAD_SQL}
       AND (
         l.provider_matches IS NULL
@@ -92,13 +99,14 @@ export async function findShellLeads(): Promise<ShellLead[]> {
 export async function reconcileIncompleteLeads(): Promise<{
   scanned: number;
   healed: string[];
+  cold: string[];
   unscorable: string[];
 }> {
   const db = await getDb();
-  if (!db) return { scanned: 0, healed: [], unscorable: [] };
+  if (!db) return { scanned: 0, healed: [], cold: [], unscorable: [] };
 
   const shells = await findShellLeads();
-  if (shells.length === 0) return { scanned: 0, healed: [], unscorable: [] };
+  if (shells.length === 0) return { scanned: 0, healed: [], cold: [], unscorable: [] };
 
   // The leak alarm — this MUST be loud. If it fires, a capture path is broken.
   console.error(
@@ -122,15 +130,23 @@ export async function reconcileIncompleteLeads(): Promise<{
   }));
 
   const healed: string[] = [];
+  const cold: string[] = [];
   const unscorable: string[] = [];
 
   for (const lead of shells) {
     try {
+      // Unscorable answers = an older quiz version's shape. We can't compute a
+      // current match, so we don't auto-send. Instead we tag quiz_stale so the
+      // lead joins the Segment C backfill cohort (retake / "your answers need a
+      // refresh") and stops re-alarming on every sweep.
       if (!lead.scorable) {
+        // quiz_stale is a runtime-added column (not in the drizzle schema), so
+        // write it with raw SQL. lead.id is a server-generated nanoid.
+        await db.execute(sql.raw(`UPDATE leads SET quiz_stale = TRUE WHERE id = '${lead.id}'`));
         unscorable.push(lead.email);
         console.error(
           `[LeakAlarm] lead ${lead.id} (${lead.email}) has unscorable answers ` +
-            `— needs manual review / retake flow, NOT auto-healed`
+            `(old quiz shape) — tagged quiz_stale for Segment C retake, not auto-sent`
         );
         continue;
       }
@@ -139,7 +155,8 @@ export async function reconcileIncompleteLeads(): Promise<{
         typeof v === "number" ? v : -1
       );
 
-      // 1) Backfill matches + variant + publicId (only what's missing).
+      // 1) Backfill matches + variant + publicId (only what's missing). This is
+      //    always safe — it repairs data, sends nothing.
       if (lead.nullMatches || !lead.publicId) {
         const updateData: Record<string, unknown> = {};
         if (lead.nullMatches) {
@@ -152,20 +169,33 @@ export async function reconcileIncompleteLeads(): Promise<{
         await db.update(leads).set(updateData).where(eq(leads.id, lead.id));
       }
 
-      // 2) (Re)enqueue the drip from email_0, restarting the cadence from now.
+      // 2) Enqueue recovery — warm leads get the standard drip from email_0;
+      //    cold leads get a single gentle backfill_c ("we owe you your results").
       if (lead.noEmails) {
-        await enqueueEmailSequence(lead.id, new Date());
+        const ageHours = (Date.now() - lead.createdAt.getTime()) / 3_600_000;
+        if (ageHours <= WARM_ENQUEUE_HOURS) {
+          await enqueueEmailSequence(lead.id, new Date());
+          healed.push(lead.email);
+          console.error(`[LeakAlarm] self-healed (warm drip) lead ${lead.id} (${lead.email})`);
+        } else {
+          await enqueueBackfillCampaign(lead.id, "backfill_c", lead.createdAt);
+          cold.push(lead.email);
+          console.error(
+            `[LeakAlarm] self-healed (cold, backfill_c) lead ${lead.id} (${lead.email}) — ${Math.round(ageHours / 24)}d old`
+          );
+        }
+      } else {
+        // Matches were missing but the drip already existed — data repaired only.
+        healed.push(lead.email);
+        console.error(`[LeakAlarm] repaired matches (drip already queued) lead ${lead.id} (${lead.email})`);
       }
-
-      healed.push(lead.email);
-      console.error(`[LeakAlarm] self-healed lead ${lead.id} (${lead.email})`);
     } catch (err) {
       console.error(`[LeakAlarm] failed to heal lead ${lead.id} (${lead.email}):`, err);
     }
   }
 
   console.error(
-    `[LeakAlarm] reconcile complete — scanned=${shells.length} healed=${healed.length} unscorable=${unscorable.length}`
+    `[LeakAlarm] reconcile complete — scanned=${shells.length} warm=${healed.length} cold=${cold.length} unscorable=${unscorable.length}`
   );
-  return { scanned: shells.length, healed, unscorable };
+  return { scanned: shells.length, healed, cold, unscorable };
 }
