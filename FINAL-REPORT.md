@@ -233,3 +233,27 @@ revenue+conversions) procedures; `alerts` stays current-state (operational, not 
 (`RevenueOverview.tsx`): chip selector + custom date pickers, headline cards with prior-period delta on
 Today/7d/30d, compact daily-revenue trend strip. Verified live: `today`→3 clicks, `last7`→48,
 `custom Jul 3–4`→22. Email-metrics section (separate `EmailMetrics.tsx` page) noted as a follow-up.
+
+## Webhook proven end-to-end + Segment C backfill launched (2026-07-06, commits `875fa55` + prior)
+
+**Webhook — PROVEN.** After the Svix raw-body fix, prod logs show real Resend `email.delivered` events
+arriving, passing signature verification, and being processed (e.g. for the two live test emails to Ben).
+`opened_at` stays NULL only because **Open/Click Tracking is disabled on the Resend domain** (a dashboard
+toggle, not a webhook bug) — Resend never sends `email.opened`. `email.delivered` is now recorded
+(`delivered_at`; was a no-op), and bounce/complaint events flow (drive suppression + the guard below).
+Action item for Ben: enable Open/Click Tracking in Resend to light up the opened/clicked metrics.
+
+**Sequence-priority + cap-exemption guards.** The worker batches in phases: Phase 0 dispatches
+transactional `email_0_instant` + `post_conversion` UNCAPPED (they never count toward the bulk cap);
+Phase A sends the rest of the sequence up to the remaining cap; Phase B sends backfill only from the cap
+headroom left after reserving every still-pending sequence obligation due today. A backfill row can never
+queue ahead of an email_0.
+
+**Segment C backfill — LAUNCHED.** Prep: 405 pre-feature leads healed with `provider_matches` (no sends),
+33 duplicates marked `excluded_duplicate`, `benjacobcohen00@` added to the internal-email filter, whyMatch
+rewritten to always echo real budget/goal/insurance answers (512 leads re-healed). Enqueued **418 rows
+(377 `backfill_c` + 41 `backfill_stale`), oldest signup Apr 19, oldest-first**. Sends are window-gated
+(9–10:30am ET weekdays) and paced behind the drip by the reserve — so daily backfill volume = whatever the
+cap has left after the sequence. **Auto-pause guard** (`[BackfillGuard]`): backfill halts (drip untouched)
+if bounce >3% or complaint >0.1% over ≥20 dispatched backfill rows. A durable daily cron reports cumulative
+sent/delivered/bounced/complained/opened/clicked.
