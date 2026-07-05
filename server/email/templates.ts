@@ -483,13 +483,17 @@ export function emailBackfillStale(p: EmailPersonalization, variant: "A" | "B"):
   const subject = variant === "B"
     ? "We updated our matching — your answers are from the old version"
     : "Your quiz answers need a refresh";
+  // Stale leads have no current match to show, so the CTA starts a fresh quiz
+  // (not the results page). Plain /quiz — the flow doesn't re-match an existing
+  // lead from a param today.
+  const quizUrl = `${getSiteUrl()}/quiz`;
   return {
     subject,
     preheader,
     html: layout(`
 <p>A while back you took our GLP-1 matching quiz. Since then we've rebuilt how we match people to providers — and your answers are from the older version, so we can't honestly hand you a match without a quick refresh.</p>
 <p>The new quiz takes about 4 minutes, and you'll get a personalized provider match with pricing the moment you finish.</p>
-<p><a href="${p.resultsUrl}" class="cta">Retake the quiz →</a></p>
+<p><a href="${quizUrl}" class="cta">Retake the quiz →</a></p>
 <p>No pressure either way — and the unsubscribe below always works in one click.</p>
 `, p, preheader),
   };

@@ -40,6 +40,7 @@ export const leads = mysqlTable("leads", {
   providerMatches: json("provider_matches"), // persisted ProviderMatchResult[]
   experimentVariant: varchar("experiment_variant", { length: 16 }), // 'control' | 'verdict'
   quizStale: boolean("quiz_stale").notNull().default(false), // answers from an older quiz version → retake cohort
+  excludedDuplicate: boolean("excluded_duplicate").notNull().default(false), // older dupe row for a repeated email → never re-enters a send cohort
 });
 
 export type Lead = typeof leads.$inferSelect;

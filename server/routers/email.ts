@@ -2,6 +2,7 @@ import { z } from "zod";
 import { adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { getEmailMetrics, enqueueBackfillDrip, enqueueBackfillCampaign, cancelPendingEmails, suppressLead, cancelSequenceForLead, enqueueEmailSequence } from "../email/queue";
+import { notInternalEmailSql } from "../lib/internalEmails";
 import { sql } from "drizzle-orm";
 import { getResend, getEmailFrom } from "../email/resend";
 import { getEmailTemplate, isPostConversionTemplate, type EmailPersonalization } from "../email/templates";
@@ -469,10 +470,17 @@ export const emailRouter = router({
         SELECT l.id, l.createdAt, l.quiz_stale
         FROM leads l
         WHERE l.email NOT LIKE 'anonymous+%'
+          AND l.email NOT LIKE '%@example.com'
+          AND l.email NOT LIKE '%@peptidepilot.local'
+          AND l.email <> 'test@test.com'
+          AND (l.source IS NULL OR l.source <> 'email_test')
+          AND (l.publicId IS NULL OR l.publicId NOT LIKE 'test-%')
+          AND ${notInternalEmailSql("l.email")}
           AND l.suppressed = FALSE
+          AND l.excluded_duplicate = FALSE
           AND ${dateFilter}
           AND NOT EXISTS (SELECT 1 FROM email_queue eq WHERE eq.lead_id = l.id)
-        ORDER BY l.createdAt DESC
+        ORDER BY l.createdAt ASC
         LIMIT 500
       `));
 
@@ -492,11 +500,12 @@ export const emailRouter = router({
       for (const lead of eligibleLeads) {
         const isStale = lead.quiz_stale === 1 || lead.quiz_stale === true;
         // Older-quiz leads can't be shown a match — send the dedicated retake
-        // template (backfill_stale) instead of the normal "here are your results"
-        // drip, whose copy would falsely promise saved results.
+        // template (backfill_stale). Scorable leads (matches now healed) get the
+        // single backfill_c ("we owe you your results") opener, not the full
+        // mid-sequence drip.
         const count = isStale
           ? await enqueueBackfillCampaign(lead.id, "backfill_stale", new Date(lead.createdAt))
-          : await enqueueBackfillDrip(lead.id, new Date(lead.createdAt), 3);
+          : await enqueueBackfillCampaign(lead.id, "backfill_c", new Date(lead.createdAt));
         totalQueued += count;
       }
 
