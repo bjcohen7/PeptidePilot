@@ -17,6 +17,12 @@ const RECONCILE_INTERVAL_MS = 60 * 60 * 1000; // hourly leak-alarm sweep
 // the daily cap to sequence + behavioral sends (see the two-phase batch below).
 const BACKFILL_SLUGS = "('backfill_a', 'backfill_b', 'backfill_c', 'backfill_stale')";
 
+// Transactional sends: a fresh lead's "your match is ready" (email_0) and the
+// post-conversion "you started" note. Both are cap-EXEMPT — they send uncapped
+// and don't count toward the bulk cap, which exists to throttle volume, not
+// one-per-event transactionals.
+const EXEMPT_SLUGS = "('email_0_instant', 'post_conversion')";
+
 function extractRows(result: unknown): any[] {
   return Array.isArray(result) ? ((Array.isArray(result[0]) ? result[0] : result) as any[]) : [];
 }
@@ -149,22 +155,23 @@ async function processEmailBatch() {
       "l.email, l.`publicId`, l.`topPeptideMatch` " +
       "FROM email_queue eq JOIN leads l ON l.id = eq.lead_id ";
 
-    // ── Phase 0: email_0 — transactional, CAP-EXEMPT, always dispatched ──────
-    // email_0 is a fresh lead's "your match is ready" — it must never wait for
-    // cap headroom (a day-late transactional send during the backfill run would
-    // be a real miss). It sends uncapped and does NOT count toward the bulk cap,
-    // which exists to protect sender reputation from volume, not transactionals.
+    // ── Phase 0: transactional sends — CAP-EXEMPT, always dispatched ─────────
+    // email_0 ("your match is ready") and post_conversion ("you started") are
+    // one-per-event transactionals that must never wait for cap headroom (a
+    // day-late transactional during the backfill run would be a real miss). They
+    // send uncapped and do NOT count toward the bulk cap, which exists to
+    // protect sender reputation from volume, not transactionals.
     const e0Rows = extractRows(await db.execute(sql.raw(
-      cols + "WHERE " + dueClause + "AND eq.email_slug = 'email_0_instant' " +
+      cols + "WHERE " + dueClause + "AND eq.email_slug IN " + EXEMPT_SLUGS + " " +
       "ORDER BY eq.scheduled_at ASC LIMIT " + BATCH_SIZE
     )));
     await dispatchRows(db, resend, e0Rows);
 
-    // The bulk cap counts only NON-email_0 sends.
+    // The bulk cap counts only NON-transactional sends.
     const [capCount] = await db.execute(sql.raw(`
       SELECT COUNT(*) as cnt FROM email_queue
       WHERE status = 'sent' AND sent_at >= CURDATE()
-        AND email_slug <> 'email_0_instant'
+        AND email_slug NOT IN ${EXEMPT_SLUGS}
     `));
     const capRows = Array.isArray(capCount) ? (Array.isArray(capCount[0]) ? capCount[0] : capCount) : [];
     const cappedSentToday = (capRows[0] as any)?.cnt ?? 0;
@@ -179,7 +186,7 @@ async function processEmailBatch() {
     const seqLimit = Math.min(BATCH_SIZE, remaining);
     const seqRows = extractRows(await db.execute(sql.raw(
       cols + "WHERE " + dueClause + "AND eq.email_slug NOT IN " + BACKFILL_SLUGS + " " +
-      "AND eq.email_slug <> 'email_0_instant' " +
+      "AND eq.email_slug NOT IN " + EXEMPT_SLUGS + " " +
       "ORDER BY eq.scheduled_at ASC LIMIT " + seqLimit
     )));
     const sentA = await dispatchRows(db, resend, seqRows);
@@ -193,7 +200,7 @@ async function processEmailBatch() {
       const reserveRow = extractRows(await db.execute(sql.raw(
         "SELECT COUNT(*) cnt FROM email_queue eq JOIN leads l ON l.id = eq.lead_id " +
         "WHERE eq.status = 'pending' AND eq.email_slug NOT IN " + BACKFILL_SLUGS + " " +
-        "AND eq.email_slug <> 'email_0_instant' " +
+        "AND eq.email_slug NOT IN " + EXEMPT_SLUGS + " " +
         "AND eq.scheduled_at < (CURDATE() + INTERVAL 1 DAY) " +
         "AND (l.suppressed IS NULL OR l.suppressed = 0) " +
         "AND (l.sequence_status = 'active' OR l.sequence_status IS NULL) " +
