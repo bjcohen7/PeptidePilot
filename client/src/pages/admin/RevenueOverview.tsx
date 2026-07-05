@@ -3,6 +3,16 @@ import { DollarSign, AlertTriangle, TrendingUp, Link2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
+const TIME_RANGES = [
+  { value: "today", label: "Today" },
+  { value: "yesterday", label: "Yesterday" },
+  { value: "last7", label: "Last 7 days" },
+  { value: "last30", label: "Last 30 days" },
+  { value: "all", label: "All time" },
+  { value: "custom", label: "Custom" },
+] as const;
+type RangeValue = (typeof TIME_RANGES)[number]["value"];
+
 function card() {
   return "rounded-xl border border-border bg-white p-5";
 }
@@ -10,17 +20,75 @@ function usd(cents: number | null | undefined) {
   if (cents == null) return "—";
   return `$${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
+function usd0(cents: number) {
+  const sign = cents < 0 ? "-" : "+";
+  return `${sign}$${Math.abs(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+}
 function pct(x: number) {
   return `${(x * 100).toFixed(1)}%`;
 }
+function priorLabel(range: RangeValue) {
+  if (range === "today") return "prior day";
+  if (range === "last7") return "prior 7d";
+  if (range === "last30") return "prior 30d";
+  return "";
+}
+
+/** Compact per-day revenue/conversions strip. */
+function TrendStrip({ days }: { days: { date: string; conversions: number; revenueCents: number }[] }) {
+  if (!days.length) return <p className="text-sm text-muted-foreground">No days in range.</p>;
+  const maxRev = Math.max(1, ...days.map((d) => d.revenueCents));
+  const totalRev = days.reduce((s, d) => s + d.revenueCents, 0);
+  return (
+    <div>
+      <div className="overflow-x-auto">
+        <div className="flex items-end gap-1 h-24 min-w-full" style={{ minWidth: `${days.length * 14}px` }}>
+          {days.map((d) => {
+            const h = totalRev === 0 ? 2 : Math.max(2, Math.round((d.revenueCents / maxRev) * 88));
+            return (
+              <div
+                key={d.date}
+                className="flex-1 min-w-[8px] rounded-t bg-accent/70 hover:bg-accent transition-colors"
+                style={{ height: `${h}px` }}
+                title={`${d.date}: ${usd(d.revenueCents)} · ${d.conversions} conv.`}
+              />
+            );
+          })}
+        </div>
+      </div>
+      <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+        <span>{days[0].date}</span>
+        <span>{days[days.length - 1].date}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function RevenueOverview() {
-  const perProvider = trpc.revenue.perProvider.useQuery();
-  const perSource = trpc.revenue.perSource.useQuery();
-  const attribution = trpc.revenue.attribution.useQuery();
+  const [range, setRange] = useState<RangeValue>("last7");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+
+  const period = useMemo(
+    () => ({
+      range,
+      from: range === "custom" ? customFrom || undefined : undefined,
+      to: range === "custom" ? customTo || undefined : undefined,
+    }),
+    [range, customFrom, customTo],
+  );
+  // Don't fire the custom-range queries until both dates are chosen.
+  const enabled = range !== "custom" || (!!customFrom && !!customTo);
+  const qOpts = { enabled };
+
+  const summary = trpc.revenue.summary.useQuery(period, qOpts);
+  const trend = trpc.revenue.trend.useQuery(period, qOpts);
+  const perProvider = trpc.revenue.perProvider.useQuery(period, qOpts);
+  const perSource = trpc.revenue.perSource.useQuery(period, qOpts);
+  const attribution = trpc.revenue.attribution.useQuery(period, qOpts);
   const alerts = trpc.revenue.alerts.useQuery();
-  const leadQuality = trpc.revenue.leadQuality.useQuery();
-  const recent = trpc.revenue.recent.useQuery();
+  const leadQuality = trpc.revenue.leadQuality.useQuery(period, qOpts);
+  const recent = trpc.revenue.recent.useQuery(period, qOpts);
   const utils = trpc.useUtils();
 
   const providerOptions = useMemo(
@@ -58,8 +126,12 @@ export default function RevenueOverview() {
     });
   };
 
-  const totalRevenue = (perProvider.data ?? []).reduce((s, p) => s + p.revenueCents, 0);
-  const totalConversions = (perProvider.data ?? []).reduce((s, p) => s + p.conversions, 0);
+  const revenueCents = summary.data?.revenueCents ?? 0;
+  const totalConversions = summary.data?.conversions ?? 0;
+  const totalClicks = summary.data?.clicks ?? 0;
+  const prior = summary.data?.prior ?? null;
+  const revDelta = prior ? revenueCents - prior.revenueCents : null;
+  const convDelta = prior ? totalConversions - prior.conversions : null;
 
   return (
     <div className="space-y-6">
@@ -71,11 +143,62 @@ export default function RevenueOverview() {
         </p>
       </div>
 
+      {/* Time range selector */}
+      <div className="flex flex-wrap items-center gap-2">
+        {TIME_RANGES.map((r) => (
+          <button
+            key={r.value}
+            type="button"
+            onClick={() => setRange(r.value)}
+            className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${
+              range === r.value
+                ? "border-accent bg-accent/10 text-accent"
+                : "border-border text-muted-foreground hover:border-accent/50 hover:text-foreground"
+            }`}
+          >
+            {r.label}
+          </button>
+        ))}
+        {range === "custom" && (
+          <div className="flex items-center gap-2 ml-1">
+            <input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} className="h-8 rounded-lg border border-border px-2 text-xs" />
+            <span className="text-xs text-muted-foreground">to</span>
+            <input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} className="h-8 rounded-lg border border-border px-2 text-xs" />
+            {!enabled && <span className="text-xs text-amber-600">pick both dates</span>}
+          </div>
+        )}
+      </div>
+
       {/* Totals */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div className={card()}><p className="text-sm text-muted-foreground">Total Revenue</p><p className="text-2xl font-semibold">{usd(totalRevenue)}</p></div>
-        <div className={card()}><p className="text-sm text-muted-foreground">Conversions</p><p className="text-2xl font-semibold">{totalConversions}</p></div>
-        <div className={card()}><p className="text-sm text-muted-foreground">Providers tracked</p><p className="text-2xl font-semibold">{providerOptions.length}</p></div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className={card()}>
+          <p className="text-sm text-muted-foreground">Revenue</p>
+          <p className="text-2xl font-semibold">{usd(revenueCents)}</p>
+          {revDelta != null && (
+            <p className={`text-xs mt-0.5 ${revDelta >= 0 ? "text-emerald-600" : "text-red-600"}`}>{usd0(revDelta)} vs {priorLabel(range)}</p>
+          )}
+        </div>
+        <div className={card()}>
+          <p className="text-sm text-muted-foreground">Conversions</p>
+          <p className="text-2xl font-semibold">{totalConversions}</p>
+          {convDelta != null && (
+            <p className={`text-xs mt-0.5 ${convDelta >= 0 ? "text-emerald-600" : "text-red-600"}`}>{convDelta >= 0 ? "+" : ""}{convDelta} vs {priorLabel(range)}</p>
+          )}
+        </div>
+        <div className={card()}>
+          <p className="text-sm text-muted-foreground">/go clicks</p>
+          <p className="text-2xl font-semibold">{totalClicks}</p>
+        </div>
+        <div className={card()}>
+          <p className="text-sm text-muted-foreground">EPC</p>
+          <p className="text-2xl font-semibold">{usd(summary.data?.epcCents ?? 0)}</p>
+        </div>
+      </div>
+
+      {/* Trend strip */}
+      <div className={card()}>
+        <h2 className="font-semibold mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Daily revenue trend</h2>
+        <TrendStrip days={trend.data?.days ?? []} />
       </div>
 
       {/* Per provider */}
@@ -98,7 +221,7 @@ export default function RevenueOverview() {
                   <td className="py-2 pr-4 font-semibold">{usd(p.epcCents)}</td>
                 </tr>
               ))}
-              {!perProvider.data?.length && <tr><td colSpan={6} className="py-3 text-muted-foreground">No data yet.</td></tr>}
+              {!perProvider.data?.length && <tr><td colSpan={6} className="py-3 text-muted-foreground">No data in range.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -123,7 +246,7 @@ export default function RevenueOverview() {
                   <td className="py-2 pr-4 font-semibold">{usd(r.revenueCents)}</td>
                 </tr>
               ))}
-              {!perSource.data?.length && <tr><td colSpan={5} className="py-3 text-muted-foreground">No resolved conversions yet.</td></tr>}
+              {!perSource.data?.length && <tr><td colSpan={5} className="py-3 text-muted-foreground">No resolved conversions in range.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -140,16 +263,16 @@ export default function RevenueOverview() {
               <p className="text-xs text-muted-foreground">{b.conversions} conversion(s)</p>
             </div>
           ))}
-          {!attribution.data?.buckets?.length && <p className="text-muted-foreground text-sm">No conversions yet.</p>}
+          {!attribution.data?.buckets?.length && <p className="text-muted-foreground text-sm">No conversions in range.</p>}
         </div>
         <p className="text-xs text-muted-foreground mt-3">
           Heuristic: "email attributed" = the lead clicked an email at/before the conversion; otherwise "same session". "unresolved" = subid didn't map to a lead.
         </p>
       </div>
 
-      {/* Alerts */}
+      {/* Alerts (operational — current state, not windowed) */}
       <div className={card()}>
-        <h2 className="font-semibold mb-3 flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-amber-500" /> Tracking-leak alerts</h2>
+        <h2 className="font-semibold mb-3 flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-amber-500" /> Tracking-leak alerts <span className="text-xs font-normal text-muted-foreground">(current state)</span></h2>
         <p className="text-sm font-medium mb-1">Conversions with no logged /go click ({alerts.data?.noClick.length ?? 0})</p>
         <div className="overflow-x-auto mb-4">
           <table className="w-full text-sm">
@@ -247,7 +370,7 @@ export default function RevenueOverview() {
                   <td className="py-2 pr-4">{c.resolved ? (c.email ?? c.leadId) : <span className="text-amber-600">unresolved</span>}</td>
                 </tr>
               ))}
-              {!recent.data?.length && <tr><td colSpan={7} className="py-3 text-muted-foreground">No conversions yet.</td></tr>}
+              {!recent.data?.length && <tr><td colSpan={7} className="py-3 text-muted-foreground">No conversions in range.</td></tr>}
             </tbody>
           </table>
         </div>
