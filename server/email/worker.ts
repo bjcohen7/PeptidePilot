@@ -27,6 +27,38 @@ function extractRows(result: unknown): any[] {
   return Array.isArray(result) ? ((Array.isArray(result[0]) ? result[0] : result) as any[]) : [];
 }
 
+// Deliverability guard for the backfill campaign only. Bounce/complaint rates
+// are computed over dispatched backfill rows (sent/bounced/complained); the drip
+// is never gated by this.
+const BACKFILL_MIN_SAMPLE = 20;
+const BACKFILL_MAX_BOUNCE_RATE = 0.03;
+const BACKFILL_MAX_COMPLAINT_RATE = 0.001;
+
+async function backfillDeliverability(db: NonNullable<Awaited<ReturnType<typeof getDb>>>) {
+  const rows = extractRows(await db.execute(sql.raw(
+    "SELECT COUNT(*) dispatched, SUM(status = 'bounced') bounced, SUM(status = 'complained') complained " +
+    "FROM email_queue WHERE email_slug IN " + BACKFILL_SLUGS + " AND status IN ('sent', 'bounced', 'complained')"
+  )));
+  const r = (rows[0] as any) || {};
+  return { dispatched: Number(r.dispatched ?? 0), bounced: Number(r.bounced ?? 0), complained: Number(r.complained ?? 0) };
+}
+
+function backfillIsHealthy(d: { dispatched: number; bounced: number; complained: number }): boolean {
+  if (d.dispatched < BACKFILL_MIN_SAMPLE) return true; // too few to judge
+  const bounceRate = d.bounced / d.dispatched;
+  const complaintRate = d.complained / d.dispatched;
+  if (bounceRate > BACKFILL_MAX_BOUNCE_RATE || complaintRate > BACKFILL_MAX_COMPLAINT_RATE) {
+    console.error(
+      `[BackfillGuard] AUTO-PAUSED backfill — dispatched=${d.dispatched} ` +
+        `bounced=${d.bounced} (${(bounceRate * 100).toFixed(1)}%, cap 3%) ` +
+        `complained=${d.complained} (${(complaintRate * 100).toFixed(2)}%, cap 0.1%). ` +
+        `Sequence/drip sends continue unaffected. Human review required.`
+    );
+    return false;
+  }
+  return true;
+}
+
 let _cronTimer: ReturnType<typeof setInterval> | null = null;
 let _reconcileTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -196,7 +228,7 @@ async function processEmailBatch() {
     // if reserving every still-pending sequence obligation due today leaves no
     // room. Backfill consumes ONLY leftover cap.
     const seqBacklog = seqRows.length >= seqLimit;
-    if (!seqBacklog) {
+    if (!seqBacklog && backfillIsHealthy(await backfillDeliverability(db))) {
       const reserveRow = extractRows(await db.execute(sql.raw(
         "SELECT COUNT(*) cnt FROM email_queue eq JOIN leads l ON l.id = eq.lead_id " +
         "WHERE eq.status = 'pending' AND eq.email_slug NOT IN " + BACKFILL_SLUGS + " " +

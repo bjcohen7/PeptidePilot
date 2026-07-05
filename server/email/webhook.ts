@@ -67,6 +67,7 @@ webhookRouter.post("/", async (req, res) => {
 
   switch (type) {
     case "email.delivered":
+      await updateEmailByResendId(resendId, { delivered_at: true });
       break;
 
     case "email.opened":

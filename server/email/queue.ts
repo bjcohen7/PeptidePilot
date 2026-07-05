@@ -378,6 +378,7 @@ export async function updateEmailByResendId(
   resendId: string,
   updates: {
     status?: string;
+    delivered_at?: boolean;
     opened_at?: boolean;
     clicked_at?: boolean;
     bounced_at?: boolean;
@@ -389,6 +390,7 @@ export async function updateEmailByResendId(
 
   const setClauses: string[] = [];
   if (updates.status) setClauses.push(`status = '${updates.status}'`);
+  if (updates.delivered_at) setClauses.push(`delivered_at = COALESCE(delivered_at, NOW())`);
   if (updates.opened_at) setClauses.push(`opened_at = NOW()`);
   if (updates.clicked_at) setClauses.push(`clicked_at = NOW()`);
   if (updates.bounced_at) setClauses.push(`bounced_at = NOW()`);
