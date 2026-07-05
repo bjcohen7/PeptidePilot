@@ -169,3 +169,67 @@ remains as correct defense-in-depth. No further action.
 "5-minute" quiz claim → "4-minute": 163 occurrences in `shared/blog-content.generated.ts` (all quiz
 CTAs) + the About-page CTA (now `{QUIZ_MINUTES}`). Non-quiz time mentions (dosing "45 minutes",
 guide "15 minutes", "3-5 minutes") use spaces and were untouched. Full-route crawl is now count-clean.
+
+## Lead-capture leak — investigate / fix / recover / alarm (2026-07-05, commits 5273980, ef4804a, a309687)
+
+**Symptom.** A 48h paid-traffic health snapshot surfaced 6 real Creative-4 leads (fb/ig) with NULL
+`provider_matches`, no `experiment_variant`, and zero queued emails despite completing the full
+22-question quiz (`rawQuizData` present, reached `/processing`→`/results`).
+
+**Root cause.** `submitQuiz` wrote `provider_matches` + `experiment_variant` as a **separate best-effort
+`UPDATE`** after `insertLead`, and enqueued the drip as **another** best-effort step — both in
+`try/catch` that swallowed errors. A transient DB blip after the insert landed the row but lost the
+follow-ups → a "shell" lead (email captured, pipeline incomplete) with **no signal**.
+
+**Transition proof (the path is dead, not live).** The code that first taught `submitQuiz` to compute
+matches/variant (`72cdb7a`) and enqueue emails (`f77142f`) deployed to prod in the leg-4/5/6 sequence
+**Jul 2 16:42–19:49 UTC**. All shell leads — the 6 plus a June backlog — were created *before* that.
+Post-transition: **47 real leads created after Jul 2 18:06, 0 shells**. The failure mode died with the
+transition; the fixes below are belt-and-suspenders for the one residual risk (a transient enqueue miss).
+
+**Fixes.**
+- **Atomic insert** (`quiz.ts`) — `insertLead` now writes `provider_matches` + `experiment_variant`
+  inside the INSERT. No post-insert UPDATE to lose.
+- **Self-healing sweep** (`email/reconcile.ts`, new) — `findShellLeads()` + `reconcileIncompleteLeads()`:
+  finds real, consented leads >1h old with NULL matches or 0 queued emails, recomputes matches from
+  stored answers, backfills publicId/variant, and re-enqueues. **Warm window (96h):** ≤96h → standard
+  drip from email_0; >96h → single `backfill_c` ("we owe you your results"); unscorable answers (older
+  quiz shape) → tagged `quiz_stale` for the Segment C retake batch, never auto-sent. `quiz_stale` leads
+  excluded from detection.
+- **Circuit breaker** (Fable verdict 1) — > 10 shells in one sweep ⇒ heal NONE, fire `[LeakAlarm]`, wait
+  for a human. A spike means an upstream regression; auto-sending to all of them would compound it.
+- **Alarm surface** — cron runs the sweep hourly (+90s after boot), logs every shell under `[LeakAlarm]`;
+  `revenue.alerts.shellLeads` renders outstanding shells in `/admin/revenue`.
+- **SQL hardening** (Fable verdict 3) — `quiz_stale` added to the drizzle schema so it's written via the
+  parameterized builder (raw interpolation removed); `lead.id` charset-guarded (`^[A-Za-z0-9_-]{1,64}$`)
+  before reaching the raw-SQL enqueue helpers. (Ids are nanoids, not integers — charset is the right check.)
+
+**Recovery.** 6 original + 4 backlog leads recovered (publicId + matches from `rawQuizData` + variant +
+sequence); email_0 sent and **Resend-confirmed delivered**. The 4 six-answer partial leads (old quiz
+version, unscorable) were already `quiz_stale=1` and hold for Segment C. Resend delivery pull across all
+sends: **delivered, 0 bounces, 0 complaints** (the only DB bounces are 2 old `test@test.com` rows from
+07-03, already suppressed).
+
+**KNOWN EVENT — 3 cold recovery sends (Fable verdict 2, accepted).** The *first* reconcile sweep ran on
+v1 (before the warm-window guard shipped in `ef4804a`) and auto-sent the standard email_0 to 3 backlog
+leads ~3.5 weeks old — `miscevans00@gmail.com`, `cc05yy@yahoo.com`, `smbrantontexas@hotmail.com` (all
+delivered). Accepted as a one-time event. They now carry full sequences, so `backfillSegment`'s
+`NOT EXISTS(email_queue)` guard **automatically excludes them** from any Segment C batch — no double-send.
+
+**Resend webhook — Svix 401 / 0-opens (bonus, `ef4804a`).** The handler verified
+`JSON.stringify(req.body)` after `express.json()` re-parsed it, never matching the signed raw bytes →
+every event 401'd → `opened_at`/`clicked_at` never populated (the sequencer's stop-on-silence/nudge rules
+were flying blind). Fixed: mount the webhook with `express.raw()` and verify against the raw Buffer.
+Proven in prod: valid signature → 200, bad signature → 401. Blind-period impact was nil — email_2 (day 3)
+hadn't sent yet, so stop-on-silence had fired 0 times.
+
+## Revenue dashboard — time-period support (2026-07-05, commit a1a962c)
+
+`/admin/revenue` gained a period window (Today / Yesterday / Last 7 / Last 30 / All time / Custom range,
+default Last 7), matching the sessions dashboard's chip selector. Backend (`revenue.ts`): `period` input +
+`resolveWindow`/`priorWindow`/`windowSql` helpers; `perProvider`/`perSource`/`attribution`/`leadQuality`/
+`recent` are windowed; new `summary` (window totals + prior-period delta) and `trend` (gap-filled per-day
+revenue+conversions) procedures; `alerts` stays current-state (operational, not windowed). Frontend
+(`RevenueOverview.tsx`): chip selector + custom date pickers, headline cards with prior-period delta on
+Today/7d/30d, compact daily-revenue trend strip. Verified live: `today`→3 clicks, `last7`→48,
+`custom Jul 3–4`→22. Email-metrics section (separate `EmailMetrics.tsx` page) noted as a follow-up.
