@@ -138,18 +138,6 @@ async function processEmailBatch() {
   const dailyCap = parseInt(process.env.EMAIL_DAILY_CAP || "50", 10);
 
   try {
-    // Check daily cap
-    const [todayCount] = await db.execute(sql.raw(`
-      SELECT COUNT(*) as cnt FROM email_queue
-      WHERE status = 'sent' AND sent_at >= CURDATE()
-    `));
-    const rows = Array.isArray(todayCount) ? (Array.isArray(todayCount[0]) ? todayCount[0] : todayCount) : [];
-    const sentToday = (rows[0] as any)?.cnt ?? 0;
-
-    if (sentToday >= dailyCap) return;
-
-    const remaining = dailyCap - sentToday;
-
     const dueClause =
       "eq.status = 'pending' " +
       "AND eq.scheduled_at <= NOW() " +
@@ -161,36 +149,58 @@ async function processEmailBatch() {
       "l.email, l.`publicId`, l.`topPeptideMatch` " +
       "FROM email_queue eq JOIN leads l ON l.id = eq.lead_id ";
 
-    // ── Phase A: sequence + behavioral sends ALWAYS go first ────────────────
+    // ── Phase 0: email_0 — transactional, CAP-EXEMPT, always dispatched ──────
+    // email_0 is a fresh lead's "your match is ready" — it must never wait for
+    // cap headroom (a day-late transactional send during the backfill run would
+    // be a real miss). It sends uncapped and does NOT count toward the bulk cap,
+    // which exists to protect sender reputation from volume, not transactionals.
+    const e0Rows = extractRows(await db.execute(sql.raw(
+      cols + "WHERE " + dueClause + "AND eq.email_slug = 'email_0_instant' " +
+      "ORDER BY eq.scheduled_at ASC LIMIT " + BATCH_SIZE
+    )));
+    await dispatchRows(db, resend, e0Rows);
+
+    // The bulk cap counts only NON-email_0 sends.
+    const [capCount] = await db.execute(sql.raw(`
+      SELECT COUNT(*) as cnt FROM email_queue
+      WHERE status = 'sent' AND sent_at >= CURDATE()
+        AND email_slug <> 'email_0_instant'
+    `));
+    const capRows = Array.isArray(capCount) ? (Array.isArray(capCount[0]) ? capCount[0] : capCount) : [];
+    const cappedSentToday = (capRows[0] as any)?.cnt ?? 0;
+
+    const remaining = Math.max(0, dailyCap - cappedSentToday);
+    if (remaining <= 0) { await checkNudgeTriggers(db, resend); return; }
+
+    // ── Phase A: other sequence + behavioral sends (capped) go before backfill ─
     // Backfill rows carry past scheduled_at, so a plain scheduled_at ordering
-    // would let them jump ahead of a fresh email_0 and consume the cap. Fetch
-    // non-backfill only, email_0 prioritised, and spend the rest of the cap on
-    // backfill in Phase B — never blocking a sequence obligation.
+    // would let them jump ahead and consume the cap. Fetch non-backfill,
+    // non-email_0 first; spend the rest on backfill in Phase B.
     const seqLimit = Math.min(BATCH_SIZE, remaining);
     const seqRows = extractRows(await db.execute(sql.raw(
       cols + "WHERE " + dueClause + "AND eq.email_slug NOT IN " + BACKFILL_SLUGS + " " +
-      "ORDER BY (eq.email_slug = 'email_0_instant') DESC, eq.scheduled_at ASC " +
-      "LIMIT " + seqLimit
+      "AND eq.email_slug <> 'email_0_instant' " +
+      "ORDER BY eq.scheduled_at ASC LIMIT " + seqLimit
     )));
     const sentA = await dispatchRows(db, resend, seqRows);
 
     // ── Phase B: backfill only from the cap headroom sequence didn't need ───
     // Skip if Phase A hit its limit (a sequence backlog remains this tick), or
     // if reserving every still-pending sequence obligation due today leaves no
-    // room. This makes backfill consume ONLY leftover cap — email_0 can never
-    // be queued behind a backfill send.
+    // room. Backfill consumes ONLY leftover cap.
     const seqBacklog = seqRows.length >= seqLimit;
     if (!seqBacklog) {
       const reserveRow = extractRows(await db.execute(sql.raw(
         "SELECT COUNT(*) cnt FROM email_queue eq JOIN leads l ON l.id = eq.lead_id " +
         "WHERE eq.status = 'pending' AND eq.email_slug NOT IN " + BACKFILL_SLUGS + " " +
+        "AND eq.email_slug <> 'email_0_instant' " +
         "AND eq.scheduled_at < (CURDATE() + INTERVAL 1 DAY) " +
         "AND (l.suppressed IS NULL OR l.suppressed = 0) " +
         "AND (l.sequence_status = 'active' OR l.sequence_status IS NULL) " +
         "AND l.email NOT LIKE 'anonymous+%'"
       )));
       const reserveForSequence = Number((reserveRow[0] as any)?.cnt ?? 0);
-      const backfillAllowance = Math.max(0, dailyCap - (sentToday + sentA) - reserveForSequence);
+      const backfillAllowance = Math.max(0, dailyCap - cappedSentToday - sentA - reserveForSequence);
       const backfillLimit = Math.min(BATCH_SIZE, backfillAllowance);
       if (backfillLimit > 0) {
         const bfRows = extractRows(await db.execute(sql.raw(
