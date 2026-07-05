@@ -355,9 +355,12 @@ async function buildPersonalization(
       priceFrom: provider.priceFromCents ? `$${Math.round(provider.priceFromCents / 100)}` : "$199",
       shipDays: provider.shipDaysEstimate || 4,
       answerEcho: "", // Will be populated from rawQuizData if needed
-      whyRow1: topMatch.whyMatch?.[0] || "Matches your stated goals and budget",
-      whyRow2: topMatch.whyMatch?.[1] || "Available in your state",
-      whyRow3: topMatch.whyMatch?.[2] || "Competitive pricing for your budget",
+      // Answer-echoing rows come first; if the generator produced fewer than 3
+      // (e.g. a lead who skipped a question), pad with real provider facts —
+      // never a fabricated per-lead claim like "available in your state".
+      whyRow1: topMatch.whyMatch?.[0] || `${topMatch.displayName || provider.displayName || topPeptideMatch} matched your profile on price, coverage, and goals`,
+      whyRow2: topMatch.whyMatch?.[1] || "All-inclusive pricing — medication, provider visits, and support in one monthly fee",
+      whyRow3: topMatch.whyMatch?.[2] || "Licensed clinicians review eligibility in 24–48 hours",
       resultsUrl: `${siteUrl}/results/${publicId}`,
       goUrl: `${siteUrl}/results/${publicId}`,
       alt1Name: alt1.displayName || alt1.name || "Provider #2",

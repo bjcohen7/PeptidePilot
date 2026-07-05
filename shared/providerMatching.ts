@@ -24,38 +24,53 @@ export function matchProviders(
   const isUninsured = insuranceIdx === 2;
   const isWeightLossGoal = primaryGoalIdx === 1;
 
+  const withinBudget = (priceCents: number) =>
+    budgetUpperCents !== null && priceCents <= budgetUpperCents;
+
   const scored = providers.map((p) => {
     let fitScore = 0;
-    const whyMatch: string[] = [];
     const priceDollars = (p.priceFromCents / 100).toFixed(0);
 
-    if (budgetUpperCents !== null && p.priceFromCents <= budgetUpperCents) {
-      fitScore += 3;
-      whyMatch.push(
-        `Your budget: ${BUDGET_OPTIONS[budgetIdx]} → ${p.displayName} starts at $${priceDollars}/mo, all-inclusive`,
-      );
-    } else if (budgetUpperCents !== null) {
-      fitScore += 1;
-    }
+    // ── fitScore (points sum, 0–8) — UNCHANGED so the displayed match % is stable ──
+    if (withinBudget(p.priceFromCents)) fitScore += 3;
+    else if (budgetUpperCents !== null) fitScore += 1;
+    if (isUninsured && p.cashPayFriendly) fitScore += 2;
+    else if (!isUninsured && p.cashPayFriendly) fitScore += 1;
+    if (isWeightLossGoal && p.medsOffered !== "oral") fitScore += 2;
+    if (p.medsOffered === "both") fitScore += 1;
 
-    if (isUninsured && p.cashPayFriendly) {
-      fitScore += 2;
+    // ── whyMatch — always echo the lead's REAL answers (answer → offer). These
+    // are descriptive, decoupled from the point conditions above, so a lead who
+    // is over-budget / insured / non-weight-loss still gets specific rows that
+    // quote their own quiz answers rather than generic filler. ──
+    const whyMatch: string[] = [];
+
+    if (budgetIdx >= 0 && budgetIdx < BUDGET_OPTIONS.length) {
       whyMatch.push(
-        `No insurance? No problem — ${p.displayName} offers cash-pay pricing from $${priceDollars}/mo, no prior auth needed`,
+        withinBudget(p.priceFromCents)
+          ? `Your budget (${BUDGET_OPTIONS[budgetIdx]}) → ${p.displayName} starts at $${priceDollars}/mo, all-inclusive`
+          : `Your budget (${BUDGET_OPTIONS[budgetIdx]}) → ${p.displayName} is the lowest-cost match at $${priceDollars}/mo, no hidden fees`,
       );
-    } else if (!isUninsured && p.cashPayFriendly) {
-      fitScore += 1;
     }
 
     if (isWeightLossGoal && p.medsOffered !== "oral") {
-      fitScore += 2;
       whyMatch.push(
-        `You're focused on weight loss → ${p.displayName} offers GLP-1/GIP therapies, the most clinically validated option`,
+        `Your goal is weight loss → ${p.displayName} offers GLP-1/GIP therapy, the most clinically validated path`,
       );
     }
 
-    if (p.medsOffered === "both") {
-      fitScore += 1;
+    if (insuranceIdx >= 0) {
+      whyMatch.push(
+        isUninsured
+          ? `No insurance → ${p.displayName} is cash-pay from $${priceDollars}/mo, no prior authorization needed`
+          : `Even with insurance → ${p.displayName}'s cash-pay plan skips the prior-auth wait at $${priceDollars}/mo flat`,
+      );
+    }
+
+    if (p.medsOffered === "both" && whyMatch.length < 3) {
+      whyMatch.push(
+        `${p.displayName} offers both injectable and oral options — flexibility as your plan evolves`,
+      );
     }
 
     return { fitScore, whyMatch, slug: p.slug, displayName: p.displayName, sortPriority: p.sortPriority };
