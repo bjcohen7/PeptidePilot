@@ -62,7 +62,7 @@
 4. When might retatrutide be approved? — Unknown — it depends on trial outcomes and FDA review; no approval date is set.
 5. What does tirzepatide cost today? — Brand Zepbound ~$1,086/mo list (or ~$299–$449/mo cash-pay via LillyDirect); compounded telehealth from ~$179/mo.
 
-**Internal links in:** footer nav; from blog/what-is-retatrutide and compare/tirzepatide-vs-retatrutide.
+**Internal links in:** footer nav; from **compare/mounjaro-vs-zepbound** (reciprocal, live) and **blog/what-is-retatrutide** (live). *(Was compare/tirzepatide-vs-retatrutide — that's the 301'd loser, can't donate.)*
 
 ---
 
@@ -83,7 +83,7 @@
 4. Is AOD-9604 safe? — Its safety profile in humans is not well established; approach with caution and clinician input.
 5. What does each cost? — Semaglutide: ~$179/mo compounded telehealth to ~$1,349/mo brand; AOD-9604 has no standardized/approved pricing.
 
-**Internal links in:** footer nav; from compare/aod-9604-vs-semaglutide and blog/best-peptides-for-weight-loss.
+**Internal links in:** footer nav; from **blog/best-peptides-for-weight-loss** (live) and **compare/ozempic-vs-wegovy** (live GLP-1 cost page). *(Was compare/aod-9604-vs-semaglutide — that's the 301'd loser, can't donate.)*
 
 ---
 
