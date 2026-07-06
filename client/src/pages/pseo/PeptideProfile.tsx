@@ -84,6 +84,7 @@ export default function PeptideProfile({ params }: { params: { slug: string } })
     categories: peptide.categories,
     primaryGoals: peptide.primaryGoals,
     peptideSlugs: [peptide.slug],
+    text: peptide.slug,
   });
 
   return (
@@ -267,7 +268,7 @@ export default function PeptideProfile({ params }: { params: { slug: string } })
             </section>
 
             {topical ? (
-              <Glp1ContentCta topical placement="inline" />
+              <Glp1ContentCta topical placement="inline" utmContent={peptide.slug} />
             ) : (
               <Glp1ContentCta topical={false} placement="footer" />
             )}
@@ -444,7 +445,7 @@ export default function PeptideProfile({ params }: { params: { slug: string } })
           </div>
         </section>
 
-        {topical && <Glp1ContentCta topical placement="end" />}
+        {topical && <Glp1ContentCta topical placement="end" utmContent={peptide.slug} />}
       </div>
     </>
   );

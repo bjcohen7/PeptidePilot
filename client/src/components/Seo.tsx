@@ -65,6 +65,19 @@ export function buildBreadcrumbJsonLd(items: Array<{ name: string; path?: string
   };
 }
 
+/** FAQPage schema for pages with a Q&A section (pass to the Seo `jsonLd` prop). */
+export function buildFaqPageJsonLd(faqs: Array<{ question: string; answer: string }>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })),
+  };
+}
+
 export default function Seo({
   title,
   description,

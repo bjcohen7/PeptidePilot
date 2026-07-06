@@ -56,6 +56,7 @@ export default function StackPage({ params }: { params: { slug: string } }) {
     glp1Topical: stack.glp1Topical,
     goalSlugs: stack.goalSlugs,
     peptideSlugs: stack.peptides,
+    text: `${stack.slug} ${stack.h1}`,
   });
 
   return (
@@ -209,7 +210,7 @@ export default function StackPage({ params }: { params: { slug: string } }) {
 
             {/* Quiz CTA */}
             {topical ? (
-              <Glp1ContentCta topical placement="inline" />
+              <Glp1ContentCta topical placement="inline" utmContent={stack.slug} />
             ) : (
               <Glp1ContentCta topical={false} placement="footer" />
             )}
@@ -340,7 +341,7 @@ export default function StackPage({ params }: { params: { slug: string } }) {
           </div>
         </section>
 
-        {topical && <Glp1ContentCta topical placement="end" />}
+        {topical && <Glp1ContentCta topical placement="end" utmContent={stack.slug} />}
       </div>
     </>
   );
