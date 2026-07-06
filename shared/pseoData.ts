@@ -2010,6 +2010,10 @@ export interface ComparisonPageData {
   considerBothIf: string | undefined;
   relatedComparisons: string[];
   faqItems: Array<{ q: string; a: string }>;
+  /** Optional "Cost without insurance" prose (GLP-1 beachhead pages). */
+  costWithoutInsurance?: string;
+  /** Optional compounded-medications FDA disclosure (GLP-1 beachhead pages). */
+  compoundedNote?: string;
   /** Per-page GLP-1 topicality override. Optional — the isGlp1Topical() classifier supplies the default when unset. */
   glp1Topical?: boolean;
 }
@@ -2120,8 +2124,14 @@ export const comparisonPages: ComparisonPageData[] = [
     chooseBIf: ["Weight loss is your primary goal", "You do not have Type 2 diabetes", "You want the maximum approved Semaglutide dose"],
     considerBothIf: "The active ingredient is identical — the choice is primarily driven by your diagnosis, insurance coverage, and desired dose. Consult your physician.",
     relatedComparisons: ["semaglutide-vs-tirzepatide", "mounjaro-vs-zepbound"],
+    costWithoutInsurance: "Ozempic and Wegovy are the same active molecule — semaglutide — from Novo Nordisk. The difference is the FDA-approved indication and dosing, not the drug. Without insurance, 2026 US list prices are about $1,028/mo for Ozempic and $1,349/mo for Wegovy. Most people don't pay list: Novo's own cash-pay program (NovoCare) runs roughly $149–$499/mo depending on product and dose, and licensed telehealth providers offering compounded semaglutide start around $179/mo all-inclusive (medication, provider visits, and support). Novo has said list prices will fall to about $675/mo in January 2027.",
+    compoundedNote: "About compounded versions. Compounded semaglutide and tirzepatide are prepared by licensed pharmacies, not the brand manufacturer. They are not FDA-approved products and are not FDA-reviewed for safety, effectiveness, or quality. Compounding is permitted only under specific conditions and always requires a prescription from a licensed clinician. This page is educational and not medical advice.",
     faqItems: [
-      { q: "Is Ozempic the same as Wegovy?", a: "Yes — both contain Semaglutide. Ozempic is FDA-approved for Type 2 diabetes at up to 2 mg. Wegovy is FDA-approved for weight management at 2.4 mg. The active ingredient is identical." },
+      { q: "Are Ozempic and Wegovy the same drug?", a: "Yes, both are semaglutide; they differ in approved use (Ozempic: type 2 diabetes; Wegovy: chronic weight management) and top dose." },
+      { q: "Which one is approved for weight loss?", a: "Wegovy is FDA-approved for chronic weight management; Ozempic is approved for type 2 diabetes." },
+      { q: "What do they cost without insurance?", a: "~$1,028/mo (Ozempic) and ~$1,349/mo (Wegovy) list; manufacturer cash-pay and compounded telehealth options are lower." },
+      { q: "Is compounded semaglutide the same as Ozempic or Wegovy?", a: "No — it's not an FDA-approved product; see the disclosure above." },
+      { q: "Can I switch between them?", a: "That's a clinical decision for your prescriber, not a self-serve swap." },
     ],
   },
   {
@@ -2145,8 +2155,14 @@ export const comparisonPages: ComparisonPageData[] = [
     chooseBIf: ["Weight loss is your primary goal without a diabetes diagnosis", "Your insurance covers Zepbound for obesity"],
     considerBothIf: "The active ingredient is identical — the choice is driven entirely by your diagnosis and insurance coverage.",
     relatedComparisons: ["semaglutide-vs-tirzepatide", "ozempic-vs-wegovy"],
+    costWithoutInsurance: "Mounjaro and Zepbound are the same active molecule — tirzepatide — from Eli Lilly, differing only in approved indication (Mounjaro: type 2 diabetes; Zepbound: chronic weight management). Zepbound's 2026 US list price is about $1,086/mo across all doses; Mounjaro, the same molecule, is priced comparably. Lilly's cash-pay program (LillyDirect) offers tirzepatide vials at roughly $299–$449/mo, and licensed telehealth providers offering compounded tirzepatide start around $179/mo all-inclusive.",
+    compoundedNote: "About compounded versions. Compounded semaglutide and tirzepatide are prepared by licensed pharmacies, not the brand manufacturer. They are not FDA-approved products and are not FDA-reviewed for safety, effectiveness, or quality. Compounding is permitted only under specific conditions and always requires a prescription from a licensed clinician. This page is educational and not medical advice.",
     faqItems: [
-      { q: "Is Mounjaro the same as Zepbound?", a: "Yes — both contain Tirzepatide at identical doses. The difference is FDA indication: Mounjaro for Type 2 diabetes, Zepbound for obesity." },
+      { q: "Are Mounjaro and Zepbound the same drug?", a: "Yes, both are tirzepatide; approved uses differ." },
+      { q: "Which is approved for weight loss?", a: "Zepbound (chronic weight management); Mounjaro is for type 2 diabetes." },
+      { q: "What's the cost without insurance?", a: "Zepbound lists ~$1,086/mo; LillyDirect cash-pay ~$299–449/mo; compounded telehealth from ~$179/mo." },
+      { q: "Is compounded tirzepatide the same as Mounjaro/Zepbound?", a: "No — not FDA-approved; see disclosure." },
+      { q: "Does insurance cover them differently?", a: "Often yes; coverage varies by plan and indication." },
     ],
   },
   {

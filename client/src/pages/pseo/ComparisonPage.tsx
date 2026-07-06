@@ -74,6 +74,22 @@ export default function ComparisonPage({ params }: { params: { slug: string } })
           }),
         }}
       />
+      {comparison.faqItems.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: comparison.faqItems.map((item) => ({
+                "@type": "Question",
+                name: item.q,
+                acceptedAnswer: { "@type": "Answer", text: item.a },
+              })),
+            }),
+          }}
+        />
+      )}
 
       {/* Breadcrumb */}
       <div className="bg-[var(--brand-teal-pale)] border-b border-border">
@@ -251,6 +267,22 @@ export default function ComparisonPage({ params }: { params: { slug: string } })
                 </div>
               )}
             </section>
+
+            {/* Cost without insurance (GLP-1 beachhead pages) */}
+            {comparison.costWithoutInsurance && (
+              <section>
+                <h2 className="text-2xl font-bold mb-5">Cost without insurance</h2>
+                <p className="text-muted-foreground leading-relaxed mb-4">
+                  {comparison.costWithoutInsurance}
+                </p>
+                {comparison.compoundedNote && (
+                  <div className="flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                    <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-amber-600" />
+                    <p>{comparison.compoundedNote}</p>
+                  </div>
+                )}
+              </section>
+            )}
 
             {/* Quiz CTA */}
             {topical ? (
