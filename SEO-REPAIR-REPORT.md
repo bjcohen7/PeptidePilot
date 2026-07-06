@@ -140,5 +140,30 @@ Deferred until deploy. Will include: the 4 beachhead URLs, the 29 GLP-1 CTA page
 **Tier B — sensitive, noindex not 410:** type-2-diabetes, diabetes, pre-diabetes, adrenal-fatigue-hpa-axis-dysfunction
 **Dupes to clean up:** `lyme-disease` appears twice; `hashimotos` + `hashimotos-thyroiditis` near-dupes.
 
+## Item 4 — 301 map (built; /compare default). ⚠️ two conflicts need your call
+Merged pairs (301 loser → winner, winner = canonical). Spot-check the ⭐ big-impression ones in GSC's query view:
+
+| Winner (keep) | 301 from (loser) | Note |
+|---|---|---|
+| compare/selank-vs-semax | blog/semax-vs-selank | reversed, cross-section |
+| compare/epithalon-vs-ghk-cu | compare/ghk-cu-vs-epithalon | reversed intra-compare |
+| compare/pt-141-vs-kisspeptin | compare/kisspeptin-vs-pt-141 | reversed intra-compare |
+| compare/sermorelin-vs-ipamorelin ⚠️ | compare/ipamorelin-vs-sermorelin **+** blog/ipamorelin-vs-sermorelin | **3-way**; also which compare direction wins is a coin-flip — **your GSC spot-check** |
+| compare/bpc-157-vs-tb-500 ⭐ | blog/bpc-157-vs-tb-500 | exact-slug dupe |
+| compare/bpc-157-vs-ghk-cu | blog/bpc-157-vs-ghk-cu | exact-slug dupe |
+| compare/semaglutide-vs-tirzepatide ⭐ | blog/semaglutide-vs-tirzepatide | exact-slug dupe |
+
+**🔴 CONFLICT — beachhead vs. cannibal (needs your decision):** two of the exact-slug dupes are *also* Item-2 beachhead pages we're expanding:
+- `tirzepatide-vs-retatrutide` — exists as BOTH compare + blog; blog is the beachhead we're expanding.
+- `aod-9604-vs-semaglutide` — same.
+
+If /compare wins (default), the expanded **blog** beachhead gets 301'd away — wasting the expansion. **Options:** (a) make the **blog** version the winner for these two (expand blog, 301 compare→blog), or (b) move the beachhead expansion onto the **compare** version (301 blog→compare). I recommend **(b)** — keep /compare canonical estate-wide, put the rich content there. Your call before I wire these two.
+
+## Sweep wiring (built from `shared/seoPruneList.ts`)
+- **410 (28):** dropped from `prerenderRoutes` (no render, out of sitemap) + a server middleware returns real **HTTP 410** for `GONE_410_PATHS`. Internal links: I'll grep + strip links to the 28.
+- **noindex (301):** route `noindex:true` (prerendered HTML gets `meta robots noindex`; already excluded from sitemap) + the goal/stack/guide/for page components pass `noindex` to `<Seo>` for client renders. Pages stay fully served.
+- **Reconciliation:** prerender route count `before − 28 = after`; noindex pages still present + rendering. **Reversal:** documented in `seoPruneList.ts` (remove from list + rebuild).
+- **Post-deploy curl matrix (15):** 5× 410 (status line), 5× noindex (meta present), 5× keeper (no noindex leaked — guards the template-level over-catch).
+
 ## Blocked on GSC (then implement on branch, report-before-deploy)
 GSC export fills the CSV impressions column → drives (a) the dosing-tier rewrite-vs-noindex split (≥50 imp/90d), (b) cannibal winner overrides (20+ position). On arrival I implement: CTA swap (36 pages) + floor constant + consistency check + AGENTS.md; FAQPage helper + beachhead content; 301 map (/compare winners); noindex sweep + 410 Tier-A; then plain-curl verify + Cloudflare purge, and hand over the ~15 reindex URLs.
