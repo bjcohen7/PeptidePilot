@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, AlertTriangle, Lightbulb, Clock, BarChart2, ChevronRight, BookOpen } from "lucide-react";
 import { Glp1ContentCta, isGlp1Topical } from "@/components/Glp1ContentCta";
+import { isNoindexed } from "@shared/seoPruneList";
 import { QUIZ_MINUTES } from "@shared/quizConfig";
 
 const DIFFICULTY_COLOR: Record<string, string> = {
@@ -58,6 +59,7 @@ export default function GuidePage() {
         title={guide.h1}
         description={guide.metaDescription}
         path={`/guides/${guide.slug}`}
+        noindex={isNoindexed(`/guides/${guide.slug}`)}
         type="article"
         jsonLd={[
           howToSchema,

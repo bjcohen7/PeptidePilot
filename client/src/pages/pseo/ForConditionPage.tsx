@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, ChevronRight, Activity, Pill, FlaskConical, Star } from "lucide-react";
 import { Glp1ContentCta, isGlp1Topical } from "@/components/Glp1ContentCta";
+import { isNoindexed } from "@shared/seoPruneList";
 
 const EVIDENCE_COLOR: Record<string, string> = {
   "Strong human (FDA approved)": "bg-emerald-100 text-emerald-800",
@@ -59,6 +60,7 @@ export default function ForConditionPage() {
         title={page.h1}
         description={page.metaDescription}
         path={`/for/${page.slug}`}
+        noindex={isNoindexed(`/for/${page.slug}`)}
         type="article"
         jsonLd={[
           conditionSchema,

@@ -10,6 +10,8 @@ import {
 } from "../shared/pseoData";
 import { pseoSections } from "../shared/pseo";
 import { QUIZ_MINUTES } from "../shared/quizConfig";
+import { isGone410, isNoindexed } from "../shared/seoPruneList";
+import { SEO_REDIRECTS } from "../shared/seoRedirects";
 
 export const SITE_URL = "https://www.peptidepilot.me";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/apple-touch-icon.png`;
@@ -203,11 +205,19 @@ const allRoutes = [
 ];
 
 const seen = new Set<string>();
-export const prerenderRoutes = allRoutes.filter((route) => {
-  if (seen.has(route.path)) return false;
-  seen.add(route.path);
-  return true;
-});
+export const prerenderRoutes = allRoutes
+  .filter((route) => {
+    if (seen.has(route.path)) return false;
+    seen.add(route.path);
+    // SEO prune: drop retired (410) pages and cannibal losers (301'd) entirely —
+    // no HTML, no sitemap entry; only the canonical winner survives.
+    if (isGone410(route.path)) return false;
+    if (SEO_REDIRECTS[route.path]) return false;
+    return true;
+  })
+  // noindex pages stay rendered + served, but get meta robots noindex and drop
+  // out of the sitemap (the builder already excludes noindex routes).
+  .map((route) => (isNoindexed(route.path) ? { ...route, noindex: true } : route));
 
 function escapeHtml(value: string) {
   return value

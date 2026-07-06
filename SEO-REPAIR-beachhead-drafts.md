@@ -84,3 +84,35 @@
 5. What does each cost? — Semaglutide: ~$179/mo compounded telehealth to ~$1,349/mo brand; AOD-9604 has no standardized/approved pricing.
 
 **Internal links in:** footer nav; from compare/aod-9604-vs-semaglutide and blog/best-peptides-for-weight-loss.
+
+---
+
+# 5. /guides/how-to-use-melanotan-2 — DOSING-TIER REWRITE (approved single rewrite)
+
+**Rewrite mandate:** the URL keeps its 100 impressions but the page is converted from a "how to use" dosing protocol to a **safety-forward, evidence-only explainer with zero administration content** (no doses, no reconstitution, no injection instructions, no timing). New H1 replaces "How to Use Melanotan-2".
+
+**Proposed H1:** *Melanotan-2: What It Is, the Evidence, and the Serious Risks*
+
+**Opening (risk-forward):**
+> **Safety note first.** Melanotan-2 is not an FDA-approved drug. It is sold only as an unregulated, grey-market injectable of unknown purity, and it has been linked to serious harms — including changes to the size, shape, and colour of moles, which can mask or mimic **melanoma** (skin cancer). Dermatology and public-health bodies have repeatedly warned against it. This page explains what it is and what the evidence shows; it is **not** a usage guide and contains no dosing or administration instructions.
+
+**What it is:**
+> Melanotan-2 is a synthetic peptide that mimics alpha-melanocyte-stimulating hormone (α-MSH), the signal that increases melanin (skin pigment). It has been marketed informally for tanning and, separately, for effects on libido. It is unapproved for any use in the US and is not a licensed medicine.
+
+**What the evidence shows:**
+> Human evidence is limited and comes mostly from small, early studies; there are no large, long-term safety trials. Because street/online product is unregulated, what's actually in a given vial is unknown, which compounds the risk. The related compound bremelanotide (for a specific sexual-health indication) went through formal FDA review — melanotan-2 did not.
+
+**The risks (prominent section):**
+> - **Mole/skin changes and melanoma concern** — the most serious; new or changing moles after use should be seen by a doctor promptly.
+> - **Nausea, flushing, and blood-pressure changes** reported by users.
+> - **Unregulated supply** — no purity, dose, or sterility guarantees.
+> - **Legal status** — not approved; sale for human use is restricted in many jurisdictions.
+
+**FAQ (→ FAQPage JSON-LD):**
+1. Is melanotan-2 safe? — No established safety; it's unapproved, unregulated, and linked to serious skin/mole changes and melanoma concerns.
+2. Is melanotan-2 FDA-approved? — No.
+3. Does it cause skin cancer? — It hasn't been proven to cause melanoma, but it changes moles in ways that can hide or mimic it, which is why dermatologists warn against it and urge prompt checks.
+4. Is melanotan-2 legal? — It is not approved for human use; sale for that purpose is restricted in many places.
+5. What's a safer path to the goals people use it for? — Evidence-based options exist for skin health and for sexual-health concerns; talk to a licensed clinician rather than using unregulated injectables.
+
+**No CTA change / no GLP-1 CTA** (not topical). Internal links: keep the quiet footer only.

@@ -8,6 +8,8 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { ensureAffiliateWorkspaceSchema, ensureExperimentSchema } from "../db";
 import { checkProviderFloorConsistency } from "../lib/providerFloorCheck";
+import { isGone410 } from "../../shared/seoPruneList";
+import { redirectTarget } from "../../shared/seoRedirects";
 import { createContext } from "./context";
 import { ENV } from "./env";
 import { recordClickEvent, recordFunnelEvent, recordPageView, startVisitorSession } from "../routers/analytics";
@@ -151,6 +153,16 @@ async function startServer() {
     if (req.path.length > 1 && req.path.endsWith("/")) {
       const query = req.url.slice(req.path.length);
       return res.redirect(301, `${req.path.replace(/\/+$/, "")}${query}`);
+    }
+    // SEO prune: retired pages return real HTTP 410 Gone; cannibal losers 301
+    // to their canonical winner. Both run before the SPA catch-all.
+    if (isGone410(req.path)) {
+      return res.status(410).type("text/plain").send("410 Gone — this page has been permanently removed.");
+    }
+    const redirect = redirectTarget(req.path);
+    if (redirect) {
+      const query = req.url.slice(req.path.length);
+      return res.redirect(301, `${redirect}${query}`);
     }
     return next();
   });
