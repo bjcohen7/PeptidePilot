@@ -167,3 +167,10 @@ If /compare wins (default), the expanded **blog** beachhead gets 301'd away — 
 
 ## Blocked on GSC (then implement on branch, report-before-deploy)
 GSC export fills the CSV impressions column → drives (a) the dosing-tier rewrite-vs-noindex split (≥50 imp/90d), (b) cannibal winner overrides (20+ position). On arrival I implement: CTA swap (36 pages) + floor constant + consistency check + AGENTS.md; FAQPage helper + beachhead content; 301 map (/compare winners); noindex sweep + 410 Tier-A; then plain-curl verify + Cloudflare purge, and hand over the ~15 reindex URLs.
+
+## Fable verdicts round 2 — LOGGED (2026-07-07)
+1. Deindex scope CONFIRMED as built (~46% of estate; 1 rewrite, 28 410, 301 noindex).
+2. 410s confirmed; 451 rejected as the wrong signal — Tier-A returns real HTTP 410 regardless of impressions.
+3. Winner flips confirmed. **POST-DEPLOY WATCH:** track the 7 flipped winners' impressions for 2–3 weeks; any winner that *loses* traffic rather than *absorbing* its 301'd twin's traffic gets re-examined (may indicate the twin held the ranking for reasons the merge broke).
+4. Attribution design agreed structurally safe (email CTAs → /results/{publicId}; /go subids live on the results page, outside Resend's link wrapper). Empirical check stands in tomorrow's 11:17 monitor.
+5. **Melanotan-2 editorial bar:** melanoma evidence + unapproved status must be the LEDE and the page's honest answer is *caution*. **If the finished page reads as a disclaimed usage guide, it flips to noindex** instead of the rewrite. (Draft is written risk-first, zero administration — meets the bar on paper; final page must hold to it.)
