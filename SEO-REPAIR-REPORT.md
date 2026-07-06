@@ -126,7 +126,19 @@ Deferred until deploy. Will include: the 4 beachhead URLs, the 29 GLP-1 CTA page
 
 ---
 
-## What I need from you to proceed
-1. **GSC impressions export** (url + impressions/clicks) → fills the CSV + picks cannibal winners.
-2. **Decisions:** (a) floor-price approach (shared constant vs build-time DB fetch); (b) include the 7 extra GLP-1 pages in stacks/guides/peptides?; (c) default for dosing-protocol pages — rewrite-heavy or noindex-heavy?
-3. **Approve the beachhead drafts** (and the `[VERIFY]` numbers) before I write them into the data files.
+## Fable verdicts — LOGGED (2026-07-06)
+1. **Floor price:** computed shared constant ✅ + startup consistency check (constant vs live providers table, loud log on mismatch) + AGENTS.md note (price changes require rebuild for static pages).
+2. **YMYL = NOINDEX-FIRST:** dosing-tier pages with **≥50 impressions/90d** (GSC) → individual educational rewrite (zero administration, human-reviewed). All other dosing-tier → **noindex now**, keep serving, re-evaluate at 8 weeks, 410 the still-worthless. Condition-targeting (/for, /goals) → noindex default; **410 the medically-exploitative class regardless of impressions** (see list below).
+3. **Cannibal:** `/compare` wins by default; GSC overrides only where the blog twin outranks by **20+ positions on the shared query**.
+4. **Drafts:** every `[VERIFY]` resolved with a cited manufacturer source or the sentence dropped — no placeholders. Final drafts → `SEO-REPAIR-beachhead-drafts.md`.
+5. **CTA swap applies to all 36 GLP-1 pages** (not just the 29 scoped).
+
+## Item 2b — 410 "medically-exploitative" candidates (for Ben's confirmation)
+**Tier A — recommend 410 now (regardless of impressions):**
+/for/: alzheimers, parkinsons, multiple-sclerosis, lupus, autoimmune-disease, hashimotos, hashimotos-thyroiditis, graves-disease, schizophrenia, bipolar-disorder, depression, anorexia, binge-eating-disorder, **vaccine-injury-recovery**, long-covid-brain-fog, post-covid-fatigue, lyme-disease, mold-toxicity, heavy-metal-toxicity, chronic-fatigue-syndrome, chronic-fatigue, fibromyalgia, neuropathy, **feline-kidney-disease** (veterinary), stroke-recovery
+/goals/: ptsd-support, ibd-support, stroke-recovery
+**Tier B — sensitive, noindex not 410:** type-2-diabetes, diabetes, pre-diabetes, adrenal-fatigue-hpa-axis-dysfunction
+**Dupes to clean up:** `lyme-disease` appears twice; `hashimotos` + `hashimotos-thyroiditis` near-dupes.
+
+## Blocked on GSC (then implement on branch, report-before-deploy)
+GSC export fills the CSV impressions column → drives (a) the dosing-tier rewrite-vs-noindex split (≥50 imp/90d), (b) cannibal winner overrides (20+ position). On arrival I implement: CTA swap (36 pages) + floor constant + consistency check + AGENTS.md; FAQPage helper + beachhead content; 301 map (/compare winners); noindex sweep + 410 Tier-A; then plain-curl verify + Cloudflare purge, and hand over the ~15 reindex URLs.
