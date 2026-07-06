@@ -78,9 +78,16 @@ webhookRouter.post("/", async (req, res) => {
       await updateEmailByResendId(resendId, { clicked_at: true });
       break;
 
-    case "email.bounced":
-      await updateEmailByResendId(resendId, { status: "bounced", bounced_at: true });
+    case "email.bounced": {
+      // Resend's bounce payload carries type/subType (Permanent = hard,
+      // Transient = soft). Capture it so we can tell attrition (hard) from a
+      // deliverability problem (soft pattern) during the backfill run.
+      const bounce = (event as any)?.data?.bounce ?? {};
+      const bounceType = [bounce.type, bounce.subType].filter(Boolean).join("/") || "unknown";
+      console.log(`[EmailWebhook] bounce type for ${resendId}: ${bounceType}`);
+      await updateEmailByResendId(resendId, { status: "bounced", bounced_at: true, bounce_type: bounceType });
       break;
+    }
 
     case "email.complained":
       await updateEmailByResendId(resendId, { status: "complained", complained_at: true });

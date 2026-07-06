@@ -382,6 +382,7 @@ export async function updateEmailByResendId(
     opened_at?: boolean;
     clicked_at?: boolean;
     bounced_at?: boolean;
+    bounce_type?: string;
     complained_at?: boolean;
   }
 ): Promise<void> {
@@ -391,6 +392,7 @@ export async function updateEmailByResendId(
   const setClauses: string[] = [];
   if (updates.status) setClauses.push(`status = '${updates.status}'`);
   if (updates.delivered_at) setClauses.push(`delivered_at = COALESCE(delivered_at, NOW())`);
+  if (updates.bounce_type) setClauses.push(`bounce_type = '${String(updates.bounce_type).replace(/'/g, "''").slice(0, 64)}'`);
   if (updates.opened_at) setClauses.push(`opened_at = NOW()`);
   if (updates.clicked_at) setClauses.push(`clicked_at = NOW()`);
   if (updates.bounced_at) setClauses.push(`bounced_at = NOW()`);
