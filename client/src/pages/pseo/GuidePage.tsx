@@ -34,6 +34,7 @@ export default function GuidePage() {
     glp1Topical: guide.glp1Topical,
     categories: [guide.category],
     peptideSlugs: guide.targetPeptides,
+    text: `${guide.slug} ${guide.h1}`,
   });
 
   const howToSchema = {
@@ -100,7 +101,7 @@ export default function GuidePage() {
           <p className="text-muted-foreground leading-relaxed">{guide.overview}</p>
         </section>
 
-        {topical && <Glp1ContentCta topical placement="inline" />}
+        {topical && <Glp1ContentCta topical placement="inline" utmContent={guide.slug} />}
 
         {/* ── What You Need ── */}
         <section className="mb-10">
@@ -224,7 +225,7 @@ export default function GuidePage() {
 
         {/* ── Quiz CTA ── */}
         {topical ? (
-          <Glp1ContentCta topical placement="end" />
+          <Glp1ContentCta topical placement="end" utmContent={guide.slug} />
         ) : (
           <Glp1ContentCta topical={false} placement="footer" />
         )}

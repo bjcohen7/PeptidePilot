@@ -105,6 +105,16 @@ export const providerById: Record<string, GLP1Provider> = Object.fromEntries(
   GLP1_PROVIDERS.map((p) => [p.id, p]),
 );
 
+/**
+ * Lowest advertised provider price, derived (never hardcoded) from the provider
+ * list above — the single source for the "from $X/mo" floor shown in CTAs and
+ * static content. This mirrors the DB `providers.price_from_cents`; because
+ * prerendered pages can't query the live DB, a startup consistency check
+ * (server) logs loudly if this constant drifts from the live table. NOTE: a
+ * price change requires a rebuild to reflect on static/prerendered pages.
+ */
+export const PROVIDER_FLOOR_PRICE = Math.min(...GLP1_PROVIDERS.map((p) => p.startingPrice));
+
 export const ASPECT_LABELS: Record<string, string> = {
   fatloss: "Weight loss",
   appetite: "Food noise",

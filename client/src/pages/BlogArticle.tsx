@@ -33,6 +33,7 @@ export function BlogArticleView({ article }: { article: BlogPost }) {
   const topical = isGlp1Topical({
     glp1Topical: article.glp1Topical,
     categories: [article.category],
+    text: `${article.slug} ${article.title}`,
   });
 
   return (
@@ -121,7 +122,7 @@ export function BlogArticleView({ article }: { article: BlogPost }) {
 
           {/* CTA */}
           {topical ? (
-            <Glp1ContentCta topical placement="end" />
+            <Glp1ContentCta topical placement="end" utmContent={article.slug} />
           ) : (
             <Glp1ContentCta topical={false} placement="footer" />
           )}

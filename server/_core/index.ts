@@ -7,6 +7,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { ensureAffiliateWorkspaceSchema, ensureExperimentSchema } from "../db";
+import { checkProviderFloorConsistency } from "../lib/providerFloorCheck";
 import { createContext } from "./context";
 import { ENV } from "./env";
 import { recordClickEvent, recordFunnelEvent, recordPageView, startVisitorSession } from "../routers/analytics";
@@ -132,6 +133,9 @@ async function startServer() {
 
   // Start email cron worker after schema is ready
   startEmailCron();
+
+  // Warn loudly if the static provider floor-price constant has drifted from the live table.
+  void checkProviderFloorConsistency();
 
   const app = express();
   const server = createServer(app);

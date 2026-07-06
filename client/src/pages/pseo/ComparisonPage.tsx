@@ -54,6 +54,7 @@ export default function ComparisonPage({ params }: { params: { slug: string } })
     glp1Topical: comparison.glp1Topical,
     categories: [comparison.category],
     peptideSlugs: [comparison.peptideASlug, comparison.peptideBSlug],
+    text: `${comparison.slug} ${comparison.h1}`,
   });
 
   return (
@@ -253,7 +254,7 @@ export default function ComparisonPage({ params }: { params: { slug: string } })
 
             {/* Quiz CTA */}
             {topical ? (
-              <Glp1ContentCta topical placement="inline" />
+              <Glp1ContentCta topical placement="inline" utmContent={comparison.slug} />
             ) : (
               <Glp1ContentCta topical={false} placement="footer" />
             )}
@@ -375,7 +376,7 @@ export default function ComparisonPage({ params }: { params: { slug: string } })
           </div>
         </section>
 
-        {topical && <Glp1ContentCta topical placement="end" />}
+        {topical && <Glp1ContentCta topical placement="end" utmContent={comparison.slug} />}
       </div>
     </>
   );

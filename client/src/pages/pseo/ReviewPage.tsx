@@ -56,6 +56,7 @@ export default function ReviewPage() {
     glp1Topical: review.glp1Topical,
     categories: [review.category],
     peptideSlugs: [review.peptideSlug],
+    text: `${review.slug} ${review.h1}`,
   });
 
   const reviewSchema = {
@@ -122,7 +123,7 @@ export default function ReviewPage() {
           </AlertDescription>
         </Alert>
 
-        {topical && <Glp1ContentCta topical placement="inline" />}
+        {topical && <Glp1ContentCta topical placement="inline" utmContent={review.slug} />}
 
         {/* ── Rating Breakdown ── */}
         <section className="mb-10">
@@ -262,7 +263,7 @@ export default function ReviewPage() {
 
         {/* ── Quiz CTA ── */}
         {topical ? (
-          <Glp1ContentCta topical placement="end" />
+          <Glp1ContentCta topical placement="end" utmContent={review.slug} />
         ) : (
           <Glp1ContentCta topical={false} placement="footer" />
         )}
