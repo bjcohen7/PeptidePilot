@@ -1,6 +1,6 @@
 import { useRoute, Link } from "wouter";
 import { guidePages } from "../../../../shared/pseoData";
-import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
+import Seo, { buildBreadcrumbJsonLd, buildFaqPageJsonLd } from "@/components/Seo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,15 +62,22 @@ export default function GuidePage() {
         noindex={isNoindexed(`/guides/${guide.slug}`)}
         type="article"
         jsonLd={[
-          howToSchema,
+          // A step-less guide is not a how-to — suppress HowTo rich results
+          // (harmful for e.g. an unapproved injectable) and emit FAQPage instead.
+          ...(guide.steps.length > 0 ? [howToSchema] : []),
           buildBreadcrumbJsonLd([
             { name: "Home", path: "/" },
             { name: "Guides", path: "/guides" },
             { name: guide.title, path: `/guides/${guide.slug}` },
           ]),
+          ...(guide.faqItems.length > 0
+            ? [buildFaqPageJsonLd(guide.faqItems.map((f) => ({ question: f.q, answer: f.a })))]
+            : []),
         ]}
       />
-      <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
+      {guide.steps.length > 0 && (
+        <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
+      )}
       {/* ── Hero ── */}
       <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16">
         <div className="container max-w-4xl">
@@ -83,7 +90,9 @@ export default function GuidePage() {
           <div className="flex flex-wrap gap-4 text-sm text-slate-400">
             <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" />{guide.timeRequired}</span>
             <span className="flex items-center gap-1.5"><BarChart2 className="w-4 h-4" />{guide.difficulty}</span>
-            <span className="flex items-center gap-1.5"><BookOpen className="w-4 h-4" />{guide.steps.length} steps</span>
+            {guide.steps.length > 0 && (
+              <span className="flex items-center gap-1.5"><BookOpen className="w-4 h-4" />{guide.steps.length} steps</span>
+            )}
           </div>
         </div>
       </section>
@@ -103,9 +112,25 @@ export default function GuidePage() {
           <p className="text-muted-foreground leading-relaxed">{guide.overview}</p>
         </section>
 
+        {/* ── Risks (safety-explainer guides) ── */}
+        {guide.risks && guide.risks.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-xl font-bold mb-4">The risks</h2>
+            <div className="space-y-3">
+              {guide.risks.map((risk, i) => (
+                <div key={i} className="flex items-start gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                  <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-amber-600" />
+                  <span>{risk}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {topical && <Glp1ContentCta topical placement="inline" utmContent={guide.slug} />}
 
         {/* ── What You Need ── */}
+        {guide.whatYouNeed.length > 0 && (
         <section className="mb-10">
           <h2 className="text-xl font-bold mb-4">What You Need</h2>
           <Card>
@@ -121,8 +146,10 @@ export default function GuidePage() {
             </CardContent>
           </Card>
         </section>
+        )}
 
         {/* ── Steps ── */}
+        {guide.steps.length > 0 && (
         <section className="mb-10">
           <h2 className="text-xl font-bold mb-6">Step-by-Step Instructions</h2>
           <div className="space-y-6">
@@ -152,8 +179,10 @@ export default function GuidePage() {
             ))}
           </div>
         </section>
+        )}
 
         {/* ── Common Mistakes ── */}
+        {guide.commonMistakes.length > 0 && (
         <section className="mb-10">
           <h2 className="text-xl font-bold mb-4">Common Mistakes to Avoid</h2>
           <div className="space-y-3">
@@ -172,6 +201,7 @@ export default function GuidePage() {
             ))}
           </div>
         </section>
+        )}
 
         <Separator className="my-10" />
 

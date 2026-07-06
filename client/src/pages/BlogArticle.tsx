@@ -1,9 +1,10 @@
 import { Link } from "wouter";
 import { ArrowLeft, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Seo, { buildBreadcrumbJsonLd } from "@/components/Seo";
+import Seo, { buildBreadcrumbJsonLd, buildFaqPageJsonLd } from "@/components/Seo";
 import { useStaticBlogPost } from "@/lib/staticContent";
 import { getBlogPostSummary, type BlogPost } from "../../../shared/blog";
+import { BLOG_FAQ } from "@shared/blogFaq";
 import { Glp1ContentCta, isGlp1Topical } from "@/components/Glp1ContentCta";
 
 interface BlogArticleProps {
@@ -65,6 +66,9 @@ export function BlogArticleView({ article }: { article: BlogPost }) {
             { name: "Learn", path: "/blog" },
             { name: article.title, path: `/blog/${article.slug}` },
           ]),
+          ...(BLOG_FAQ[article.slug]
+            ? [buildFaqPageJsonLd(BLOG_FAQ[article.slug].map((f) => ({ question: f.q, answer: f.a })))]
+            : []),
         ]}
       />
       {/* Hero */}

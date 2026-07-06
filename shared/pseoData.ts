@@ -4070,6 +4070,8 @@ export interface GuidePageData {
   faqItems: Array<{ q: string; a: string }>;
   relatedGuides: string[];
   relatedPeptides: string[];
+  /** Optional risk bullets (safety-explainer guides with no how-to steps). */
+  risks?: string[];
   /** Per-page GLP-1 topicality override. Optional — the isGlp1Topical() classifier supplies the default when unset. */
   glp1Topical?: boolean;
 }
@@ -5434,90 +5436,32 @@ export const guidePages: GuidePageData[] = [
   },
   {
     slug: "how-to-use-melanotan-2",
-    title: "How to Use Melanotan 2: Dosing, Tanning Protocol & Side Effects",
-    h1: "How to Use Melanotan 2: Dosing, Tanning Protocol, and Side Effects",
-    metaDescription: "Complete Melanotan 2 guide — loading dose (0.25mg), maintenance protocol, UV exposure timing, and managing nausea and spontaneous erections.",
+    title: "Melanotan-2: What It Is, the Evidence, and the Serious Risks",
+    h1: "Melanotan-2: What It Is, the Evidence, and the Serious Risks",
+    metaDescription: "Melanotan-2 explained: what it is, the limited evidence, and the serious risks — including mole changes and melanoma concern. Not a usage guide; no dosing.",
     category: "Peptide Protocols",
-    targetPeptides: ["melanotan-2", "pt-141"],
-    difficulty: "Intermediate",
-    timeRequired: "10 minutes",
-    overview: "Melanotan 2 (MT-2) is a synthetic melanocortin receptor agonist that stimulates melanin production, producing a tan without UV exposure. It also has sexual arousal effects (similar to PT-141) and appetite suppression. This guide covers the loading protocol and side effect management.",
-    whatYouNeed: ["Melanotan 2 vial (10mg)", "Bacteriostatic water (2mL)", "Insulin syringes (U-100)", "Alcohol swabs", "Sunscreen (for UV sessions)"],
-    steps: [
-    {
-      stepNumber: 1,
-      title: "Reconstitute the vial",
-      description: "Add 2mL bacteriostatic water to a 10mg MT-2 vial for 5mg/mL (5000mcg/mL) concentration.",
-      tip: undefined,
-      warning: undefined,
-    }
-,
-    {
-      stepNumber: 2,
-      title: "Start with a very low loading dose",
-      description: "Begin at 0.25mg (250mcg) to assess tolerance. At 5000mcg/mL: 250mcg = 0.05mL = 5 units on a U-100 syringe.",
-      tip: "Inject at night to sleep through the initial nausea.",
-      warning: "Do not start at 0.5–1mg — nausea and facial flushing can be severe at higher initial doses.",
-    }
-,
-    {
-      stepNumber: 3,
-      title: "Gradually increase to loading dose",
-      description: "Over 1–2 weeks, increase to 0.5–1mg per day. Inject daily during the loading phase until desired tan depth is achieved (typically 2–4 weeks).",
-      tip: "Combine with UV exposure (10–20 minutes of sun or tanning bed) to accelerate melanin activation.",
-      warning: undefined,
-    }
-,
-    {
-      stepNumber: 4,
-      title: "Transition to maintenance dosing",
-      description: "Once desired tan is achieved, reduce to 0.5–1mg twice per week to maintain color. UV exposure 1–2x per week helps maintain the tan.",
-      tip: undefined,
-      warning: undefined,
-    }
-,
-    {
-      stepNumber: 5,
-      title: "Manage side effects",
-      description: "Nausea: inject at night, start low, use anti-nausea medication. Spontaneous erections (men): reduce dose or switch to morning injection. Facial flushing: transient, dose-dependent. Mole darkening: monitor existing moles — consult a dermatologist if any change.",
-      tip: undefined,
-      warning: "Monitor all moles and skin lesions during MT-2 use. Consult a dermatologist if any mole changes in size, shape, or color.",
-    }
-    ],
-    commonMistakes: [
-    {
-      mistake: "Starting at 0.5–1mg",
-      fix: "Always start at 0.25mg. The nausea and flushing at higher initial doses can be severe and leads to discontinuation.",
-    }
-,
-    {
-      mistake: "Not using UV exposure",
-      fix: "MT-2 stimulates melanin production, but UV light is needed to activate and distribute the melanin. Without UV, results are minimal.",
-    }
-,
-    {
-      mistake: "Ignoring mole changes",
-      fix: "MT-2 stimulates melanocytes broadly. Monitor all existing moles and see a dermatologist if any change. Do not use MT-2 if you have a history of melanoma.",
-    }
+    targetPeptides: ["melanotan-2"],
+    difficulty: "Beginner",
+    timeRequired: "5 minute read",
+    overview: "Safety note first. Melanotan-2 is not an FDA-approved drug. It is sold only as an unregulated, grey-market injectable of unknown purity, and it has been linked to serious harms — including changes to the size, shape, and colour of moles, which can mask or mimic melanoma (skin cancer). Dermatology and public-health bodies have repeatedly warned against it. This page explains what it is and what the evidence shows; it is not a usage guide and contains no dosing or administration instructions. Melanotan-2 is a synthetic peptide that mimics alpha-melanocyte-stimulating hormone (α-MSH), the signal that increases melanin (skin pigment). It has been marketed informally for tanning and, separately, for effects on libido. It is unapproved for any use in the US and is not a licensed medicine. Human evidence is limited and comes mostly from small, early studies; there are no large, long-term safety trials. Because street/online product is unregulated, what's actually in a given vial is unknown, which compounds the risk. The related compound bremelanotide (for a specific sexual-health indication) went through formal FDA review — melanotan-2 did not.",
+    whatYouNeed: [],
+    steps: [],
+    commonMistakes: [],
+    risks: [
+      "Mole/skin changes and melanoma concern — the most serious; new or changing moles after use should be seen by a doctor promptly.",
+      "Nausea, flushing, and blood-pressure changes reported by users.",
+      "Unregulated supply — no purity, dose, or sterility guarantees.",
+      "Legal status — not approved; sale for human use is restricted in many jurisdictions.",
     ],
     faqItems: [
-    {
-      q: "Is Melanotan 2 safe?",
-      a: "MT-2 is not FDA-approved and carries risks including mole darkening, nausea, and spontaneous erections. The long-term safety profile is unknown. It should not be used by anyone with a personal or family history of melanoma.",
-    }
-,
-    {
-      q: "How long does the Melanotan 2 tan last?",
-      a: "With maintenance dosing (0.5–1mg twice weekly) and periodic UV exposure, the tan can be maintained indefinitely. Without maintenance, the tan fades over 4–8 weeks.",
-    }
-,
-    {
-      q: "Does Melanotan 2 work without UV exposure?",
-      a: "MT-2 produces some baseline melanin stimulation without UV, but UV exposure significantly amplifies and distributes the melanin. Most users use both together for best results.",
-    }
+      { q: "Is melanotan-2 safe?", a: "No established safety; it's unapproved, unregulated, and linked to serious skin/mole changes and melanoma concerns." },
+      { q: "Is melanotan-2 FDA-approved?", a: "No." },
+      { q: "Does it cause skin cancer?", a: "It hasn't been proven to cause melanoma, but it changes moles in ways that can hide or mimic it, which is why dermatologists warn against it and urge prompt checks." },
+      { q: "Is melanotan-2 legal?", a: "It is not approved for human use; sale for that purpose is restricted in many places." },
+      { q: "What's a safer path to the goals people use it for?", a: "Evidence-based options exist for skin health and for sexual-health concerns; talk to a licensed clinician rather than using unregulated injectables." },
     ],
-    relatedPeptides: ["melanotan-2", "pt-141"],
-    relatedGuides: ["how-to-inject-subcutaneously", "how-to-calculate-peptide-dosage"],
+    relatedPeptides: ["melanotan-2"],
+    relatedGuides: [],
   },
   {
     slug: "how-to-use-thymosin-alpha-1",
