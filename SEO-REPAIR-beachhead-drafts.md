@@ -51,7 +51,7 @@
 > **Important:** tirzepatide is an FDA-approved medication (Mounjaro/Zepbound). **Retatrutide is investigational — it is not FDA-approved and is not commercially available.** It's an experimental triple-agonist (GIP/GLP-1/glucagon) still in clinical trials. Anything sold as "retatrutide" today is not an approved product.
 
 **Cost section (no invented price for retatrutide):**
-> Tirzepatide via licensed telehealth (compounded) starts around **$179/mo**; brand Zepbound lists at about **$1,086/mo**. Retatrutide has **no legitimate consumer price** because it isn't approved or commercially available — treat any retail "retatrutide" offer with caution.
+> Tirzepatide via licensed telehealth (compounded) starts around **$179/mo**. Brand Zepbound lists at about **$1,086/mo**, though Lilly's own cash-pay program (LillyDirect) offers it at roughly **$299–$449/mo** — so the brand isn't only available at the list price. Retatrutide has **no legitimate consumer price** because it isn't approved or commercially available — treat any retail "retatrutide" offer with caution.
 
 **[+ shared compounded disclosure]**
 
@@ -60,7 +60,7 @@
 2. How is a triple agonist different from tirzepatide? — Retatrutide adds glucagon-receptor activity to GIP/GLP-1; clinical significance is still being studied.
 3. Is "compounded retatrutide" legal or safe? — There is no FDA-approved retatrutide to compound from; treat such products as unverified and high-risk.
 4. When might retatrutide be approved? — Unknown — it depends on trial outcomes and FDA review; no approval date is set.
-5. What does tirzepatide cost today? — Brand Zepbound ~$1,086/mo list; compounded telehealth from ~$179/mo.
+5. What does tirzepatide cost today? — Brand Zepbound ~$1,086/mo list (or ~$299–$449/mo cash-pay via LillyDirect); compounded telehealth from ~$179/mo.
 
 **Internal links in:** footer nav; from blog/what-is-retatrutide and compare/tirzepatide-vs-retatrutide.
 
@@ -72,7 +72,7 @@
 > These are not comparable in evidence tier. **Semaglutide** is an FDA-approved GLP-1 with large randomized weight-loss trials. **AOD-9604** is a synthetic fragment of human growth hormone that is **not FDA-approved for weight loss and has limited, largely inconclusive human evidence** — early trials did not show meaningful weight loss versus placebo. This page compares what each is and what the evidence actually shows, not a head-to-head efficacy claim.
 
 **Cost section:**
-> Semaglutide via licensed telehealth (compounded) starts around **$179/mo**; brand Ozempic/Wegovy list at **$1,028–$1,349/mo**. AOD-9604 is sold only as a research/grey-market compound with no standardized clinical pricing or approval — another reason the comparison isn't apples-to-apples.
+> Semaglutide via licensed telehealth (compounded) starts around **$179/mo**. Brand Ozempic/Wegovy list at **$1,028–$1,349/mo**, but Novo's cash-pay program (NovoCare) runs roughly **$149–$499/mo** — so list price isn't the only brand option. AOD-9604 is sold only as a research/grey-market compound with no standardized clinical pricing or approval — another reason the comparison isn't apples-to-apples.
 
 **[+ shared compounded disclosure]**
 

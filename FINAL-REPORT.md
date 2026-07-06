@@ -65,6 +65,11 @@ Always include `txid` — it is what makes retries idempotent and rebills distin
 txid record with `needs_review=true`. Per-provider field remaps go in `providers.postback_param_map`.
 
 ## Conservative decisions & deferred items
+0. **ROADMAP — revisit email_2 / Ad A cost framing (added 2026-07-06).** Current copy is accurate — it
+   explicitly cites brand *list* price for contrast — but as manufacturer cash-pay programs (NovoCare
+   $149–499/mo, LillyDirect $299–449/mo) gain consumer awareness, the "$1,000+ vs our price" contrast will
+   age and could read as misleading. Revisit the email_2 cost email and Ad A creative to lead with the
+   cash-pay-inclusive framing before that shift lands. Not urgent; flagged so it doesn't get stale.
 1. **~97 editorial "5-minute quiz" strings remain** (About-page CTA + ~96 blog article `contentHtml`).
    Out of the funnel/CTA scope leg-4 targeted; needs a wording decision (and whether to soften "peptide"
    framing in blog prose). NOT fixed. The funnel, page CTAs, meta, and `/quiz` are all 4-minute now.
