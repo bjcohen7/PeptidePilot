@@ -66,11 +66,19 @@ export function BlogArticleView({ article }: { article: BlogPost }) {
             { name: "Learn", path: "/blog" },
             { name: article.title, path: `/blog/${article.slug}` },
           ]),
-          ...(BLOG_FAQ[article.slug]
-            ? [buildFaqPageJsonLd(BLOG_FAQ[article.slug].map((f) => ({ question: f.q, answer: f.a })))]
-            : []),
         ]}
       />
+      {/* FAQPage emitted inline (not via Seo) so it lands in the prerendered HTML. */}
+      {BLOG_FAQ[article.slug] && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(
+              buildFaqPageJsonLd(BLOG_FAQ[article.slug].map((f) => ({ question: f.q, answer: f.a }))),
+            ),
+          }}
+        />
+      )}
       {/* Hero */}
       <section className="bg-brand-gradient text-white py-14">
         <div className="container max-w-3xl">

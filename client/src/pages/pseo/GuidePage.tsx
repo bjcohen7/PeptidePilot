@@ -62,21 +62,32 @@ export default function GuidePage() {
         noindex={isNoindexed(`/guides/${guide.slug}`)}
         type="article"
         jsonLd={[
-          // A step-less guide is not a how-to — suppress HowTo rich results
-          // (harmful for e.g. an unapproved injectable) and emit FAQPage instead.
-          ...(guide.steps.length > 0 ? [howToSchema] : []),
+          // HowTo and FAQPage are emitted as inline <script> below so they land
+          // in the prerendered HTML (Seo injects jsonLd client-side only). A
+          // step-less guide (e.g. an unapproved injectable) emits neither HowTo
+          // rich result nor steps — only prose + risks + FAQPage.
           buildBreadcrumbJsonLd([
             { name: "Home", path: "/" },
             { name: "Guides", path: "/guides" },
             { name: guide.title, path: `/guides/${guide.slug}` },
           ]),
-          ...(guide.faqItems.length > 0
-            ? [buildFaqPageJsonLd(guide.faqItems.map((f) => ({ question: f.q, answer: f.a })))]
-            : []),
         ]}
       />
       {guide.steps.length > 0 && (
-        <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
+        />
+      )}
+      {guide.faqItems.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(
+              buildFaqPageJsonLd(guide.faqItems.map((f) => ({ question: f.q, answer: f.a }))),
+            ),
+          }}
+        />
       )}
       {/* ── Hero ── */}
       <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16">
