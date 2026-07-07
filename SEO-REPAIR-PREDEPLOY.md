@@ -113,9 +113,23 @@ Local classifier confirms intent before deploy: group A all in `GONE_410_PATHS`;
 
 ---
 
-## 6a. Structured-data caveat (Fable, non-blocking)
+## 6a. Structured-data — Fable caveat RESOLVED (commit ede6421)
 
-`Seo.tsx` injects `jsonLd` **client-side** (`useEffect` → `document.head.appendChild`). So the FAQPage JSON-LD I wired into `BlogArticle.tsx` (2c/2d) and `GuidePage.tsx` (melanotan-2) is **absent from the static prerendered HTML** — present only after JS runs. The **2 comparison pages** (2a/2b) emit FAQPage **statically** because `ComparisonPage.tsx` uses an inline body `<script>`. This is the existing site-wide pattern (all Seo-based structured data is client-rendered; Googlebot executes JS), **not a regression**. If static FAQPage on the blogs/guide is preferred, they'd need the inline-`<script>` approach `ComparisonPage.tsx` uses.
+Fable found that `Seo.tsx` injects `jsonLd` **client-side only** (`useEffect` → `appendChild`), so the FAQPage on the 2c/2d blogs + melanotan-2 guide was absent from the prerendered HTML (only the 2a/2b comparisons emitted it statically, via `ComparisonPage.tsx`'s inline `<script>`).
+
+**Fixed:** FAQPage is now emitted as an inline body `<script>` (matching `ComparisonPage.tsx`) in `BlogArticle.tsx` and `GuidePage.tsx`, and removed from the `Seo jsonLd` array to avoid a runtime duplicate. HowTo is likewise inline-only now (previously double-emitted for step guides).
+
+**Verified on rebuilt artifacts (`node scripts/build.mjs` → 685 routes):**
+| Page | FAQPage in static HTML | HowTo |
+|---|---|---|
+| /compare/ozempic-vs-wegovy | 1 (valid) | 0 |
+| /compare/mounjaro-vs-zepbound | 1 (valid) | 0 |
+| /blog/tirzepatide-vs-retatrutide | 1 (valid, 5 Q&As) | 0 |
+| /blog/aod-9604-vs-semaglutide | 1 (valid, 5 Q&As) | 0 |
+| /guides/how-to-use-melanotan-2 | 1 (valid, 5 Q&As) | **0** |
+| /guides/how-to-inject-subcutaneously (control) | 1 | 1 |
+
+All 5 target pages: exactly one FAQPage, parses clean. Melanotan-2 still emits **zero** HowTo. Step-bearing control guide keeps its HowTo. No duplicates.
 
 ## 7. Deferred / flagged (not blockers)
 
