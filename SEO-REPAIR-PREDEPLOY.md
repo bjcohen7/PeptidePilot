@@ -41,7 +41,7 @@
 
 The entry was doubled — a full copy of the **AOD-9604** article had been concatenated onto the end, plus raw markdown tables inside that junk copy.
 
-- **Removed:** ~17,183 chars — the entire concatenated AOD-9604 block (**41 `AOD-9604` references excised**, confirmed via `git show d579b4c`).
+- **Removed:** 16,981 chars (byte-level prefix/suffix diff; 16,314-char legit prefix untouched) — the entire concatenated AOD-9604 block (**24 `AOD-9604` references in the tirzepatide entry → 0**, per Fable recompute; my earlier "41" counted matches across the whole d579b4c diff, not just the tirzepatide entry).
 - **Last line KEPT** (legit article ending): `…weight-loss-effects</p>`
 - **First line REMOVED** (junction): the `<p>'''# AOD-9604…` paragraph that began the pasted duplicate, through the trailing `…clinical-trials-show/</a></p>`.
 - **Post-dedupe verification (current file):** junction `# AOD-9604` in tirzepatide entry = **0** ✓; entry retains approved FAQ lead-in ("Can I buy retatrutide") ✓; no stray `<table>` (the markdown table lived inside the removed copy) ✓.
@@ -89,7 +89,7 @@ Local classifier confirms intent before deploy: group A all in `GONE_410_PATHS`;
 | Prerender routes | **685** | 723 − 38 (28×410 + 10×301 losers) ✅ |
 | 410 paths rendered | **0** | 0 ✅ |
 | 301 losers rendered | **0** | 0 ✅ |
-| noindex present & flagged | **301 / 301** | all flagged ✅ |
+| noindex present & flagged | **296 distinct, all flagged** | `NOINDEX_PATHS` has 301 raw entries but 10 duplicate `/goals/*` → 291 unique prune + 5 static (`/quiz`, `/processing`, `/results`, `/404`, `/peptides-for-weight-loss`) = 296 distinct; 0 leaks ✅ |
 | Sitemap-eligible (non-noindex) | **389** | — |
 
 410/301 pages are excluded from the render set (real server responses handle them); the 301 noindex-flagged keepers still render but carry the noindex meta.
@@ -112,6 +112,10 @@ Local classifier confirms intent before deploy: group A all in `GONE_410_PATHS`;
 - The conditional touches only the step-less guide, as required.
 
 ---
+
+## 6a. Structured-data caveat (Fable, non-blocking)
+
+`Seo.tsx` injects `jsonLd` **client-side** (`useEffect` → `document.head.appendChild`). So the FAQPage JSON-LD I wired into `BlogArticle.tsx` (2c/2d) and `GuidePage.tsx` (melanotan-2) is **absent from the static prerendered HTML** — present only after JS runs. The **2 comparison pages** (2a/2b) emit FAQPage **statically** because `ComparisonPage.tsx` uses an inline body `<script>`. This is the existing site-wide pattern (all Seo-based structured data is client-rendered; Googlebot executes JS), **not a regression**. If static FAQPage on the blogs/guide is preferred, they'd need the inline-`<script>` approach `ComparisonPage.tsx` uses.
 
 ## 7. Deferred / flagged (not blockers)
 
