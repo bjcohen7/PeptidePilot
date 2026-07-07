@@ -1638,7 +1638,7 @@ export const pseoSections = [
       {
         "slug": "how-to-use-melanotan-2",
         "path": "/guides/how-to-use-melanotan-2",
-        "title": "How to Use Melanotan 2: Dosing, Tanning Protocol & Side Effects"
+        "title": "Melanotan-2: What It Is, the Evidence, and the Serious Risks"
       },
       {
         "slug": "how-to-use-thymosin-alpha-1",
