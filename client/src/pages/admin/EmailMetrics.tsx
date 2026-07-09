@@ -8,7 +8,9 @@ function cardClass() {
 }
 
 function formatRate(numerator: number, denominator: number) {
-  if (!denominator) return "0%";
+  // No denominator (e.g. sent=0) → no rate to show. Render an em dash, not
+  // "0%" (implies sends happened) or NaN% (raw division by zero).
+  if (!denominator) return "—";
   return `${Math.round((numerator / denominator) * 100)}%`;
 }
 

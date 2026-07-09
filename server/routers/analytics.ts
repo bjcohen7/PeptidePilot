@@ -774,10 +774,17 @@ export const analyticsRouter = router({
     ];
 
     for (const { path, label } of funnelPaths) {
+      // Results views land on /results/{publicId} (Processing redirects there),
+      // so an exact match on "/results" silently reads 0 while downstream
+      // stages (leads, clicks) are non-zero. Prefix-match the results stage.
+      const pathCond =
+        path === "/results"
+          ? sql`(${pageVisits.path} = '/results' OR ${pageVisits.path} LIKE '/results/%')`
+          : eq(pageVisits.path, path);
       const [result] = await db
         .select({ count: sql<number>`count(distinct ${pageVisits.sessionId})` })
         .from(pageVisits)
-        .where(and(eq(pageVisits.path, path), ...tc(pageVisits.createdAt)));
+        .where(and(pathCond, ...tc(pageVisits.createdAt)));
       const count = Number(result?.count ?? 0);
       const prevCount = stages[stages.length - 1].count;
       stages.push({

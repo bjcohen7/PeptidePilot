@@ -140,13 +140,13 @@ export default function InsightsOverview() {
       label: "Affiliate Clicks",
       value: summary.data?.totalAffiliateClicks ?? 0,
       icon: ExternalLink,
-      note: "Tracked outbound partner clicks",
+      note: "Raw events in affiliate_clicks — every outbound partner link click",
     },
     {
       label: "GLP-1 Provider Clicks",
       value: summary.data?.clickBreakdown?.glp1Provider ?? 0,
       icon: ExternalLink,
-      note: "Monetizable — funnel + library GLP-1 clicks",
+      note: "GLP-1 /go clicks: provider_click_logs + glp1-tagged affiliate_clicks (2 tables) — exceeds Affiliate Clicks",
     },
     {
       label: "Peptide Vendor Clicks",
@@ -207,7 +207,10 @@ export default function InsightsOverview() {
           <ArrowDown className="h-4 w-4 text-accent" />
           <h2 className="text-lg font-semibold">Conversion Funnel</h2>
         </div>
-        <p className="text-sm text-muted-foreground mb-5">How far visitors make it through the full path. Each stage counts sessions that visited that page.</p>
+        <p className="text-sm text-muted-foreground mb-2">How far visitors make it through the full path. Page stages count distinct sessions that visited that page; the final <span className="font-medium">Affiliate Click</span> stage counts distinct <span className="font-medium">leads</span> with ≥1 click (deduped, not raw events) — so it reads lower than the Affiliate Clicks / GLP-1 Provider Clicks cards above.</p>
+        <p className="mb-5 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          Annotation (2026-07-09): the <span className="font-medium">Results</span> stage under-counted from <span className="font-medium">Jul 2–9, 2026</span>. The Jul 2 leg-4/5/6 deploy moved results views to <code>/results/&#123;publicId&#125;</code>, but this funnel matched only the exact <code>/results</code> path, so Results read ~0 while downstream stages did not. Query fixed 2026-07-09 (prefix match); Results counts inside that window are understated in historical views.
+        </p>
         <div className="space-y-2.5">
           {(funnel.data?.stages ?? []).map((stage, index) => {
             const maxCount = funnel.data?.stages[0]?.count ?? 1;
