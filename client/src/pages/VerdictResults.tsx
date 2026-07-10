@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { matchPercentFromFitScore, shouldDisplayMatchPercent } from "@shared/matchDisplay";
+import { WebviewEscapeHint } from "@/components/WebviewEscapeHint";
 
 type ProviderDetail = {
   slug: string;
@@ -164,6 +165,7 @@ export default function VerdictResults({
           >
             See my plan at {heroDetail.displayName} &rarr;
           </a>
+          <WebviewEscapeHint emailDelivered={emailDelivered} />
           <p className="text-xs text-muted-foreground/60 text-center mt-2">
             10-min intake &middot; provider review in 24&ndash;48h &middot; meds shipped
           </p>

@@ -170,6 +170,7 @@ export default function ResultsByPublicId() {
         isReturningUser={false}
         userEmail={data.email || submittedEmail || undefined}
         publicId={publicId}
+        emailDelivered={data.emailDelivered}
       />
     );
   }

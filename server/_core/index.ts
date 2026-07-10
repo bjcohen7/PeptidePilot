@@ -10,6 +10,7 @@ import { ensureAffiliateWorkspaceSchema, ensureExperimentSchema } from "../db";
 import { checkProviderFloorConsistency } from "../lib/providerFloorCheck";
 import { isGone410 } from "../../shared/seoPruneList";
 import { redirectTarget } from "../../shared/seoRedirects";
+import { isInAppBrowser } from "../../shared/inAppBrowser";
 import { createContext } from "./context";
 import { ENV } from "./env";
 import { recordClickEvent, recordFunnelEvent, recordPageView, startVisitorSession } from "../routers/analytics";
@@ -303,6 +304,8 @@ async function startServer() {
           const url = p.affiliateUrlTemplate.replace(/\{subid\}/g, subid);
 
           // Log the click — tagged as a monetizable GLP-1 provider click.
+          // Capture whether the click came from a FB/IG in-app WebView so we can
+          // correlate real-browser clicks with downstream provider funnel-starts.
           await db.insert(providerClickLogs).values({
             leadId: lead?.id ?? null,
             publicId,
@@ -311,6 +314,7 @@ async function startServer() {
             experimentVariant: lead?.experimentVariant ?? null,
             sourceSurface: surface,
             clickType: "glp1_provider",
+            inAppBrowser: isInAppBrowser(req.headers["user-agent"]),
           });
 
           res.redirect(302, url);

@@ -272,6 +272,7 @@ export const providerClickLogs = mysqlTable("provider_click_logs", {
   experimentVariant: varchar("experiment_variant", { length: 16 }),
   sourceSurface: varchar("source_surface", { length: 32 }), // 'funnel' | 'library' | 'bridge'
   clickType: varchar("click_type", { length: 64 }), // 'glp1_provider' | 'peptide_vendor' | 'other'
+  inAppBrowser: boolean("in_app_browser"), // true = FB/IG WebView click, from UA at click time
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

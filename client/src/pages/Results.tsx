@@ -3,6 +3,7 @@ import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { WebviewEscapeHint } from "@/components/WebviewEscapeHint";
 import { Badge } from "@/components/ui/badge";
 import {
   ExternalLink,
@@ -422,6 +423,7 @@ export function ResultsDisplay({
   isReturningUser,
   userEmail,
   publicId,
+  emailDelivered,
 }: {
   leadId: string;
   sessionId: string;
@@ -429,6 +431,7 @@ export function ResultsDisplay({
   isReturningUser: boolean;
   userEmail?: string;
   publicId?: string;
+  emailDelivered?: boolean;
 }) {
   return (
     <div className="min-h-screen bg-background">
@@ -473,6 +476,7 @@ export function ResultsDisplay({
             <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto">
               Based on your responses, here are the top GLP-1 telehealth providers matched to your needs.
             </p>
+            <WebviewEscapeHint emailDelivered={emailDelivered} />
           </div>
 
           <div className="space-y-5 sm:space-y-6">

@@ -438,6 +438,8 @@ export async function ensureAffiliateWorkspaceSchema() {
       // click_type:     'glp1_provider' | 'peptide_vendor' | 'other'
       await addColumnIfMissing(db, "provider_click_logs", "source_surface", "`source_surface` varchar(32) DEFAULT 'funnel'");
       await addColumnIfMissing(db, "provider_click_logs", "click_type", "`click_type` varchar(64) DEFAULT 'glp1_provider'");
+      // in_app_browser: was this /go click from a FB/IG WebView? (from UA at click time)
+      await addColumnIfMissing(db, "provider_click_logs", "in_app_browser", "`in_app_browser` tinyint(1) DEFAULT NULL");
       await addColumnIfMissing(db, "affiliate_clicks", "source_surface", "`source_surface` varchar(32) DEFAULT NULL");
       await addColumnIfMissing(db, "affiliate_clicks", "click_type", "`click_type` varchar(64) DEFAULT NULL");
       await addColumnIfMissing(db, "click_events", "source_surface", "`source_surface` varchar(32) DEFAULT NULL");
