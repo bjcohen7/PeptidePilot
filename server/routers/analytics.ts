@@ -28,10 +28,20 @@ function timeConditions(range: TimeRange, column: any) {
   }
 }
 
+// Ceiling for a single page view's reported dwell time (1 hour). Anything larger
+// is a bot or a tab left open, so we clamp it: an absurd delta must never poison
+// the accumulating visitor_sessions.totalDurationMs sum or overflow a column.
+const MAX_PAGE_VIEW_DURATION_MS = 1000 * 60 * 60;
+
+function clampDurationMs(value: number): number {
+  if (!Number.isFinite(value) || value <= 0) return 0;
+  return Math.min(Math.floor(value), MAX_PAGE_VIEW_DURATION_MS);
+}
+
 const pageViewInput = z.object({
   sessionId: z.string().min(8).max(64),
   path: z.string().min(1).max(512),
-  durationMs: z.number().int().min(0).max(1000 * 60 * 60),
+  durationMs: z.number().int().min(0).max(MAX_PAGE_VIEW_DURATION_MS),
   referrer: z.string().max(1024).optional().nullable(),
 });
 
@@ -124,6 +134,11 @@ export async function recordPageView(input: PageViewPayload) {
   const db = await getDb();
   if (!db) return;
 
+  // The /api/analytics/page-view beacon calls this directly (no zod validation),
+  // so clamp here to keep a single absurd value out of page_visits.durationMs and
+  // the accumulating visitor_sessions.totalDurationMs sum.
+  const durationMs = clampDurationMs(input.durationMs);
+
   const existing = await db
     .select()
     .from(visitorSessions)
@@ -144,7 +159,7 @@ export async function recordPageView(input: PageViewPayload) {
     .values({
       sessionId: input.sessionId,
       path: normalizePath(input.path),
-      durationMs: input.durationMs,
+      durationMs,
       referrer: normalizeReferrer(input.referrer),
     });
 
@@ -154,7 +169,7 @@ export async function recordPageView(input: PageViewPayload) {
       lastSeenAt: new Date(),
       lastPath: normalizePath(input.path),
       pageViewCount: sql`${visitorSessions.pageViewCount} + 1`,
-      totalDurationMs: sql`${visitorSessions.totalDurationMs} + ${input.durationMs}`,
+      totalDurationMs: sql`${visitorSessions.totalDurationMs} + ${durationMs}`,
     })
     .where(eq(visitorSessions.id, input.sessionId));
 }

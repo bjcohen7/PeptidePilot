@@ -1,4 +1,4 @@
-import { boolean, index, int, json, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { bigint, boolean, index, int, json, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -162,7 +162,8 @@ export const visitorSessions = mysqlTable("visitor_sessions", {
   utmTerm: varchar("utmTerm", { length: 255 }),
   userAgent: text("userAgent"),
   pageViewCount: int("pageViewCount").notNull().default(0),
-  totalDurationMs: int("totalDurationMs").notNull().default(0),
+  // BIGINT so a long-lived / accumulating session cannot overflow int (~24.8 days of ms).
+  totalDurationMs: bigint("totalDurationMs", { mode: "number" }).notNull().default(0),
   // Surface the session entered on: 'funnel' | 'library' | 'bridge' (leg-5).
   sourceSurface: varchar("source_surface", { length: 32 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

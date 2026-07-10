@@ -116,6 +116,33 @@ async function addIndexIfMissing(
   }
 }
 
+async function getColumnType(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  table: string,
+  column: string,
+): Promise<string | null> {
+  const result = await db.execute(sql.raw(`SHOW COLUMNS FROM \`${table}\` LIKE '${column}'`));
+  const rows = extractMysqlRows<{ Type?: string }>(result);
+  const type = rows[0]?.Type;
+  return typeof type === "string" ? type.toLowerCase() : null;
+}
+
+// Idempotently widen/alter a column's type. No-op if the column is missing (the
+// CREATE TABLE above already provisions it) or already the expected type.
+async function ensureColumnType(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  table: string,
+  column: string,
+  expectedTypePrefix: string,
+  definitionSql: string,
+) {
+  const currentType = await getColumnType(db, table, column);
+  if (!currentType || currentType.startsWith(expectedTypePrefix)) {
+    return;
+  }
+  await db.execute(sql.raw(`ALTER TABLE \`${table}\` MODIFY ${definitionSql}`));
+}
+
 export async function ensureReturningUserLeadSchema(options?: { force?: boolean }) {
   const db = await getDb();
   if (!db) return;
@@ -206,7 +233,7 @@ export async function ensureAffiliateWorkspaceSchema() {
           \`utmTerm\` varchar(255),
           \`userAgent\` text,
           \`pageViewCount\` int NOT NULL DEFAULT 0,
-          \`totalDurationMs\` int NOT NULL DEFAULT 0,
+          \`totalDurationMs\` bigint NOT NULL DEFAULT 0,
           \`createdAt\` timestamp NOT NULL DEFAULT (now()),
           \`updatedAt\` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
           CONSTRAINT \`visitor_sessions_id\` PRIMARY KEY(\`id\`)
@@ -249,6 +276,16 @@ export async function ensureAffiliateWorkspaceSchema() {
           CONSTRAINT \`affiliate_clicks_id\` PRIMARY KEY(\`id\`)
         )
       `));
+
+      // Widen the accumulating duration counter so long-lived/bot sessions can't
+      // overflow int (~24.8 days of ms) and silently drop analytics UPDATEs.
+      await ensureColumnType(
+        db,
+        "visitor_sessions",
+        "totalDurationMs",
+        "bigint",
+        "`totalDurationMs` bigint NOT NULL DEFAULT 0",
+      );
 
       if (!(await hasColumn(db, "affiliate_links", "isGlobal"))) {
         await db.execute(sql.raw("ALTER TABLE `affiliate_links` ADD COLUMN `isGlobal` boolean NOT NULL DEFAULT false"));
