@@ -27,6 +27,9 @@ export type EmailPersonalization = {
   promoCode: string | null;
   complianceNote: string;
   mailingAddress: string;
+  // True when the lead was captured inside a FB/IG in-app browser (from the
+  // session UA). email0 uses this to serve a continuity subject to that segment.
+  inApp?: boolean;
 };
 
 function getSiteUrl(): string {
@@ -119,31 +122,38 @@ function layout(content: string, p: EmailPersonalization, preheader: string): st
 // EMAIL 0 — Instant
 // ─────────────────────────────────────────────
 export function email0(p: EmailPersonalization, variant: "A" | "B"): { subject: string; preheader: string; html: string } {
-  const preheader = "Based on your answers — saved at your personal link.";
-  if (variant === "B") {
-    return {
-      subject: shouldDisplayMatchPercent(p.matchScore) ? `Your match: ${p.providerName} (${p.matchScore}% fit)` : `Your match: ${p.providerName}`,
-      preheader,
-      html: layout(`
+  const body = `
 <p>Your results are in.</p>
 <p>Based on your answers, your top match is <strong>${p.providerName}</strong>${compatClause(p, " — ", "")}. ${p.answerEcho}</p>
 <p>Your full breakdown — why it fits, what it costs, and two alternatives — is saved at your personal link:</p>
 <p><a href="${p.resultsUrl}" class="cta">View my results →</a></p>
 <p>This link is yours; it works on any device, anytime.</p>
-`, p, preheader),
+`;
+  // In-app-captured leads bounced out of a cramped FB/IG webview mid-intake — give
+  // them a continuity subject that eases "I lost my place" and points at the real
+  // browser. Overrides the A/B subject for this segment; the subject test continues
+  // for the (larger) non-in-app population, whose personalized subject wins on opens.
+  if (p.inApp) {
+    const preheader = "Opens in your regular browser — where the ~10-minute signup goes smoother.";
+    return {
+      subject: `Your ${p.providerName} match is saved — finish anytime`,
+      preheader,
+      html: layout(body, p, preheader),
+    };
+  }
+  const preheader = "Based on your answers — saved at your personal link.";
+  if (variant === "B") {
+    return {
+      subject: shouldDisplayMatchPercent(p.matchScore) ? `Your match: ${p.providerName} (${p.matchScore}% fit)` : `Your match: ${p.providerName}`,
+      preheader,
+      html: layout(body, p, preheader),
     };
   }
   // Subject A
   return {
     subject: "Your GLP-1 match is ready",
     preheader,
-    html: layout(`
-<p>Your results are in.</p>
-<p>Based on your answers, your top match is <strong>${p.providerName}</strong>${compatClause(p, " — ", "")}. ${p.answerEcho}</p>
-<p>Your full breakdown — why it fits, what it costs, and two alternatives — is saved at your personal link:</p>
-<p><a href="${p.resultsUrl}" class="cta">View my results →</a></p>
-<p>This link is yours; it works on any device, anytime.</p>
-`, p, preheader),
+    html: layout(body, p, preheader),
   };
 }
 
@@ -355,6 +365,7 @@ export function emailNudge(p: EmailPersonalization, variant: "A" | "B"): { subje
 <p><strong>"Am I locked in?"</strong> You can cancel your subscription.</p>
 <p><strong>"What if the provider says no?"</strong> Then you don't pay for treatment. Prescriptions only happen when a licensed provider decides it's appropriate.</p>
 <p><a href="${p.goUrl}" class="cta">Pick up where I left off →</a></p>
+<p style="font-size:13px;color:#6b7280;margin-top:4px;">Tip: the intake takes about 10 minutes — most people find it easiest from a laptop or their phone's regular browser.</p>
 `, p, preheader),
     };
   }
@@ -367,6 +378,7 @@ export function emailNudge(p: EmailPersonalization, variant: "A" | "B"): { subje
 <p><strong>"Am I locked in?"</strong> You can cancel your subscription.</p>
 <p><strong>"What if the provider says no?"</strong> Then you don't pay for treatment. Prescriptions only happen when a licensed provider decides it's appropriate.</p>
 <p><a href="${p.goUrl}" class="cta">Pick up where I left off →</a></p>
+<p style="font-size:13px;color:#6b7280;margin-top:4px;">Tip: the intake takes about 10 minutes — most people find it easiest from a laptop or their phone's regular browser.</p>
 `, p, preheader),
   };
 }

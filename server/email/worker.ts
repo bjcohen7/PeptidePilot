@@ -5,6 +5,7 @@ import { getEmailTemplate, isPostConversionTemplate, type EmailPersonalization }
 import { generateUnsubscribeToken } from "./schema";
 import { ENV } from "../_core/env";
 import { EMAIL_SEQUENCE, SEND_WINDOW } from "../../shared/emailSequence";
+import { isInAppBrowser } from "../../shared/inAppBrowser";
 import { checkStopOnSilence } from "./queue";
 import { reconcileIncompleteLeads } from "./reconcile";
 import { matchPercentFromFitScore } from "../../shared/matchDisplay";
@@ -351,8 +352,10 @@ async function buildPersonalization(
 ): Promise<EmailPersonalization | null> {
   try {
     const [leadRows] = await db.execute(sql.raw(
-      "SELECT id, `publicId`, email, `topPeptideMatch`, `provider_matches`, `rawQuizData` " +
-      "FROM leads WHERE id = '" + leadId + "' LIMIT 1"
+      "SELECT l.id, l.`publicId`, l.email, l.`topPeptideMatch`, l.`provider_matches`, l.`rawQuizData`, " +
+      "vs.`userAgent` AS captureUa " +
+      "FROM leads l LEFT JOIN visitor_sessions vs ON vs.id = l.`sessionId` " +
+      "WHERE l.id = '" + leadId + "' LIMIT 1"
     ));
     const leadArr = Array.isArray(leadRows) ? (Array.isArray(leadRows[0]) ? leadRows[0] : leadRows) : [];
     if (leadArr.length === 0) return null;
@@ -402,6 +405,8 @@ async function buildPersonalization(
       promoCode: provider.promoCode || null,
       complianceNote: provider.complianceNote || "Compounded medications are not FDA-approved finished drug products.",
       mailingAddress: process.env.EMAIL_PHYSICAL_ADDRESS || "1234 Health Way, Suite 100, Austin, TX 78701",
+      // Continuity-subject targeting for email0 (FB/IG in-app leaks concentrate here).
+      inApp: isInAppBrowser(lead.captureUa),
     };
   } catch (error) {
     console.error(`[EmailCron] Failed to build personalization for lead ${leadId}:`, error);
