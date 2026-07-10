@@ -31,8 +31,8 @@ export const GLP1_PROVIDERS: GLP1Provider[] = [
     id: "gala",
     name: "Gala Health",
     brandName: "Gala Health",
-    startingPrice: 179,
-    priceTag: "$179/mo",
+    startingPrice: 129,
+    priceTag: "$129/mo",
     positioningTag: "Best Value",
 
     medications: "Compounded semaglutide",
@@ -48,15 +48,15 @@ export const GLP1_PROVIDERS: GLP1Provider[] = [
     category: "telehealth",
     officialUrl: "https://galaglp1.com/",
     logoMarkFallback: "GA",
-    notes: "LegitScript Certified — $179/mo all doses, no hidden fees",
-    subDescription: "Licensed providers in all 50 states — $179/mo all doses, no hidden fees",
+    notes: "LegitScript Certified — $129/mo all doses, no hidden fees",
+    subDescription: "Licensed providers in all 50 states — $129/mo all doses, no hidden fees",
   },
   {
     id: "direct_med",
     name: "Direct Meds",
     brandName: "Direct Meds",
-    startingPrice: 199,
-    priceTag: "$199/mo",
+    startingPrice: 297,
+    priceTag: "$297/mo",
     positioningTag: "Most Trusted",
 
     medications: "Compounded sema & tirz",
@@ -72,15 +72,18 @@ export const GLP1_PROVIDERS: GLP1Provider[] = [
     category: "telehealth",
     officialUrl: "https://www.directmeds.com/",
     logoMarkFallback: "DM",
-    notes: "LegitScript Certified — use code PILOT50 at checkout",
+    notes: "LegitScript Certified — doctor prescribed and supervised",
     subDescription: "Doctor prescribed and supervised — personalized care plans",
   },
   {
     id: "sprout",
     name: "Sprout",
     brandName: "Sprout",
-    startingPrice: 199,
-    priceTag: "$199/mo",
+    // Sprout runs an intro rate: $169 first month, $319/mo after. We anchor the
+    // durable $319 (not the one-month promo) so the derived floor stays honest —
+    // otherwise "from $169/mo" would imply an ongoing price it isn't. Intro noted below.
+    startingPrice: 319,
+    priceTag: "$319/mo",
     positioningTag: "No Contracts",
 
     medications: "Compounded semaglutide",
@@ -96,8 +99,8 @@ export const GLP1_PROVIDERS: GLP1Provider[] = [
     category: "telehealth",
     officialUrl: "https://sprouthealth.com/",
     logoMarkFallback: "SP",
-    notes: "LegitScript Certified — no contracts, no surprise fees",
-    subDescription: "Prepared by state-licensed US pharmacies — fast shipping",
+    notes: "LegitScript Certified — $169 first month, then $319/mo · no contracts",
+    subDescription: "$169 first month, then $319/mo — no contracts, US-licensed pharmacies",
   },
 ];
 

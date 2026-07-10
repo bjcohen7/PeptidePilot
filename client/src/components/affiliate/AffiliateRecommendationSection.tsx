@@ -13,7 +13,7 @@ const HARDCODED_PROVIDERS: AffiliatePartnerCardData[] = [
     url: "https://galaglp1.com/lp/glp1?a=price&_ef_transaction_id=&oid=1&affid=13",
     monogram: "GA",
     differentiatorBadge: "Legit Script Certified",
-    headline: "$179 per month all doses, no hidden fees",
+    headline: "$129 per month all doses, no hidden fees",
     promo: "",
     trustSignals: ["Licensed providers in all 50 states"],
     ctaLabel: "Get Started",

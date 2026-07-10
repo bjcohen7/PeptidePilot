@@ -369,7 +369,7 @@ export const emailRouter = router({
         publicId: "test-public-id",
         providerName: "Gala Health",
         matchScore: 92,
-        priceFrom: "$179",
+        priceFrom: "$129",
         shipDays: 4,
         answerEcho: "Based on your goals and budget, this is the best fit.",
         whyRow1: "Best price-to-care ratio for your budget",
