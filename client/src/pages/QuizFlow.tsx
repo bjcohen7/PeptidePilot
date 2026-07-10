@@ -404,7 +404,10 @@ export default function QuizFlow() {
             </div>
 
             <p className="text-xs text-muted-foreground text-center mt-5 animate-fade-in">
-              Select one answer and we&apos;ll keep things moving. Swipe right to go back.
+              Select one answer and we&apos;ll keep things moving.{" "}
+              {/* Swipe is touch-only — on desktop point to the always-present footer Back button. */}
+              <span className="md:hidden">Swipe right to go back.</span>
+              <span className="hidden md:inline">Use Back below to revisit a question.</span>
             </p>
           </div>
         )}

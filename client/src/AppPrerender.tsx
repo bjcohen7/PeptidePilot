@@ -18,7 +18,6 @@ import ForConditionPage from "./pages/pseo/ForConditionPage";
 import ReviewPage from "./pages/pseo/ReviewPage";
 import QuizFlow from "./pages/QuizFlow";
 import { QuizProvider } from "./contexts/QuizContext";
-import ProvidersPage from "./pages/ProvidersPage";
 import { getBlogPost } from "../../shared/blog-content";
 
 function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -205,12 +204,6 @@ export default function AppPrerender({ path }: { path: string }) {
 
         <Route path="/results">
           <div className="min-h-screen bg-background" />
-        </Route>
-
-        <Route path="/providers">
-          <PublicLayout>
-            <ProvidersPage />
-          </PublicLayout>
         </Route>
 
         {/* Bridge landing (paid traffic) — prerendered for instant first paint;

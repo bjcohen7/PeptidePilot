@@ -706,6 +706,18 @@ export default function Results() {
     );
   }
 
+  // Only show the lead-capture preview to a visitor who actually just finished the
+  // quiz. On a bare /results hit with no session/quiz state, don't flash generic
+  // preview matches — render a neutral loader; the effect above routes to the
+  // recovery form (or stored results) on the next tick.
+  if (!hasFreshQuizState) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-sm text-muted-foreground">Loading your results…</div>
+      </div>
+    );
+  }
+
   return (
     <LeadCaptureGate
       onReveal={handleReveal}

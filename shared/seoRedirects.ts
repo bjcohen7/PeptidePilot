@@ -16,6 +16,10 @@ export const SEO_REDIRECTS: Record<string, string> = {
   // clean pairs — /compare stays canonical
   "/compare/kisspeptin-vs-pt-141": "/compare/pt-141-vs-kisspeptin",
   "/blog/semaglutide-vs-tirzepatide": "/compare/semaglutide-vs-tirzepatide",
+  // retired: standalone /providers page carried fabricated coupons/testimonials/
+  // plan prices (no real data source). 301 to home; the results page is the real
+  // provider comparison.
+  "/providers": "/",
 };
 
 export function redirectTarget(path: string): string | null {

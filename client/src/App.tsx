@@ -21,7 +21,6 @@ const Processing = lazy(() => import("./pages/Processing"));
 const Results = lazy(() => import("./pages/Results"));
 const ResultsByPublicId = lazy(() => import("./pages/ResultsByPublicId"));
 const Match = lazy(() => import("./pages/Match"));
-const ProvidersPage = lazy(() => import("./pages/ProvidersPage"));
 const About = lazy(() => import("./pages/About"));
 const Blog = lazy(() => import("./pages/Blog"));
 const PrivacyPolicy = lazy(() =>
@@ -203,12 +202,8 @@ function Router() {
         </Suspense>
       </Route>
 
-      {/* Providers comparison */}
-      <Route path="/providers">
-        <Suspense fallback={<RouteFallback />}>
-          <ProvidersPage />
-        </Suspense>
-      </Route>
+      {/* /providers retired — was a standalone page of fabricated data (mock
+          coupons/testimonials/prices). Server 301s /providers → / (seoRedirects). */}
 
       {/* Supporting pages */}
       <Route path="/about">
