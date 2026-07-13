@@ -863,6 +863,19 @@ export const analyticsRouter = router({
       pctDropped: prevAff ? Math.round(((prevAff - affCount) / prevAff) * 100) : 0,
     });
 
-    return { stages, totalSessions };
+    // Direct-to-Gala experiment visibility: homepage CTAs that went straight to
+    // Gala's funnel (provider_click_logs.position = 'home_direct'), + CTR vs sessions.
+    const [directResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(providerClickLogs)
+      .where(and(eq(providerClickLogs.position, "home_direct"), ...tc(providerClickLogs.createdAt)));
+    const directClicks = Number(directResult?.count ?? 0);
+    const directFlow = {
+      sessions: totalSessions,
+      directClicks,
+      ctr: totalSessions ? Math.round((directClicks / totalSessions) * 100) : 0,
+    };
+
+    return { stages, totalSessions, directFlow };
   }),
 });

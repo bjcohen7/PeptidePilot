@@ -20,6 +20,13 @@ export function parseSubid(
   knownSlugs: readonly string[] = KNOWN_PROVIDER_SLUGS,
 ): ParsedSubid | null {
   if (!subid) return null;
+  // Homepage direct-to-Gala experiment: subid is `${sessionId}-gdirect` (these
+  // visitors have no lead/publicId). Resolve to gala so postbacks attribute to
+  // the right provider; the prefix is the visitor sessionId, surfaced as publicId.
+  if (subid.endsWith("-gdirect")) {
+    const sid = subid.slice(0, -"-gdirect".length);
+    if (sid) return { publicId: sid, providerSlug: "gala" };
+  }
   let best: string | null = null;
   for (const slug of knownSlugs) {
     if (!slug || subid === slug) continue;

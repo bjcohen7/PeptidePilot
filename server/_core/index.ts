@@ -328,6 +328,51 @@ async function startServer() {
     res.redirect(302, "/");
   });
 
+  // Homepage direct-to-Gala experiment (HOMEPAGE_CTA_MODE). Session-keyed outbound
+  // redirect — these visitors have NO lead/publicId. Log the click BEFORE the 302 so
+  // the direct cohort is measurable, then send them into Gala's funnel with a
+  // `-gdirect` sub1 that separates this cohort from quiz-flow (`-gala`) in Everflow.
+  app.get("/go-direct/gala", async (req, res) => {
+    const sessionId = (typeof req.query.sid === "string" && req.query.sid.slice(0, 36)) || "anon";
+    const inApp = isInAppBrowser(req.headers["user-agent"]);
+    const subid = `${sessionId}-gdirect`;
+    const url =
+      "https://galaglp1.com/funnel/start?a=price&_ef_transaction_id=&oid=1&affid=13" +
+      "&utm_content=lp-glp1-v4&sub1=" + encodeURIComponent(subid);
+    try {
+      const db = await getDb();
+      if (db) {
+        await db.insert(providerClickLogs).values({
+          leadId: null,
+          publicId: sessionId,
+          providerSlug: "gala",
+          position: "home_direct",
+          experimentVariant: null,
+          sourceSurface: "funnel",
+          clickType: "glp1_provider",
+          inAppBrowser: inApp,
+        });
+      }
+    } catch (err: any) {
+      // Never block the outbound redirect on a logging failure. Full driver error per AGENTS.md.
+      console.error(
+        "[GoDirect] click-log failed:",
+        err?.code, err?.errno, err?.sqlState, err?.sqlMessage,
+        err?.cause?.code, err?.cause?.sqlMessage, err?.cause?.message,
+      );
+    }
+    res.redirect(302, url);
+  });
+
+  // Runtime homepage-CTA mode (quiz | gala | split), read per request so a Railway
+  // env flip takes effect without a rebuild. Default gala (the live experiment).
+  app.get("/api/cta-mode", (_req, res) => {
+    const raw = (process.env.HOMEPAGE_CTA_MODE || "gala").toLowerCase();
+    const mode = raw === "quiz" || raw === "split" ? raw : "gala";
+    res.set("Cache-Control", "no-store");
+    res.json({ mode });
+  });
+
   app.post("/api/analytics/funnel-event", express.json({ limit: "1mb" }), async (req, res) => {
     try {
       await recordFunnelEvent({

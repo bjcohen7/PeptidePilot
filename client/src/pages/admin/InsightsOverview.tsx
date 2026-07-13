@@ -252,6 +252,34 @@ export default function InsightsOverview() {
         ) : null}
       </div>
 
+      {/* Direct-to-Gala experiment (HOMEPAGE_CTA_MODE) — homepage visitors sent
+          straight into Gala's funnel, bypassing the quiz. */}
+      {funnel.data?.directFlow ? (
+        <div className={cardClass()}>
+          <div className="flex items-center gap-2 mb-1">
+            <ExternalLink className="h-4 w-4 text-accent" />
+            <h2 className="text-lg font-semibold">Direct-to-Gala Flow</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-5">
+            Homepage CTAs routed straight into Gala&apos;s funnel (bypassing the quiz), in the current time range.
+          </p>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <p className="text-xs text-muted-foreground">Sessions</p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight">{funnel.data.directFlow.sessions}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Direct outbound clicks</p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight">{funnel.data.directFlow.directClicks}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">CTR</p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight">{funnel.data.directFlow.ctr}%</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div className={cardClass()}>
         <div className="flex items-start justify-between gap-4">
           <div>
