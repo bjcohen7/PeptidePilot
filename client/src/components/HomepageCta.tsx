@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { getVisitorSessionId } from "@/components/SessionTracker";
 import { trackMetaCustomEvent } from "@/lib/metaPixel";
@@ -20,6 +20,8 @@ function hashToGala(sessionId: string): boolean {
 
 export function HomepageCta({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<CtaMode>("gala");
+  const [href, setHref] = useState("/go-direct/gala");
+  const pointerFired = useRef(false);
 
   useEffect(() => {
     let alive = true;
@@ -29,6 +31,16 @@ export function HomepageCta({ children }: { children: ReactNode }) {
         if (alive && (d?.mode === "quiz" || d?.mode === "gala" || d?.mode === "split")) setMode(d.mode);
       })
       .catch(() => {});
+    // Attach the visitor sessionId to the outbound href once client-side, so the
+    // natural anchor navigation carries it. Prerender/no-JS keeps the bare
+    // /go-direct/gala (still valid — the server falls back to 'anon').
+    let sid = "";
+    try {
+      sid = getVisitorSessionId();
+    } catch {
+      /* no-op */
+    }
+    if (sid) setHref(`/go-direct/gala?sid=${encodeURIComponent(sid)}`);
     return () => {
       alive = false;
     };
@@ -43,27 +55,38 @@ export function HomepageCta({ children }: { children: ReactNode }) {
     return <Link href="/quiz">{children}</Link>;
   }
 
-  const handleDirect = (e: MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
+  // Fire DirectFunnelClick on POINTERDOWN — before the anchor navigates — so the fbq
+  // beacon isn't cancelled by page unload. (The old onClick fired fbq then immediately
+  // window.location.assign()'d, so navigation killed the request and Meta received 0
+  // events.) The click then navigates naturally to the sid'd href, same-tab, with no
+  // artificial delay. Keyboard activation has no pointerdown, so onClick fires it then;
+  // a per-interaction ref prevents a double count.
+  const firePixel = () => {
     let sid = "anon";
     try {
       sid = getVisitorSessionId();
     } catch {
       /* no-op */
     }
-    // Fire-and-forget; must never block or delay the outbound navigation.
     try {
       trackMetaCustomEvent("DirectFunnelClick", { sub1: `${sid}-gdirect` });
     } catch {
       /* no-op */
     }
-    window.location.assign(`/go-direct/gala?sid=${encodeURIComponent(sid)}`);
   };
 
-  // Base href (no sid) so no-JS / curl still resolves and shows /go-direct/gala;
-  // the onClick attaches the sid and fires the pixel for real (JS) visitors.
   return (
-    <a href="/go-direct/gala" onClick={handleDirect}>
+    <a
+      href={href}
+      onPointerDown={() => {
+        pointerFired.current = true;
+        firePixel();
+      }}
+      onClick={() => {
+        if (!pointerFired.current) firePixel();
+        pointerFired.current = false;
+      }}
+    >
       {children}
     </a>
   );
