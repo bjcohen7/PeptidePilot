@@ -18,9 +18,17 @@ function hashToGala(sessionId: string): boolean {
   return h % 2 === 0;
 }
 
-export function HomepageCta({ children }: { children: ReactNode }) {
+export function HomepageCta({
+  children,
+  placement,
+}: {
+  children: ReactNode;
+  // Which homepage slot this CTA is (hero vs a lower repeat) — passed to
+  // /go-direct/gala as ?pos= so the click log can attribute placement.
+  placement?: "hero" | "footer";
+}) {
   const [mode, setMode] = useState<CtaMode>("gala");
-  const [href, setHref] = useState("/go-direct/gala");
+  const [href, setHref] = useState(placement ? `/go-direct/gala?pos=${placement}` : "/go-direct/gala");
   const pointerFired = useRef(false);
 
   useEffect(() => {
@@ -40,11 +48,15 @@ export function HomepageCta({ children }: { children: ReactNode }) {
     } catch {
       /* no-op */
     }
-    if (sid) setHref(`/go-direct/gala?sid=${encodeURIComponent(sid)}`);
+    if (sid) {
+      const p = new URLSearchParams({ sid });
+      if (placement) p.set("pos", placement);
+      setHref(`/go-direct/gala?${p.toString()}`);
+    }
     return () => {
       alive = false;
     };
-  }, []);
+  }, [placement]);
 
   const goDirect =
     mode === "gala" ||

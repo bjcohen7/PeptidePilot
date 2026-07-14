@@ -875,15 +875,21 @@ export const analyticsRouter = router({
       .where(and(eq(pageVisits.path, "/"), ...tc(pageVisits.createdAt)));
     const homepageVisitors = Number(hv?.count ?? 0);
 
+    // Count every home_direct* click (placement is encoded as home_direct_<pos>);
+    // pre-placement rows are plain 'home_direct' (unknown slot).
     const [hc] = await db
       .select({
         clicks: sql<number>`count(distinct ${providerClickLogs.publicId})`,
         inApp: sql<number>`count(distinct case when ${providerClickLogs.inAppBrowser} = 1 then ${providerClickLogs.publicId} end)`,
+        hero: sql<number>`count(distinct case when ${providerClickLogs.position} = 'home_direct_hero' then ${providerClickLogs.publicId} end)`,
+        footer: sql<number>`count(distinct case when ${providerClickLogs.position} = 'home_direct_footer' then ${providerClickLogs.publicId} end)`,
       })
       .from(providerClickLogs)
-      .where(and(eq(providerClickLogs.position, "home_direct"), ...tc(providerClickLogs.createdAt)));
+      .where(and(sql`${providerClickLogs.position} like 'home_direct%'`, ...tc(providerClickLogs.createdAt)));
     const homeClicks = Number(hc?.clicks ?? 0);
     const inAppClicks = Number(hc?.inApp ?? 0);
+    const heroClicks = Number(hc?.hero ?? 0);
+    const footerClicks = Number(hc?.footer ?? 0);
 
     const visByDay = await db
       .select({
@@ -899,7 +905,7 @@ export const analyticsRouter = router({
         c: sql<number>`count(distinct ${providerClickLogs.publicId})`,
       })
       .from(providerClickLogs)
-      .where(and(eq(providerClickLogs.position, "home_direct"), ...tc(providerClickLogs.createdAt)))
+      .where(and(sql`${providerClickLogs.position} like 'home_direct%'`, ...tc(providerClickLogs.createdAt)))
       .groupBy(sql`date(${providerClickLogs.createdAt})`);
 
     const dayKey = (d: unknown) =>
@@ -925,6 +931,8 @@ export const analyticsRouter = router({
       ctr: homepageVisitors ? Math.round((homeClicks / homepageVisitors) * 100) : 0,
       inAppClicks,
       browserClicks: Math.max(0, homeClicks - inAppClicks),
+      heroClicks,
+      footerClicks,
       byDay,
     };
 

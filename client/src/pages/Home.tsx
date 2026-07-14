@@ -132,7 +132,7 @@ export default function Home() {
             <span className="text-white font-semibold">Independent. No insurance required.</span>
           </p>
 
-          <HomepageCta>
+          <HomepageCta placement="hero">
             <Button
               size="lg"
               className="bg-white text-primary hover:bg-white/90 transition-all font-semibold text-base px-8 py-5 sm:py-6 h-auto rounded-xl shadow-lg shadow-black/20 group w-full sm:w-auto"
@@ -213,7 +213,7 @@ export default function Home() {
           </div>
 
           <div className="text-center mt-10 sm:mt-12">
-            <HomepageCta>
+            <HomepageCta placement="footer">
               <Button size="lg" className="bg-brand-gradient text-white hover:opacity-90 font-semibold px-8 py-5 sm:py-6 h-auto rounded-xl w-full sm:w-auto" onMouseEnter={() => preloadQuizExperience()} onFocus={() => preloadQuizExperience()} onTouchStart={() => preloadQuizExperience()}>
                 See if you match
                 <ArrowRight className="ml-2 w-4 h-4" />
@@ -280,7 +280,7 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <HomepageCta>
+              <HomepageCta placement="footer">
                 <Button size="lg" className="bg-brand-gradient text-white hover:opacity-90 font-semibold px-8 rounded-xl w-full sm:w-auto" onMouseEnter={() => preloadQuizExperience()} onFocus={() => preloadQuizExperience()} onTouchStart={() => preloadQuizExperience()}>
                   See my match
                   <ArrowRight className="ml-2 w-4 h-4" />
@@ -418,7 +418,7 @@ export default function Home() {
           <p className="text-white/75 text-base sm:text-lg mb-7 sm:mb-8 max-w-lg mx-auto px-2">
             About {QUIZ_MINUTES} minutes. Get matched to a licensed GLP-1 provider for your goals and budget — completely free.
           </p>
-          <HomepageCta>
+          <HomepageCta placement="footer">
             <Button
               size="lg"
               className="bg-white text-primary hover:bg-white/90 font-semibold text-base px-8 py-5 sm:py-6 h-auto rounded-xl shadow-lg shadow-black/20 group w-full sm:w-auto"

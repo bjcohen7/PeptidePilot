@@ -281,6 +281,12 @@ export default function InsightsOverview() {
             {funnel.data.directFlow.clicks} click{funnel.data.directFlow.clicks === 1 ? "" : "s"} ·{" "}
             {funnel.data.directFlow.inAppClicks} FB/IG app / {funnel.data.directFlow.browserClicks} browser
           </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            hero: {funnel.data.directFlow.heroClicks} · lower: {funnel.data.directFlow.footerClicks}
+            {funnel.data.directFlow.clicks - funnel.data.directFlow.heroClicks - funnel.data.directFlow.footerClicks > 0
+              ? ` · unknown: ${funnel.data.directFlow.clicks - funnel.data.directFlow.heroClicks - funnel.data.directFlow.footerClicks} (pre-placement)`
+              : ""}
+          </p>
           {funnel.data.directFlow.byDay.length > 0 ? (
             <div className="mt-4 overflow-x-auto">
               <table className="min-w-full text-sm">
