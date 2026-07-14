@@ -9,6 +9,10 @@
 - The "from $X/mo" floor shown in CTAs and prerendered content comes from `PROVIDER_FLOOR_PRICE` in `shared/providerData.ts` (`Math.min` of `startingPrice`), NOT a hardcoded literal. It mirrors the DB `providers.price_from_cents`. A server-startup check logs a loud `[ProviderFloor]` warning if the constant drifts from the live table.
 - **A price change requires a rebuild + redeploy** to reflect on static/prerendered pages — updating only the DB row will not change already-prerendered HTML. Update `shared/providerData.ts` (and the DB row) together, then rebuild.
 
+# Verification probes on prod tracking tables
+
+- When smoke-testing a tracking write against production (e.g. curling `/go-direct/gala` to confirm a `provider_click_logs` row lands), use a **sentinel-prefixed session id** — `sid=test-…` — never a bare UUID. Real visitor sessions are `crypto.randomUUID()` UUIDs, so a UUID probe is indistinguishable from a real row and can't be cleaned up mechanically. A `test-` prefix makes cleanup a single `DELETE … WHERE public_id LIKE 'test-%'` instead of an enumerated kill-list.
+
 # Deploy verification (Cloudflare cache)
 
 - `https://www.peptidepilot.me` sits behind Cloudflare's cache. After any deploy that changes HTML, verify prod **without** cache-busters — a plain `curl https://www.peptidepilot.me/` (no `?cb=...`) — and **purge the Cloudflare cache if stale**. Cache-busted curls hit the origin and do NOT prove what users see.
