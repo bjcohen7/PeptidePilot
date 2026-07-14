@@ -869,10 +869,17 @@ export const analyticsRouter = router({
     // visitors; plus an in-app-browser split and a per-day trajectory. All scoped to
     // the selected period via tc(). Grouping uses date(col) (same TZ as the rest of
     // the dashboard's time filters).
+    // The homepage→Gala direct experiment launched 2026-07-11. Clamp the card's
+    // window to >= this so pre-experiment days (structurally 0 clicks) don't poison
+    // the CTR — applied on top of the period selector, so effective start =
+    // max(period start, EXPERIMENT_START). The period selector is left alone.
+    const EXPERIMENT_START = new Date("2026-07-11T00:00:00Z");
+    const sinceLabel = EXPERIMENT_START.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+
     const [hv] = await db
       .select({ count: sql<number>`count(distinct ${pageVisits.sessionId})` })
       .from(pageVisits)
-      .where(and(eq(pageVisits.path, "/"), ...tc(pageVisits.createdAt)));
+      .where(and(eq(pageVisits.path, "/"), gte(pageVisits.createdAt, EXPERIMENT_START), ...tc(pageVisits.createdAt)));
     const homepageVisitors = Number(hv?.count ?? 0);
 
     // Count every home_direct* click (placement is encoded as home_direct_<pos>);
@@ -885,7 +892,7 @@ export const analyticsRouter = router({
         footer: sql<number>`count(distinct case when ${providerClickLogs.position} = 'home_direct_foot' then ${providerClickLogs.publicId} end)`,
       })
       .from(providerClickLogs)
-      .where(and(sql`${providerClickLogs.position} like 'home_direct%'`, ...tc(providerClickLogs.createdAt)));
+      .where(and(sql`${providerClickLogs.position} like 'home_direct%'`, gte(providerClickLogs.createdAt, EXPERIMENT_START), ...tc(providerClickLogs.createdAt)));
     const homeClicks = Number(hc?.clicks ?? 0);
     const inAppClicks = Number(hc?.inApp ?? 0);
     const heroClicks = Number(hc?.hero ?? 0);
@@ -897,7 +904,7 @@ export const analyticsRouter = router({
         v: sql<number>`count(distinct ${pageVisits.sessionId})`,
       })
       .from(pageVisits)
-      .where(and(eq(pageVisits.path, "/"), ...tc(pageVisits.createdAt)))
+      .where(and(eq(pageVisits.path, "/"), gte(pageVisits.createdAt, EXPERIMENT_START), ...tc(pageVisits.createdAt)))
       .groupBy(sql`date(${pageVisits.createdAt})`);
     const clkByDay = await db
       .select({
@@ -905,7 +912,7 @@ export const analyticsRouter = router({
         c: sql<number>`count(distinct ${providerClickLogs.publicId})`,
       })
       .from(providerClickLogs)
-      .where(and(sql`${providerClickLogs.position} like 'home_direct%'`, ...tc(providerClickLogs.createdAt)))
+      .where(and(sql`${providerClickLogs.position} like 'home_direct%'`, gte(providerClickLogs.createdAt, EXPERIMENT_START), ...tc(providerClickLogs.createdAt)))
       .groupBy(sql`date(${providerClickLogs.createdAt})`);
 
     const dayKey = (d: unknown) =>
@@ -923,7 +930,8 @@ export const analyticsRouter = router({
     }
     const byDay = Array.from(dayMap.values())
       .map((e) => ({ ...e, ctr: e.visitors ? Math.round((e.clicks / e.visitors) * 100) : 0 }))
-      .sort((a, b) => a.date.localeCompare(b.date));
+      .sort((a, b) => b.date.localeCompare(a.date)) // newest first (today at top)
+      .slice(0, 14); // last 14 days only — the card is a pulse, not an archive
 
     const directFlow = {
       homepageVisitors,
@@ -933,6 +941,7 @@ export const analyticsRouter = router({
       browserClicks: Math.max(0, homeClicks - inAppClicks),
       heroClicks,
       footerClicks,
+      sinceLabel,
       byDay,
     };
 

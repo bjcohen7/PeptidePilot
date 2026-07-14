@@ -261,7 +261,7 @@ export default function InsightsOverview() {
             <h2 className="text-lg font-semibold">Homepage → Gala</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-5">
-            Homepage visitors vs. clicks straight into Gala&apos;s funnel (bypassing the quiz), in the selected period.
+            Homepage visitors vs. clicks straight into Gala&apos;s funnel (bypassing the quiz) — since {funnel.data.directFlow.sinceLabel} (experiment start).
           </p>
           <div className="grid grid-cols-3 gap-4">
             <div>
@@ -288,28 +288,73 @@ export default function InsightsOverview() {
               : ""}
           </p>
           {funnel.data.directFlow.byDay.length > 0 ? (
-            <div className="mt-4 overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                    <th className="py-2 pr-4 font-medium">Date</th>
-                    <th className="py-2 pr-4 font-medium">Visitors</th>
-                    <th className="py-2 pr-4 font-medium">Clicks</th>
-                    <th className="py-2 pr-4 font-medium">CTR</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {funnel.data.directFlow.byDay.map((row) => (
-                    <tr key={row.date} className="border-b border-border/60">
-                      <td className="py-1.5 pr-4 tabular-nums">{row.date.slice(5)}</td>
-                      <td className="py-1.5 pr-4 tabular-nums">{row.visitors}</td>
-                      <td className="py-1.5 pr-4 tabular-nums">{row.clicks}</td>
-                      <td className="py-1.5 pr-4 tabular-nums">{row.ctr}%</td>
+            <>
+              {/* Glanceable trajectory: visitors as bars, clicks as a second row below. */}
+              {(() => {
+                const strip = [...funnel.data.directFlow.byDay].reverse(); // oldest → newest, left → right
+                const maxV = Math.max(1, ...strip.map((d) => d.visitors));
+                const maxC = Math.max(1, ...strip.map((d) => d.clicks));
+                return (
+                  <div className="mt-4">
+                    <p className="mb-1 text-[11px] text-muted-foreground">
+                      Visitors (bars) · clicks (row below) — last {strip.length} days
+                    </p>
+                    <div className="overflow-x-auto">
+                      <div style={{ minWidth: `${strip.length * 16}px` }}>
+                        <div className="flex h-14 items-end gap-1">
+                          {strip.map((d) => (
+                            <div
+                              key={d.date}
+                              className="min-w-[8px] flex-1 rounded-t bg-accent/40 transition-colors hover:bg-accent/70"
+                              style={{ height: `${Math.max(2, Math.round((d.visitors / maxV) * 52))}px` }}
+                              title={`${d.date}: ${d.visitors} visitors · ${d.clicks} clicks · ${d.ctr}%`}
+                            />
+                          ))}
+                        </div>
+                        <div className="mt-0.5 flex h-6 items-end gap-1">
+                          {strip.map((d) => (
+                            <div
+                              key={d.date}
+                              className="min-w-[8px] flex-1 rounded-t bg-accent"
+                              style={{ height: `${Math.max(1, Math.round((d.clicks / maxC) * 22))}px` }}
+                              title={`${d.date}: ${d.clicks} clicks`}
+                            />
+                          ))}
+                        </div>
+                        <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+                          <span>{strip[0].date.slice(5)}</span>
+                          <span>{strip[strip.length - 1].date.slice(5)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <p className="mb-1 mt-4 text-[11px] text-muted-foreground">Showing last 14 days (newest first)</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                      <th className="py-2 pr-4 font-medium">Date</th>
+                      <th className="py-2 pr-4 font-medium">Visitors</th>
+                      <th className="py-2 pr-4 font-medium">Clicks</th>
+                      <th className="py-2 pr-4 font-medium">CTR</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {funnel.data.directFlow.byDay.map((row) => (
+                      <tr key={row.date} className="border-b border-border/60">
+                        <td className="py-1.5 pr-4 tabular-nums">{row.date.slice(5)}</td>
+                        <td className="py-1.5 pr-4 tabular-nums">{row.visitors}</td>
+                        <td className="py-1.5 pr-4 tabular-nums">{row.clicks}</td>
+                        <td className="py-1.5 pr-4 tabular-nums">{row.ctr}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           ) : null}
         </div>
       ) : null}
