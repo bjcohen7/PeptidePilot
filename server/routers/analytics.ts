@@ -882,7 +882,7 @@ export const analyticsRouter = router({
         clicks: sql<number>`count(distinct ${providerClickLogs.publicId})`,
         inApp: sql<number>`count(distinct case when ${providerClickLogs.inAppBrowser} = 1 then ${providerClickLogs.publicId} end)`,
         hero: sql<number>`count(distinct case when ${providerClickLogs.position} = 'home_direct_hero' then ${providerClickLogs.publicId} end)`,
-        footer: sql<number>`count(distinct case when ${providerClickLogs.position} = 'home_direct_footer' then ${providerClickLogs.publicId} end)`,
+        footer: sql<number>`count(distinct case when ${providerClickLogs.position} = 'home_direct_foot' then ${providerClickLogs.publicId} end)`,
       })
       .from(providerClickLogs)
       .where(and(sql`${providerClickLogs.position} like 'home_direct%'`, ...tc(providerClickLogs.createdAt)));

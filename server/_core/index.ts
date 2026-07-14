@@ -336,9 +336,12 @@ async function startServer() {
     const sessionId = (typeof req.query.sid === "string" && req.query.sid.slice(0, 36)) || "anon";
     const inApp = isInAppBrowser(req.headers["user-agent"]);
     // Which homepage CTA was clicked (hero vs a lower repeat). Encoded onto the
-    // position column as home_direct_<pos>; unknown/absent stays plain 'home_direct'.
+    // position column as home_direct_<suffix>; unknown/absent stays plain
+    // 'home_direct'. position is varchar(16), so footer is stored as the 16-char
+    // 'home_direct_foot' ('home_direct_footer' would overflow); hero fits as-is.
     const posRaw = typeof req.query.pos === "string" ? req.query.pos : "";
-    const position = posRaw === "hero" || posRaw === "footer" ? `home_direct_${posRaw}` : "home_direct";
+    const posSuffix = posRaw === "hero" ? "hero" : posRaw === "footer" ? "foot" : "";
+    const position = posSuffix ? `home_direct_${posSuffix}` : "home_direct";
     const subid = `${sessionId}-gdirect`;
     const url =
       "https://galaglp1.com/funnel/start?a=price&_ef_transaction_id=&oid=1&affid=13" +
