@@ -863,17 +863,69 @@ export const analyticsRouter = router({
       pctDropped: prevAff ? Math.round(((prevAff - affCount) / prevAff) * 100) : 0,
     });
 
-    // Direct-to-Gala experiment visibility: homepage CTAs that went straight to
-    // Gala's funnel (provider_click_logs.position = 'home_direct'), + CTR vs sessions.
-    const [directResult] = await db
-      .select({ count: sql<number>`count(*)` })
+    // ── "Homepage → Gala" card ────────────────────────────────────────────────
+    // Homepage visitors = distinct sessions with a page view on "/"; clickers =
+    // distinct sessions with a home_direct provider_click_logs row; CTR = clickers/
+    // visitors; plus an in-app-browser split and a per-day trajectory. All scoped to
+    // the selected period via tc(). Grouping uses date(col) (same TZ as the rest of
+    // the dashboard's time filters).
+    const [hv] = await db
+      .select({ count: sql<number>`count(distinct ${pageVisits.sessionId})` })
+      .from(pageVisits)
+      .where(and(eq(pageVisits.path, "/"), ...tc(pageVisits.createdAt)));
+    const homepageVisitors = Number(hv?.count ?? 0);
+
+    const [hc] = await db
+      .select({
+        clicks: sql<number>`count(distinct ${providerClickLogs.publicId})`,
+        inApp: sql<number>`count(distinct case when ${providerClickLogs.inAppBrowser} = 1 then ${providerClickLogs.publicId} end)`,
+      })
       .from(providerClickLogs)
       .where(and(eq(providerClickLogs.position, "home_direct"), ...tc(providerClickLogs.createdAt)));
-    const directClicks = Number(directResult?.count ?? 0);
+    const homeClicks = Number(hc?.clicks ?? 0);
+    const inAppClicks = Number(hc?.inApp ?? 0);
+
+    const visByDay = await db
+      .select({
+        d: sql<string>`date(${pageVisits.createdAt})`,
+        v: sql<number>`count(distinct ${pageVisits.sessionId})`,
+      })
+      .from(pageVisits)
+      .where(and(eq(pageVisits.path, "/"), ...tc(pageVisits.createdAt)))
+      .groupBy(sql`date(${pageVisits.createdAt})`);
+    const clkByDay = await db
+      .select({
+        d: sql<string>`date(${providerClickLogs.createdAt})`,
+        c: sql<number>`count(distinct ${providerClickLogs.publicId})`,
+      })
+      .from(providerClickLogs)
+      .where(and(eq(providerClickLogs.position, "home_direct"), ...tc(providerClickLogs.createdAt)))
+      .groupBy(sql`date(${providerClickLogs.createdAt})`);
+
+    const dayKey = (d: unknown) =>
+      typeof d === "string" ? d.slice(0, 10) : new Date(d as string).toISOString().slice(0, 10);
+    const dayMap = new Map<string, { date: string; visitors: number; clicks: number; ctr: number }>();
+    for (const r of visByDay) {
+      const k = dayKey(r.d);
+      dayMap.set(k, { date: k, visitors: Number(r.v), clicks: 0, ctr: 0 });
+    }
+    for (const r of clkByDay) {
+      const k = dayKey(r.d);
+      const e = dayMap.get(k) ?? { date: k, visitors: 0, clicks: 0, ctr: 0 };
+      e.clicks = Number(r.c);
+      dayMap.set(k, e);
+    }
+    const byDay = Array.from(dayMap.values())
+      .map((e) => ({ ...e, ctr: e.visitors ? Math.round((e.clicks / e.visitors) * 100) : 0 }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
     const directFlow = {
-      sessions: totalSessions,
-      directClicks,
-      ctr: totalSessions ? Math.round((directClicks / totalSessions) * 100) : 0,
+      homepageVisitors,
+      clicks: homeClicks,
+      ctr: homepageVisitors ? Math.round((homeClicks / homepageVisitors) * 100) : 0,
+      inAppClicks,
+      browserClicks: Math.max(0, homeClicks - inAppClicks),
+      byDay,
     };
 
     return { stages, totalSessions, directFlow };

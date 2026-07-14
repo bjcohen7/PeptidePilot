@@ -252,31 +252,59 @@ export default function InsightsOverview() {
         ) : null}
       </div>
 
-      {/* Direct-to-Gala experiment (HOMEPAGE_CTA_MODE) — homepage visitors sent
-          straight into Gala's funnel, bypassing the quiz. */}
+      {/* "Homepage → Gala" — homepage visitors vs. direct-to-Gala CTA clicks
+          (HOMEPAGE_CTA_MODE experiment), scoped to the selected period. */}
       {funnel.data?.directFlow ? (
         <div className={cardClass()}>
           <div className="flex items-center gap-2 mb-1">
             <ExternalLink className="h-4 w-4 text-accent" />
-            <h2 className="text-lg font-semibold">Direct-to-Gala Flow</h2>
+            <h2 className="text-lg font-semibold">Homepage → Gala</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-5">
-            Homepage CTAs routed straight into Gala&apos;s funnel (bypassing the quiz), in the current time range.
+            Homepage visitors vs. clicks straight into Gala&apos;s funnel (bypassing the quiz), in the selected period.
           </p>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <p className="text-xs text-muted-foreground">Sessions</p>
-              <p className="mt-1 text-2xl font-semibold tracking-tight">{funnel.data.directFlow.sessions}</p>
+              <p className="text-xs text-muted-foreground">Homepage visitors</p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight">{funnel.data.directFlow.homepageVisitors}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Direct outbound clicks</p>
-              <p className="mt-1 text-2xl font-semibold tracking-tight">{funnel.data.directFlow.directClicks}</p>
+              <p className="text-xs text-muted-foreground">Clicked → Gala</p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight">{funnel.data.directFlow.clicks}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">CTR</p>
               <p className="mt-1 text-2xl font-semibold tracking-tight">{funnel.data.directFlow.ctr}%</p>
             </div>
           </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {funnel.data.directFlow.clicks} click{funnel.data.directFlow.clicks === 1 ? "" : "s"} ·{" "}
+            {funnel.data.directFlow.inAppClicks} FB/IG app / {funnel.data.directFlow.browserClicks} browser
+          </p>
+          {funnel.data.directFlow.byDay.length > 0 ? (
+            <div className="mt-4 overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                    <th className="py-2 pr-4 font-medium">Date</th>
+                    <th className="py-2 pr-4 font-medium">Visitors</th>
+                    <th className="py-2 pr-4 font-medium">Clicks</th>
+                    <th className="py-2 pr-4 font-medium">CTR</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {funnel.data.directFlow.byDay.map((row) => (
+                    <tr key={row.date} className="border-b border-border/60">
+                      <td className="py-1.5 pr-4 tabular-nums">{row.date.slice(5)}</td>
+                      <td className="py-1.5 pr-4 tabular-nums">{row.visitors}</td>
+                      <td className="py-1.5 pr-4 tabular-nums">{row.clicks}</td>
+                      <td className="py-1.5 pr-4 tabular-nums">{row.ctr}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
         </div>
       ) : null}
 
