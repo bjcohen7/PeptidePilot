@@ -28,8 +28,9 @@ const staticRoutes: PrerenderRoute[] = [
   {
     path: "/",
     title: "PeptidePilot — Compare GLP-1 providers in minutes. 100% independent.",
+    // Keep in sync with the homepage <Seo description> in client/src/pages/Home.tsx.
     description:
-      "See which GLP-1 provider fits your budget and goals. A short quiz matches you to licensed telehealth options — no waiting room, no surprises. 100% independent.",
+      "Check your eligibility for GLP-1 treatment in 2 minutes, then connect with a licensed telehealth provider for semaglutide or tirzepatide — a licensed clinician reviews your intake. No insurance needed.",
     type: "website",
   },
   {
