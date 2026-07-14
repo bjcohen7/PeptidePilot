@@ -11,13 +11,26 @@ import { checkProviderFloorConsistency } from "../lib/providerFloorCheck";
 import { isGone410 } from "../../shared/seoPruneList";
 import { redirectTarget } from "../../shared/seoRedirects";
 import { isInAppBrowser } from "../../shared/inAppBrowser";
+import { sendTelegramMessage } from "./telegram";
 import { createContext } from "./context";
 import { ENV } from "./env";
 import { recordClickEvent, recordFunnelEvent, recordPageView, startVisitorSession } from "../routers/analytics";
-import { providers, providerClickLogs, leads } from "../../drizzle/schema";
+import { providers, providerClickLogs, leads, visitorSessions } from "../../drizzle/schema";
 import { eq, sql } from "drizzle-orm";
 import { getDb } from "../db";
 import { serveStatic, setupVite } from "./vite";
+
+// ── /go-direct/gala Telegram alerting ──────────────────────────────────────
+// Dedupe: the same session clicking the homepage→Gala CTA again within 10 min
+// does not re-notify (in-memory, best-effort, single-instance).
+const GODIRECT_NOTIFY_MS = 10 * 60 * 1000;
+const goDirectNotifiedAt = new Map<string, number>();
+
+function classifyDevice(ua: string | undefined, inApp: boolean): string {
+  if (inApp) return "\u{1F4F1} FB app";
+  if (/Mobi|Android|iPhone|iPad|iPod/i.test(ua ?? "")) return "\u{1F4F1} browser";
+  return "\u{1F4BB}";
+}
 
 import capiRouter from "../routes/capi";
 import { postbackRouter } from "../routes/postback";
@@ -368,6 +381,47 @@ async function startServer() {
         err?.cause?.code, err?.cause?.sqlMessage, err?.cause?.message,
       );
     }
+
+    // Fire-and-forget Telegram alert on every homepage→Gala click — detached so it
+    // NEVER delays the 302, and a Telegram outage can't break the redirect. Dedupe:
+    // same session within 10 min doesn't re-notify.
+    const nowMs = Date.now();
+    const lastNotify = goDirectNotifiedAt.get(sessionId);
+    if (!lastNotify || nowMs - lastNotify > GODIRECT_NOTIFY_MS) {
+      goDirectNotifiedAt.set(sessionId, nowMs);
+      if (goDirectNotifiedAt.size > 5000) {
+        const cutoff = nowMs - GODIRECT_NOTIFY_MS;
+        goDirectNotifiedAt.forEach((v, k) => {
+          if (v < cutoff) goDirectNotifiedAt.delete(k);
+        });
+      }
+      const uaStr = req.headers["user-agent"];
+      void (async () => {
+        try {
+          let utm = "organic";
+          const tgDb = await getDb();
+          if (tgDb && sessionId !== "anon") {
+            const rows = await tgDb
+              .select({ u: visitorSessions.utmContent })
+              .from(visitorSessions)
+              .where(eq(visitorSessions.id, sessionId))
+              .limit(1);
+            if (rows[0]?.u) utm = rows[0].u;
+          }
+          const t = new Date().toLocaleString("en-US", {
+            timeZone: "America/New_York",
+            hour: "numeric",
+            minute: "2-digit",
+          });
+          const device = classifyDevice(uaStr, inApp);
+          const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          await sendTelegramMessage(`\u{1F500} Gala direct click · ${t} ET · ${device} · ${esc(utm)}`);
+        } catch (err) {
+          console.error("[Telegram] go-direct notify failed:", err);
+        }
+      })();
+    }
+
     res.redirect(302, url);
   });
 
