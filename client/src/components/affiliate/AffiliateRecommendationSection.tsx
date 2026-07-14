@@ -26,8 +26,6 @@ const HARDCODED_PROVIDERS: AffiliatePartnerCardData[] = [
     differentiatorBadge: "Legit Script Certified",
     headline: "Transparent all inclusive pricing",
     promo: "Transparent all inclusive pricing",
-    couponCode: "PILOT50",
-    couponLabel: "Use code PILOT50 at checkout",
     trustSignals: [
       "Doctor Subscribed and supervised",
       "Personalized care plans",

@@ -38,7 +38,7 @@ describe("buildCardData", () => {
     differentiatorBadge: "No Hidden Fees",
     headline: "Transparent Pricing",
     promo: "All-inclusive pricing for compounded semaglutide.",
-    couponCode: "PILOT50",
+    couponCode: "TESTCODE10",
     couponLabel: "$50 off",
     trustSignals: ["Licensed", "Free consult"],
     secondaryCtaLabel: "Learn More",
@@ -46,7 +46,7 @@ describe("buildCardData", () => {
 
   it("featured: includes coupon, trust signals, primary headline/CTA", () => {
     const out = buildCardData(baseLink, fullOverride, true);
-    expect(out.couponCode).toBe("PILOT50");
+    expect(out.couponCode).toBe("TESTCODE10");
     expect(out.trustSignals).toEqual(["Licensed", "Free consult"]);
     expect(out.headline).toBe("Transparent Pricing");
     expect(out.ctaLabel).toBe("Get Started");
@@ -54,7 +54,7 @@ describe("buildCardData", () => {
 
   it("secondary: shows coupon and trust signals, uses secondary headline/CTA", () => {
     const out = buildCardData(baseLink, fullOverride, false);
-    expect(out.couponCode).toBe("PILOT50");
+    expect(out.couponCode).toBe("TESTCODE10");
     expect(out.trustSignals).toEqual(["Licensed", "Free consult"]);
     expect(out.headline).toBe("Transparent Pricing");
     expect(out.ctaLabel).toBe("Learn More");
