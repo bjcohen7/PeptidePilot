@@ -269,3 +269,24 @@ rewritten to always echo real budget/goal/insurance answers (512 leads re-healed
 cap has left after the sequence. **Auto-pause guard** (`[BackfillGuard]`): backfill halts (drip untouched)
 if bounce >3% or complaint >0.1% over ≥20 dispatched backfill rows. A durable daily cron reports cumulative
 sent/delivered/bounced/complained/opened/clicked.
+
+---
+
+## Experiment annotation — homepage direct-to-Gala copy (2026-07-14)
+
+While `HOMEPAGE_CTA_MODE = 'gala'` (homepage CTAs → `/go-direct/gala`), the homepage copy was reframed from the quiz to a **2-minute eligibility-check** flow (2-minute check · licensed providers · a licensed clinician reviews the intake). **Read per-click conversion rates (funnel-starts and lead-submissions per 100 clicks) BEFORE vs AFTER this timestamp** — the copy change is a confound inside the direct-to-Gala experiment window, so pre-copy and post-copy clicks are not directly comparable. Scope was **`client/src/pages/Home.tsx` copy only**; `/quiz`, `/match`, results pages, and emails keep the real quiz copy (shared `QUIZ_MINUTES = 4` / `QUIZ_QUESTION_COUNT` untouched).
+
+### Revert checklist — flipping `HOMEPAGE_CTA_MODE` back to `'quiz'` requires reverting this homepage copy set
+
+All edits are in `client/src/pages/Home.tsx`. To revert (make it a checklist, not archaeology):
+
+1. **Re-add the import:** `import { QUIZ_QUESTION_COUNT, QUIZ_MINUTES } from "@shared/quizConfig";`
+2. **4 CTA buttons** ("Check your eligibility — 2 minutes" → back to the quiz text): the hero + footer buttons → `See if you match — free {QUIZ_MINUTES}-minute quiz`; the "What we match on" button → `See if you match`; the ranking-section button → `See my match`.
+3. **Hero checklist item:** "2-minute eligibility check" → `{QUIZ_QUESTION_COUNT} questions</strong>, about {QUIZ_MINUTES} minutes`.
+4. **`HOW_IT_WORKS` step 01:** title "Check Your Eligibility" → "Take the Quiz"; description → `` `Answer ${QUIZ_QUESTION_COUNT} quick questions about your goals, body, and budget. Takes about ${QUIZ_MINUTES} minutes.` ``.
+5. **`<Seo>` meta `description`:** → `` `Answer ${QUIZ_QUESTION_COUNT} quick questions and get matched to licensed telehealth providers for GLP-1 (semaglutide & tirzepatide) treatment — by your goals, budget, and state. No insurance needed.` ``.
+6. **"What we match you on" lead-in:** → `Your {QUIZ_QUESTION_COUNT}-question intake feeds a real ranking — not a generic list — across the factors that actually determine fit.`
+7. **Footer lead-in** (under "Ready to see your match?"): → `About {QUIZ_MINUTES} minutes. Get matched to a licensed GLP-1 provider for your goals and budget — completely free.`
+8. **Preview caption:** "Check your eligibility to see your real matches" → `Take the quiz to see your real matches`.
+
+Hero H1/subhead were left unchanged (already quiz-free) — no revert needed there. Rebuild + redeploy after reverting (prerendered homepage HTML must regenerate).

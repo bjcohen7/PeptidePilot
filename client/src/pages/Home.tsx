@@ -18,7 +18,6 @@ import {
 import { toast } from "sonner";
 import Seo from "@/components/Seo";
 import { preloadQuizExperience } from "@/lib/preloadQuiz";
-import { QUIZ_QUESTION_COUNT, QUIZ_MINUTES } from "@shared/quizConfig";
 
 const SITE_URL = "https://www.peptidepilot.me";
 
@@ -31,8 +30,8 @@ const TRUST_BADGES = [
 const HOW_IT_WORKS = [
   {
     step: "01",
-    title: "Take the Quiz",
-    description: `Answer ${QUIZ_QUESTION_COUNT} quick questions about your goals, body, and budget. Takes about ${QUIZ_MINUTES} minutes.`,
+    title: "Check Your Eligibility",
+    description: "A quick 2-minute eligibility check — your goals, budget, and where you live.",
   },
   {
     step: "02",
@@ -93,7 +92,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col">
       <Seo
         title="Get Matched to GLP-1 Therapy in Minutes"
-        description={`Answer ${QUIZ_QUESTION_COUNT} quick questions and get matched to licensed telehealth providers for GLP-1 (semaglutide & tirzepatide) treatment — by your goals, budget, and state. No insurance needed.`}
+        description="Check your eligibility for GLP-1 treatment in 2 minutes, then connect with a licensed telehealth provider for semaglutide or tirzepatide — a licensed clinician reviews your intake. No insurance needed."
         path="/"
         type="website"
         jsonLd={{
@@ -140,7 +139,7 @@ export default function Home() {
               onFocus={() => preloadQuizExperience()}
               onTouchStart={() => preloadQuizExperience()}
             >
-              See if you match — free {QUIZ_MINUTES}-minute quiz
+              Check your eligibility — 2 minutes
               <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Button>
           </HomepageCta>
@@ -163,7 +162,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-10 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-accent flex-shrink-0" />
-              <span><strong className="text-foreground">{QUIZ_QUESTION_COUNT} questions</strong>, about {QUIZ_MINUTES} minutes</span>
+              <span><strong className="text-foreground">2-minute eligibility check</strong></span>
             </div>
             <div className="hidden sm:block w-px h-4 bg-border" />
             <div className="flex items-center gap-2">
@@ -215,7 +214,7 @@ export default function Home() {
           <div className="text-center mt-10 sm:mt-12">
             <HomepageCta placement="footer">
               <Button size="lg" className="bg-brand-gradient text-white hover:opacity-90 font-semibold px-8 py-5 sm:py-6 h-auto rounded-xl w-full sm:w-auto" onMouseEnter={() => preloadQuizExperience()} onFocus={() => preloadQuizExperience()} onTouchStart={() => preloadQuizExperience()}>
-                See if you match
+                Check your eligibility — 2 minutes
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </HomepageCta>
@@ -232,7 +231,7 @@ export default function Home() {
               What we match you on
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base px-2">
-              Your {QUIZ_QUESTION_COUNT}-question intake feeds a real ranking — not a generic list — across the factors that actually determine fit.
+              Your 2-minute eligibility check weighs the factors that actually determine fit — your goals, budget, and state — not a generic list.
             </p>
           </div>
 
@@ -282,7 +281,7 @@ export default function Home() {
               </ul>
               <HomepageCta placement="footer">
                 <Button size="lg" className="bg-brand-gradient text-white hover:opacity-90 font-semibold px-8 rounded-xl w-full sm:w-auto" onMouseEnter={() => preloadQuizExperience()} onFocus={() => preloadQuizExperience()} onTouchStart={() => preloadQuizExperience()}>
-                  See my match
+                  Check your eligibility — 2 minutes
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </HomepageCta>
@@ -330,7 +329,7 @@ export default function Home() {
                       <span className="text-lg font-bold text-muted-foreground" style={{ fontFamily: "'DM Serif Display', serif" }}>{88 - i * 6}%</span>
                     </div>
                   ))}
-                  <p className="text-center text-xs text-muted-foreground pt-1">Take the quiz to see your real matches</p>
+                  <p className="text-center text-xs text-muted-foreground pt-1">Check your eligibility to see your real matches</p>
                 </div>
               </div>
             </div>
@@ -416,7 +415,7 @@ export default function Home() {
             Ready to see your match?
           </h2>
           <p className="text-white/75 text-base sm:text-lg mb-7 sm:mb-8 max-w-lg mx-auto px-2">
-            About {QUIZ_MINUTES} minutes. Get matched to a licensed GLP-1 provider for your goals and budget — completely free.
+            A 2-minute eligibility check, then connect with a licensed GLP-1 provider for your goals and budget — a licensed clinician reviews your intake. Completely free.
           </p>
           <HomepageCta placement="footer">
             <Button
@@ -426,7 +425,7 @@ export default function Home() {
               onFocus={() => preloadQuizExperience()}
               onTouchStart={() => preloadQuizExperience()}
             >
-              See if you match — free {QUIZ_MINUTES}-minute quiz
+              Check your eligibility — 2 minutes
               <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Button>
           </HomepageCta>
