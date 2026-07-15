@@ -14,9 +14,10 @@ import { parseSubid, computeDedupe, normalizeConversionType, KNOWN_PROVIDER_SLUG
  *   https://www.peptidepilot.me/api/postback?token=POSTBACK_SECRET&subid={SUBID_MACRO}&txid={TXID_MACRO}&amount={PAYOUT_MACRO}&type={TYPE_MACRO}&timestamp={TIME_MACRO}
  * where {SUBID_MACRO} echoes the sub id we sent and {TXID_MACRO} is the
  * network's unique conversion/transaction id:
- *   - Gala (Everflow):        subid={sub1}       txid={transaction_id}
- *   - direct_med (RevOffers): subid={subid1}     txid={conversion_id}
- *   - sprout (RevOffers/TUNE): subid={sub1}      txid={conversion_id}
+ *   - Gala (Everflow):                       subid={sub1}    txid={transaction_id}
+ *   - direct_med / DM-network (RevOffers 1304, results-page /go/): subid={subid1}  txid={conversion_id}
+ *   - direct_med / DM-direct (separate Everflow acct, homepage /go-direct/): subid={sub1}  txid={transaction_id}
+ *   - sprout (RevOffers/TUNE):               subid={sub1}    txid={conversion_id}
  * The receiver also accepts subid under sub1/subid1/aff_sub, txid under
  * transaction_id/conversion_id/order_id, and amount under payout/sale_amount, so
  * a network's native macro name works directly. Per-provider overrides live in
