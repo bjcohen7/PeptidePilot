@@ -32,7 +32,7 @@ export function HomepageCta({
 }: {
   children: ReactNode;
   // Which homepage slot this CTA is (hero vs a lower repeat) — passed to
-  // /go-direct/gala as ?pos= so the click log can attribute placement.
+  // /go-direct/:provider as ?pos= so the click log can attribute placement.
   placement?: "hero" | "footer";
 }) {
   const [mode, setMode] = useState<CtaMode>("gala");
@@ -51,7 +51,7 @@ export function HomepageCta({
       .catch(() => {});
     // Attach the visitor sessionId to the outbound href once client-side, so the
     // natural anchor navigation carries it. Prerender/no-JS keeps the bare
-    // /go-direct/gala (still valid — the server falls back to 'anon').
+    // /go-direct/direct_med (still valid — the server falls back to 'anon').
     let sid = "";
     try {
       sid = getVisitorSessionId();

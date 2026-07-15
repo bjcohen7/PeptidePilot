@@ -23,7 +23,8 @@ export function parseSubid(
   // Homepage direct experiment: subid is `${sessionId}-<suffix>` (these visitors have
   // no lead/publicId). Resolve to the provider so postbacks attribute correctly; the
   // prefix is the visitor sessionId, surfaced as publicId. -gdirect = Gala (Everflow),
-  // -dmdirect = Direct Meds (RevOffers/TUNE via subid1).
+  // -dmdirect = DM-direct (separate Everflow account, sub1 — NOT the RevOffers 1304
+  // /go/direct_med "DM-network" offer, which uses subid1).
   if (subid.endsWith("-gdirect")) {
     const sid = subid.slice(0, -"-gdirect".length);
     if (sid) return { publicId: sid, providerSlug: "gala" };
