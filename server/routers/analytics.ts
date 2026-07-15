@@ -890,6 +890,8 @@ export const analyticsRouter = router({
         inApp: sql<number>`count(distinct case when ${providerClickLogs.inAppBrowser} = 1 then ${providerClickLogs.publicId} end)`,
         hero: sql<number>`count(distinct case when ${providerClickLogs.position} = 'home_direct_hero' then ${providerClickLogs.publicId} end)`,
         footer: sql<number>`count(distinct case when ${providerClickLogs.position} = 'home_direct_foot' then ${providerClickLogs.publicId} end)`,
+        gala: sql<number>`count(distinct case when ${providerClickLogs.providerSlug} = 'gala' then ${providerClickLogs.publicId} end)`,
+        dm: sql<number>`count(distinct case when ${providerClickLogs.providerSlug} = 'direct_med' then ${providerClickLogs.publicId} end)`,
       })
       .from(providerClickLogs)
       .where(and(sql`${providerClickLogs.position} like 'home_direct%'`, gte(providerClickLogs.createdAt, EXPERIMENT_START), ...tc(providerClickLogs.createdAt)));
@@ -897,6 +899,8 @@ export const analyticsRouter = router({
     const inAppClicks = Number(hc?.inApp ?? 0);
     const heroClicks = Number(hc?.hero ?? 0);
     const footerClicks = Number(hc?.footer ?? 0);
+    const galaClicks = Number(hc?.gala ?? 0);
+    const dmClicks = Number(hc?.dm ?? 0);
 
     const visByDay = await db
       .select({
@@ -941,6 +945,10 @@ export const analyticsRouter = router({
       browserClicks: Math.max(0, homeClicks - inAppClicks),
       heroClicks,
       footerClicks,
+      // Per-provider legs: Gala ran Jul 11–14, DM-direct from Jul 15. Split so the two
+      // legs stay readable side by side (they report through different networks/events).
+      galaClicks,
+      dmClicks,
       sinceLabel,
       byDay,
     };

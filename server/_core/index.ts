@@ -20,9 +20,46 @@ import { eq, sql } from "drizzle-orm";
 import { getDb } from "../db";
 import { serveStatic, setupVite } from "./vite";
 
-// ── /go-direct/gala Telegram alerting ──────────────────────────────────────
-// Dedupe: the same session clicking the homepage→Gala CTA again within 10 min
-// does not re-notify (in-memory, best-effort, single-instance).
+// ── Homepage direct-flow (/go-direct/:provider) ────────────────────────────
+// Per-provider outbound destination for the homepage direct experiment. subid is
+// appended on the network's OWN click param. `suffix` separates the cohort in the
+// network report (-gdirect / -dmdirect); `label` names the Telegram alert.
+//
+// IMPORTANT — direct_med has TWO distinct offers, do NOT cross-wire them:
+//   • "DM-network": the RESULTS-PAGE /go/direct_med link (RevOffers offer 1304,
+//     postback macro {subid1}). Its template lives in the providers table and is
+//     UNTOUCHED by this file.
+//   • "DM-direct": THIS homepage questionnaire link (directmeds.com/dm-offers-stc/…).
+//     Separate offer on a SEPARATE Everflow account (confirmed by Ian 2026-07-15) —
+//     standard Everflow conventions, so the click param is `sub1` and postbacks use
+//     the standard Everflow macro set. `sub1` is the confirmed code default so a
+//     missing Railway env on a fresh instance can't silently drop attribution (a
+//     wrong/absent param is invisible to the network — same failure as sending none).
+//     The env DM_DIRECT_SUBID_PARAM still OVERRIDES if the param ever changes, so a
+//     correction stays a config change, not a code deploy.
+const DM_DIRECT_BASE =
+  "https://directmeds.com/dm-offers-stc/questionnaire-1.php?oid=12&uid=77&affid=864";
+function dmDirectUrl(subid: string): string {
+  const param = (process.env.DM_DIRECT_SUBID_PARAM ?? "").trim() || "sub1";
+  return `${DM_DIRECT_BASE}&${encodeURIComponent(param)}=${encodeURIComponent(subid)}`;
+}
+const DIRECT_DESTINATIONS: Record<string, { suffix: string; label: string; url: (subid: string) => string }> = {
+  gala: {
+    suffix: "gdirect",
+    label: "Gala",
+    url: (subid) =>
+      "https://galaglp1.com/funnel/start?a=price&_ef_transaction_id=&oid=1&affid=13" +
+      "&utm_content=lp-glp1-v4&sub1=" + encodeURIComponent(subid),
+  },
+  direct_med: {
+    suffix: "dmdirect",
+    label: "DM-direct",
+    url: dmDirectUrl,
+  },
+};
+
+// Telegram alert dedupe: same (provider, session) again within 10 min doesn't
+// re-notify (in-memory, best-effort, single-instance).
 const GODIRECT_NOTIFY_MS = 10 * 60 * 1000;
 const goDirectNotifiedAt = new Map<string, number>();
 
@@ -341,11 +378,19 @@ async function startServer() {
     res.redirect(302, "/");
   });
 
-  // Homepage direct-to-Gala experiment (HOMEPAGE_CTA_MODE). Session-keyed outbound
+  // Homepage direct-flow experiment (HOMEPAGE_CTA_MODE). Session-keyed outbound
   // redirect — these visitors have NO lead/publicId. Log the click BEFORE the 302 so
-  // the direct cohort is measurable, then send them into Gala's funnel with a
-  // `-gdirect` sub1 that separates this cohort from quiz-flow (`-gala`) in Everflow.
-  app.get("/go-direct/gala", async (req, res) => {
+  // the direct cohort is measurable, then send them into the provider's funnel with a
+  // cohort suffix (-gdirect / -dmdirect) that separates this from quiz-flow in the
+  // network report. Destination + subid param per provider: see DIRECT_DESTINATIONS.
+  app.get("/go-direct/:provider", async (req, res) => {
+    const providerSlug = req.params.provider;
+    const dest = DIRECT_DESTINATIONS[providerSlug];
+    // Unknown provider → home (keeps the route from redirecting to a broken URL).
+    if (!dest) {
+      res.redirect(302, "/");
+      return;
+    }
     const sessionId = (typeof req.query.sid === "string" && req.query.sid.slice(0, 36)) || "anon";
     const inApp = isInAppBrowser(req.headers["user-agent"]);
     // Which homepage CTA was clicked (hero vs a lower repeat). Encoded onto the
@@ -355,17 +400,15 @@ async function startServer() {
     const posRaw = typeof req.query.pos === "string" ? req.query.pos : "";
     const posSuffix = posRaw === "hero" ? "hero" : posRaw === "footer" ? "foot" : "";
     const position = posSuffix ? `home_direct_${posSuffix}` : "home_direct";
-    const subid = `${sessionId}-gdirect`;
-    const url =
-      "https://galaglp1.com/funnel/start?a=price&_ef_transaction_id=&oid=1&affid=13" +
-      "&utm_content=lp-glp1-v4&sub1=" + encodeURIComponent(subid);
+    const subid = `${sessionId}-${dest.suffix}`;
+    const url = dest.url(subid);
     try {
       const db = await getDb();
       if (db) {
         await db.insert(providerClickLogs).values({
           leadId: null,
           publicId: sessionId,
-          providerSlug: "gala",
+          providerSlug,
           position,
           experimentVariant: null,
           sourceSurface: "funnel",
@@ -382,13 +425,14 @@ async function startServer() {
       );
     }
 
-    // Fire-and-forget Telegram alert on every homepage→Gala click — detached so it
+    // Fire-and-forget Telegram alert on every homepage→direct click — detached so it
     // NEVER delays the 302, and a Telegram outage can't break the redirect. Dedupe:
-    // same session within 10 min doesn't re-notify.
+    // same (provider, session) within 10 min doesn't re-notify.
+    const dedupeKey = `${providerSlug}:${sessionId}`;
     const nowMs = Date.now();
-    const lastNotify = goDirectNotifiedAt.get(sessionId);
+    const lastNotify = goDirectNotifiedAt.get(dedupeKey);
     if (!lastNotify || nowMs - lastNotify > GODIRECT_NOTIFY_MS) {
-      goDirectNotifiedAt.set(sessionId, nowMs);
+      goDirectNotifiedAt.set(dedupeKey, nowMs);
       if (goDirectNotifiedAt.size > 5000) {
         const cutoff = nowMs - GODIRECT_NOTIFY_MS;
         goDirectNotifiedAt.forEach((v, k) => {
@@ -415,7 +459,7 @@ async function startServer() {
           });
           const device = classifyDevice(uaStr, inApp);
           const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-          await sendTelegramMessage(`\u{1F500} Gala direct click · ${t} ET · ${device} · ${esc(utm)}`);
+          await sendTelegramMessage(`\u{1F500} ${dest.label} click · ${t} ET · ${device} · ${esc(utm)}`);
         } catch (err) {
           console.error("[Telegram] go-direct notify failed:", err);
         }

@@ -252,16 +252,17 @@ export default function InsightsOverview() {
         ) : null}
       </div>
 
-      {/* "Homepage → Gala" — homepage visitors vs. direct-to-Gala CTA clicks
-          (HOMEPAGE_CTA_MODE experiment), scoped to the selected period. */}
+      {/* "Homepage → Direct" — homepage visitors vs. direct-flow CTA clicks
+          (HOMEPAGE_CTA_MODE experiment), scoped to the selected period. Split by
+          provider leg: Gala (Jul 11–14) then DM-direct (from Jul 15). */}
       {funnel.data?.directFlow ? (
         <div className={cardClass()}>
           <div className="flex items-center gap-2 mb-1">
             <ExternalLink className="h-4 w-4 text-accent" />
-            <h2 className="text-lg font-semibold">Homepage → Gala</h2>
+            <h2 className="text-lg font-semibold">Homepage → Direct</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-5">
-            Homepage visitors vs. clicks straight into Gala&apos;s funnel (bypassing the quiz) — since {funnel.data.directFlow.sinceLabel} (experiment start).
+            Homepage visitors vs. clicks straight into a provider&apos;s funnel (bypassing the quiz) — since {funnel.data.directFlow.sinceLabel} (experiment start).
           </p>
           <div className="grid grid-cols-3 gap-4">
             <div>
@@ -269,12 +270,24 @@ export default function InsightsOverview() {
               <p className="mt-1 text-2xl font-semibold tracking-tight">{funnel.data.directFlow.homepageVisitors}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Clicked → Gala</p>
+              <p className="text-xs text-muted-foreground">Clicked → direct</p>
               <p className="mt-1 text-2xl font-semibold tracking-tight">{funnel.data.directFlow.clicks}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">CTR</p>
               <p className="mt-1 text-2xl font-semibold tracking-tight">{funnel.data.directFlow.ctr}%</p>
+            </div>
+          </div>
+          {/* Per-provider legs — the two never overlap in time, but keep them side by
+              side so each leg's click count reads on its own (different networks). */}
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div className="rounded-lg border border-border/60 px-3 py-2">
+              <p className="text-xs text-muted-foreground">Gala leg (Jul 11–14)</p>
+              <p className="mt-1 text-lg font-semibold tracking-tight">{funnel.data.directFlow.galaClicks} click{funnel.data.directFlow.galaClicks === 1 ? "" : "s"}</p>
+            </div>
+            <div className="rounded-lg border border-border/60 px-3 py-2">
+              <p className="text-xs text-muted-foreground">DM-direct leg (from Jul 15)</p>
+              <p className="mt-1 text-lg font-semibold tracking-tight">{funnel.data.directFlow.dmClicks} click{funnel.data.directFlow.dmClicks === 1 ? "" : "s"}</p>
             </div>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">

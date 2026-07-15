@@ -290,3 +290,26 @@ All edits are in `client/src/pages/Home.tsx`. To revert (make it a checklist, no
 8. **Preview caption:** "Check your eligibility to see your real matches" → `Take the quiz to see your real matches`.
 
 Hero H1/subhead were left unchanged (already quiz-free) — no revert needed there. Rebuild + redeploy after reverting (prerendered homepage HTML must regenerate).
+
+## Experiment annotation — homepage direct leg swap: Gala → DM-direct (2026-07-15)
+
+The homepage direct flow's destination was swapped from Gala to Direct Meds. The `/go-direct/gala` → `/go-direct/:provider` generalization means the same route serves both; **`/go-direct/gala` remains live (dormant, not deleted)**. Homepage CTAs now point at `/go-direct/direct_med`.
+
+**Two legs, judged separately — the Gala baseline does NOT transfer to DM:**
+
+- **Gala-direct leg — ran Jul 11–14, 2026.** Sub1 suffix `-gdirect`. A homepage copy change (quiz → 2-minute eligibility-check, see the `2026-07-14` annotation above) landed **mid-leg on Jul 14**, so pre-/post-copy clicks inside this leg are themselves a confound. Baseline observed: ~28% funnel-starts and ~6.6% lead-submissions **per click** — reported through Gala's Everflow funnel.
+- **DM-direct leg — starts Jul 15, 2026.** Sub1 suffix `-dmdirect`. Reports through a **separate Everflow account** (DM's own — confirmed by Ian), a completely different funnel with different events. **The Gala per-click baseline (28% / 6.6%) does NOT carry over** — do not compare DM-direct conversion to it. Judge DM-direct on its own network's numbers from Jul 15 forward.
+
+**Reading the networks:** in each account's report, `-gdirect` sub1s = the Gala leg; `-dmdirect` sub1s = the DM-direct leg. The admin **Homepage → Direct** card (was "Homepage → Gala") splits our own click capture by `provider_slug` into a Gala leg (Jul 11–14) and a DM-direct leg (from Jul 15) so the two stay readable side by side.
+
+### `direct_med` has TWO distinct offers — never cross-wire them (resolved 2026-07-15)
+
+| | **DM-network** | **DM-direct** |
+|---|---|---|
+| Path | Results-page `/go/direct_med` | Homepage `/go-direct/direct_med` |
+| Network | RevOffers offer 1304 | Separate Everflow account (DM's own) |
+| Click param | `subid1` | `sub1` |
+| Postback macro | `{subid1}` | standard Everflow macro set |
+| URL template | providers table `affiliateUrlTemplate` (UNTOUCHED) | `DM_DIRECT_BASE` in `server/_core/index.ts` |
+
+Both are `provider_slug = 'direct_med'` but they are **different offers on different platforms**. The results-page `/go/direct_med` link and its providers-table template were left **completely untouched** by the homepage swap. The homepage DM-direct destination + its `sub1` param live only in `DIRECT_DESTINATIONS.direct_med` / `dmDirectUrl()`; the param name is env-overridable via `DM_DIRECT_SUBID_PARAM` (defaults to the confirmed `sub1`) so any future correction is a config change, not a deploy.
