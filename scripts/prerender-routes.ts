@@ -50,6 +50,16 @@ const staticRoutes: PrerenderRoute[] = [
     noindex: true,
   },
   {
+    // /start — paid-traffic 3-question bridge → Direct Meds. Prerendered so Q1 paints
+    // instantly (no hero, no scroll); noindex (not an organic entry point).
+    path: "/start",
+    title: "Check your GLP-1 eligibility | PeptidePilot",
+    description:
+      "A few quick questions, then a fast eligibility check for GLP-1 weight-loss treatment.",
+    type: "website",
+    noindex: true,
+  },
+  {
     path: "/about",
     title: "About PeptidePilot",
     description:

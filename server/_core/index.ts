@@ -267,6 +267,40 @@ async function startServer() {
       res.status(400).json({ error: "invalid_click_event" });
     }
   });
+
+  // /start bridge answers — one tap-answer at a time, written to the visitor session
+  // BEFORE the eventual /go-direct handoff so partial funnels (Q1-only, Q1+Q2) are
+  // still captured. Idempotent: re-answering overwrites the same column. Body:
+  // { sessionId, q: 1|2|3, value: "<option label>" }.
+  app.post("/api/bridge", express.json({ limit: "1mb" }), async (req, res) => {
+    try {
+      const sessionId = String(req.body?.sessionId ?? "").slice(0, 64);
+      const q = Number(req.body?.q);
+      const value = String(req.body?.value ?? "").slice(0, 64);
+      if (!sessionId || ![1, 2, 3].includes(q) || !value) {
+        res.status(400).json({ error: "invalid_bridge_answer" });
+        return;
+      }
+      const db = await getDb();
+      if (db) {
+        const col = q === 1 ? "bridge_q1" : q === 2 ? "bridge_q2" : "bridge_q3";
+        // Only updates an existing session row (created by session-start on load); if the
+        // session isn't there yet the update is a no-op — the pixel/click still fire.
+        await db.execute(
+          sql`UPDATE visitor_sessions SET ${sql.raw("`" + col + "`")} = ${value} WHERE id = ${sessionId}`,
+        );
+      }
+      res.status(204).end();
+    } catch (error: any) {
+      // Never swallow the driver error (AGENTS.md).
+      console.error(
+        "[Bridge] answer write failed:",
+        error?.code, error?.errno, error?.sqlState, error?.sqlMessage,
+        error?.cause?.code, error?.cause?.sqlMessage, error?.cause?.message,
+      );
+      res.status(400).json({ error: "invalid_bridge_answer" });
+    }
+  });
   // One-shot seed endpoint: creates providers table + inserts 4 seed rows
   app.get("/api/seed-providers", async (req, res) => {
     try {
@@ -397,8 +431,11 @@ async function startServer() {
     // position column as home_direct_<suffix>; unknown/absent stays plain
     // 'home_direct'. position is varchar(16), so footer is stored as the 16-char
     // 'home_direct_foot' ('home_direct_footer' would overflow); hero fits as-is.
+    // varchar(16): 'home_direct_hero'/'_foot'/'_brdg' all = 16 chars exactly; '_footer'
+    // (18) would overflow and silently fail the insert. 'bridge' → 'brdg' for the /start flow.
     const posRaw = typeof req.query.pos === "string" ? req.query.pos : "";
-    const posSuffix = posRaw === "hero" ? "hero" : posRaw === "footer" ? "foot" : "";
+    const posSuffix =
+      posRaw === "hero" ? "hero" : posRaw === "footer" ? "foot" : posRaw === "bridge" ? "brdg" : "";
     const position = posSuffix ? `home_direct_${posSuffix}` : "home_direct";
     const subid = `${sessionId}-${dest.suffix}`;
     const url = dest.url(subid);

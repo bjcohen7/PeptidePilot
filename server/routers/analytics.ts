@@ -937,6 +937,65 @@ export const analyticsRouter = router({
       .sort((a, b) => b.date.localeCompare(a.date)) // newest first (today at top)
       .slice(0, 14); // last 14 days only — the card is a pulse, not an archive
 
+    // ── Bridge funnel (/start → Q1 → Q2 → Q3 → handoff) ──────────────────────
+    // Paid-traffic warm-up bridge. Starts = distinct '/start' page-view sessions;
+    // Q1..Q3 = distinct sessions with each bridge answer stored; handoff = distinct
+    // clickers on the bridge slot (home_direct_brdg). Same EXPERIMENT_START clamp + tc().
+    const [bs] = await db
+      .select({ c: sql<number>`count(distinct ${pageVisits.sessionId})` })
+      .from(pageVisits)
+      .where(and(eq(pageVisits.path, "/start"), gte(pageVisits.createdAt, EXPERIMENT_START), ...tc(pageVisits.createdAt)));
+    const [bq] = await db
+      .select({
+        q1: sql<number>`count(distinct case when ${visitorSessions.bridgeQ1} is not null then ${visitorSessions.id} end)`,
+        q2: sql<number>`count(distinct case when ${visitorSessions.bridgeQ2} is not null then ${visitorSessions.id} end)`,
+        q3: sql<number>`count(distinct case when ${visitorSessions.bridgeQ3} is not null then ${visitorSessions.id} end)`,
+      })
+      .from(visitorSessions)
+      .where(and(gte(visitorSessions.createdAt, EXPERIMENT_START), ...tc(visitorSessions.createdAt)));
+    const [bh] = await db
+      .select({ c: sql<number>`count(distinct ${providerClickLogs.publicId})` })
+      .from(providerClickLogs)
+      .where(and(eq(providerClickLogs.position, "home_direct_brdg"), gte(providerClickLogs.createdAt, EXPERIMENT_START), ...tc(providerClickLogs.createdAt)));
+
+    const bStartDay = await db
+      .select({ d: sql<string>`date(${pageVisits.createdAt})`, n: sql<number>`count(distinct ${pageVisits.sessionId})` })
+      .from(pageVisits)
+      .where(and(eq(pageVisits.path, "/start"), gte(pageVisits.createdAt, EXPERIMENT_START), ...tc(pageVisits.createdAt)))
+      .groupBy(sql`date(${pageVisits.createdAt})`);
+    const bQ3Day = await db
+      .select({ d: sql<string>`date(${visitorSessions.createdAt})`, n: sql<number>`count(distinct ${visitorSessions.id})` })
+      .from(visitorSessions)
+      .where(and(sql`${visitorSessions.bridgeQ3} is not null`, gte(visitorSessions.createdAt, EXPERIMENT_START), ...tc(visitorSessions.createdAt)))
+      .groupBy(sql`date(${visitorSessions.createdAt})`);
+    const bHandDay = await db
+      .select({ d: sql<string>`date(${providerClickLogs.createdAt})`, n: sql<number>`count(distinct ${providerClickLogs.publicId})` })
+      .from(providerClickLogs)
+      .where(and(eq(providerClickLogs.position, "home_direct_brdg"), gte(providerClickLogs.createdAt, EXPERIMENT_START), ...tc(providerClickLogs.createdAt)))
+      .groupBy(sql`date(${providerClickLogs.createdAt})`);
+    const bMap = new Map<string, { date: string; starts: number; q3: number; handoffs: number }>();
+    const bAdd = (rows: any[], key: "starts" | "q3" | "handoffs") => {
+      for (const r of rows) {
+        const k = dayKey(r.d);
+        const e = bMap.get(k) ?? { date: k, starts: 0, q3: 0, handoffs: 0 };
+        e[key] = Number(r.n);
+        bMap.set(k, e);
+      }
+    };
+    bAdd(bStartDay, "starts");
+    bAdd(bQ3Day, "q3");
+    bAdd(bHandDay, "handoffs");
+    const bridgeByDay = Array.from(bMap.values()).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 14);
+
+    const bridgeFunnel = {
+      startVisits: Number(bs?.c ?? 0),
+      q1: Number(bq?.q1 ?? 0),
+      q2: Number(bq?.q2 ?? 0),
+      q3: Number(bq?.q3 ?? 0),
+      handoffClicks: Number(bh?.c ?? 0),
+      byDay: bridgeByDay,
+    };
+
     const directFlow = {
       homepageVisitors,
       clicks: homeClicks,
@@ -953,6 +1012,6 @@ export const analyticsRouter = router({
       byDay,
     };
 
-    return { stages, totalSessions, directFlow };
+    return { stages, totalSessions, directFlow, bridgeFunnel };
   }),
 });

@@ -10,6 +10,7 @@ import { BlogArticleView } from "./pages/BlogArticle";
 import { PrivacyPolicy, TermsOfService, MedicalDisclaimer } from "./pages/Legal";
 import { PseoHub, PseoSectionPage, PseoDetailPage, FAQPage } from "./pages/PseoPages";
 import Match from "./pages/Match";
+import Start from "./pages/Start";
 import GuidePage from "./pages/pseo/GuidePage";
 import StackPage from "./pages/pseo/StackPage";
 import GoalPage from "./pages/pseo/GoalPage";
@@ -213,6 +214,11 @@ export default function AppPrerender({ path }: { path: string }) {
         </Route>
         <Route path="/peptides-for-weight-loss">
           <Match />
+        </Route>
+
+        {/* /start — 3-question bridge → Direct Meds. Prerendered so Q1 paints instantly. */}
+        <Route path="/start">
+          <Start />
         </Route>
 
         {/* Explicit /404 route so the prerender script can generate a 404/index.html

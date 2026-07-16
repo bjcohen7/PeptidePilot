@@ -369,6 +369,65 @@ export default function InsightsOverview() {
               </div>
             </>
           ) : null}
+
+          {/* Bridge funnel — /start paid-traffic warm-up → Direct Meds handoff. */}
+          {funnel.data.bridgeFunnel ? (
+            <div className="mt-6 border-t border-border pt-4">
+              <p className="text-sm font-medium text-foreground">Bridge funnel — /start (paid traffic)</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                /start visits → Q1 → Q2 → Q3 → handoff to Direct Meds (% of /start visits)
+              </p>
+              {(() => {
+                const b = funnel.data.bridgeFunnel;
+                const steps = [
+                  { label: "/start", v: b.startVisits },
+                  { label: "Q1", v: b.q1 },
+                  { label: "Q2", v: b.q2 },
+                  { label: "Q3", v: b.q3 },
+                  { label: "Handoff", v: b.handoffClicks },
+                ];
+                return (
+                  <div className="mt-3 grid grid-cols-5 gap-2">
+                    {steps.map((s, i) => (
+                      <div key={s.label} className="rounded-lg border border-border/60 px-2 py-2 text-center">
+                        <p className="text-[11px] text-muted-foreground">{s.label}</p>
+                        <p className="mt-0.5 text-lg font-semibold tabular-nums">{s.v}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {i === 0 ? "100%" : `${b.startVisits ? Math.round((s.v / b.startVisits) * 100) : 0}%`}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+              {funnel.data.bridgeFunnel.byDay.length > 0 ? (
+                <div className="mt-3 overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                        <th className="py-2 pr-4 font-medium">Date</th>
+                        <th className="py-2 pr-4 font-medium">Starts</th>
+                        <th className="py-2 pr-4 font-medium">Q3</th>
+                        <th className="py-2 pr-4 font-medium">Handoff</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {funnel.data.bridgeFunnel.byDay.map((row) => (
+                        <tr key={row.date} className="border-b border-border/60">
+                          <td className="py-1.5 pr-4 tabular-nums">{row.date.slice(5)}</td>
+                          <td className="py-1.5 pr-4 tabular-nums">{row.starts}</td>
+                          <td className="py-1.5 pr-4 tabular-nums">{row.q3}</td>
+                          <td className="py-1.5 pr-4 tabular-nums">{row.handoffs}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="mt-3 text-xs text-muted-foreground">No /start traffic yet.</p>
+              )}
+            </div>
+          ) : null}
         </div>
       ) : null}
 

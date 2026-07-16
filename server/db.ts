@@ -445,6 +445,10 @@ export async function ensureAffiliateWorkspaceSchema() {
       await addColumnIfMissing(db, "click_events", "source_surface", "`source_surface` varchar(32) DEFAULT NULL");
       await addColumnIfMissing(db, "click_events", "click_type", "`click_type` varchar(64) DEFAULT NULL");
       await addColumnIfMissing(db, "visitor_sessions", "source_surface", "`source_surface` varchar(32) DEFAULT NULL");
+      // /start bridge warm-up answers (paid-traffic → Direct Meds).
+      await addColumnIfMissing(db, "visitor_sessions", "bridge_q1", "`bridge_q1` varchar(64) DEFAULT NULL");
+      await addColumnIfMissing(db, "visitor_sessions", "bridge_q2", "`bridge_q2` varchar(64) DEFAULT NULL");
+      await addColumnIfMissing(db, "visitor_sessions", "bridge_q3", "`bridge_q3` varchar(64) DEFAULT NULL");
 
       // Per-provider postback config (leg-6). Networks name fields differently.
       await addColumnIfMissing(db, "providers", "postback_param_map", "`postback_param_map` json");

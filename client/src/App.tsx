@@ -16,6 +16,7 @@ import { QuizProvider } from "./contexts/QuizContext";
 
 // Pages
 const Home = lazy(() => import("./pages/Home"));
+const Start = lazy(() => import("./pages/Start"));
 const QuizFlow = lazy(() => import("./pages/QuizFlow"));
 const Processing = lazy(() => import("./pages/Processing"));
 const Results = lazy(() => import("./pages/Results"));
@@ -64,7 +65,7 @@ const EmailMetrics = lazy(() => import("./pages/admin/EmailMetrics"));
 const RevenueOverview = lazy(() => import("./pages/admin/RevenueOverview"));
 
 // Pages that should NOT show the standard navbar/footer
-const BARE_ROUTES = ["/quiz", "/quiz/flow", "/processing", "/results"];
+const BARE_ROUTES = ["/quiz", "/quiz/flow", "/processing", "/results", "/start"];
 
 function isBareRoute(path: string) {
   return BARE_ROUTES.some((r) => path.startsWith(r));
@@ -113,6 +114,14 @@ function Router() {
       };
     }
 
+    // /start is a paid-traffic bridge landing — noindex (not an organic entry point).
+    if (location.startsWith("/start")) {
+      return {
+        title: "Check your GLP-1 eligibility | PeptidePilot",
+        description: "A few quick questions, then a fast eligibility check for GLP-1 weight-loss treatment.",
+      };
+    }
+
     if (location.startsWith("/results")) {
       return {
         title: "Your GLP-1 Match | PeptidePilot",
@@ -149,6 +158,13 @@ function Router() {
             <Home />
           </Suspense>
         </PublicLayout>
+      </Route>
+
+      {/* /start — paid-traffic 3-question bridge → Direct Meds handoff. No site nav. */}
+      <Route path="/start">
+        <Suspense fallback={<RouteFallback />}>
+          <Start />
+        </Suspense>
       </Route>
 
       {/* Quiz — redirects directly to flow */}

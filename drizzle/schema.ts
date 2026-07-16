@@ -166,6 +166,11 @@ export const visitorSessions = mysqlTable("visitor_sessions", {
   totalDurationMs: bigint("totalDurationMs", { mode: "number" }).notNull().default(0),
   // Surface the session entered on: 'funnel' | 'library' | 'bridge' (leg-5).
   sourceSurface: varchar("source_surface", { length: 32 }),
+  // /start 3-question warm-up bridge answers (paid-traffic → Direct Meds handoff).
+  // Our only first-party data from that flow; each is stored as the tapped option label.
+  bridgeQ1: varchar("bridge_q1", { length: 64 }),
+  bridgeQ2: varchar("bridge_q2", { length: 64 }),
+  bridgeQ3: varchar("bridge_q3", { length: 64 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
