@@ -123,7 +123,7 @@ export default function Home() {
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal leading-tight mb-5 sm:mb-6 max-w-3xl mx-auto"
             style={{ fontFamily: "'DM Serif Display', serif" }}
           >
-            Get matched to GLP-1 therapy in minutes
+            Get matched to Peptide therapy in minutes
           </h1>
 
           <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">

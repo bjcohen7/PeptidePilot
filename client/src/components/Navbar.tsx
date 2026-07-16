@@ -2,6 +2,17 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { Menu, X, Search } from "lucide-react";
+import { trackMetaCustomEvent } from "@/lib/metaPixel";
+
+// "Find my match" enters the /start warm-up bridge (same destination as the homepage
+// direct CTA) and fires the BridgeStart funnel-entry signal.
+function fireBridgeStart() {
+  try {
+    trackMetaCustomEvent("BridgeStart", { placement: "nav" });
+  } catch {
+    /* no-op */
+  }
+}
 
 // Library/blog/stacks/guides are demoted under a single "Learn" entry (→ /learn hub).
 const NAV_LINKS = [
@@ -68,7 +79,7 @@ export default function Navbar() {
                 {label}
               </Link>
             ))}
-            <Link href="/quiz/flow"
+            <Link href="/start" onClick={fireBridgeStart}
               className="rounded-[999px] px-[18px] py-[9px] text-[.94rem] font-semibold no-underline shadow-sm transition-shadow hover:shadow-md"
               style={{ background: "var(--grad-cta)", color: "var(--ink)" }}
             >
@@ -100,7 +111,7 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="pt-3 mt-2" style={{ borderTop: "1px solid var(--line)" }}>
-              <Link href="/quiz/flow" onClick={() => setMenuOpen(false)}
+              <Link href="/start" onClick={() => { fireBridgeStart(); setMenuOpen(false); }}
                 className="block rounded-[999px] px-[18px] py-[13px] text-base font-semibold text-center no-underline shadow-sm"
                 style={{ background: "var(--grad-cta)", color: "var(--ink)" }}
               >
