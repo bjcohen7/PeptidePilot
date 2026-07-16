@@ -247,11 +247,12 @@ export default function Start() {
                 color: DM.text,
               }}
             >
-              Last step: a quick <span style={{ color: DM.primary }}>BMI check</span> with Direct
-              Meds to confirm you're a candidate&nbsp;→
+              Next: your <span style={{ color: DM.primary }}>eligibility check</span> with Direct
+              Meds&nbsp;→
             </h1>
             <p style={{ fontSize: 16, lineHeight: 1.5, color: DM.muted, margin: "0 0 28px" }}>
-              Direct Meds is LegitScript-certified · Trustpilot-rated. Takes about a minute.
+              It starts with a quick BMI check, then a few questions to confirm you're a candidate —
+              takes a few minutes. Direct Meds is LegitScript-certified &amp; Trustpilot-rated.
             </p>
             <a
               href={handoffHref}
@@ -276,7 +277,7 @@ export default function Start() {
                 textDecoration: "none",
               }}
             >
-              Check my eligibility →
+              Start my eligibility check →
             </a>
           </div>
         )}
