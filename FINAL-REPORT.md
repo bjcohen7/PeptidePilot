@@ -313,3 +313,15 @@ The homepage direct flow's destination was swapped from Gala to Direct Meds. The
 | URL template | providers table `affiliateUrlTemplate` (UNTOUCHED) | `DM_DIRECT_BASE` in `server/_core/index.ts` |
 
 Both are `provider_slug = 'direct_med'` but they are **different offers on different platforms**. The results-page `/go/direct_med` link and its providers-table template were left **completely untouched** by the homepage swap. The homepage DM-direct destination + its `sub1` param live only in `DIRECT_DESTINATIONS.direct_med` / `dmDirectUrl()`; the param name is env-overridable via `DM_DIRECT_SUBID_PARAM` (defaults to the confirmed `sub1`) so any future correction is a config change, not a deploy.
+
+## Experiment annotation — bridge restyle + repoint to Gala-v2 (2026-07-20)
+
+The homepage direct flow now runs through the **`/start` 3-question bridge** (added 2026-07-20), which hands off **provider-anonymously** to Gala's funnel. Three legs, non-overlapping in time — **judge each on its own; they are not 1:1 comparable:**
+
+- **Gala-v1 — Jul 11–14, 2026.** Homepage → `/go-direct/gala` direct (no bridge). Landing `funnel/start` w/ `utm_content=lp-glp1-v4`. Sub1 `-gdirect`. **Final: 173 clicks / 140 sessions.** (A homepage copy change landed mid-leg Jul 14 — see the `2026-07-14` annotation.)
+- **DM-direct — Jul 15–20, 2026. CLOSED.** Homepage → `/go-direct/direct_med` (direct, then via `/start` bridge Jul 20 AM). Separate Everflow account, sub1 `-dmdirect`. **Final count at close: 114 clicks / 91 sessions.** No longer receiving traffic; `/go-direct/direct_med` stays **dormant-not-dead** (route + config intact, just not linked).
+- **Gala-v2 — Jul 20, 2026 →.** Homepage → `/start` bridge (3 taps) → `/go-direct/gala`. **New landing variant `src=lp-glp1-top5-mirror-c4e9`** (v1 used `lp-glp1-v4`), so **Gala-v2 is NOT 1:1 comparable to Gala-v1** — different landing page + a warm-up bridge in front. Same Everflow account and `sub1`/`-gdirect` suffix as v1, so both report to the same account (distinguish by date / landing variant, not by sub1 suffix).
+
+**Bridge Q3 option set changed 2026-07-20 (Gala-v2):** was *"What have you tried so far?"* (Diet & exercise / Other programs or pills / First real step); now *"What matters most to you?"* (**Lowest monthly price / No insurance needed / Fastest start**) — same `bridge_q3` logging key, so pre/post-Jul-20 `bridge_q3` values are different option sets. Q1/Q2 unchanged.
+
+**Provider-anonymous handoff:** the `/start` interstitial (headline / body / trust line) never names the provider and carries no provider-specific credentials, BMI line, or price — copy lives in a single `HANDOFF` config in `client/src/pages/Start.tsx`, so the **next** destination swap is a link + palette change only, never a copy rewrite. The destination is a single swap-point: `HANDOFF_PROVIDER` (client) + `DIRECT_DESTINATIONS` (server). Admin **Homepage → Direct** card now shows three legs (Gala-v1 / DM / Gala-v2) split by `provider_slug` + date.

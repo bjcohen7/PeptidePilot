@@ -278,16 +278,20 @@ export default function InsightsOverview() {
               <p className="mt-1 text-2xl font-semibold tracking-tight">{funnel.data.directFlow.ctr}%</p>
             </div>
           </div>
-          {/* Per-provider legs — the two never overlap in time, but keep them side by
-              side so each leg's click count reads on its own (different networks). */}
-          <div className="mt-4 grid grid-cols-2 gap-4">
+          {/* Three legs, non-overlapping in time. Gala-v2 uses a different landing variant
+              (src=lp-glp1-top5-mirror-c4e9), so it is NOT 1:1 comparable to Gala-v1. */}
+          <div className="mt-4 grid grid-cols-3 gap-3">
             <div className="rounded-lg border border-border/60 px-3 py-2">
-              <p className="text-xs text-muted-foreground">Gala leg (Jul 11–14)</p>
-              <p className="mt-1 text-lg font-semibold tracking-tight">{funnel.data.directFlow.galaClicks} click{funnel.data.directFlow.galaClicks === 1 ? "" : "s"}</p>
+              <p className="text-xs text-muted-foreground">Gala-v1 (Jul 11–14)</p>
+              <p className="mt-1 text-lg font-semibold tracking-tight">{funnel.data.directFlow.galaV1Clicks}</p>
             </div>
             <div className="rounded-lg border border-border/60 px-3 py-2">
-              <p className="text-xs text-muted-foreground">DM-direct leg (from Jul 15)</p>
-              <p className="mt-1 text-lg font-semibold tracking-tight">{funnel.data.directFlow.dmClicks} click{funnel.data.directFlow.dmClicks === 1 ? "" : "s"}</p>
+              <p className="text-xs text-muted-foreground">DM (Jul 15–20)</p>
+              <p className="mt-1 text-lg font-semibold tracking-tight">{funnel.data.directFlow.dmClicks}</p>
+            </div>
+            <div className="rounded-lg border border-border/60 px-3 py-2">
+              <p className="text-xs text-muted-foreground">Gala-v2 (Jul 20→)</p>
+              <p className="mt-1 text-lg font-semibold tracking-tight">{funnel.data.directFlow.galaV2Clicks}</p>
             </div>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">

@@ -3,26 +3,41 @@ import { getVisitorSessionId } from "@/components/SessionTracker";
 import { trackMetaCustomEvent } from "@/lib/metaPixel";
 
 // Paid-traffic bridge landing (/start). Three warm-up tap-questions — one per screen,
-// instant advance — then a handoff to Direct Meds' BMI/eligibility quiz via the existing
-// /go-direct/direct_med redirect (pos=bridge → provider_click_logs 'home_direct_brdg').
+// instant advance — then a PROVIDER-ANONYMOUS handoff to whichever direct provider the
+// server /go-direct/:provider route currently points at (today: Gala). The handoff copy
+// (HANDOFF below) never names the provider, so future destination swaps don't touch it.
 //
-// STYLED TOWARD DIRECT MEDS (not our brand) so their step 1 feels like our step 4: their
-// palette (#F7F3EF cream bg, #0AB0FB primary, #212529 text), full-pill buttons, Lora
-// serif headings, white tap-cards, and a 3-node progress bar in their visual language
-// (their bar is Start→Details→Eligibility; ours is steps 1-2-3 of "Start").
-//
-// The three questions deliberately avoid every topic DM asks downstream (goal, goal-weight,
-// gender, symptoms, priority, motivation, pace, sleep, current GLP-1 use) — they cover the
-// struggle history DM never asks, so nothing is repeated across the handoff.
+// STYLED TOWARD THE DESTINATION so their step 1 feels like our step 4. Current palette is
+// Gala's (recon-extracted): white bg, slate text, emerald-green progress accent, dark
+// near-black pill primary button, light gray borders. SYSTEM fonts only — no webfonts
+// (we deliberately cleared the font critical path; do not reintroduce one here).
 
-const DM = {
-  bg: "#F7F3EF",
-  text: "#212529",
-  primary: "#0AB0FB",
-  border: "#DEE2E6",
-  muted: "#6B7280",
-  serif: "'Lora', Georgia, 'Times New Roman', serif",
+const GALA = {
+  bg: "#FFFFFF",
+  text: "#1F2937", // slate-800 body
+  headline: "#1A1A1A", // near-black headline
+  accent: "#047857", // emerald — progress accent (matches Gala)
+  button: "#1F2937", // dark near-black pill primary CTA (matches Gala's "Next →")
+  border: "#E5E7EB", // gray-200 card border
+  muted: "#6B7280", // gray-500 secondary text
+  sans: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
 };
+
+// Provider-anonymous handoff copy — SINGLE source of truth. Swapping the destination
+// provider must NOT require editing any of this. No provider name, no provider-specific
+// credentials (LegitScript/Trustpilot were DM's), no BMI (DM's opener), no price.
+const HANDOFF = {
+  headline: "Next: check your eligibility →",
+  body: "A few quick questions to confirm you're a candidate — reviewed by licensed US clinicians. Takes about 2 minutes. No insurance needed.",
+  trust: "Licensed US providers · no insurance required",
+  cta: "Start my eligibility check →",
+};
+
+// Which provider the /start handoff sends to. Single swap-point on the client; the server
+// /go-direct/:provider route owns the actual destination URL + subid param. HANDOFF_SUFFIX
+// mirrors the server's cohort suffix for the Meta pixel sub1.
+const HANDOFF_PROVIDER = "gala";
+const HANDOFF_SUFFIX = "gdirect";
 
 type Question = { q: number; title: string; options: string[] };
 
@@ -38,9 +53,10 @@ const QUESTIONS: Question[] = [
     options: ["Hunger & cravings", "The weight always comes back", "No time or energy"],
   },
   {
+    // Q3 option set changed 2026-07-20 (Gala-v2): priorities, not prior-attempts.
     q: 3,
-    title: "What have you tried so far?",
-    options: ["Diet & exercise", "Other programs or pills", "This is my first real step"],
+    title: "What matters most to you?",
+    options: ["Lowest monthly price", "No insurance needed", "Fastest start"],
   },
 ];
 
@@ -67,7 +83,7 @@ export default function Start() {
   const [step, setStep] = useState(0);
   const sidRef = useRef<string>("");
   const pointerFired = useRef(false);
-  const [handoffHref, setHandoffHref] = useState("/go-direct/direct_med?pos=bridge");
+  const [handoffHref, setHandoffHref] = useState(`/go-direct/${HANDOFF_PROVIDER}?pos=bridge`);
 
   useEffect(() => {
     let sid = "";
@@ -79,7 +95,7 @@ export default function Start() {
     if (sid) {
       sidRef.current = sid;
       const p = new URLSearchParams({ sid, pos: "bridge" });
-      setHandoffHref(`/go-direct/direct_med?${p.toString()}`);
+      setHandoffHref(`/go-direct/${HANDOFF_PROVIDER}?${p.toString()}`);
     }
     // Fresh visit always starts at Q1 (no hero, no scroll).
     if (typeof window !== "undefined") window.scrollTo(0, 0);
@@ -101,44 +117,34 @@ export default function Start() {
   const fireDirectPixel = () => {
     try {
       const sid = sidRef.current || "anon";
-      trackMetaCustomEvent("DirectFunnelClick", { sub1: `${sid}-dmdirect`, source: "bridge" });
+      trackMetaCustomEvent("DirectFunnelClick", { sub1: `${sid}-${HANDOFF_SUFFIX}`, source: "bridge" });
     } catch {
       /* no-op */
     }
   };
 
-  const onHandoff = QUESTIONS.length; // step index of the handoff screen (3)
-  const isHandoff = step >= onHandoff;
+  const isHandoff = step >= QUESTIONS.length;
   const current = QUESTIONS[Math.min(step, QUESTIONS.length - 1)];
 
   return (
     <div
       style={{
         minHeight: "100dvh",
-        background: DM.bg,
-        color: DM.text,
+        background: GALA.bg,
+        color: GALA.text,
         display: "flex",
         flexDirection: "column",
-        fontFamily:
-          "'Helvetica Neue', Helvetica, -apple-system, BlinkMacSystemFont, Arial, sans-serif",
+        fontFamily: GALA.sans,
       }}
     >
       {/* Small logo top — present, not competing. */}
       <header style={{ padding: "18px 20px 6px" }}>
-        <span
-          style={{
-            fontFamily: DM.serif,
-            fontWeight: 600,
-            fontSize: 18,
-            letterSpacing: "-0.01em",
-            color: DM.text,
-          }}
-        >
-          Peptide<span style={{ color: DM.primary }}>Pilot</span>
+        <span style={{ fontWeight: 700, fontSize: 18, letterSpacing: "-0.01em", color: GALA.headline }}>
+          Peptide<span style={{ color: GALA.accent }}>Pilot</span>
         </span>
       </header>
 
-      {/* Progress — 3 nodes, DM visual language (Start steps 1-2-3). */}
+      {/* Progress — 3 nodes, echoing Gala's green step indicator (steps 1-2-3). */}
       <div
         style={{ display: "flex", alignItems: "center", padding: "8px 24px 4px", maxWidth: 560, width: "100%", margin: "0 auto" }}
         aria-label={`Step ${Math.min(step + 1, 3)} of 3`}
@@ -153,8 +159,8 @@ export default function Start() {
                   width: 22,
                   height: 22,
                   borderRadius: "50%",
-                  border: `2px solid ${done || active ? DM.primary : "rgba(56,49,44,0.25)"}`,
-                  background: done ? DM.primary : "transparent",
+                  border: `2px solid ${done || active ? GALA.accent : "#D1D5DB"}`,
+                  background: done ? GALA.accent : "transparent",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -164,17 +170,12 @@ export default function Start() {
                 {done ? (
                   <span style={{ color: "#fff", fontSize: 12, lineHeight: 1 }}>✓</span>
                 ) : active ? (
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: DM.primary }} />
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: GALA.accent }} />
                 ) : null}
               </div>
               {i < 2 ? (
                 <span
-                  style={{
-                    flex: 1,
-                    height: 2,
-                    margin: "0 6px",
-                    background: step > i || isHandoff ? DM.primary : "rgba(56,49,44,0.2)",
-                  }}
+                  style={{ flex: 1, height: 2, margin: "0 6px", background: step > i || isHandoff ? GALA.accent : "#E5E7EB" }}
                 />
               ) : null}
             </div>
@@ -197,12 +198,11 @@ export default function Start() {
           <>
             <h1
               style={{
-                fontFamily: DM.serif,
-                fontWeight: 500,
-                fontSize: "clamp(28px, 7vw, 40px)",
-                lineHeight: 1.15,
+                fontWeight: 600,
+                fontSize: "clamp(26px, 6.5vw, 34px)",
+                lineHeight: 1.2,
                 margin: "8px 0 28px",
-                color: DM.text,
+                color: GALA.headline,
               }}
             >
               {current.title}
@@ -215,20 +215,20 @@ export default function Start() {
                   onClick={() => answer(current.q, opt)}
                   style={{
                     width: "100%",
-                    textAlign: "center",
+                    textAlign: "left",
                     background: "#fff",
-                    border: `1px solid ${DM.border}`,
-                    borderRadius: 14,
-                    padding: "22px 18px",
-                    fontFamily: DM.serif,
-                    fontWeight: 600,
-                    fontSize: 19,
-                    color: DM.text,
+                    border: `1px solid ${GALA.border}`,
+                    borderRadius: 12,
+                    padding: "20px 18px",
+                    fontFamily: GALA.sans,
+                    fontWeight: 500,
+                    fontSize: 17,
+                    color: GALA.text,
                     cursor: "pointer",
                     transition: "border-color 120ms, box-shadow 120ms",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = DM.primary)}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = DM.border)}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = GALA.accent)}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = GALA.border)}
                 >
                   {opt}
                 </button>
@@ -239,21 +239,16 @@ export default function Start() {
           <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
             <h1
               style={{
-                fontFamily: DM.serif,
-                fontWeight: 500,
-                fontSize: "clamp(28px, 7vw, 40px)",
-                lineHeight: 1.15,
+                fontWeight: 600,
+                fontSize: "clamp(26px, 6.5vw, 34px)",
+                lineHeight: 1.2,
                 margin: "8px 0 16px",
-                color: DM.text,
+                color: GALA.headline,
               }}
             >
-              Next: your <span style={{ color: DM.primary }}>eligibility check</span> with Direct
-              Meds&nbsp;→
+              {HANDOFF.headline}
             </h1>
-            <p style={{ fontSize: 16, lineHeight: 1.5, color: DM.muted, margin: "0 0 28px" }}>
-              It starts with a quick BMI check, then a few questions to confirm you're a candidate —
-              takes a few minutes. Direct Meds is LegitScript-certified &amp; Trustpilot-rated.
-            </p>
+            <p style={{ fontSize: 16, lineHeight: 1.55, color: GALA.muted, margin: "0 0 28px" }}>{HANDOFF.body}</p>
             <a
               href={handoffHref}
               onPointerDown={() => {
@@ -267,18 +262,19 @@ export default function Start() {
               style={{
                 display: "block",
                 textAlign: "center",
-                background: DM.primary,
+                background: GALA.button,
                 color: "#fff",
-                borderRadius: 32,
+                borderRadius: 999,
                 padding: "18px 24px",
-                fontFamily: DM.serif,
-                fontWeight: 500,
-                fontSize: 20,
+                fontFamily: GALA.sans,
+                fontWeight: 600,
+                fontSize: 18,
                 textDecoration: "none",
               }}
             >
-              Start my eligibility check →
+              {HANDOFF.cta}
             </a>
+            <p style={{ marginTop: 16, fontSize: 13, color: GALA.muted, textAlign: "center" }}>{HANDOFF.trust}</p>
           </div>
         )}
       </main>

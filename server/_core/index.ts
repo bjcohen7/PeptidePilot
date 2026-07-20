@@ -46,10 +46,12 @@ function dmDirectUrl(subid: string): string {
 const DIRECT_DESTINATIONS: Record<string, { suffix: string; label: string; url: (subid: string) => string }> = {
   gala: {
     suffix: "gdirect",
-    label: "Gala",
+    label: "Gala direct",
+    // Gala-v2 landing (src=lp-glp1-top5-mirror-c4e9) — same Everflow account/param as the
+    // v1 leg (sub1, -gdirect suffix). The bridge (/start) hands off here provider-anonymously.
     url: (subid) =>
       "https://galaglp1.com/funnel/start?a=price&_ef_transaction_id=&oid=1&affid=13" +
-      "&utm_content=lp-glp1-v4&sub1=" + encodeURIComponent(subid),
+      "&src=lp-glp1-top5-mirror-c4e9&sub1=" + encodeURIComponent(subid),
   },
   direct_med: {
     suffix: "dmdirect",
