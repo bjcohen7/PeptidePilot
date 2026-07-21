@@ -117,7 +117,7 @@ function Router() {
     // /start is a paid-traffic bridge landing — noindex (not an organic entry point).
     if (location.startsWith("/start")) {
       return {
-        title: "Check your GLP-1 eligibility | PeptidePilot",
+        title: "Check your eligibility | PeptidePilot",
         description: "Medically-supervised weight management from licensed US clinicians. Check your eligibility in minutes. No insurance needed.",
       };
     }

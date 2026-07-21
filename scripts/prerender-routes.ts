@@ -58,7 +58,9 @@ const staticRoutes: PrerenderRoute[] = [
     // /start — paid-traffic 3-question bridge → Direct Meds. Prerendered so Q1 paints
     // instantly (no hero, no scroll); noindex (not an organic entry point).
     path: "/start",
-    title: "Check your GLP-1 eligibility | PeptidePilot",
+    // /start is the AD landing page (no SEO job) — drug-class-free even in <title>,
+    // since ad reviewers see the tab title.
+    title: "Check your eligibility | PeptidePilot",
     ogTitle: "Check your eligibility — 2 minutes",
     description:
       "Medically-supervised weight management from licensed US clinicians. Check your eligibility in minutes. No insurance needed.",

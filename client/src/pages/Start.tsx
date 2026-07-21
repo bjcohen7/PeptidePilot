@@ -31,6 +31,9 @@ const HANDOFF = {
   body: "A few quick questions to confirm you're a candidate — reviewed by licensed US clinicians. Takes about 2 minutes. No insurance needed.",
   trust: "Licensed US providers · no insurance required",
   cta: "Start my eligibility check →",
+  // FTC affiliate-compensation disclosure — required because the handoff routes to an
+  // affiliate destination. Kept generic/provider-anonymous like the rest of this screen.
+  disclosure: "We may earn a commission from the providers we recommend.",
 };
 
 // Which provider the /start handoff sends to. Single swap-point on the client; the server
@@ -275,6 +278,9 @@ export default function Start() {
               {HANDOFF.cta}
             </a>
             <p style={{ marginTop: 16, fontSize: 13, color: GALA.muted, textAlign: "center" }}>{HANDOFF.trust}</p>
+            <p style={{ marginTop: 8, fontSize: 11, lineHeight: 1.4, color: GALA.muted, opacity: 0.85, textAlign: "center" }}>
+              {HANDOFF.disclosure}
+            </p>
           </div>
         )}
       </main>
