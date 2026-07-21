@@ -23,7 +23,7 @@ export const ENV = {
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
   siteUrl: process.env.SITE_URL || process.env.VITE_SITE_URL || "https://www.peptidepilot.me",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
-  metaPixelId: process.env.VITE_META_PIXEL_ID || "26875589488702265",
+  metaPixelId: process.env.VITE_META_PIXEL_ID || "1053576873680593",
   metaCapiToken: process.env.META_CAPI_TOKEN ?? "",
   metaTestEventCode: process.env.META_TEST_EVENT_CODE ?? "",
   adminEmails: (process.env.ADMIN_EMAILS ?? "")
