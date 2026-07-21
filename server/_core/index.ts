@@ -511,8 +511,10 @@ async function startServer() {
   // Runtime homepage-CTA mode (quiz | gala | split), read per request so a Railway
   // env flip takes effect without a rebuild. Default gala (the live experiment).
   app.get("/api/cta-mode", (_req, res) => {
-    const raw = (process.env.HOMEPAGE_CTA_MODE || "gala").toLowerCase();
-    const mode = raw === "quiz" || raw === "split" ? raw : "gala";
+    // Default is now 'quiz' (safe organic state — paid traffic paused Jul 21). To relaunch
+    // the direct/bridge flow post-certification, set HOMEPAGE_CTA_MODE=gala (or split).
+    const raw = (process.env.HOMEPAGE_CTA_MODE || "quiz").toLowerCase();
+    const mode = raw === "gala" || raw === "split" ? raw : "quiz";
     res.set("Cache-Control", "no-store");
     res.json({ mode });
   });

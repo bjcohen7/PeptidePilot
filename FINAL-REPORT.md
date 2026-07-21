@@ -325,3 +325,19 @@ The homepage direct flow now runs through the **`/start` 3-question bridge** (ad
 **Bridge Q3 option set changed 2026-07-20 (Gala-v2):** was *"What have you tried so far?"* (Diet & exercise / Other programs or pills / First real step); now *"What matters most to you?"* (**Lowest monthly price / No insurance needed / Fastest start**) — same `bridge_q3` logging key, so pre/post-Jul-20 `bridge_q3` values are different option sets. Q1/Q2 unchanged.
 
 **Provider-anonymous handoff:** the `/start` interstitial (headline / body / trust line) never names the provider and carries no provider-specific credentials, BMI line, or price — copy lives in a single `HANDOFF` config in `client/src/pages/Start.tsx`, so the **next** destination swap is a link + palette change only, never a copy rewrite. The destination is a single swap-point: `HANDOFF_PROVIDER` (client) + `DIRECT_DESTINATIONS` (server). Admin **Homepage → Direct** card now shows three legs (Gala-v1 / DM / Gala-v2) split by `provider_slug` + date.
+
+## Experiment annotation — direct-flow SUSPENDED, homepage back to quiz (2026-07-21)
+
+**The ad account was banned (2026-07-21); paid traffic is paused.** The homepage was returned to **quiz mode** so organic visitors enter OUR quiz (lead capture + drip), not the provider handoff. **Ledger closed** — final per-leg homepage→direct click counts (test rows excluded):
+
+| Leg | Window | Path | Clicks / distinct sessions |
+|---|---|---|---|
+| **Gala-v1** | Jul 11–14 | homepage → `/go-direct/gala` (direct) | **173 / 140** |
+| **DM** | Jul 15–20 | homepage → `/go-direct/direct_med` (direct, then bridge Jul 20) | **114 / 91** |
+| **Gala-v2** | Jul 20–21 | homepage → `/start` bridge → `/go-direct/gala` | **10 / 9** |
+
+Gala-v2 ran ~1 day before the ban — too small to read; not comparable to v1 (different landing variant + bridge). `/start` logged 312 distinct visits over the bridge's life (mostly the Jul 20 DM-bridge window + crawlers; only the 9 above reached the Gala handoff).
+
+**What changed to revert:** `HOMEPAGE_CTA_MODE` **default flipped `gala` → `quiz`** (both `/api/cta-mode` and `HomepageCta` — so the prerendered homepage now ships `/quiz` anchors; env stays unset). The Jul-14 homepage copy set was reverted to quiz-accurate versions (the revert checklist above), EXCEPT the `<Seo>`/meta/og description, which stays the **compliant** "Medically-supervised weight management…" copy (OG compliance holds regardless of mode — organic shares render it).
+
+**Kept deployed-but-dormant** (the instant relaunch path post-certification — no traffic hits them without ads): `/start` bridge, `/go-direct/*` routes (gala + direct_med), the three dashboard legs, Telegram alerts, and the compliant OG layer. **To relaunch:** set `HOMEPAGE_CTA_MODE=gala` (client-side deploy-free flip for real/JS users; redeploy to also re-bake `/start` anchors into the prerender).

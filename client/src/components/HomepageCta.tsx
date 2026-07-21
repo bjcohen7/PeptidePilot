@@ -4,13 +4,13 @@ import { getVisitorSessionId } from "@/components/SessionTracker";
 import { trackMetaCustomEvent } from "@/lib/metaPixel";
 
 // Homepage CTA target selector for the direct-flow experiment.
-//   quiz  → our normal quiz flow (/quiz)
-//   gala  → the /start warm-up bridge (3 taps → Direct Meds handoff)  [DEFAULT]
+//   quiz  → our normal quiz flow (/quiz)  [DEFAULT — paid traffic paused Jul 21]
+//   gala  → the /start warm-up bridge (3 taps → Direct Meds handoff)
 //   split → deterministic 50/50 on the visitor sessionId (/start vs /quiz)
 // Mode comes from HOMEPAGE_CTA_MODE via /api/cta-mode, read at runtime so the env can
-// flip without a rebuild. Default 'gala' (the mode label predates the swaps — it just
-// means "direct flow on"); it's also the SSR/prerender value, so the prerendered
-// homepage ships /start anchors (plain curl shows /start).
+// flip without a rebuild. Default is now 'quiz' — the safe organic state; it's also the
+// SSR/prerender value, so the prerendered homepage ships /quiz anchors (plain curl shows
+// /quiz). To relaunch the direct/bridge flow post-certification, set HOMEPAGE_CTA_MODE=gala.
 //
 // The direct CTA now enters the /start bridge, NOT the provider redirect directly. The
 // deeper DirectFunnelClick pixel stays owned by the /start→Direct Meds handoff; here we
@@ -33,7 +33,7 @@ export function HomepageCta({
   // ?pos= for placement attribution.
   placement?: "hero" | "footer";
 }) {
-  const [mode, setMode] = useState<CtaMode>("gala");
+  const [mode, setMode] = useState<CtaMode>("quiz");
 
   useEffect(() => {
     let alive = true;
