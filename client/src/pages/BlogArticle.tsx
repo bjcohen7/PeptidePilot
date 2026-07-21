@@ -17,7 +17,7 @@ function ArticleNotFound() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center">
-        <h1 className="text-2xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
+        <h1 className="text-2xl font-semibold text-foreground mb-3" style={{ fontFamily: "serif" }}>
           Article Not Found
         </h1>
         <p className="text-muted-foreground mb-6">This article doesn't exist or has been moved.</p>
@@ -91,7 +91,7 @@ export function BlogArticleView({ article }: { article: BlogPost }) {
           <div className="section-badge mb-4" style={{ background: "oklch(1 0 0 / 0.1)", color: "white" }}>
             {summary.category}
           </div>
-          <h1 className="text-3xl md:text-4xl font-normal mb-4 leading-snug" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          <h1 className="text-3xl md:text-4xl font-normal mb-4 leading-snug" style={{ fontFamily: "serif" }}>
             {summary.title}
           </h1>
           <div className="flex items-center gap-4 text-white/60 text-sm">
@@ -117,7 +117,7 @@ export function BlogArticleView({ article }: { article: BlogPost }) {
                   <div key={section.heading} className="mb-8">
                     <h2
                       className="text-xl font-semibold text-foreground mt-8 mb-3"
-                      style={{ fontFamily: "'DM Serif Display', serif" }}
+                      style={{ fontFamily: "serif" }}
                     >
                       {section.heading}
                     </h2>
@@ -203,7 +203,7 @@ export default function BlogArticle({ params }: BlogArticleProps) {
           <div className="section-badge mb-4" style={{ background: "oklch(1 0 0 / 0.1)", color: "white" }}>
             {summary.category}
           </div>
-          <h1 className="text-3xl md:text-4xl font-normal mb-4 leading-snug" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          <h1 className="text-3xl md:text-4xl font-normal mb-4 leading-snug" style={{ fontFamily: "serif" }}>
             {summary.title}
           </h1>
           <div className="flex items-center gap-4 text-white/60 text-sm">

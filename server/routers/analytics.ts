@@ -886,16 +886,19 @@ export const analyticsRouter = router({
     // pre-placement rows are plain 'home_direct' (unknown slot).
     const [hc] = await db
       .select({
-        clicks: sql<number>`count(distinct ${providerClickLogs.publicId})`,
-        inApp: sql<number>`count(distinct case when ${providerClickLogs.inAppBrowser} = 1 then ${providerClickLogs.publicId} end)`,
+        // Homepage-direct CTR metrics EXCLUDE the /start bridge slot (home_direct_brdg) —
+        // those clicks belong to the bridge funnel, not the homepage→direct CTR numerator.
+        clicks: sql<number>`count(distinct case when ${providerClickLogs.position} <> 'home_direct_brdg' then ${providerClickLogs.publicId} end)`,
+        inApp: sql<number>`count(distinct case when ${providerClickLogs.inAppBrowser} = 1 and ${providerClickLogs.position} <> 'home_direct_brdg' then ${providerClickLogs.publicId} end)`,
         hero: sql<number>`count(distinct case when ${providerClickLogs.position} = 'home_direct_hero' then ${providerClickLogs.publicId} end)`,
         footer: sql<number>`count(distinct case when ${providerClickLogs.position} = 'home_direct_foot' then ${providerClickLogs.publicId} end)`,
+        bridge: sql<number>`count(distinct case when ${providerClickLogs.position} = 'home_direct_brdg' then ${providerClickLogs.publicId} end)`,
         // Three legs, partitioned by provider + date: Gala-v1 (Jul 11–14, homepage→gala
         // direct), DM (Jul 15–20, direct_med), Gala-v2 (Jul 20→, homepage→/start bridge→
         // gala, new landing src=lp-glp1-top5-mirror-c4e9). Gala had no clicks Jul 15–19,
         // so the date split is unambiguous.
         galaV1: sql<number>`count(distinct case when ${providerClickLogs.providerSlug} = 'gala' and ${providerClickLogs.createdAt} < '2026-07-15' then ${providerClickLogs.publicId} end)`,
-        dm: sql<number>`count(distinct case when ${providerClickLogs.providerSlug} = 'direct_med' then ${providerClickLogs.publicId} end)`,
+        dm: sql<number>`count(distinct case when ${providerClickLogs.providerSlug} = 'direct_med' and ${providerClickLogs.createdAt} >= '2026-07-15' and ${providerClickLogs.createdAt} < '2026-07-21' then ${providerClickLogs.publicId} end)`,
         galaV2: sql<number>`count(distinct case when ${providerClickLogs.providerSlug} = 'gala' and ${providerClickLogs.createdAt} >= '2026-07-20' then ${providerClickLogs.publicId} end)`,
       })
       .from(providerClickLogs)
@@ -904,6 +907,7 @@ export const analyticsRouter = router({
     const inAppClicks = Number(hc?.inApp ?? 0);
     const heroClicks = Number(hc?.hero ?? 0);
     const footerClicks = Number(hc?.footer ?? 0);
+    const bridgeClicks = Number(hc?.bridge ?? 0);
     const galaV1Clicks = Number(hc?.galaV1 ?? 0);
     const dmClicks = Number(hc?.dm ?? 0);
     const galaV2Clicks = Number(hc?.galaV2 ?? 0);
@@ -922,7 +926,7 @@ export const analyticsRouter = router({
         c: sql<number>`count(distinct ${providerClickLogs.publicId})`,
       })
       .from(providerClickLogs)
-      .where(and(sql`${providerClickLogs.position} like 'home_direct%'`, gte(providerClickLogs.createdAt, EXPERIMENT_START), ...tc(providerClickLogs.createdAt)))
+      .where(and(sql`${providerClickLogs.position} like 'home_direct%'`, sql`${providerClickLogs.position} <> 'home_direct_brdg'`, gte(providerClickLogs.createdAt, EXPERIMENT_START), ...tc(providerClickLogs.createdAt)))
       .groupBy(sql`date(${providerClickLogs.createdAt})`);
 
     const dayKey = (d: unknown) =>
@@ -1010,6 +1014,7 @@ export const analyticsRouter = router({
       browserClicks: Math.max(0, homeClicks - inAppClicks),
       heroClicks,
       footerClicks,
+      bridgeClicks,
       // Three legs (Gala-v1 Jul 11–14 · DM Jul 15–20 · Gala-v2 Jul 20→). Kept side by
       // side; Gala-v2 uses a different landing variant so it is NOT 1:1 comparable to v1.
       galaV1Clicks,

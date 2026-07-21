@@ -327,7 +327,7 @@ export default function QuizFlow() {
 
               <h2
                 className="text-2xl sm:text-3xl font-normal mb-4 leading-snug"
-                style={{ fontFamily: "'DM Serif Display', serif" }}
+                style={{ fontFamily: "serif" }}
               >
                 {breatherData.headline}
               </h2>
@@ -359,7 +359,7 @@ export default function QuizFlow() {
 
             <h2
               className="text-xl sm:text-2xl md:text-3xl font-normal text-foreground mb-7 sm:mb-8 leading-snug"
-              style={{ fontFamily: "'DM Serif Display', serif" }}
+              style={{ fontFamily: "serif" }}
             >
               {currentQuestion.question}
             </h2>

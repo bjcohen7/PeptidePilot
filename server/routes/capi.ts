@@ -20,7 +20,6 @@ const router = Router();
  *   fbp          {string?} Facebook Browser ID (_fbp cookie)
  *   userAgent    {string?} navigator.userAgent from the browser
  *   supplierName {string?} Affiliate supplier label (stored in custom_data)
- *   peptideName  {string?} Recommended peptide name (stored in custom_data)
  *   eventId      {string?} Deduplication ID shared with the browser-side Pixel event
  */
 router.post("/track-affiliate-click", async (req: Request, res: Response) => {
@@ -32,7 +31,6 @@ router.post("/track-affiliate-click", async (req: Request, res: Response) => {
     fbp,
     userAgent,
     supplierName,
-    peptideName,
     eventId,
   } = req.body as {
     email?: string;
@@ -42,7 +40,6 @@ router.post("/track-affiliate-click", async (req: Request, res: Response) => {
     fbp?: string | null;
     userAgent?: string;
     supplierName?: string;
-    peptideName?: string;
     eventId?: string;
   };
 
@@ -102,7 +99,6 @@ router.post("/track-affiliate-click", async (req: Request, res: Response) => {
         user_data: userData,
         custom_data: {
           ...(supplierName ? { supplier: supplierName } : {}),
-          ...(peptideName ? { peptide: peptideName } : {}),
         },
       },
     ],

@@ -304,6 +304,9 @@ export default function InsightsOverview() {
               ? ` · unknown: ${funnel.data.directFlow.clicks - funnel.data.directFlow.heroClicks - funnel.data.directFlow.footerClicks} (pre-placement)`
               : ""}
           </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            /start bridge clicks (excluded from the CTR above; see bridge funnel): {funnel.data.directFlow.bridgeClicks}
+          </p>
           {funnel.data.directFlow.byDay.length > 0 ? (
             <>
               {/* Glanceable trajectory: visitors as bars, clicks as a second row below. */}

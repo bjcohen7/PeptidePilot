@@ -47,7 +47,7 @@ export function GLP1PromoBox({ leadId, sessionId }: GLP1PromoBoxProps) {
       trackAnalyticsClick.mutate({
         sessionId,
         path,
-        label: `GLP-1 Promo: ${vendor.name}`,
+        label: `Promo: ${vendor.name}`,
         targetHref: vendor.url,
         eventType: "glp1-promo",
       });
@@ -66,12 +66,12 @@ export function GLP1PromoBox({ leadId, sessionId }: GLP1PromoBoxProps) {
 
     if (typeof window !== "undefined" && typeof window.fbq === "function") {
       try {
-        window.fbq("trackCustom", "GLP1PromoClick", {
+        window.fbq("trackCustom", "PromoClick", {
           vendor: vendor.name,
           lead_id: leadId ?? null,
         });
       } catch (error) {
-        console.error("[Meta Pixel] Failed to track GLP1PromoClick", error);
+        console.error("[Meta Pixel] Failed to track PromoClick", error);
       }
     }
   };

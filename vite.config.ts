@@ -175,6 +175,19 @@ export default defineConfig({
             return "blog-content";
           }
 
+          // Shared leaf deps imported by the entry/contexts + every route. Without this,
+          // Rollup colocates them into admin-pages, forcing ~283KB of admin code onto the
+          // public critical path ("/", "/start", "/quiz"). Pin them to a small public chunk.
+          if (
+            normalizedId.includes("/shared/scoring.ts") ||
+            normalizedId.includes("/shared/affiliatePartners.ts") ||
+            normalizedId.includes("/client/src/lib/utils.ts") ||
+            normalizedId.includes("/client/src/lib/trpc.ts") ||
+            normalizedId.includes("/client/src/components/ui/button.tsx")
+          ) {
+            return "app-shared";
+          }
+
           if (normalizedId.includes("/client/src/pages/admin/")) {
             return "admin-pages";
           }
@@ -212,7 +225,11 @@ export default defineConfig({
             if (
               normalizedId.includes("/@radix-ui/") ||
               normalizedId.includes("/lucide-react/") ||
-              normalizedId.includes("/framer-motion/")
+              normalizedId.includes("/framer-motion/") ||
+              normalizedId.includes("/sonner/") ||
+              normalizedId.includes("/tailwind-merge/") ||
+              normalizedId.includes("/clsx/") ||
+              normalizedId.includes("/class-variance-authority/")
             ) {
               return "ui-kit";
             }

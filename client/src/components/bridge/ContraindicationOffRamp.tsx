@@ -14,8 +14,8 @@ export default function ContraindicationOffRamp() {
     onSuccess: () => {
       if (typeof window !== "undefined" && "fbq" in window) {
         try {
-          (window as any).fbq("trackCustom", "GLP1OffRampSignup", {
-            content_name: "GLP-1 Contraindication Off-Ramp",
+          (window as any).fbq("trackCustom", "OffRampSignup", {
+            content_name: "Contraindication Off-Ramp",
             content_category: "off-ramp",
           });
         } catch {}
@@ -42,7 +42,7 @@ export default function ContraindicationOffRamp() {
 
           <h2
             className="text-2xl sm:text-3xl font-normal text-foreground mb-4 leading-snug"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
+            style={{ fontFamily: "serif" }}
           >
             A couple of things we want to flag
           </h2>
@@ -106,7 +106,7 @@ export default function ContraindicationOffRamp() {
 
           <h2
             className="text-2xl sm:text-3xl font-normal text-foreground mb-4 leading-snug"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
+            style={{ fontFamily: "serif" }}
           >
             You&apos;re all set
           </h2>

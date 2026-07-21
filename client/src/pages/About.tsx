@@ -23,7 +23,7 @@ export default function About() {
           <div className="section-badge mb-6" style={{ background: "oklch(1 0 0 / 0.1)", color: "white" }}>
             About Us
           </div>
-          <h1 className="text-4xl md:text-5xl font-normal mb-5" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          <h1 className="text-4xl md:text-5xl font-normal mb-5" style={{ fontFamily: "serif" }}>
             Built on Independence. Grounded in Science.
           </h1>
           <p className="text-white/75 text-lg leading-relaxed">
@@ -35,7 +35,7 @@ export default function About() {
       {/* Mission */}
       <section className="py-20">
         <div className="container max-w-3xl">
-          <h2 className="text-3xl font-normal text-foreground mb-6" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          <h2 className="text-3xl font-normal text-foreground mb-6" style={{ fontFamily: "serif" }}>
             Our Mission
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed mb-6">
@@ -53,7 +53,7 @@ export default function About() {
       {/* Principles */}
       <section className="py-20 bg-muted/40">
         <div className="container max-w-4xl">
-          <h2 className="text-3xl font-normal text-foreground mb-10 text-center" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          <h2 className="text-3xl font-normal text-foreground mb-10 text-center" style={{ fontFamily: "serif" }}>
             Our Core Principles
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -89,7 +89,7 @@ export default function About() {
       {/* How We Make Money */}
       <section className="py-20">
         <div className="container max-w-3xl">
-          <h2 className="text-3xl font-normal text-foreground mb-6" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          <h2 className="text-3xl font-normal text-foreground mb-6" style={{ fontFamily: "serif" }}>
             How We Sustain the Platform
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed mb-6">
@@ -124,7 +124,7 @@ export default function About() {
       {/* CTA */}
       <section className="py-16 bg-brand-gradient text-white">
         <div className="container text-center">
-          <h2 className="text-3xl font-normal mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          <h2 className="text-3xl font-normal mb-4" style={{ fontFamily: "serif" }}>
             Ready to Find Your Match?
           </h2>
           <p className="text-white/75 mb-8">Take the free {QUIZ_MINUTES}-minute quiz and get your personalized peptide profile.</p>

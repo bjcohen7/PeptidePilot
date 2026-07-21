@@ -20,6 +20,8 @@ function injectHead(template: string, headTags: string) {
     [/<meta property="og:site_name"[\s\S]*?\/>/i, headTags.match(/<meta property="og:site_name"[\s\S]*?\/>/i)?.[0] ?? ""],
     [/<meta property="og:title"[\s\S]*?\/>/i, headTags.match(/<meta property="og:title"[\s\S]*?\/>/i)?.[0] ?? ""],
     [/<meta property="og:description"[\s\S]*?\/>/i, headTags.match(/<meta property="og:description"[\s\S]*?\/>/i)?.[0] ?? ""],
+    [/<meta property="og:image"[\s\S]*?\/>/i, headTags.match(/<meta property="og:image"[\s\S]*?\/>/i)?.[0] ?? ""],
+    [/<meta name="twitter:image"[\s\S]*?\/>/i, headTags.match(/<meta name="twitter:image"[\s\S]*?\/>/i)?.[0] ?? ""],
     [/<meta property="og:type"[\s\S]*?\/>/i, headTags.match(/<meta property="og:type"[\s\S]*?\/>/i)?.[0] ?? ""],
     [/<meta name="twitter:card"[\s\S]*?\/>/i, headTags.match(/<meta name="twitter:card"[\s\S]*?\/>/i)?.[0] ?? ""],
     [/<meta name="twitter:title"[\s\S]*?\/>/i, headTags.match(/<meta name="twitter:title"[\s\S]*?\/>/i)?.[0] ?? ""],

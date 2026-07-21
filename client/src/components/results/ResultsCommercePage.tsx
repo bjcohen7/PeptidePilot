@@ -84,7 +84,7 @@ function EmailCaptureSection({ leadId }: { leadId?: string }) {
         <div className="min-w-0">
           <h2
             className="text-[22px] leading-tight text-[#0e1f1c]"
-            style={{ fontFamily: "'Crimson Pro', Georgia, serif", fontWeight: 700 }}
+            style={{ fontFamily: "Georgia, serif", fontWeight: 700 }}
           >
             Want your complete protocol emailed?
           </h2>
@@ -177,7 +177,7 @@ function SecondaryMatchCard({
         <div className="min-w-0">
           <div
             className="text-[22px] italic leading-none text-[#0e1f1c]"
-            style={{ fontFamily: "'Crimson Pro', Georgia, serif", fontWeight: 700 }}
+            style={{ fontFamily: "Georgia, serif", fontWeight: 700 }}
           >
             {match.name}
           </div>
@@ -253,7 +253,7 @@ export default function ResultsCommercePage({
           </div>
           <h1
             className="mt-2 text-[48px] leading-none tracking-[-0.03em] text-[#0e1f1c] md:text-[64px]"
-            style={{ fontFamily: "'Crimson Pro', Georgia, serif", fontWeight: 700 }}
+            style={{ fontFamily: "Georgia, serif", fontWeight: 700 }}
           >
             {selectedMatch.name}
           </h1>

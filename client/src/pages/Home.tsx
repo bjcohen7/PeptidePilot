@@ -122,7 +122,7 @@ export default function Home() {
 
           <h1
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal leading-tight mb-5 sm:mb-6 max-w-3xl mx-auto"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
+            style={{ fontFamily: "serif" }}
           >
             Get matched to Peptide therapy in minutes
           </h1>
@@ -184,7 +184,7 @@ export default function Home() {
         <div className="container">
           <div className="text-center mb-10 sm:mb-14">
             <div className="section-badge mb-4">How It Works</div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>
               Your GLP-1 match in 3 steps
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base px-2">
@@ -198,7 +198,7 @@ export default function Home() {
                 <div className="hidden sm:block absolute top-8 left-1/2 w-full h-px bg-border -z-0" />
                 <div className="relative z-10">
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-brand-gradient text-white flex items-center justify-center mx-auto mb-4 sm:mb-5 shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
-                    <span className="text-lg sm:text-xl font-bold" style={{ fontFamily: "'DM Serif Display', serif" }}>{step}</span>
+                    <span className="text-lg sm:text-xl font-bold" style={{ fontFamily: "serif" }}>{step}</span>
                   </div>
                   <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">{title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
@@ -228,7 +228,7 @@ export default function Home() {
         <div className="container">
           <div className="text-center mb-10 sm:mb-14">
             <div className="section-badge mb-4">The Match</div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>
               What we match you on
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base px-2">
@@ -260,7 +260,7 @@ export default function Home() {
             {/* Left: copy */}
             <div className="flex-1 text-center lg:text-left">
               <div className="section-badge mb-4 lg:mx-0">What You Receive</div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-normal text-foreground mb-5" style={{ fontFamily: "'DM Serif Display', serif" }}>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-normal text-foreground mb-5" style={{ fontFamily: "serif" }}>
                 Your best-fit provider, ranked and explained.
               </h2>
               <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-6">
@@ -299,7 +299,7 @@ export default function Home() {
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">#1 Ranked provider</p>
-                      <h3 className="text-xl font-normal text-foreground" style={{ fontFamily: "'DM Serif Display', serif" }}>Licensed GLP-1 provider</h3>
+                      <h3 className="text-xl font-normal text-foreground" style={{ fontFamily: "serif" }}>Licensed GLP-1 provider</h3>
                       <div className="flex gap-1.5 mt-1.5 flex-wrap">
                         {["Semaglutide", "Tirzepatide", "No insurance"].map((t) => (
                           <span key={t} className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{t}</span>
@@ -307,7 +307,7 @@ export default function Home() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-4xl font-bold text-accent" style={{ fontFamily: "'DM Serif Display', serif" }}>92%</div>
+                      <div className="text-4xl font-bold text-accent" style={{ fontFamily: "serif" }}>92%</div>
                       <div className="text-xs text-muted-foreground">fit</div>
                     </div>
                   </div>
@@ -327,7 +327,7 @@ export default function Home() {
                   {["Alternative provider", "Alternative provider"].map((name, i) => (
                     <div key={i} className="flex items-center justify-between rounded-xl px-4 py-3 bg-muted/50" style={{ filter: `blur(${(i + 1) * 2}px)`, opacity: 0.5 }}>
                       <span className="text-sm font-semibold text-foreground">#{i + 2} {name}</span>
-                      <span className="text-lg font-bold text-muted-foreground" style={{ fontFamily: "'DM Serif Display', serif" }}>{88 - i * 6}%</span>
+                      <span className="text-lg font-bold text-muted-foreground" style={{ fontFamily: "serif" }}>{88 - i * 6}%</span>
                     </div>
                   ))}
                   <p className="text-center text-xs text-muted-foreground pt-1">Take the quiz to see your real matches</p>
@@ -342,7 +342,7 @@ export default function Home() {
       <section className="py-14 sm:py-20 bg-background">
         <div className="container max-w-3xl text-center">
           <div className="section-badge mb-5 sm:mb-6">Why PeptidePilot</div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-normal text-foreground mb-5 sm:mb-6" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-normal text-foreground mb-5 sm:mb-6" style={{ fontFamily: "serif" }}>
             Independent by design
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg leading-relaxed mb-6 px-2">
@@ -373,7 +373,7 @@ export default function Home() {
       {/* ── Email Capture ──────────────────────────────────────────── */}
       <section className="py-12 sm:py-16 bg-secondary/40 border-y border-border/60">
         <div className="container max-w-xl text-center">
-          <h2 className="text-2xl sm:text-3xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          <h2 className="text-2xl sm:text-3xl font-normal text-foreground mb-3" style={{ fontFamily: "serif" }}>
             Not ready for the quiz?
           </h2>
           <p className="text-muted-foreground mb-6 sm:mb-8 text-sm sm:text-base px-2">
@@ -412,7 +412,7 @@ export default function Home() {
       {/* ── Final CTA ──────────────────────────────────────────────── */}
       <section className="py-14 sm:py-20 bg-brand-gradient text-white">
         <div className="container text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-normal mb-4 sm:mb-5" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-normal mb-4 sm:mb-5" style={{ fontFamily: "serif" }}>
             Ready to see your match?
           </h2>
           <p className="text-white/75 text-base sm:text-lg mb-7 sm:mb-8 max-w-lg mx-auto px-2">

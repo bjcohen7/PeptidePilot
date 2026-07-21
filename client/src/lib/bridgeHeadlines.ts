@@ -3,9 +3,9 @@
 // tokens (case-insensitive substring), the hero swaps to match the ad's hook so
 // the curiosity is honored rather than bait-and-switched. Default otherwise.
 //
-// NOTE (conservative choice, see LEG-5-REPORT): "editable without deploy" would
-// require moving this map to a config table/endpoint. It's a code map for now;
-// changing an entry currently needs a deploy. Flagged as a follow-up.
+// COMPLIANCE: /match is an ad-adjacent bridge — hero/subline are PROVIDER-ANONYMOUS
+// and DRUG-CLASS-FREE (eligibility framing, the /start standard). No drug/class names
+// in any variant. NOTE: a code map for now; changing an entry needs a deploy.
 export type BridgeHeadline = {
   token: string;
   headline: string;
@@ -14,24 +14,24 @@ export type BridgeHeadline = {
 
 const DEFAULT: BridgeHeadline = {
   token: "default",
-  headline: "The most clinically proven peptide for weight loss is a GLP-1.",
+  headline: "Find your match for medically-supervised weight management.",
   subline:
-    "Semaglutide and tirzepatide are peptides — the ones with large-scale clinical trials behind them. See which licensed provider fits your body and budget.",
+    "A few quick questions — reviewed by licensed US clinicians — to see which program fits your goals and budget. No insurance needed.",
 };
 
-// 2 creative-specific variants.
+// Creative-specific variants (drug-class-free; reframed to eligibility hooks).
 const VARIANTS: BridgeHeadline[] = [
   {
     token: "recovery",
-    headline: "Curious about peptides? Start with the one that's actually clinically proven.",
+    headline: "Curious where to start? Check your eligibility first.",
     subline:
-      "Recovery peptides get the buzz, but GLP-1s (semaglutide, tirzepatide) are the peptides with large-scale trials behind them. See which licensed provider fits you.",
+      "A quick, clinician-reviewed check to see which medically-supervised weight-management program fits you — goals, budget, and state. No insurance needed.",
   },
   {
     token: "bpc",
-    headline: "Curious about peptides? Start with the one that's actually clinically proven.",
+    headline: "Curious where to start? Check your eligibility first.",
     subline:
-      "BPC-157 and friends are early-stage. GLP-1s (semaglutide, tirzepatide) are the peptides with large clinical trials. See which licensed provider fits you.",
+      "A quick, clinician-reviewed check to see which medically-supervised weight-management program fits you — goals, budget, and state. No insurance needed.",
   },
 ];
 

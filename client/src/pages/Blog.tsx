@@ -35,7 +35,7 @@ export default function Blog() {
           <div className="section-badge mb-4" style={{ background: "oklch(1 0 0 / 0.1)", color: "white" }}>
             Learn
           </div>
-          <h1 className="text-4xl md:text-5xl font-normal mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          <h1 className="text-4xl md:text-5xl font-normal mb-4" style={{ fontFamily: "serif" }}>
             Peptide Science, Explained
           </h1>
           <p className="text-white/75 text-lg">
@@ -73,7 +73,7 @@ export default function Blog() {
                     <div className="flex items-center gap-2 mb-4">
                       <span className="section-badge text-xs">{post.category}</span>
                     </div>
-                    <h2 className="font-semibold text-foreground text-lg leading-snug mb-3 group-hover:text-accent transition-colors" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                    <h2 className="font-semibold text-foreground text-lg leading-snug mb-3 group-hover:text-accent transition-colors" style={{ fontFamily: "serif" }}>
                       {post.title}
                     </h2>
                     <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-4">

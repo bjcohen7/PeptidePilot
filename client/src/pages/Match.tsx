@@ -10,16 +10,16 @@ import { resolveBridgeHeadline, DEFAULT_BRIDGE_HEADLINE } from "@/lib/bridgeHead
 
 const SITE_URL = "https://www.peptidepilot.me";
 
-// Proof points — peptide→GLP-1 framing, trial-attributed (no outcome promises),
-// licensed-provider reassurance.
+// Proof points — provider-anonymous, drug-class-free (ad-adjacent bridge), no outcome
+// promises; eligibility + licensed-provider reassurance (the /start standard).
 const PROOF_POINTS = [
   {
     icon: FlaskConical,
-    text: "Semaglutide and tirzepatide are peptides — the ones with large-scale clinical trials behind them, not hype.",
+    text: "A few quick questions about your goals, body, and budget — no medical history to dig up.",
   },
   {
     icon: BadgeCheck,
-    text: "In major published trials, GLP-1 therapy produced substantial average weight loss over time. Individual results depend on you and your provider.",
+    text: "Your intake is reviewed by licensed US clinicians to confirm you're a candidate.",
   },
   {
     icon: ShieldCheck,
@@ -74,14 +74,14 @@ export default function Match() {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--background)" }}>
       <Seo
-        title="Peptides for Weight Loss — Start With the One That's Clinically Proven"
-        description="Semaglutide and tirzepatide are the peptides with large-scale clinical trials behind them. Take a free 4-minute quiz and see which licensed GLP-1 provider fits your body and budget."
+        title="Find your match — 2 minutes | PeptidePilot"
+        description="Medically-supervised weight management from licensed US clinicians. Check your eligibility in minutes. No insurance needed."
         path="/match"
         type="website"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "WebPage",
-          name: "Peptides for Weight Loss | PeptidePilot",
+          name: "Find your match | PeptidePilot",
           url: `${SITE_URL}/match`,
         }}
       />
@@ -96,7 +96,7 @@ export default function Match() {
 
           <h1
             className="text-center font-normal leading-tight mb-3"
-            style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.9rem", color: "var(--ink)" }}
+            style={{ fontFamily: "serif", fontSize: "1.9rem", color: "var(--ink)" }}
           >
             {headline.headline}
           </h1>

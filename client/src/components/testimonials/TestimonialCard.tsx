@@ -45,7 +45,7 @@ export function TestimonialCard({ testimonial: t }: Props) {
 
       <p
         className="font-serif italic text-[15.5px] leading-[1.5] text-[#4a5b58] flex-1"
-        style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
+        style={{ fontFamily: "Georgia, serif" }}
       >
         {t.quote}
       </p>

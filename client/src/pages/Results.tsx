@@ -128,7 +128,7 @@ export function LeadCaptureGate({
               className="text-white mb-3 leading-snug"
               style={{
                 fontSize: "clamp(1.7rem, 4.5vw, 2.4rem)",
-                fontFamily: "'DM Serif Display', Georgia, serif",
+                fontFamily: "Georgia, serif",
                 letterSpacing: "-0.02em",
               }}
             >
@@ -180,7 +180,7 @@ export function LeadCaptureGate({
                       style={{
                         color: i === 0 ? "#38bdf8" : "rgba(255,255,255,0.3)",
                         filter: i > 0 ? "blur(4px)" : "none",
-                        fontFamily: "'DM Serif Display', serif",
+                        fontFamily: "serif",
                       }}
                     >
                       {m.matchPercent}%
@@ -302,7 +302,7 @@ function ProviderCard({
     }
 
     const eventId = createMetaEventId("affiliate_click");
-    trackMetaCustomEvent("AffiliateClick", { supplier: provider.name, peptide: provider.name }, eventId);
+    trackMetaCustomEvent("AffiliateClick", { supplier: provider.name }, eventId);
 
     const { fbc, fbp } = getFacebookTrackingParams();
 
@@ -317,7 +317,6 @@ function ProviderCard({
           fbp: fbp ?? null,
           userAgent: navigator.userAgent,
           supplierName: provider.name,
-          peptideName: provider.name,
           eventId,
         }),
         keepalive: true,
@@ -352,7 +351,7 @@ function ProviderCard({
               <span className="text-xs font-semibold text-muted-foreground">#{rank}</span>
               <h3
                 className={`font-normal text-foreground leading-tight ${isTop ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"}`}
-                style={{ fontFamily: "'DM Serif Display', serif" }}
+                style={{ fontFamily: "serif" }}
               >
                 {provider.brandName}
               </h3>
@@ -370,7 +369,7 @@ function ProviderCard({
           <div className="text-right flex-shrink-0">
             <div
               className={`font-bold leading-none ${isTop ? "text-3xl sm:text-4xl text-accent" : "text-2xl sm:text-3xl text-muted-foreground"}`}
-              style={{ fontFamily: "'DM Serif Display', serif" }}
+              style={{ fontFamily: "serif" }}
             >
               {provider.priceTag}
             </div>
@@ -469,7 +468,7 @@ export function ResultsDisplay({
             </div>
             <h1
               className="text-2xl sm:text-3xl md:text-4xl font-normal text-foreground mb-3 leading-snug"
-              style={{ fontFamily: "'DM Serif Display', serif" }}
+              style={{ fontFamily: "serif" }}
             >
               Your Personalized Treatment Options
             </h1>
@@ -561,17 +560,15 @@ export default function Results() {
         status: "completed",
       }, pendingMetaEventIds?.completeRegistration);
       trackMetaEvent("Lead", {
-        content_name: data.returningResults[0]?.name ?? "Peptide Results",
-        content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+        content_name: "Weight Management Match",
+        content_category: isGlp1Lead ? "weight-management" : "quiz-results",
         value: isGlp1Lead ? 50 : 10,
         currency: "USD",
       }, pendingMetaEventIds?.lead);
       trackMetaEvent("ViewContent", {
-        content_name: data.returningResults[0]?.name ?? "Peptide Results",
-        content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
-        content_ids: data.returningResults[0]?.peptideId
-          ? [data.returningResults[0].peptideId]
-          : undefined,
+        content_name: "Weight Management Match",
+        content_category: isGlp1Lead ? "weight-management" : "quiz-results",
+        content_ids: data.returningResults[0]?.peptideId ? ["match-primary"] : undefined,
       }, pendingMetaEventIds?.viewContent);
       if (submittedEmail) {
         void identifyLogRocketUser(submittedEmail, {
@@ -743,7 +740,7 @@ function ResultsRecoveryForm({
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-md text-center space-y-6">
-        <h1 className="text-xl font-semibold" style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}>
+        <h1 className="text-xl font-semibold" style={{ fontFamily: "Georgia, serif" }}>
           Find Your Results
         </h1>
         <p className="text-sm text-muted-foreground">

@@ -37,7 +37,7 @@ function LegalLayout({ title, subtitle, children }: { title: string; subtitle: s
       />
       <section className="bg-brand-gradient text-white py-14">
         <div className="container max-w-3xl">
-          <h1 className="text-3xl md:text-4xl font-normal mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          <h1 className="text-3xl md:text-4xl font-normal mb-3" style={{ fontFamily: "serif" }}>
             {title}
           </h1>
           <p className="text-white/70">{subtitle}</p>
@@ -57,28 +57,28 @@ export function PrivacyPolicy() {
     <LegalLayout title="Privacy Policy" subtitle="Last updated: January 2025">
       <div className="space-y-8 text-muted-foreground leading-relaxed">
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>1. Information We Collect</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "serif" }}>1. Information We Collect</h2>
           <p>When you complete the PeptidePilot quiz and submit your email address, we collect: your email address, your quiz responses (stored as an array of answer indices), your IP address for compliance purposes, and the timestamp of your consent. We also collect first-party usage analytics to understand how the site is being used.</p>
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>2. How We Use Your Information</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "serif" }}>2. How We Use Your Information</h2>
           <p>Your information is used to: generate your personalized peptide recommendations, deliver your results and protocol guide via email, send educational content about peptide science (if you opt in), and connect you with relevant healthcare partners (only with your explicit consent).</p>
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>3. Data Sharing with Healthcare Partners</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "serif" }}>3. Data Sharing with Healthcare Partners</h2>
           <p className="font-medium text-foreground">This section is important. By checking the consent box on our results page, you explicitly agree that PeptidePilot may share your profile data — including your email address, age range, primary health goal, budget range, and top peptide match — with our vetted healthcare partners. These partners include telehealth clinics and hormone optimization practices that may contact you about services relevant to your health profile.</p>
           <p className="mt-3">We only share data with partners when you have explicitly checked the consent checkbox. Pre-checked boxes are never used. You may withdraw consent at any time by contacting us.</p>
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>4. Data Retention</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "serif" }}>4. Data Retention</h2>
           <p>We retain your lead data for up to 24 months. You may request deletion of your data at any time by emailing privacy@peptidepilot.me.</p>
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>5. Cookies and Analytics</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "serif" }}>5. Cookies and Analytics</h2>
           <p>We use minimal, privacy-respecting analytics to understand how users interact with our platform. We do not use third-party advertising cookies or tracking pixels.</p>
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>6. Contact</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "serif" }}>6. Contact</h2>
           <p>For privacy-related inquiries, contact us at privacy@peptidepilot.me.</p>
         </div>
       </div>
@@ -91,27 +91,27 @@ export function TermsOfService() {
     <LegalLayout title="Terms of Service" subtitle="Last updated: January 2025">
       <div className="space-y-8 text-muted-foreground leading-relaxed">
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>1. Acceptance of Terms</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "serif" }}>1. Acceptance of Terms</h2>
           <p>By accessing or using PeptidePilot, you agree to be bound by these Terms of Service. If you do not agree, please do not use the platform.</p>
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>2. Educational Purpose Only</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "serif" }}>2. Educational Purpose Only</h2>
           <p>PeptidePilot is an educational platform. All content, quiz results, and recommendations are provided for informational purposes only and do not constitute medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider before beginning any peptide protocol.</p>
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>3. No Warranty</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "serif" }}>3. No Warranty</h2>
           <p>PeptidePilot provides its services "as is" without warranty of any kind. We do not guarantee the accuracy, completeness, or suitability of any recommendation for your specific circumstances.</p>
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>4. Affiliate Relationships</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "serif" }}>4. Affiliate Relationships</h2>
           <p>PeptidePilot may earn affiliate commissions when you click vendor links from your results page. These relationships are disclosed and do not influence our recommendations. We list multiple vendors for every peptide to ensure you have choice.</p>
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>5. Healthcare Partner Referrals</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "serif" }}>5. Healthcare Partner Referrals</h2>
           <p>When you provide explicit consent, PeptidePilot may share your profile with vetted healthcare partners. PeptidePilot is not responsible for the services, advice, or outcomes provided by these third-party partners.</p>
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>6. Limitation of Liability</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-3" style={{ fontFamily: "serif" }}>6. Limitation of Liability</h2>
           <p>To the maximum extent permitted by law, PeptidePilot shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the platform or any peptide protocol you undertake.</p>
         </div>
       </div>

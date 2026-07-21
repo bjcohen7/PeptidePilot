@@ -539,8 +539,8 @@ export const quizRouter = router({
             fbp: meta?.fbp ?? null,
             fbc: meta?.fbc ?? null,
             customData: {
-              content_name: matches[0]?.peptide.name ?? "Peptide Results",
-              content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+              content_name: "Weight Management Match",
+              content_category: isGlp1Lead ? "weight-management" : "quiz-results",
               value: isGlp1Lead ? 50 : 10,
               currency: "USD",
             },
@@ -555,9 +555,9 @@ export const quizRouter = router({
             fbp: meta?.fbp ?? null,
             fbc: meta?.fbc ?? null,
             customData: {
-              content_name: matches[0]?.peptide.name ?? "Peptide Results",
-              content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
-              content_ids: matches[0]?.peptide.id ? [matches[0].peptide.id] : undefined,
+              content_name: "Weight Management Match",
+              content_category: isGlp1Lead ? "weight-management" : "quiz-results",
+              content_ids: matches[0]?.peptide.id ? ["match-primary"] : undefined,
             },
           },
         ]);
@@ -699,8 +699,8 @@ export const quizRouter = router({
           fbp: meta?.fbp ?? null,
           fbc: meta?.fbc ?? null,
           customData: {
-            content_name: matches[0]?.peptide.name ?? "Peptide Results",
-            content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+            content_name: "Weight Management Match",
+            content_category: isGlp1Lead ? "weight-management" : "quiz-results",
             value: isGlp1Lead ? 50 : 10,
             currency: "USD",
           },
@@ -715,9 +715,9 @@ export const quizRouter = router({
           fbp: meta?.fbp ?? null,
           fbc: meta?.fbc ?? null,
           customData: {
-            content_name: matches[0]?.peptide.name ?? "Peptide Results",
-            content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
-            content_ids: matches[0]?.peptide.id ? [matches[0].peptide.id] : undefined,
+            content_name: "Weight Management Match",
+            content_category: isGlp1Lead ? "weight-management" : "quiz-results",
+            content_ids: matches[0]?.peptide.id ? ["match-primary"] : undefined,
           },
         },
       ]);

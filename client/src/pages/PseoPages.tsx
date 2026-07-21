@@ -140,7 +140,7 @@ function PseoCardCover({
       <div className="space-y-3">
         <h3
           className="max-w-[16ch] text-xl font-normal leading-tight"
-          style={{ fontFamily: "'DM Serif Display', serif" }}
+          style={{ fontFamily: "serif" }}
         >
           {coverTitle}
         </h3>
@@ -534,7 +534,7 @@ function PageHero({
         <div className="section-badge mb-5" style={{ background: "oklch(1 0 0 / 0.1)", color: "white" }}>
           {eyebrow}
         </div>
-        <h1 className="text-4xl md:text-5xl font-normal mb-5" style={{ fontFamily: "'DM Serif Display', serif" }}>
+        <h1 className="text-4xl md:text-5xl font-normal mb-5" style={{ fontFamily: "serif" }}>
           {title}
         </h1>
         <p className="text-white/75 text-lg leading-relaxed max-w-2xl">{body}</p>
@@ -641,7 +641,7 @@ export function PseoSectionPage({ sectionKey }: { sectionKey: PseoSectionKey }) 
         <div className="container">
           <div className="flex items-end justify-between gap-4 mb-8">
             <div>
-              <h2 className="text-3xl font-normal text-foreground mb-2" style={{ fontFamily: "'DM Serif Display', serif" }}>
+              <h2 className="text-3xl font-normal text-foreground mb-2" style={{ fontFamily: "serif" }}>
                 {section.label}
               </h2>
               <p className="text-muted-foreground">{section.entries.length} live sitemap pages restored locally.</p>
@@ -868,7 +868,7 @@ export function PseoDetailPage({
                 </span>
               ))}
             </div>
-            <h1 className={cn("text-4xl md:text-[3.35rem] font-normal mb-4 leading-[0.98]", isPeptide ? "max-w-4xl" : "max-w-5xl")} style={{ fontFamily: "'DM Serif Display', serif" }}>
+            <h1 className={cn("text-4xl md:text-[3.35rem] font-normal mb-4 leading-[0.98]", isPeptide ? "max-w-4xl" : "max-w-5xl")} style={{ fontFamily: "serif" }}>
               {isCompare ? `${entry.title}: Which Is Right for You?` : entry.title}
             </h1>
             {isPeptide && primaryProfile ? (
@@ -933,7 +933,7 @@ export function PseoDetailPage({
 
           <aside className={cn("hidden rounded-2xl bg-brand-gradient p-6 text-white lg:block", (isGuide || isReview) && "lg:hidden")}>
             <p className="text-xs font-semibold tracking-[0.14em] uppercase text-cyan-200">Free analysis</p>
-            <h2 className="mt-3 text-2xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>
+            <h2 className="mt-3 text-2xl font-normal leading-tight" style={{ fontFamily: "serif" }}>
               {sidebarTitle}
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-white/75">{QUIZ_MINUTES_LABEL} quiz. Personalized, vendor-neutral results.</p>
@@ -955,7 +955,7 @@ export function PseoDetailPage({
             {isPeptide ? (
               <>
                 <section>
-                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Quick Reference</h2>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>Quick Reference</h2>
                   <div className="overflow-hidden rounded-2xl border border-border/70 bg-white">
                     {peptideQuickReference.map((row) => (
                       <div key={row.label} className="grid grid-cols-1 gap-1 border-t border-border/70 px-4 py-3 text-sm first:border-t-0 sm:grid-cols-[160px_minmax(0,1fr)] sm:gap-4 sm:px-5">
@@ -967,7 +967,7 @@ export function PseoDetailPage({
                 </section>
 
                 <section>
-                  <h2 className="text-3xl font-normal text-foreground mb-2" style={{ fontFamily: "'DM Serif Display', serif" }}>{firstBlockHeading}</h2>
+                  <h2 className="text-3xl font-normal text-foreground mb-2" style={{ fontFamily: "serif" }}>{firstBlockHeading}</h2>
                   <p className="text-sm italic text-accent mb-4">Promotes cell migration and anti-inflammatory signaling through tissue-repair pathways.</p>
                   <div className="space-y-4">
                     {firstBlockParagraphs.map((paragraph) => (
@@ -977,7 +977,7 @@ export function PseoDetailPage({
                 </section>
 
                 <section>
-                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Evidence Base</h2>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>Evidence Base</h2>
                   <div className="space-y-4">
                     {peptideEvidenceCards.map((card) => (
                       <div key={card.title} className="rounded-2xl border border-border/70 bg-white p-5">
@@ -1003,7 +1003,7 @@ export function PseoDetailPage({
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                     <div className="max-w-2xl">
                       <p className="text-xs font-semibold tracking-[0.14em] uppercase text-cyan-200">Free personalized analysis</p>
-                      <h2 className="mt-3 text-3xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>{ctaTitle}</h2>
+                      <h2 className="mt-3 text-3xl font-normal leading-tight" style={{ fontFamily: "serif" }}>{ctaTitle}</h2>
                       <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
                     </div>
                     <Link href="/quiz">
@@ -1013,7 +1013,7 @@ export function PseoDetailPage({
                 </div>
 
                 <section>
-                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Safety Profile</h2>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>Safety Profile</h2>
                   <div className="space-y-4">
                     <div className="rounded-2xl border border-border/70 bg-white p-5">
                       <h3 className="text-base font-semibold text-foreground">Side Effects</h3>
@@ -1027,7 +1027,7 @@ export function PseoDetailPage({
                 </section>
 
                 <section className="rounded-2xl border border-cyan-400 bg-cyan-50 p-5">
-                  <h2 className="text-2xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>PeptidePilot Assessment</h2>
+                  <h2 className="text-2xl font-normal text-foreground mb-3" style={{ fontFamily: "serif" }}>PeptidePilot Assessment</h2>
                   <p className="text-sm leading-7 text-muted-foreground">{peptideAssessment}</p>
                   <div className="mt-3 text-xs font-medium text-accent">14% of PeptidePilot users focused on injury recovery receive {primaryProfile?.name ?? 'this compound'} as their top match</div>
                 </section>
@@ -1035,7 +1035,7 @@ export function PseoDetailPage({
             ) : isCompare ? (
               <>
                 <section>
-                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>At a Glance</h2>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>At a Glance</h2>
                   <div className="overflow-x-auto rounded-2xl border border-border/70 bg-white">
                     <div className="grid min-w-[640px] grid-cols-[1.2fr_1.15fr_1.15fr] bg-primary px-5 py-4 text-sm font-semibold text-white">
                       <div>Dimension</div>
@@ -1055,7 +1055,7 @@ export function PseoDetailPage({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[compareLeft, compareRight].map((label, index) => (
                     <section key={label} className="rounded-2xl border border-border/70 bg-white p-5">
-                      <h2 className="text-2xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>{label} Deep Dive</h2>
+                      <h2 className="text-2xl font-normal text-foreground mb-3" style={{ fontFamily: "serif" }}>{label} Deep Dive</h2>
                       <p className="text-sm leading-7 text-muted-foreground">
                         {index === 0
                           ? `${label} offers a longer real-world track record, slower but well-characterized titration pathways, and broader clinician familiarity. It may be the cleaner starting point when long-term safety framing matters most.`
@@ -1071,11 +1071,11 @@ export function PseoDetailPage({
                 </div>
 
                 <section>
-                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>How to Choose</h2>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>How to Choose</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {compareChoiceCards.map((card) => (
                       <div key={card.title} className={cn('rounded-2xl p-5', card.tone === 'emerald' ? 'border border-emerald-200 bg-emerald-50' : 'border border-blue-200 bg-blue-50')}>
-                        <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>{card.title}</h3>
+                        <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "serif" }}>{card.title}</h3>
                         <ul className="space-y-2 text-sm leading-7 text-muted-foreground">
                           {card.bullets.map((bullet) => (
                             <li key={bullet} className="flex gap-2"><span className="text-accent">•</span><span>{bullet}</span></li>
@@ -1085,7 +1085,7 @@ export function PseoDetailPage({
                     ))}
                   </div>
                   <div className="mt-4 rounded-2xl border border-cyan-400 bg-cyan-50 p-5">
-                    <h3 className="text-xl font-normal text-foreground mb-2" style={{ fontFamily: "'DM Serif Display', serif" }}>Consider Both If...</h3>
+                    <h3 className="text-xl font-normal text-foreground mb-2" style={{ fontFamily: "serif" }}>Consider Both If...</h3>
                     <p className="text-sm leading-7 text-muted-foreground">You are unsure and need a telehealth provider who can assess your specific metabolic profile, contraindications, and preferred starting point.</p>
                   </div>
                 </section>
@@ -1094,7 +1094,7 @@ export function PseoDetailPage({
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                     <div className="max-w-2xl">
                       <p className="text-xs font-semibold tracking-[0.14em] uppercase text-cyan-200">Still unsure?</p>
-                      <h2 className="mt-3 text-3xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>{ctaTitle}</h2>
+                      <h2 className="mt-3 text-3xl font-normal leading-tight" style={{ fontFamily: "serif" }}>{ctaTitle}</h2>
                       <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
                     </div>
                     <Link href="/quiz">
@@ -1107,7 +1107,7 @@ export function PseoDetailPage({
               <>
                 {content?.scorecard?.length ? (
                   <section>
-                    <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Rating Breakdown</h2>
+                    <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>Rating Breakdown</h2>
                     <div className="rounded-2xl border border-border/70 bg-white p-5">
                       <div className="space-y-4">
                         {content.scorecard.map((item) => (
@@ -1138,10 +1138,10 @@ export function PseoDetailPage({
                 ) : null}
 
                 <section>
-                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Pros &amp; Cons</h2>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>Pros &amp; Cons</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
-                      <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>Pros</h3>
+                      <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "serif" }}>Pros</h3>
                       <ul className="space-y-2 text-sm leading-7 text-muted-foreground">
                         {content?.keyPoints?.map((item) => (
                           <li key={item} className="flex gap-2"><span className="text-emerald-600">•</span><span>{item}</span></li>
@@ -1149,7 +1149,7 @@ export function PseoDetailPage({
                       </ul>
                     </div>
                     <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6">
-                      <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>Cons</h3>
+                      <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "serif" }}>Cons</h3>
                       <ul className="space-y-2 text-sm leading-7 text-muted-foreground">
                         {(content?.decisionChecklist ?? []).slice(0, 4).map((item) => (
                           <li key={item} className="flex gap-2"><span className="text-rose-600">•</span><span>{item}</span></li>
@@ -1161,17 +1161,17 @@ export function PseoDetailPage({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
-                    <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>Who Should Consider</h3>
+                    <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "serif" }}>Who Should Consider</h3>
                     <p className="text-sm leading-7 text-muted-foreground">{content?.blocks?.[2]?.body ?? whoItsFor}</p>
                   </div>
                   <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6">
-                    <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>Who Should Avoid</h3>
+                    <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "serif" }}>Who Should Avoid</h3>
                     <p className="text-sm leading-7 text-muted-foreground">{cautionAudience}</p>
                   </div>
                 </div>
 
                 <section className="rounded-2xl border border-border/70 bg-slate-50 p-6">
-                  <h2 className="text-2xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>Our Verdict</h2>
+                  <h2 className="text-2xl font-normal text-foreground mb-3" style={{ fontFamily: "serif" }}>Our Verdict</h2>
                   <p className="text-sm leading-7 text-muted-foreground">{content?.blocks?.[0]?.body ?? heroIntro}</p>
                   <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
@@ -1195,7 +1195,7 @@ export function PseoDetailPage({
             ) : (
               <>
                 <section>
-                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>{firstBlockHeading}</h2>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>{firstBlockHeading}</h2>
                   <div className="space-y-4">
                     {firstBlockParagraphs.map((paragraph) => (
                       <p key={paragraph} className="text-base leading-8 text-muted-foreground">{paragraph}</p>
@@ -1205,7 +1205,7 @@ export function PseoDetailPage({
 
                 {isGoals ? (
                   <section>
-                    <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                    <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>
                       Top Peptides for {entry.title.replace(/^Best Peptides for\s+/i, '')}
                     </h2>
                     <div className="space-y-4">
@@ -1215,7 +1215,7 @@ export function PseoDetailPage({
                             <div className="flex gap-3">
                               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">{card.rank}</div>
                               <div>
-                                <h3 className="text-xl font-normal text-foreground" style={{ fontFamily: "'DM Serif Display', serif" }}>{card.name}</h3>
+                                <h3 className="text-xl font-normal text-foreground" style={{ fontFamily: "serif" }}>{card.name}</h3>
                                 <span className={cn('mt-2 inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium', card.badge.includes('Strong') ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800')}>
                                   {card.badge}
                                 </span>
@@ -1248,7 +1248,7 @@ export function PseoDetailPage({
                   </section>
                 ) : (
                   <section>
-                    <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>{secondBlockHeading}</h2>
+                    <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>{secondBlockHeading}</h2>
                     <div className="space-y-4">
                       {secondBlockParagraphs.map((paragraph) => (
                         <p key={paragraph} className="text-base leading-8 text-muted-foreground">{paragraph}</p>
@@ -1256,7 +1256,7 @@ export function PseoDetailPage({
                     </div>
                     {isStacks ? (
                       <div className="mt-6">
-                        <h3 className="text-xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Dosing Schedule</h3>
+                        <h3 className="text-xl font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>Dosing Schedule</h3>
                         <div className="overflow-x-auto rounded-2xl border border-border/70 bg-white">
                           <div className="grid min-w-[720px] grid-cols-[1.1fr_1.2fr_1.6fr_1.2fr] bg-primary px-5 py-4 text-sm font-semibold text-white">
                             <div>Peptide</div>
@@ -1284,7 +1284,7 @@ export function PseoDetailPage({
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                         <div className="max-w-2xl">
                           <p className="text-xs font-semibold tracking-[0.14em] uppercase text-cyan-200">Free personalized analysis</p>
-                          <h2 className="mt-3 text-3xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>{ctaTitle}</h2>
+                          <h2 className="mt-3 text-3xl font-normal leading-tight" style={{ fontFamily: "serif" }}>{ctaTitle}</h2>
                           <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
                         </div>
                         <Link href="/quiz">
@@ -1296,7 +1296,7 @@ export function PseoDetailPage({
                 ) : null}
 
                 <section>
-                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                  <h2 className="text-3xl font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>
                     {isGoals ? 'How We Compare These Peptides' : 'What this page covers'}
                   </h2>
                   <div className="flex flex-wrap gap-2">
@@ -1308,13 +1308,13 @@ export function PseoDetailPage({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
-                    <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                    <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "serif" }}>
                       {isGoals ? 'Who Should Consider These Peptides' : `Who This ${sectionSingularLabel(sectionKey)} Is For`}
                     </h3>
                     <p className="text-sm leading-7 text-muted-foreground">{whoItsFor}</p>
                   </div>
                   <div className={cn('rounded-2xl p-6', isGoals ? 'border border-rose-200 bg-rose-50' : 'border border-border/70 bg-white')}>
-                    <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                    <h3 className="text-xl font-normal text-foreground mb-3" style={{ fontFamily: "serif" }}>
                       {isGoals ? 'Who Should Avoid These Peptides' : 'Evidence Base'}
                     </h3>
                     <p className="text-sm leading-7 text-muted-foreground">{isGoals ? cautionAudience : evidenceBase}</p>
@@ -1326,7 +1326,7 @@ export function PseoDetailPage({
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                       <div className="max-w-2xl">
                         <p className="text-xs font-semibold tracking-[0.14em] uppercase text-cyan-200">Free personalized analysis</p>
-                        <h2 className="mt-3 text-3xl font-normal leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>{ctaTitle}</h2>
+                        <h2 className="mt-3 text-3xl font-normal leading-tight" style={{ fontFamily: "serif" }}>{ctaTitle}</h2>
                         <p className="mt-3 text-white/75 leading-relaxed">{ctaBody}</p>
                       </div>
                       <Link href="/quiz">
@@ -1340,7 +1340,7 @@ export function PseoDetailPage({
 
             {content?.faqs?.length ? (
               <section>
-                <h2 className="text-3xl font-normal text-foreground mb-5" style={{ fontFamily: "'DM Serif Display', serif" }}>Frequently Asked Questions</h2>
+                <h2 className="text-3xl font-normal text-foreground mb-5" style={{ fontFamily: "serif" }}>Frequently Asked Questions</h2>
                 <div className="rounded-2xl border border-border/70 bg-white px-5">
                   <Accordion type="single" collapsible className="w-full">
                     {content.faqs.map((faq, index) => (
@@ -1355,7 +1355,7 @@ export function PseoDetailPage({
             ) : null}
 
             <section>
-              <h2 className="text-3xl font-normal text-foreground mb-5" style={{ fontFamily: "'DM Serif Display', serif" }}>{exploreHeading(sectionKey)}</h2>
+              <h2 className="text-3xl font-normal text-foreground mb-5" style={{ fontFamily: "serif" }}>{exploreHeading(sectionKey)}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {exploreCards.map((item) => (
                   <Link key={item.path} href={item.path}>
@@ -1376,7 +1376,7 @@ export function PseoDetailPage({
 
           <aside className={cn("space-y-5", (isGuide || isReview) && "hidden")}>
             <div className="rounded-2xl border border-border/70 bg-white p-5">
-              <h3 className="text-lg font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
+              <h3 className="text-lg font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>
                 {isStacks ? 'Stack Components' : isGoals ? 'Related Stacks' : isCompare ? 'Related Comparisons' : 'Commonly Stacked With'}
               </h3>
               <div className="divide-y divide-border/70">
@@ -1397,7 +1397,7 @@ export function PseoDetailPage({
             </div>
 
             <div className="rounded-2xl border border-border/70 bg-white p-5">
-              <h3 className="text-lg font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
+              <h3 className="text-lg font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>
                 {isGoals ? 'Related Goals' : isStacks ? 'Estimated Cost' : isCompare ? 'Individual Profiles' : 'Compare With'}
               </h3>
               {isGoals ? (
@@ -1430,7 +1430,7 @@ export function PseoDetailPage({
             </div>
 
             <div className="rounded-2xl border border-border/70 bg-white p-5">
-              <h3 className="text-lg font-normal text-foreground mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>
+              <h3 className="text-lg font-normal text-foreground mb-4" style={{ fontFamily: "serif" }}>
                 {isGoals ? 'Related Goals' : isStacks ? 'Addresses These Goals' : isCompare ? 'Independent Analysis' : 'Best For'}
               </h3>
               {isCompare ? (

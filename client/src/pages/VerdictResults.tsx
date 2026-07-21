@@ -83,7 +83,7 @@ export default function VerdictResults({
           </div>
           <h1
             className="text-2xl font-normal text-foreground leading-tight mb-1"
-            style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
+            style={{ fontFamily: "Georgia, serif" }}
           >
             {heroMatch.displayName}
           </h1>
@@ -106,7 +106,7 @@ export default function VerdictResults({
             <div className="flex items-center gap-3">
               <h2
                 className="text-xl font-normal text-foreground"
-                style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
+                style={{ fontFamily: "Georgia, serif" }}
               >
                 {heroDetail.displayName}
               </h2>
@@ -125,7 +125,7 @@ export default function VerdictResults({
             <div className="text-right">
               <div
                 className="text-2xl font-bold text-accent leading-none"
-                style={{ fontFamily: "'DM Serif Display', serif" }}
+                style={{ fontFamily: "serif" }}
               >
                 ${(heroDetail.priceFromCents / 100).toFixed(0)}/mo
               </div>

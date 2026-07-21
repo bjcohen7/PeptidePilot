@@ -53,15 +53,15 @@ export default function ResultsByPublicId() {
           status: "completed",
         }, pendingEventIds?.completeRegistration);
         trackMetaEvent("Lead", {
-          content_name: data?.results?.[0]?.name ?? "Peptide Results",
-          content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
+          content_name: "Weight Management Match",
+          content_category: isGlp1Lead ? "weight-management" : "quiz-results",
           value: isGlp1Lead ? 50 : 10,
           currency: "USD",
         }, pendingEventIds?.lead);
         trackMetaEvent("ViewContent", {
-          content_name: data?.results?.[0]?.name ?? "Peptide Results",
-          content_category: isGlp1Lead ? "GLP-1" : "quiz-results",
-          content_ids: data?.results?.[0]?.peptideId ? [data.results[0].peptideId] : undefined,
+          content_name: "Weight Management Match",
+          content_category: isGlp1Lead ? "weight-management" : "quiz-results",
+          content_ids: data?.results?.[0]?.peptideId ? ["match-primary"] : undefined,
         }, pendingEventIds?.viewContent);
         void identifyLogRocketUser(submittedEmail, {
           email: submittedEmail,

@@ -40,17 +40,20 @@ const staticRoutes: PrerenderRoute[] = [
   },
   {
     path: "/match",
-    title: "Peptides for Weight Loss — Start With the One That's Clinically Proven",
+    title: "Find your match — 2 minutes | PeptidePilot",
     description:
-      `Semaglutide and tirzepatide are the peptides with large-scale clinical trials behind them. Take a free ${QUIZ_MINUTES}-minute quiz and see which licensed GLP-1 provider fits your body and budget.`,
+      "Medically-supervised weight management from licensed US clinicians. Check your eligibility in minutes. No insurance needed.",
     type: "website",
+    // Ad/conversion bridge (no organic mandate) → noindex; also drops it from the sitemap
+    // (the sitemap builder excludes noindex routes).
+    noindex: true,
   },
   {
     // Ad alias of /match. noindex to avoid duplicate content; /match is canonical.
     path: "/peptides-for-weight-loss",
-    title: "Peptides for Weight Loss — Start With the One That's Clinically Proven",
+    title: "Find your match — 2 minutes | PeptidePilot",
     description:
-      `Semaglutide and tirzepatide are the peptides with large-scale clinical trials behind them. Take a free ${QUIZ_MINUTES}-minute quiz and see which licensed GLP-1 provider fits your body and budget.`,
+      "Medically-supervised weight management from licensed US clinicians. Check your eligibility in minutes. No insurance needed.",
     type: "website",
     noindex: true,
   },
@@ -117,7 +120,8 @@ const staticRoutes: PrerenderRoute[] = [
   // instead of falling back to the home page index.html
   {
     path: "/quiz",
-    title: "GLP-1 Provider Quiz | PeptidePilot",
+    // Ad landing (noindex — no Google cost) → drug-class-free <title>/og:title.
+    title: "Find your match — 2 minutes | PeptidePilot",
     description: `Take the free ${QUIZ_MINUTES}-minute PeptidePilot quiz to find your best provider match.`,
     type: "website",
     noindex: true,

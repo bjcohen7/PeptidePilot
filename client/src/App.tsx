@@ -102,7 +102,7 @@ function Router() {
   const noindexMeta = (() => {
     if (location.startsWith("/quiz")) {
       return {
-        title: "Find Your GLP-1 Match — 8-Question Quiz | PeptidePilot",
+        title: "Find your match — 2 minutes | PeptidePilot",
         description: "Answer 8 quick questions to get matched with vetted licensed telehealth providers. Compare prices and options.",
       };
     }
