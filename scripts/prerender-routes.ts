@@ -71,7 +71,7 @@ const staticRoutes: PrerenderRoute[] = [
     path: "/about",
     title: "About PeptidePilot",
     description:
-      "Learn how PeptidePilot helps you compare GLP-1 providers and find the right fit for your health goals.",
+      "Learn how PeptidePilot helps you compare licensed telehealth providers and find the right fit for your health goals.",
     type: "website",
   },
   {
@@ -92,7 +92,7 @@ const staticRoutes: PrerenderRoute[] = [
     path: "/faq",
     title: "Frequently Asked Questions | PeptidePilot",
     description:
-      "Answers to common questions about GLP-1 provider comparison, pricing, telehealth qualifications, and how PeptidePilot works.",
+      "Answers to common questions about provider comparison, pricing, telehealth qualifications, and how PeptidePilot works.",
     type: "website",
   },
   {
@@ -118,7 +118,7 @@ const staticRoutes: PrerenderRoute[] = [
   {
     path: "/quiz",
     title: "GLP-1 Provider Quiz | PeptidePilot",
-    description: `Take the free ${QUIZ_MINUTES}-minute PeptidePilot quiz to find your best GLP-1 provider match.`,
+    description: `Take the free ${QUIZ_MINUTES}-minute PeptidePilot quiz to find your best provider match.`,
     type: "website",
     noindex: true,
   },

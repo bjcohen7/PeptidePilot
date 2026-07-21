@@ -103,7 +103,7 @@ function Router() {
     if (location.startsWith("/quiz")) {
       return {
         title: "Find Your GLP-1 Match — 8-Question Quiz | PeptidePilot",
-        description: "Answer 8 quick questions to get matched with vetted GLP-1 providers. Compare prices, medications, and start today.",
+        description: "Answer 8 quick questions to get matched with vetted licensed telehealth providers. Compare prices and options.",
       };
     }
 
