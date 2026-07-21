@@ -14,12 +14,15 @@ import { isGone410, isNoindexed } from "../shared/seoPruneList";
 import { SEO_REDIRECTS } from "../shared/seoRedirects";
 
 export const SITE_URL = "https://www.peptidepilot.me";
-const DEFAULT_OG_IMAGE = `${SITE_URL}/apple-touch-icon.png`;
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og/default.png`;
 
 export type PrerenderRoute = {
   path: string;
   title: string;
   description: string;
+  // OG-compliance: og:title/twitter:title use this when set, so the drug-class-free
+  // social card can differ from the <title> (which keeps clinical terms for Google).
+  ogTitle?: string;
   type?: "website" | "article";
   noindex?: boolean;
 };
@@ -27,10 +30,12 @@ export type PrerenderRoute = {
 const staticRoutes: PrerenderRoute[] = [
   {
     path: "/",
+    // <title> keeps clinical terms for Google; og:title (below) is drug-class-free for Meta.
     title: "PeptidePilot — Compare GLP-1 providers in minutes. 100% independent.",
-    // Keep in sync with the homepage <Seo description> in client/src/pages/Home.tsx.
+    ogTitle: "Check your eligibility | PeptidePilot",
+    // OG-compliant + keep in sync with the homepage <Seo description> in client/src/pages/Home.tsx.
     description:
-      "Check your eligibility for GLP-1 treatment in 2 minutes, then connect with a licensed telehealth provider for semaglutide or tirzepatide — a licensed clinician reviews your intake. No insurance needed.",
+      "Medically-supervised weight management from licensed US clinicians. Check your eligibility in minutes. No insurance needed.",
     type: "website",
   },
   {
@@ -54,8 +59,9 @@ const staticRoutes: PrerenderRoute[] = [
     // instantly (no hero, no scroll); noindex (not an organic entry point).
     path: "/start",
     title: "Check your GLP-1 eligibility | PeptidePilot",
+    ogTitle: "Check your eligibility — 2 minutes",
     description:
-      "A few quick questions, then a fast eligibility check for GLP-1 weight-loss treatment.",
+      "Medically-supervised weight management from licensed US clinicians. Check your eligibility in minutes. No insurance needed.",
     type: "website",
     noindex: true,
   },
@@ -249,13 +255,13 @@ export function buildHeadTags(route: PrerenderRoute) {
     `<meta name="robots" content="${robots}" />`,
     `<link rel="canonical" href="${canonical}" />`,
     `<meta property="og:site_name" content="PeptidePilot" />`,
-    `<meta property="og:title" content="${escapeHtml(route.title)}" />`,
+    `<meta property="og:title" content="${escapeHtml(route.ogTitle ?? route.title)}" />`,
     `<meta property="og:description" content="${escapeHtml(route.description)}" />`,
     `<meta property="og:type" content="${route.type ?? "website"}" />`,
     `<meta property="og:url" content="${canonical}" />`,
     `<meta property="og:image" content="${DEFAULT_OG_IMAGE}" />`,
     `<meta name="twitter:card" content="summary" />`,
-    `<meta name="twitter:title" content="${escapeHtml(route.title)}" />`,
+    `<meta name="twitter:title" content="${escapeHtml(route.ogTitle ?? route.title)}" />`,
     `<meta name="twitter:description" content="${escapeHtml(route.description)}" />`,
     `<meta name="twitter:image" content="${DEFAULT_OG_IMAGE}" />`,
   ].join("\n    ");

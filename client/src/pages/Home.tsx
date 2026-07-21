@@ -92,7 +92,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col">
       <Seo
         title="Get Matched to GLP-1 Therapy in Minutes"
-        description="Check your eligibility for GLP-1 treatment in 2 minutes, then connect with a licensed telehealth provider for semaglutide or tirzepatide — a licensed clinician reviews your intake. No insurance needed."
+        description="Medically-supervised weight management from licensed US clinicians. Check your eligibility in minutes. No insurance needed."
         path="/"
         type="website"
         jsonLd={{

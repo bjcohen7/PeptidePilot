@@ -118,7 +118,7 @@ function Router() {
     if (location.startsWith("/start")) {
       return {
         title: "Check your GLP-1 eligibility | PeptidePilot",
-        description: "A few quick questions, then a fast eligibility check for GLP-1 weight-loss treatment.",
+        description: "Medically-supervised weight management from licensed US clinicians. Check your eligibility in minutes. No insurance needed.",
       };
     }
 
