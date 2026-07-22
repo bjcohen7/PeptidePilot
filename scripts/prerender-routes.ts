@@ -40,7 +40,7 @@ const staticRoutes: PrerenderRoute[] = [
   },
   {
     path: "/match",
-    title: "Find your match — 2 minutes | PeptidePilot",
+    title: `Find your match — ${QUIZ_MINUTES} minutes | PeptidePilot`,
     description:
       "Medically-supervised weight management from licensed US clinicians. Check your eligibility in minutes. No insurance needed.",
     type: "website",
@@ -51,7 +51,7 @@ const staticRoutes: PrerenderRoute[] = [
   {
     // Ad alias of /match. noindex to avoid duplicate content; /match is canonical.
     path: "/peptides-for-weight-loss",
-    title: "Find your match — 2 minutes | PeptidePilot",
+    title: `Find your match — ${QUIZ_MINUTES} minutes | PeptidePilot`,
     description:
       "Medically-supervised weight management from licensed US clinicians. Check your eligibility in minutes. No insurance needed.",
     type: "website",
@@ -121,7 +121,7 @@ const staticRoutes: PrerenderRoute[] = [
   {
     path: "/quiz",
     // Ad landing (noindex — no Google cost) → drug-class-free <title>/og:title.
-    title: "Find your match — 2 minutes | PeptidePilot",
+    title: `Find your match — ${QUIZ_MINUTES} minutes | PeptidePilot`,
     description: `Take the free ${QUIZ_MINUTES}-minute PeptidePilot quiz to find your best provider match.`,
     type: "website",
     noindex: true,
@@ -129,14 +129,14 @@ const staticRoutes: PrerenderRoute[] = [
   {
     path: "/processing",
     title: "Finding Your Match | PeptidePilot",
-    description: "PeptidePilot is matching you with GLP-1 providers.",
+    description: "PeptidePilot is finding your provider matches.",
     type: "website",
     noindex: true,
   },
   {
     path: "/results",
     title: "Your Matches | PeptidePilot",
-    description: "Your personalized GLP-1 provider matches from PeptidePilot.",
+    description: "Your personalized provider matches from PeptidePilot.",
     type: "website",
     noindex: true,
   },

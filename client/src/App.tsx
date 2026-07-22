@@ -102,7 +102,7 @@ function Router() {
   const noindexMeta = (() => {
     if (location.startsWith("/quiz")) {
       return {
-        title: "Find your match — 2 minutes | PeptidePilot",
+        title: "Find your match — 4 minutes | PeptidePilot",
         description: "Answer 8 quick questions to get matched with vetted licensed telehealth providers. Compare prices and options.",
       };
     }
@@ -124,7 +124,7 @@ function Router() {
 
     if (location.startsWith("/results")) {
       return {
-        title: "Your GLP-1 Match | PeptidePilot",
+        title: "Your match | PeptidePilot",
         description: "Your personalized provider match and comparison. See vetted GLP-1 providers ranked by your preferences.",
       };
     }

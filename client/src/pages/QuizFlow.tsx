@@ -28,7 +28,7 @@ const SECTION_BREATHERS: Record<
   },
   "Metabolic Health": {
     label: "Metabolic Health",
-    headline: "Prescription GLP-1 fit depends on more than just weight-loss interest.",
+    headline: "Prescription eligibility depends on more than just weight-loss interest.",
     body: "For weight-loss users, we add a short eligibility layer so your results can better distinguish metabolic-health candidates from general fat-loss support options.",
   },
   "Age & Hormones": {

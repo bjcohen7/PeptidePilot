@@ -74,7 +74,7 @@ export default function Match() {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--background)" }}>
       <Seo
-        title="Find your match — 2 minutes | PeptidePilot"
+        title={`Find your match — ${QUIZ_MINUTES} minutes | PeptidePilot`}
         description="Medically-supervised weight management from licensed US clinicians. Check your eligibility in minutes. No insurance needed."
         path="/match"
         type="website"
