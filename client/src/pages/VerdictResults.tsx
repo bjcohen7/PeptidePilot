@@ -2,6 +2,22 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { matchPercentFromFitScore, shouldDisplayMatchPercent } from "@shared/matchDisplay";
 import { WebviewEscapeHint } from "@/components/WebviewEscapeHint";
+import { trackMetaCustomEvent } from "@/lib/metaPixel";
+
+// Outbound-to-provider handoff event. These anchors navigate SAME-TAB to /go/:slug
+// (→ 302 → provider), so the pixel fires on POINTERDOWN — before unload — or the beacon
+// is cancelled by navigation (the DirectFunnelClick lesson). Genericized scheme, no drug terms.
+function fireProviderHandoff(position: "hero" | "alt") {
+  try {
+    trackMetaCustomEvent("ProviderHandoff", {
+      source: "results",
+      position,
+      content_category: "weight-management",
+    });
+  } catch {
+    /* no-op */
+  }
+}
 
 type ProviderDetail = {
   slug: string;
@@ -156,6 +172,7 @@ export default function VerdictResults({
 
           <a
             href={buildGoUrl(heroDetail.slug, "hero")}
+            onPointerDown={() => fireProviderHandoff("hero")}
             className="block w-full rounded-xl font-bold text-center text-white transition-all hover:opacity-90 active:scale-[0.99]"
             style={{
               padding: "18px 24px",
@@ -272,6 +289,7 @@ export default function VerdictResults({
                       )}
                       <a
                         href={buildGoUrl(alt.slug, "alt")}
+                        onPointerDown={() => fireProviderHandoff("alt")}
                         className="block w-full rounded-lg text-center text-sm font-semibold text-white py-3 transition-all hover:opacity-90"
                         style={{ background: "var(--accent)" }}
                       >

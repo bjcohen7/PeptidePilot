@@ -301,31 +301,37 @@ function ProviderCard({
       trackClick.mutate({ leadId, peptideId: provider.id, vendor: provider.name });
     }
 
-    const eventId = createMetaEventId("affiliate_click");
-    trackMetaCustomEvent("AffiliateClick", { supplier: provider.name }, eventId);
+    // Unified outbound-to-provider event (genericized scheme, no drug terms).
+    const eventId = createMetaEventId("provider_handoff");
+    trackMetaCustomEvent(
+      "ProviderHandoff",
+      { source: "results", position: `provider-${rank}`, content_category: "weight-management" },
+      eventId,
+    );
 
+    // Open the provider tab INSIDE the user gesture (before any await) so the popup
+    // isn't blocked; the results page stays open, so there's no beacon unload race.
+    window.open(goUrl, "_blank", "noopener,noreferrer");
+
+    // Fire the server CAPI dedupe event fire-and-forget (same event_id → deduped with
+    // the browser event). Never block the click on it.
     const { fbc, fbp } = getFacebookTrackingParams();
-
-    try {
-      await fetch("/api/capi/track-affiliate-click", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: userEmail ?? null,
-          eventUrl: window.location.href,
-          fbc: fbc ?? null,
-          fbp: fbp ?? null,
-          userAgent: navigator.userAgent,
-          supplierName: provider.name,
-          eventId,
-        }),
-        keepalive: true,
-      });
-    } catch (err) {
-      console.warn("[CAPI] Affiliate click tracking failed:", err);
-    } finally {
-      window.open(goUrl, "_blank", "noopener,noreferrer");
-    }
+    void fetch("/api/capi/track-affiliate-click", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: userEmail ?? null,
+        eventName: "ProviderHandoff",
+        source: "results",
+        eventUrl: window.location.href,
+        fbc: fbc ?? null,
+        fbp: fbp ?? null,
+        userAgent: navigator.userAgent,
+        supplierName: provider.name,
+        eventId,
+      }),
+      keepalive: true,
+    }).catch((err) => console.warn("[CAPI] ProviderHandoff tracking failed:", err));
   };
 
   return (

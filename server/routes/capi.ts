@@ -31,15 +31,17 @@ router.post("/track-affiliate-click", async (req: Request, res: Response) => {
     fbp,
     userAgent,
     supplierName,
+    source,
     eventId,
   } = req.body as {
     email?: string;
-    eventName?: "AffiliateClick" | "Lead" | "InitiateCheckout";
+    eventName?: "ProviderHandoff" | "AffiliateClick" | "Lead" | "InitiateCheckout";
     eventUrl?: string;
     fbc?: string | null;
     fbp?: string | null;
     userAgent?: string;
     supplierName?: string;
+    source?: string;
     eventId?: string;
   };
 
@@ -91,7 +93,7 @@ router.post("/track-affiliate-click", async (req: Request, res: Response) => {
   const payload: Record<string, unknown> = {
     data: [
       {
-        event_name: eventName || "AffiliateClick",
+        event_name: eventName || "ProviderHandoff",
         event_id: dedupeEventId,
         event_time: Math.floor(Date.now() / 1000),
         action_source: "website",
@@ -99,6 +101,7 @@ router.post("/track-affiliate-click", async (req: Request, res: Response) => {
         user_data: userData,
         custom_data: {
           ...(supplierName ? { supplier: supplierName } : {}),
+          ...(source ? { source } : {}),
         },
       },
     ],

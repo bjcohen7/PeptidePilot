@@ -37,10 +37,8 @@ const HANDOFF = {
 };
 
 // Which provider the /start handoff sends to. Single swap-point on the client; the server
-// /go-direct/:provider route owns the actual destination URL + subid param. HANDOFF_SUFFIX
-// mirrors the server's cohort suffix for the Meta pixel sub1.
+// /go-direct/:provider route owns the actual destination URL + subid param.
 const HANDOFF_PROVIDER = "gala";
-const HANDOFF_SUFFIX = "gdirect";
 
 type Question = { q: number; title: string; options: string[] };
 
@@ -115,12 +113,15 @@ export default function Start() {
     if (typeof window !== "undefined") window.scrollTo(0, 0);
   };
 
-  // DirectFunnelClick on pointerdown (before the anchor navigates) so the fbq beacon
-  // isn't cancelled by unload — same pattern as HomepageCta.
+  // Unified outbound-to-provider event, fired on pointerdown (before the anchor navigates
+  // same-tab) so the fbq beacon isn't cancelled by unload. Genericized scheme, no drug terms.
   const fireDirectPixel = () => {
     try {
-      const sid = sidRef.current || "anon";
-      trackMetaCustomEvent("DirectFunnelClick", { sub1: `${sid}-${HANDOFF_SUFFIX}`, source: "bridge" });
+      trackMetaCustomEvent("ProviderHandoff", {
+        source: "bridge",
+        position: "bridge",
+        content_category: "weight-management",
+      });
     } catch {
       /* no-op */
     }
