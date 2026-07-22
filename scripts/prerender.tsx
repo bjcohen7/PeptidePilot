@@ -58,8 +58,30 @@ async function writeRouteHtml(routePath: string, html: string) {
   await fs.writeFile(path.join(outputDir, "index.html"), html, "utf8");
 }
 
+// Route → lazy route-chunk prefix. These route components are lazy()-imported in App.tsx,
+// so Vite does NOT modulepreload their chunk — the browser only discovers the dynamic
+// import after the vendor chain executes, serializing the post-hydration route paint (the
+// LCP repaint). We inject a modulepreload for the route's own chunk so it downloads in
+// parallel with the vendors. Limited to the high-traffic ad/landing routes; their deps
+// (framework/ui-kit/data-client/app-shared) are already preloaded by the static graph.
+const ROUTE_CHUNK_PREFIX: Record<string, string> = {
+  "/": "Home",
+  "/quiz": "QuizFlow",
+  "/start": "Start",
+  "/match": "Match",
+  "/peptides-for-weight-loss": "Match",
+};
+
+function routeChunkPreload(routePath: string, assetFiles: string[]): string {
+  const prefix = ROUTE_CHUNK_PREFIX[routePath];
+  if (!prefix) return "";
+  const file = assetFiles.find((f) => f.startsWith(`${prefix}-`) && f.endsWith(".js"));
+  return file ? `<link rel="modulepreload" crossorigin href="/assets/${file}" />` : "";
+}
+
 async function main() {
   const template = await fs.readFile(TEMPLATE_PATH, "utf8");
+  const assetFiles = await fs.readdir(path.join(DIST_PUBLIC, "assets"));
 
   // Preserve the clean SPA shell (empty #root) BEFORE index.html is overwritten
   // with the prerendered home page. Dynamic app routes (e.g. /results/:publicId)
@@ -70,7 +92,9 @@ async function main() {
   for (const route of prerenderRoutes) {
     const body = renderToString(<AppPrerender path={route.path} />);
     const head = buildHeadTags(route);
-    const withHead = injectHead(template, head);
+    let withHead = injectHead(template, head);
+    const preload = routeChunkPreload(route.path, assetFiles);
+    if (preload) withHead = withHead.replace("</head>", `    ${preload}\n  </head>`);
     const page = withHead.replace(
       '<div id="root"></div>',
       `<div id="root" data-prerendered="true">${body}</div>`,
