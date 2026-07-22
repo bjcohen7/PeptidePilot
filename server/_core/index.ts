@@ -77,6 +77,7 @@ import emailWebhookRouter from "../email/webhook";
 import emailUnsubscribeRouter from "../email/unsubscribe";
 import { ensureEmailSchema } from "../email/schema";
 import { startEmailCron } from "../email/worker";
+import { startDigestCron } from "../digest";
 import { prerenderRoutes, SITE_URL } from "../../scripts/prerender-routes";
 
 // Previously /quiz was listed here as a static sitemap path, but it is now a
@@ -188,6 +189,9 @@ async function startServer() {
 
   // Start email cron worker after schema is ready
   startEmailCron();
+
+  // Daily 8pm-ET Telegram digest (fire-and-forget, DST-aware).
+  startDigestCron();
 
   // Warn loudly if the static provider floor-price constant has drifted from the live table.
   void checkProviderFloorConsistency();
