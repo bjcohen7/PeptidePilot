@@ -125,7 +125,7 @@ function Router() {
     if (location.startsWith("/results")) {
       return {
         title: "Your match | PeptidePilot",
-        description: "Your personalized provider match and comparison. See vetted GLP-1 providers ranked by your preferences.",
+        description: "Your personalized provider match and comparison, ranked by your preferences.",
       };
     }
 
