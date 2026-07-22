@@ -1,12 +1,17 @@
 /**
- * Daily Telegram digest — one plain-English message at 8:00pm ET summarizing
- * TODAY (midnight ET → send time) vs the SAME window yesterday (honest
- * partial-vs-partial comparison, not today-partial vs yesterday-full).
+ * Telegram digest — daily 8pm-ET push plus on-demand period reports.
  *
- * Scheduling follows the email-cron pattern: a setInterval ticker + ET
- * wall-clock check via toLocaleString (DST-aware), with a sent-today guard so
- * restarts don't double-send. Fire-and-forget; a digest failure never affects
- * the app.
+ * Inbound commands (long-poll getUpdates, restricted to TELEGRAM_CHAT_ID,
+ * silent on everything else):
+ *   /t, /report, report → today so far        (vs same window yesterday)
+ *   /w                  → last 7 days incl today  (vs prior 7 days)
+ *   /m                  → last 30 days incl today (vs prior 30 days)
+ *   /help               → one-line usage
+ *
+ * The 8pm cron is /t. All periods share one digest builder — only the window
+ * is parameterized. Comparisons are always like-for-like (equal-length prior
+ * window ending exactly one period earlier). The scheduled send is deduped
+ * through a tiny digest_log table so a second container can never double-send.
  */
 import { sql } from "drizzle-orm";
 import { getDb } from "./db";
@@ -21,16 +26,17 @@ function etParts(d: Date) {
   return { et, dateKey: d.toLocaleDateString("en-US", { timeZone: TZ }) };
 }
 
-/** UTC Date for ET-midnight `daysAgo` days back, plus the same-time-of-day end bound. */
-function etWindow(now: Date, daysAgo: number): { start: Date; end: Date } {
+const DAY_MS = 24 * 3600 * 1000;
+
+/** Window covering the last `days` ET days including today, ending now; shift moves it back whole periods. */
+function periodWindow(now: Date, days: number, periodsBack = 0): { start: Date; end: Date } {
   const { et } = etParts(now);
-  const sinceMidnightMs =
-    ((et.getHours() * 60 + et.getMinutes()) * 60 + et.getSeconds()) * 1000;
+  const sinceMidnightMs = ((et.getHours() * 60 + et.getMinutes()) * 60 + et.getSeconds()) * 1000;
   const todayMidnightUtc = new Date(now.getTime() - sinceMidnightMs);
-  const dayMs = 24 * 3600 * 1000;
+  const shift = periodsBack * days * DAY_MS;
   return {
-    start: new Date(todayMidnightUtc.getTime() - daysAgo * dayMs),
-    end: new Date(now.getTime() - daysAgo * dayMs),
+    start: new Date(todayMidnightUtc.getTime() - (days - 1) * DAY_MS - shift),
+    end: new Date(now.getTime() - shift),
   };
 }
 
@@ -104,12 +110,37 @@ function arrow(today: number, yesterday: number): string {
   return "→";
 }
 
-export async function buildDigest(label?: string): Promise<string | null> {
+export type DigestPeriod = "t" | "w" | "m";
+
+const PERIODS: Record<DigestPeriod, { days: number; noun: string }> = {
+  t: { days: 1, noun: "today" },
+  w: { days: 7, noun: "this week" },
+  m: { days: 30, noun: "this month" },
+};
+
+function fmtDay(d: Date): string {
+  return d.toLocaleDateString("en-US", { timeZone: TZ, month: "short", day: "numeric" });
+}
+
+function periodLabel(period: DigestPeriod, now: Date, start: Date): string {
+  if (period === "t") {
+    const time = now.toLocaleTimeString("en-US", { timeZone: TZ, hour: "numeric", minute: "2-digit" }).toLowerCase().replace(" ", "");
+    return `Today so far (as of ${time})`;
+  }
+  const sameMonth =
+    start.toLocaleDateString("en-US", { timeZone: TZ, month: "short" }) ===
+    now.toLocaleDateString("en-US", { timeZone: TZ, month: "short" });
+  const range = `${fmtDay(start)}–${sameMonth ? now.toLocaleDateString("en-US", { timeZone: TZ, day: "numeric" }) : fmtDay(now)}`;
+  return period === "w" ? `This week (${range})` : `This month (${range})`;
+}
+
+export async function buildDigest(period: DigestPeriod = "t", labelOverride?: string): Promise<string | null> {
   const now = new Date();
-  const w0 = etWindow(now, 0);
-  const w1 = etWindow(now, 1);
-  const [today, yest] = await Promise.all([collect(w0.start, w0.end), collect(w1.start, w1.end)]);
-  if (!today) return null;
+  const { days, noun } = PERIODS[period];
+  const cur = periodWindow(now, days, 0);
+  const prior = periodWindow(now, days, 1);
+  const [stats, prev] = await Promise.all([collect(cur.start, cur.end), collect(prior.start, prior.end)]);
+  if (!stats) return null;
 
   const db = await getDb();
   let listTotal = 0;
@@ -121,37 +152,58 @@ export async function buildDigest(label?: string): Promise<string | null> {
     listTotal = Number(row?.n ?? 0);
   }
 
-  const dateStr = now.toLocaleDateString("en-US", { timeZone: TZ, month: "short", day: "numeric" });
-  const openPct = today.emailsSent ? Math.round((today.emailsOpened / today.emailsSent) * 100) : 0;
+  const openPct = stats.emailsSent ? Math.round((stats.emailsOpened / stats.emailsSent) * 100) : 0;
+  const priorNoun = period === "t" ? "yesterday" : period === "w" ? "prior 7 days" : "prior 30 days";
 
   const lines: string[] = [];
-  if (today.sales > 0) {
-    lines.push(`\u{1F389} SALE${today.sales > 1 ? "S" : ""}: ${today.sales} · $${(today.salesCents / 100).toFixed(2)}`);
+  if (stats.sales > 0) {
+    lines.push(`\u{1F389} SALE${stats.sales > 1 ? "S" : ""}: ${stats.sales} · $${(stats.salesCents / 100).toFixed(2)}`);
   }
-  lines.push(`\u{1F4CA} ${label ? label : `Today (${dateStr})`}`);
-  lines.push(`\u{1F4B8} Ad clicks: ${today.adClicks} (${today.adStart} → /start, ${today.adQuiz} → /quiz)`);
-  lines.push(`\u{1F309} Sent to providers: ${today.handoffs} people`);
-  lines.push(`\u{1F4E5} New leads: ${today.newLeads} (list now ${listTotal.toLocaleString("en-US")})`);
-  lines.push(`\u{1F4E7} Emails: ${today.emailsSent} sent · ${openPct}% opened · ${today.emailsClicked} clicked`);
-  if (today.sales === 0) lines.push(`\u{1F4B0} Sales: 0 ($0)`);
-  if (yest) {
+  lines.push(`\u{1F4CA} ${labelOverride ?? periodLabel(period, now, cur.start)}`);
+  lines.push(`\u{1F4B8} Ad clicks: ${stats.adClicks} (${stats.adStart} → /start, ${stats.adQuiz} → /quiz)`);
+  lines.push(`\u{1F309} Sent to providers: ${stats.handoffs} people`);
+  lines.push(
+    period === "t"
+      ? `\u{1F4E5} New leads: ${stats.newLeads} (list now ${listTotal.toLocaleString("en-US")})`
+      : `\u{1F4E5} New leads: +${stats.newLeads} ${noun} · list now ${listTotal.toLocaleString("en-US")}`,
+  );
+  lines.push(`\u{1F4E7} Emails: ${stats.emailsSent} sent · ${openPct}% opened · ${stats.emailsClicked} clicked`);
+  if (stats.sales === 0) lines.push(`\u{1F4B0} Sales: 0 ($0)`);
+  if (prev) {
     lines.push(
-      `vs yesterday: clicks ${arrow(today.adClicks, yest.adClicks)}, handoffs ${arrow(today.handoffs, yest.handoffs)}, leads ${arrow(today.newLeads, yest.newLeads)}`,
+      `vs ${priorNoun}: clicks ${arrow(stats.adClicks, prev.adClicks)}, handoffs ${arrow(stats.handoffs, prev.handoffs)}, leads ${arrow(stats.newLeads, prev.newLeads)}`,
     );
   }
-  // Broken-looking signals — one plain line each.
-  if (today.adClicks === 0) lines.push(`⚠️ no ad clicks logged — check ads.`);
-  if (today.emailsSent === 0) lines.push(`⚠️ no emails sent today — check the email cron.`);
+  if (stats.adClicks === 0) lines.push(`⚠️ no ad clicks logged — check ads.`);
+  if (stats.emailsSent === 0) lines.push(`⚠️ no emails sent ${noun} — check the email cron.`);
 
   return lines.join("\n");
 }
 
-export async function sendDailyDigest(label?: string): Promise<void> {
+export async function sendDailyDigest(labelOverride?: string): Promise<void> {
   try {
-    const msg = await buildDigest(label);
+    const msg = await buildDigest("t", labelOverride);
     if (msg) await sendTelegramMessage(msg);
   } catch (err) {
     console.error("[Digest] failed:", err);
+  }
+}
+
+/** DB-side dedupe so the 8pm send fires once even with multiple containers. */
+async function claimScheduledSend(dateKey: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return true; // no DB → fall back to in-memory guard only
+  try {
+    await db.execute(sql.raw(
+      `CREATE TABLE IF NOT EXISTS \`digest_log\` (\`day\` varchar(16) NOT NULL, PRIMARY KEY (\`day\`))
+       ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+    ));
+    await db.execute(sql.raw(`INSERT INTO \`digest_log\` (\`day\`) VALUES ('${dateKey.replace(/[^0-9/\-]/g, "")}')`));
+    return true;
+  } catch (err: any) {
+    if (err?.code === "ER_DUP_ENTRY" || err?.errno === 1062 || err?.cause?.errno === 1062) return false;
+    console.error("[Digest] claim error (sending anyway):", err?.code ?? err);
+    return true;
   }
 }
 
@@ -166,8 +218,63 @@ export function startDigestCron() {
     const { et, dateKey } = etParts(now);
     if (et.getHours() === SEND_HOUR_ET && _lastSentKey !== dateKey) {
       _lastSentKey = dateKey;
-      void sendDailyDigest();
+      void (async () => {
+        if (await claimScheduledSend(dateKey)) await sendDailyDigest();
+      })();
     }
   }, 60 * 1000);
   if (_timer.unref) _timer.unref();
+
+  startCommandPoller();
+}
+
+// ── Inbound commands (long-poll) ────────────────────────────────────────────
+let _polling = false;
+let _offset = 0;
+
+function startCommandPoller() {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId || _polling) return;
+  _polling = true;
+  console.log("[Digest] Telegram command poller started (/t /w /m /help)");
+  void pollLoop(token, chatId);
+}
+
+async function pollLoop(token: string, chatId: string) {
+  for (;;) {
+    try {
+      const res = await fetch(
+        `https://api.telegram.org/bot${token}/getUpdates?timeout=25&offset=${_offset}&allowed_updates=%5B%22message%22%5D`,
+      );
+      if (res.status === 409) {
+        // Another poller instance owns getUpdates; back off and retry quietly.
+        await new Promise((r) => setTimeout(r, 30_000));
+        continue;
+      }
+      const body = (await res.json()) as { ok: boolean; result?: Array<{ update_id: number; message?: { chat?: { id: number }; text?: string } }> };
+      for (const u of body.result ?? []) {
+        _offset = u.update_id + 1;
+        const msg = u.message;
+        if (!msg?.text || String(msg.chat?.id) !== String(chatId)) continue; // silence for anyone else
+        const cmd = msg.text.trim().toLowerCase().replace(/^\//, "").replace(/@\w+$/, "");
+        if (cmd === "t" || cmd === "report") {
+          const out = await buildDigest("t");
+          if (out) await sendTelegramMessage(out);
+        } else if (cmd === "w") {
+          const out = await buildDigest("w");
+          if (out) await sendTelegramMessage(out);
+        } else if (cmd === "m") {
+          const out = await buildDigest("m");
+          if (out) await sendTelegramMessage(out);
+        } else if (cmd === "help") {
+          await sendTelegramMessage("/t today · /w week · /m month");
+        }
+        // anything else: stay silent
+      }
+    } catch (err) {
+      console.error("[Digest] poll error:", err);
+      await new Promise((r) => setTimeout(r, 10_000));
+    }
+  }
 }
