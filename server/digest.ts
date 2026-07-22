@@ -16,6 +16,13 @@
 import { sql } from "drizzle-orm";
 import { getDb } from "./db";
 import { sendTelegramMessage } from "./_core/telegram";
+import { getAdsInsights } from "./metaAds";
+
+/** ET calendar date (YYYY-MM-DD) for a Date. */
+function etDateStr(d: Date): string {
+  const p = new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" });
+  return p.format(d);
+}
 
 const TZ = "America/New_York";
 const SEND_HOUR_ET = 20; // 8pm
@@ -161,6 +168,14 @@ export async function buildDigest(period: DigestPeriod = "t", labelOverride?: st
   }
   lines.push(`\u{1F4CA} ${labelOverride ?? periodLabel(period, now, cur.start)}`);
   lines.push(`\u{1F4B8} Ad clicks: ${stats.adClicks} (${stats.adStart} → /start, ${stats.adQuiz} → /quiz)`);
+  // Spend from the Marketing API; leads from OUR DB (our count is truth, Meta's is attribution).
+  const ins = await getAdsInsights(etDateStr(cur.start), etDateStr(now));
+  if (ins) {
+    const perLead = stats.newLeads > 0 ? ` · $${(ins.spend / stats.newLeads).toFixed(2)} per lead` : "";
+    lines.push(`\u{1F4B8} Spent: $${ins.spend.toFixed(2)}${perLead}`);
+  } else {
+    lines.push(`\u{1F4B8} Spent: n/a`);
+  }
   lines.push(`\u{1F309} Sent to providers: ${stats.handoffs} people`);
   lines.push(
     period === "t"
@@ -178,6 +193,49 @@ export async function buildDigest(period: DigestPeriod = "t", labelOverride?: st
   if (stats.emailsSent === 0) lines.push(`⚠️ no emails sent ${noun} — check the email cron.`);
 
   return lines.join("\n");
+}
+
+/** /ads [w] — per-ad table: Meta spend/clicks joined with OUR sessions+handoffs via utm_content=ad_id. */
+export async function buildAdsReport(period: "t" | "w" = "t"): Promise<string> {
+  const now = new Date();
+  const days = period === "w" ? 7 : 1;
+  const cur = periodWindow(now, days, 0);
+  const ins = await getAdsInsights(etDateStr(cur.start), etDateStr(now));
+  if (!ins) return "Ads data n/a — set META_ADS_TOKEN + META_AD_ACCOUNT_ID (or token expired).";
+
+  // Our DB per ad id (utm_content): sessions + handoffs (bridge via session id, results via lead publicId).
+  const db = await getDb();
+  const bySession = new Map<string, { sessions: number; handoffs: number }>();
+  if (db) {
+    const A = `'${cur.start.toISOString().slice(0, 19).replace("T", " ")}'`;
+    const B = `'${cur.end.toISOString().slice(0, 19).replace("T", " ")}'`;
+    const res = (await db.execute(sql.raw(
+      `SELECT vs.utmContent ad,
+              COUNT(DISTINCT vs.id) sessions,
+              COUNT(DISTINCT pcl.public_id) handoffs
+       FROM visitor_sessions vs
+       LEFT JOIN leads l ON l.sessionId = vs.id
+       LEFT JOIN provider_click_logs pcl
+         ON (pcl.public_id = vs.id OR pcl.public_id = l.publicId)
+        AND pcl.created_at >= ${A} AND pcl.created_at < ${B}
+       WHERE vs.utmMedium='paid' AND vs.id NOT LIKE 'test-%'
+         AND vs.firstSeenAt >= ${A} AND vs.firstSeenAt < ${B}
+       GROUP BY vs.utmContent`,
+    ))) as any;
+    const rows = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : [];
+    for (const r of rows) if (r.ad) bySession.set(String(r.ad), { sessions: Number(r.sessions), handoffs: Number(r.handoffs) });
+  }
+
+  const label = period === "w" ? `This week (${fmtDay(cur.start)}–${fmtDay(now)})` : `Today (${fmtDay(now)})`;
+  const lines = [`\u{1F4E3} Ads — ${label}`];
+  for (const ad of ins.ads.slice(0, 8)) {
+    const ours = bySession.get(ad.adId);
+    const name = ad.adName.length > 20 ? ad.adName.slice(0, 19) + "…" : ad.adName;
+    lines.push(`${name} · $${ad.spend.toFixed(0)} · ${ad.linkClicks} clicks · ${ours?.sessions ?? 0} sessions · ${ours?.handoffs ?? 0} handoffs`);
+  }
+  if (ins.ads.length === 0) lines.push("(no ads with delivery in this window)");
+  lines.push(`Total: $${ins.spend.toFixed(2)} · CPM $${ins.cpm.toFixed(2)}`);
+  return lines.slice(0, 12).join("\n");
 }
 
 export async function sendDailyDigest(labelOverride?: string): Promise<void> {
@@ -257,8 +315,11 @@ async function pollLoop(token: string, chatId: string) {
         _offset = u.update_id + 1;
         const msg = u.message;
         if (!msg?.text || String(msg.chat?.id) !== String(chatId)) continue; // silence for anyone else
-        const cmd = msg.text.trim().toLowerCase().replace(/^\//, "").replace(/@\w+$/, "");
-        if (cmd === "t" || cmd === "report") {
+        const parts = msg.text.trim().toLowerCase().replace(/^\//, "").replace(/@\w+/, "").split(/\s+/);
+        const cmd = parts[0];
+        if (cmd === "ads") {
+          await sendTelegramMessage(await buildAdsReport(parts[1] === "w" ? "w" : "t"));
+        } else if (cmd === "t" || cmd === "report") {
           const out = await buildDigest("t");
           if (out) await sendTelegramMessage(out);
         } else if (cmd === "w") {
@@ -268,7 +329,7 @@ async function pollLoop(token: string, chatId: string) {
           const out = await buildDigest("m");
           if (out) await sendTelegramMessage(out);
         } else if (cmd === "help") {
-          await sendTelegramMessage("/t today · /w week · /m month");
+          await sendTelegramMessage("/t today · /w week · /m month · /ads ad spend (add w for week)");
         }
         // anything else: stay silent
       }
