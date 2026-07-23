@@ -355,3 +355,13 @@ Gala-v2 ran ~1 day before the ban — too small to read; not comparable to v1 (d
 - **Email handoffs are NOW covered by the Meta pixel:** the hop page fires the `ProviderHandoff` custom event (source `email`, position `email_{tag}`, `content_category` `weight-management` — genericized scheme, no drug terms) before redirecting. The prior caveat that the pixel undercounts email-path handoffs is REMOVED as of 2026-07-23; ProviderHandoff custom-conversion counts step up accordingly.
 - **Gala-side (Everflow) click counts may rise** starting 2026-07-23: email sub1s (`{publicId}-gala`) now reach the network directly from email CTAs, where previously all email traffic routed through the results page first.
 - **Nudge safety:** `checkNudgeTriggers` excludes `source_surface='email'` click rows — the still-deciding nudge can never fire off a prefetchable email-link signal.
+
+## Experiment annotation — scoring correction: BMI 27–30 tier raise (2026-07-23)
+
+**Change date: 2026-07-23** (commit `80fba5f`, live ~19:08 UTC). One scoreMap delta in `shared/scoring.ts` q5 (BMI): **idx 2 "27 to 30" raised `{ bmi_qualifies: 3, fatloss: 2, metabolic: 1 }` → `{ bmi_qualifies: 4, fatloss: 2, metabolic: 1, appetite: 1 }`** (`appetite` feeds only semaglutide's weights). This closes most of the eligible-but-outranked gap: clinically GLP-1-eligible (BMI 27–30) weight-loss leads who were being top-matched to lifestyle peptides.
+
+**The planned second delta was NOT applied.** The instruction was to give q5 idx 0 (believed to be "prefer not to say" / unknown BMI) a neutral prior `{ bmi_qualifies: 2, fatloss: 1 }`. In the live quiz, **q5 idx 0 is "Under 25 (normal weight)"** — no "prefer not to say" option exists on this question (verified in current code and the v3 git history), and skipped questions serialize as −1, not 0. A 30-day prod re-simulation showed the literal change would have flipped 5 under-25 (clinically ineligible) leads — 4 of them to a semaglutide top — i.e. exactly the rigging the under-27 hard boundary forbids. Idx 0 therefore keeps `{}`.
+
+**Boundary preserved:** under-27 tiers (idx 0 and idx 1) carry no `bmi_qualifies` — the clinical GLP-1 eligibility gate is untouched. Re-simulation over 504 real leads: 9 flips total, ALL q5 idx 2, all into semaglutide-adjacent tops; zero flips in idx 0, idx 1, idx 3, or any non-WL cohort.
+
+**Metric readers:** top-match distributions from 2026-07-23 onward are not comparable to before (WL-intent semaglutide-top share expected ~54.6% → ~58.1%; overall ~28.6% → ~30.4%). **New leads only** — existing leads' stored `results`/`topPeptideMatch` and their email content are NOT re-scored.
