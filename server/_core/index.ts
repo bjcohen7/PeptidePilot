@@ -414,10 +414,11 @@ async function startServer() {
         // The hop page is also the email-path pixel fix: it is our page and runs
         // JS, so the ProviderHandoff custom event (same genericized scheme as
         // results/bridge — NO drug terms) fires here before the redirect
-        // completes. Fire-and-forget: navigation happens on pixel-script
-        // load/error (+150ms for the beacon to leave, which uses sendBeacon/img
-        // and survives unload) with a 1500ms hard cap — a slow or blocked CDN
-        // can never hold the redirect.
+        // completes. Fire-and-forget with a bounded wait: fbevents defers event
+        // dispatch until its per-pixel signals/config fetch returns, so we poll
+        // resource timing for the completed facebook.com/tr beacon and navigate
+        // the moment it lands (typ. well under a second) — with a hard cap so a
+        // slow or blocked CDN can never hold the redirect hostage.
         const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -448,14 +449,16 @@ async function startServer() {
   var CONFIRM=${JSON.stringify(confirmUrl)};
   var done=false;
   function go(){if(done)return;done=true;window.location.replace(CONFIRM);}
+  function beaconDone(){try{return performance.getEntriesByType('resource').some(function(r){return r.name.indexOf('facebook.com/tr')>-1;});}catch(e){return true;}}
   try{
     !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
     fbq('init','${ENV.metaPixelId}');
     fbq('trackCustom','ProviderHandoff',{source:'email',position:${JSON.stringify(safePosition)},content_category:'weight-management'});
+    var iv=setInterval(function(){if(beaconDone()){clearInterval(iv);go();}},50);
     var s=document.querySelector('script[src*="fbevents"]');
-    if(s){s.addEventListener('load',function(){setTimeout(go,150);});s.addEventListener('error',go);}
+    if(s){s.addEventListener('error',go);}
   }catch(e){}
-  setTimeout(go,1500);
+  setTimeout(go,1800);
 })();
 </script>
 </body>
