@@ -70,9 +70,16 @@ export const scoreMaps: ScoreMap[] = [
     { recovery: 3, inflammation: 2, injury: 1 },
   ],
   [
+    // idx 0 "Under 25 (normal weight)" and idx 1 "25 to 27": clinically
+    // ineligible for GLP-1 — intentionally NO bmi_qualifies. This under-27
+    // gate is load-bearing (real eligibility); do not "fix" it — boosting
+    // GLP-1 ranking for ineligible users produces junk provider clicks.
     {},
     { fatloss: 1 },
-    { bmi_qualifies: 3, fatloss: 2, metabolic: 1 },
+    // idx 2 "27 to 30" (clinically eligible tier): raised bmi_qualifies 3→4
+    // + appetite:1 (appetite feeds only semaglutide's weights) on 2026-07-23
+    // to close the eligible-but-outranked gap vs lifestyle peptides.
+    { bmi_qualifies: 4, fatloss: 2, metabolic: 1, appetite: 1 },
     { bmi_qualifies: 5, fatloss: 3, metabolic: 2 },
   ],
   [
