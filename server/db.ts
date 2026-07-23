@@ -415,6 +415,10 @@ export async function ensureAffiliateWorkspaceSchema() {
         await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `experiment_variant` varchar(16)"));
       }
 
+      // Raw BMI-calculator inputs (2026-07-23) — nullable, skip = NULL.
+      await addColumnIfMissing(db, "leads", "height_in", "`height_in` int");
+      await addColumnIfMissing(db, "leads", "weight_lbs", "`weight_lbs` int");
+
       // Create provider_click_logs table for /go/ click tracking
       await db.execute(sql.raw(`
         CREATE TABLE IF NOT EXISTS \`provider_click_logs\` (

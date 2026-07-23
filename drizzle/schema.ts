@@ -40,6 +40,10 @@ export const leads = mysqlTable("leads", {
   providerMatches: json("provider_matches"), // persisted ProviderMatchResult[]
   experimentVariant: varchar("experiment_variant", { length: 16 }), // 'control' | 'verdict'
   quizStale: boolean("quiz_stale").notNull().default(false), // answers from an older quiz version → retake cohort
+  // Raw BMI-calculator inputs (2026-07-23) — stored for future use, never shown
+  // back to the user as a medical judgment. Null when the user skips.
+  heightIn: int("height_in"),
+  weightLbs: int("weight_lbs"),
   excludedDuplicate: boolean("excluded_duplicate").notNull().default(false), // older dupe row for a repeated email → never re-enters a send cohort
 });
 

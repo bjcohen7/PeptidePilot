@@ -17,6 +17,21 @@ const WEIGHT_LOSS_GOAL_INDEX = PRIMARY_GOAL_OPTIONS.indexOf(
   "Lose body fat and improve body composition",
 );
 
+// BMI calculator (2026-07-23): q5 renders height/weight inputs instead of
+// self-report tiers — users don't know their BMI and guess low, gating out
+// eligible people. Computed BMI maps onto the EXISTING q5 answer indices
+// (under-27 → 1, 27–30 → 2, 30+ → 3; "prefer not to say" → 0), so scoring and
+// all downstream logic are unchanged — a more accurate feeder into the same
+// gate. Raw height/weight are stashed for the submit payload (stored on the
+// lead, never displayed back as a medical judgment).
+export const BMI_STORAGE_KEY = "peptidepilot_quiz_bmi_v1";
+
+function bmiToAnswerIndex(bmi: number): number {
+  if (bmi >= 30) return 3;
+  if (bmi >= 27) return 2;
+  return 1;
+}
+
 const SECTION_BREATHERS: Record<
   string,
   { label: string; headline: string; body: string }
@@ -218,6 +233,33 @@ export default function QuizFlow() {
     ],
   );
 
+  // ── BMI calculator state (only used on the GLP1_BMI question) ──
+  const isBmiQuestion = currentIndex === QUIZ_INDEX.GLP1_BMI;
+  const [bmiFeet, setBmiFeet] = useState("");
+  const [bmiInches, setBmiInches] = useState("");
+  const [bmiWeight, setBmiWeight] = useState("");
+  const bmiHeightIn = (parseInt(bmiFeet, 10) || 0) * 12 + (parseInt(bmiInches, 10) || 0);
+  const bmiWeightLbs = parseInt(bmiWeight, 10) || 0;
+  const bmiReady = bmiHeightIn >= 36 && bmiHeightIn <= 96 && bmiWeightLbs >= 60 && bmiWeightLbs <= 700;
+
+  const handleBmiContinue = useCallback(() => {
+    if (!bmiReady || isTransitioning || selectedAnswer !== null) return;
+    const bmi = (703 * bmiWeightLbs) / (bmiHeightIn * bmiHeightIn);
+    try {
+      window.sessionStorage.setItem(
+        BMI_STORAGE_KEY,
+        JSON.stringify({ heightIn: bmiHeightIn, weightLbs: bmiWeightLbs }),
+      );
+    } catch { /* no-op */ }
+    handleSelectAnswer(bmiToAnswerIndex(bmi));
+  }, [bmiReady, isTransitioning, selectedAnswer, bmiWeightLbs, bmiHeightIn, handleSelectAnswer]);
+
+  const handleBmiSkip = useCallback(() => {
+    if (isTransitioning || selectedAnswer !== null) return;
+    try { window.sessionStorage.removeItem(BMI_STORAGE_KEY); } catch { /* no-op */ }
+    handleSelectAnswer(0);
+  }, [isTransitioning, selectedAnswer, handleSelectAnswer]);
+
   const handleBreatherContinue = useCallback(() => {
     setShowBreather(false);
     setTimeout(() => {
@@ -364,6 +406,68 @@ export default function QuizFlow() {
               {currentQuestion.question}
             </h2>
 
+            {isBmiQuestion ? (
+              <div className="space-y-5">
+                <div className="grid grid-cols-3 gap-3">
+                  <label className="block">
+                    <span className="text-xs font-medium text-muted-foreground">Height (ft)</span>
+                    <select
+                      value={bmiFeet}
+                      onChange={(e) => setBmiFeet(e.target.value)}
+                      disabled={selectedAnswer !== null || isTransitioning}
+                      className="mt-1 w-full h-12 rounded-xl border border-border bg-white px-3 text-base"
+                    >
+                      <option value="">ft</option>
+                      {[4, 5, 6, 7].map((f) => <option key={f} value={f}>{f}</option>)}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-medium text-muted-foreground">Height (in)</span>
+                    <select
+                      value={bmiInches}
+                      onChange={(e) => setBmiInches(e.target.value)}
+                      disabled={selectedAnswer !== null || isTransitioning}
+                      className="mt-1 w-full h-12 rounded-xl border border-border bg-white px-3 text-base"
+                    >
+                      <option value="">in</option>
+                      {Array.from({ length: 12 }, (_, i) => <option key={i} value={i}>{i}</option>)}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-medium text-muted-foreground">Weight (lbs)</span>
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="lbs"
+                      value={bmiWeight}
+                      onChange={(e) => setBmiWeight(e.target.value)}
+                      disabled={selectedAnswer !== null || isTransitioning}
+                      className="mt-1 w-full h-12 rounded-xl border border-border bg-white px-3 text-base"
+                    />
+                  </label>
+                </div>
+                <Button
+                  onClick={handleBmiContinue}
+                  disabled={!bmiReady || selectedAnswer !== null || isTransitioning}
+                  className="w-full h-12 rounded-xl bg-brand-gradient text-white font-semibold text-base"
+                >
+                  Continue
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  This helps determine program eligibility.{" "}
+                  <button
+                    type="button"
+                    onClick={handleBmiSkip}
+                    disabled={selectedAnswer !== null || isTransitioning}
+                    className="underline underline-offset-2 hover:text-foreground"
+                  >
+                    Prefer not to say
+                  </button>
+                </p>
+              </div>
+            ) : (
             <div className="space-y-3">
               {currentQuestion.options.map((option, idx) => (
                 <button
@@ -402,6 +506,7 @@ export default function QuizFlow() {
                 </button>
               ))}
             </div>
+            )}
 
             <p className="text-xs text-muted-foreground text-center mt-5 animate-fade-in">
               Select one answer and we&apos;ll keep things moving.{" "}

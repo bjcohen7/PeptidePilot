@@ -5,6 +5,22 @@ import { getVisitorSessionId } from "@/components/SessionTracker";
 import { trackMetaCustomEvent } from "@/lib/metaPixel";
 
 const QUIZ_STORAGE_KEY = "peptidepilot_quiz_state_v1";
+const BMI_STORAGE_KEY = "peptidepilot_quiz_bmi_v1";
+
+// Raw BMI-calculator inputs stashed by QuizFlow — attached to the submit meta so
+// they're stored on the lead (never displayed back). Null/absent when skipped.
+function readBmiInputs(): { heightIn?: number; weightLbs?: number } {
+  try {
+    const raw = sessionStorage.getItem(BMI_STORAGE_KEY);
+    if (!raw) return {};
+    const p = JSON.parse(raw);
+    return typeof p?.heightIn === "number" && typeof p?.weightLbs === "number"
+      ? { heightIn: p.heightIn, weightLbs: p.weightLbs }
+      : {};
+  } catch {
+    return {};
+  }
+}
 
 function sendFunnelEvent(event: string, data?: Record<string, unknown>) {
   const sessionId = getVisitorSessionId();
@@ -73,6 +89,7 @@ export default function Processing() {
     submitQuiz.mutate({
       answers: answers.map((a) => a ?? -1),
       sessionId: getVisitorSessionId(),
+      meta: readBmiInputs(),
     });
   }, [navigate]);
 
@@ -105,7 +122,7 @@ export default function Processing() {
     try {
       const parsed = JSON.parse(raw);
       const answers = parsed.answers.map((a: number | null) => a ?? -1);
-      submitQuiz.mutate({ answers, sessionId: getVisitorSessionId() });
+      submitQuiz.mutate({ answers, sessionId: getVisitorSessionId(), meta: readBmiInputs() });
     } catch {
       navigate("/results");
     }

@@ -70,11 +70,15 @@ export const scoreMaps: ScoreMap[] = [
     { recovery: 3, inflammation: 2, injury: 1 },
   ],
   [
-    // idx 0 "Under 25 (normal weight)" and idx 1 "25 to 27": clinically
-    // ineligible for GLP-1 — intentionally NO bmi_qualifies. This under-27
-    // gate is load-bearing (real eligibility); do not "fix" it — boosting
-    // GLP-1 ranking for ineligible users produces junk provider clicks.
-    {},
+    // SEMANTIC BREAK 2026-07-23 (BMI calculator): q5 is now height/weight inputs
+    // computing BMI client-side. idx 0 = "Prefer not to say" (skip) — neutral
+    // prior for UNKNOWN BMI (US base rates justify not zeroing it; NOT full
+    // qualification). Computed under-27 (incl. under-25) maps to idx 1.
+    // Historical leads (pre-2026-07-23): idx 0 meant "Under 25 (normal weight)".
+    // idx 1 (under-27): clinically ineligible for GLP-1 — intentionally NO
+    // bmi_qualifies. This under-27 gate is load-bearing (real eligibility); do
+    // not "fix" it — boosting GLP-1 for ineligible users produces junk clicks.
+    { bmi_qualifies: 2, fatloss: 1 },
     { fatloss: 1 },
     // idx 2 "27 to 30" (clinically eligible tier): raised bmi_qualifies 3→4
     // + appetite:1 (appetite feeds only semaglutide's weights) on 2026-07-23
@@ -411,13 +415,40 @@ export function calculateMatches(answers: number[]): MatchResult[] {
 
   const maxScore = Math.max(...scored.map((s) => s.score), 1);
 
-  return scored
+  const ranked = scored
     .sort((a, b) => b.score - a.score)
     .map(({ peptide, score }) => ({
       peptide,
       score,
+      // REAL computed percent — never adjusted by the tie-break below.
       matchPercent: Math.round((score / maxScore) * 100),
     }));
+
+  return evidenceTieBreak(ranked, answers);
+}
+
+// ── Evidence tie-break (2026-07-23) — explicit, auditable post-scoring step ──
+// Published rule: "when scores are within 10% for weight loss, clinical evidence
+// ranks first." For WEIGHT-LOSS-INTENT leads (q0 = 1), if the top match is
+// non-GLP and the GLP peptide (semaglutide/tirzepatide profile) scores within
+// 10% of it, the GLP peptide takes the #1 slot and the displaced peptide drops
+// to #2 with its real score. HARD BOUNDARY: never applies when q5 (BMI) is
+// idx 1 (computed under-27) — the clinical eligibility gate holds. Displayed
+// matchPercent is the peptide's REAL computed percent, never inflated.
+const GLP_PROFILE_ID = "semaglutide";
+function evidenceTieBreak(ranked: MatchResult[], answers: number[]): MatchResult[] {
+  const isWeightLossIntent = answers[QUIZ_INDEX.PRIMARY_GOAL] === 1;
+  const bmiIdx = answers[QUIZ_INDEX.GLP1_BMI];
+  const bmiAllows = bmiIdx === 0 || bmiIdx === 2 || bmiIdx === 3;
+  if (!isWeightLossIntent || !bmiAllows) return ranked;
+  const top = ranked[0];
+  if (!top || top.peptide.id === GLP_PROFILE_ID) return ranked;
+  const glpPos = ranked.findIndex((r) => r.peptide.id === GLP_PROFILE_ID);
+  if (glpPos <= 0) return ranked;
+  const glp = ranked[glpPos];
+  if (glp.score < top.score * 0.9) return ranked;
+  const reordered = [glp, ...ranked.slice(0, glpPos), ...ranked.slice(glpPos + 1)];
+  return reordered;
 }
 
 export const QUIZ_INDEX = {
@@ -541,12 +572,15 @@ export const QUIZ_QUESTIONS = [
   },
   {
     section: "Metabolic Health",
-    question: "What is your current BMI range?",
+    // Rendered as a height/weight BMI CALCULATOR in QuizFlow (2026-07-23) — the
+    // options below are the stored answer semantics the computed BMI maps to,
+    // not tappable choices. idx 0 is the "prefer not to say" skip.
+    question: "What is your height and weight?",
     options: [
-      "Under 25 (normal weight)",
-      "25 to 27 (overweight)",
-      "27 to 30 (overweight with risk factors)",
-      "Over 30 (obesity range)",
+      "Prefer not to say",
+      "BMI under 27",
+      "BMI 27 to 30",
+      "BMI over 30",
     ],
   },
   {

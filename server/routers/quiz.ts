@@ -69,7 +69,9 @@ async function insertLead(
       source,
       results,
       provider_matches,
-      experiment_variant
+      experiment_variant,
+      height_in,
+      weight_lbs
     ) values (
       ${values.id},
       ${publicId},
@@ -86,7 +88,9 @@ async function insertLead(
       ${values.source ?? null},
       ${values.results ? JSON.stringify(values.results) : null},
       ${values.providerMatches ? JSON.stringify(values.providerMatches) : null},
-      ${values.experimentVariant ?? null}
+      ${values.experimentVariant ?? null},
+      ${values.heightIn ?? null},
+      ${values.weightLbs ?? null}
     )
   `);
   return true;
@@ -359,6 +363,8 @@ export const quizRouter = router({
             viewContentEventId: z.string().min(8).max(128).optional().nullable(),
             fbp: z.string().min(1).max(512).optional().nullable(),
             fbc: z.string().min(1).max(512).optional().nullable(),
+            heightIn: z.number().int().min(36).max(96).optional().nullable(),
+            weightLbs: z.number().int().min(60).max(700).optional().nullable(),
           })
           .optional()
           .nullable(),
@@ -443,6 +449,8 @@ export const quizRouter = router({
             results: returningResults,
             providerMatches: providerMatchResults ?? undefined,
             experimentVariant: experimentVariant ?? undefined,
+            heightIn: meta?.heightIn ?? undefined,
+            weightLbs: meta?.weightLbs ?? undefined,
           });
         } catch (e) {
           console.error("[submitQuiz] insertLead failed:", e);
