@@ -418,6 +418,8 @@ export async function ensureAffiliateWorkspaceSchema() {
       // Raw BMI-calculator inputs (2026-07-23) — nullable, skip = NULL.
       await addColumnIfMissing(db, "leads", "height_in", "`height_in` int");
       await addColumnIfMissing(db, "leads", "weight_lbs", "`weight_lbs` int");
+      // Tie-break observability: fire-rate = COUNT(*) WHERE tie_break_applied=1.
+      await addColumnIfMissing(db, "leads", "tie_break_applied", "`tie_break_applied` tinyint(1)");
 
       // Create provider_click_logs table for /go/ click tracking
       await db.execute(sql.raw(`

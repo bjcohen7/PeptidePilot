@@ -436,6 +436,30 @@ export function calculateMatches(answers: number[]): MatchResult[] {
 // idx 1 (computed under-27) — the clinical eligibility gate holds. Displayed
 // matchPercent is the peptide's REAL computed percent, never inflated.
 const GLP_PROFILE_ID = "semaglutide";
+
+/**
+ * Observability: did evidenceTieBreak promote the GLP profile for these answers?
+ * True only when the raw score-ordered top is non-GLP but calculateMatches
+ * returns GLP first (i.e., the promotion actually fired). Stored on the lead
+ * (tie_break_applied) so the production fire-rate is a single COUNT(*).
+ */
+export function didTieBreakApply(answers: number[]): boolean {
+  const aspects = calculateAspectScores(answers);
+  let rawTopId = "";
+  let rawTopScore = -Infinity;
+  for (const p of peptideProfiles) {
+    let s = 0;
+    for (const [aspect, weight] of Object.entries(p.weights)) {
+      s += (aspects[aspect as AspectKey] ?? 0) * (weight as number);
+    }
+    if (s > rawTopScore) {
+      rawTopScore = s;
+      rawTopId = p.id;
+    }
+  }
+  if (rawTopId === GLP_PROFILE_ID) return false;
+  return calculateMatches(answers)[0]?.peptide.id === GLP_PROFILE_ID;
+}
 function evidenceTieBreak(ranked: MatchResult[], answers: number[]): MatchResult[] {
   const isWeightLossIntent = answers[QUIZ_INDEX.PRIMARY_GOAL] === 1;
   const bmiIdx = answers[QUIZ_INDEX.GLP1_BMI];

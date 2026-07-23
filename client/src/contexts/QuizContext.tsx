@@ -137,6 +137,10 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     setState(nextState);
     if (typeof window !== "undefined") {
       window.sessionStorage.removeItem(QUIZ_STORAGE_KEY);
+      // Clear the BMI-calculator stash too — otherwise a retake whose flow never
+      // shows q5 (goal changed away from weight loss) would attach the PREVIOUS
+      // run's height/weight to the new lead, violating the NULL-on-skip invariant.
+      window.sessionStorage.removeItem("peptidepilot_quiz_bmi_v1");
     }
   }, [totalQuestions]);
 

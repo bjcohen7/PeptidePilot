@@ -48,6 +48,7 @@ export default function Processing() {
       publicIdRef.current = data.publicId;
       sessionStorage.setItem("peptidepilot_last_public_id", data.publicId);
       sessionStorage.removeItem(QUIZ_STORAGE_KEY);
+      sessionStorage.removeItem(BMI_STORAGE_KEY);
 
       const elapsed = Date.now() - startedAt.current;
       const remaining = Math.max(0, 2500 - elapsed);

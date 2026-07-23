@@ -247,14 +247,21 @@ function decodeQuizAnswers(rawQuizData: unknown) {
 
   return QUIZ_QUESTIONS.map((question, index) => {
     const answerIndex = typeof rawQuizData[index] === "number" ? rawQuizData[index] : null;
+    let answer =
+      answerIndex != null && question.options[answerIndex]
+        ? question.options[answerIndex]
+        : "No answer recorded";
+    // q5 idx 0 semantic break (2026-07-23): pre-change leads answered "Under 25
+    // (normal weight)"; post-change idx 0 is the calculator's "Prefer not to say"
+    // skip. Label both meanings so historical leads aren't mislabeled in admin.
+    if (index === 5 && answerIndex === 0) {
+      answer = "Prefer not to say (post-7/23) / Under 25 (pre-7/23)";
+    }
     return {
       section: question.section,
       question: question.question,
       answerIndex,
-      answer:
-        answerIndex != null && question.options[answerIndex]
-          ? question.options[answerIndex]
-          : "No answer recorded",
+      answer,
     };
   });
 }

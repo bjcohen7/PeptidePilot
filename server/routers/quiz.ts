@@ -6,6 +6,7 @@ import { leads, affiliateClicks, visitorSessions, pageVisits } from "../../drizz
 import {
   calculateMatches,
   determineTier,
+  didTieBreakApply,
   QUIZ_INDEX,
   QUIZ_QUESTIONS,
   PRIMARY_GOAL_OPTIONS,
@@ -71,7 +72,8 @@ async function insertLead(
       provider_matches,
       experiment_variant,
       height_in,
-      weight_lbs
+      weight_lbs,
+      tie_break_applied
     ) values (
       ${values.id},
       ${publicId},
@@ -90,7 +92,8 @@ async function insertLead(
       ${values.providerMatches ? JSON.stringify(values.providerMatches) : null},
       ${values.experimentVariant ?? null},
       ${values.heightIn ?? null},
-      ${values.weightLbs ?? null}
+      ${values.weightLbs ?? null},
+      ${values.tieBreakApplied ?? null}
     )
   `);
   return true;
@@ -387,6 +390,9 @@ export const quizRouter = router({
       const topMatches = matches.slice(0, 5).map((m) => m.peptide.id);
       const topPeptideMatch = topMatches[0] ?? "semaglutide";
       const tier = isOldFormat ? determineTier(answers as number[]) : 3;
+      // Tie-break observability: fire-rate = COUNT(*) WHERE tie_break_applied=1.
+      const tieBreakApplied = isOldFormat ? didTieBreakApply(answers as number[]) : false;
+      if (tieBreakApplied) console.log("[TieBreak] GLP promotion applied for lead submit");
 
       const ageRange = "not-captured";
       const primaryGoal = typeof answers[0] === "number" ? String(answers[0]) : "multi";
@@ -451,6 +457,7 @@ export const quizRouter = router({
             experimentVariant: experimentVariant ?? undefined,
             heightIn: meta?.heightIn ?? undefined,
             weightLbs: meta?.weightLbs ?? undefined,
+            tieBreakApplied,
           });
         } catch (e) {
           console.error("[submitQuiz] insertLead failed:", e);

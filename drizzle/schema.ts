@@ -44,6 +44,9 @@ export const leads = mysqlTable("leads", {
   // back to the user as a medical judgment. Null when the user skips.
   heightIn: int("height_in"),
   weightLbs: int("weight_lbs"),
+  // Observability: did evidenceTieBreak promote the GLP top for this lead?
+  // Production fire-rate = COUNT(*) WHERE tie_break_applied = 1.
+  tieBreakApplied: boolean("tie_break_applied"),
   excludedDuplicate: boolean("excluded_duplicate").notNull().default(false), // older dupe row for a repeated email → never re-enters a send cohort
 });
 
