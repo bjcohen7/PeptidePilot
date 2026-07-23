@@ -285,6 +285,11 @@ async function checkNudgeTriggers(
       "AND l.email NOT LIKE 'anonymous+%' " +
       "AND (l.suppressed IS NULL OR l.suppressed = 0) " +
       "AND (l.sequence_status = 'active' OR l.sequence_status IS NULL) " +
+      // Email-surface clicks route through the /go hop page, whose confirm URL a
+      // scanner can prefetch via the visible no-JS link — never let a
+      // prefetchable signal trigger the nudge. Only human-surface clicks
+      // (funnel/bridge/library) qualify.
+      "AND (pcl.source_surface IS NULL OR pcl.source_surface <> 'email') " +
       "AND pcl.created_at <= DATE_SUB(NOW(), INTERVAL 3 DAY) " +
       "AND NOT EXISTS (" +
         "SELECT 1 FROM email_queue eq " +
@@ -343,8 +348,9 @@ async function checkNudgeTriggers(
 
 /**
  * Build full personalization from lead + provider data.
+ * Exported so admin sendTestEmail renders EXACTLY what production sends.
  */
-async function buildPersonalization(
+export async function buildPersonalization(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   leadId: string,
   publicId: string,
@@ -371,13 +377,29 @@ async function buildPersonalization(
     // Get provider details from DB
     const [providerRows] = await db.execute(sql.raw(
       "SELECT `slug`, `display_name` AS `displayName`, `price_from_cents` AS `priceFromCents`, " +
-      "`ship_days_estimate` AS `shipDaysEstimate`, `promo_code` AS `promoCode`, `compliance_note` AS `complianceNote` " +
+      "`ship_days_estimate` AS `shipDaysEstimate`, `promo_code` AS `promoCode`, `compliance_note` AS `complianceNote`, " +
+      "`active` " +
       "FROM providers WHERE slug = '" + (topMatch.slug || topPeptideMatch) + "' LIMIT 1"
     ));
     const provArr = Array.isArray(providerRows) ? (Array.isArray(providerRows[0]) ? providerRows[0] : providerRows) : [];
     const provider = provArr[0] as any || {};
 
     const siteUrl = ENV.appBaseUrl;
+
+    // Guarded direct-to-provider deep link (email CTA restructure, 2026-07-23).
+    // Deep-link ONLY when topMatch.slug itself resolves to an ACTIVE provider
+    // row. NEVER build from the `topMatch.slug || topPeptideMatch` fallback —
+    // topPeptideMatch can be a peptide name ("semaglutide"), which would put a
+    // drug token in a URL and 302 to home. Slug is charset-guarded before being
+    // embedded in a URL. Templates append ?position=email_{tag}&surface=email.
+    const deepSlug =
+      typeof topMatch.slug === "string" && /^[a-z0-9_-]{1,64}$/i.test(topMatch.slug)
+        ? topMatch.slug
+        : null;
+    const goDeepUrl =
+      deepSlug && provider.slug === deepSlug && Number(provider.active) === 1
+        ? `${siteUrl}/go/${deepSlug}/${publicId}`
+        : null;
 
     return {
       leadId,
@@ -398,6 +420,7 @@ async function buildPersonalization(
       whyRow3: topMatch.whyMatch?.[2] || "Licensed clinicians review eligibility in 24–48 hours",
       resultsUrl: `${siteUrl}/results/${publicId}`,
       goUrl: `${siteUrl}/results/${publicId}`,
+      goDeepUrl,
       alt1Name: alt1.displayName || alt1.name || "Provider #2",
       alt1Differentiator: alt1.whyMatch?.[0] || "Alternative option",
       alt2Name: alt2.displayName || alt2.name || "Provider #3",

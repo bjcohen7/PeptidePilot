@@ -20,6 +20,12 @@ export type EmailPersonalization = {
   whyRow3: string;
   resultsUrl: string;
   goUrl: string;
+  // Guarded direct-to-provider deep-link BASE (no query string):
+  // `${siteUrl}/go/{providerSlug}/{publicId}`. Set ONLY when the lead's
+  // topMatch.slug resolves to an ACTIVE provider row (never the
+  // topPeptideMatch fallback, which can be a drug token like "semaglutide").
+  // null ⇒ templates fall back to resultsUrl with their pre-restructure copy.
+  goDeepUrl?: string | null;
   alt1Name: string;
   alt1Differentiator: string;
   alt2Name: string;
@@ -63,6 +69,32 @@ function compatClause(p: EmailPersonalization, prefix: string, suffix: string): 
   // rule — don't volunteer weak numbers). 0 / null / NaN / >100 / <60 all DROP
   // the entire clause — no email ever shows "600%", "0%", or a weak "38%".
   return shouldDisplayMatchPercent(p.matchScore) ? `${prefix}${p.matchScore}% compatibility${suffix}` : "";
+}
+
+/**
+ * Primary CTA block for the four deep-linked emails (email_2/4/6 + nudge).
+ * When the worker attached a guarded goDeepUrl, the primary button goes straight
+ * to /go/{provider}/{publicId}?position=email_{tag}&surface=email (served as a
+ * hop page — scanner-prefetch mitigation + email-path pixel) with a quiet
+ * secondary text link to the results page (exactly resultsUrl). When goDeepUrl
+ * is null (no active-provider match), render the pre-restructure primary:
+ * fallbackLabel → fallbackUrl, no secondary.
+ * `position` values must stay ≤16 chars (provider_click_logs.position is
+ * varchar(16) — an oversized position silently kills the insert).
+ */
+function primaryCta(
+  p: EmailPersonalization,
+  position: "email_cost" | "email_process" | "email_closer" | "email_nudge",
+  deepLabel: string,
+  fallbackLabel: string,
+  fallbackUrl: string
+): string {
+  if (p.goDeepUrl) {
+    const href = `${p.goDeepUrl}?position=${position}&surface=email`;
+    return `<p style="margin:0 0 4px;"><a href="${href}" class="cta">${deepLabel}</a></p>
+<p style="font-size:13px;margin:0 0 16px;"><a href="${p.resultsUrl}" style="color:#6b7280;text-decoration:underline;">or review your full breakdown</a></p>`;
+  }
+  return `<p><a href="${fallbackUrl}" class="cta">${fallbackLabel}</a></p>`;
 }
 
 function layout(content: string, p: EmailPersonalization, preheader: string): string {
@@ -195,29 +227,24 @@ export function email1(p: EmailPersonalization, variant: "A" | "B"): { subject: 
 // ─────────────────────────────────────────────
 export function email2(p: EmailPersonalization, variant: "A" | "B"): { subject: string; preheader: string; html: string } {
   const preheader = "The math nobody lays out plainly.";
-  if (variant === "B") {
-    return {
-      subject: "Brand-name vs. telehealth pricing, side by side",
-      preheader,
-      html: layout(`
+  // Deep-linked primary goes straight to the provider's pricing, so the
+  // live-pricing promise in the P.S. must point at the secondary results link
+  // (the button no longer lands on our always-current results page).
+  const cta = primaryCta(p, "email_cost", `See ${p.providerName}'s pricing →`, "See my plan's pricing →", p.resultsUrl);
+  const ps = p.goDeepUrl
+    ? `<p style="font-size:13px;color:#6b7280;">P.S. Provider prices change — <a href="${p.resultsUrl}" style="color:#6b7280;text-decoration:underline;">your full breakdown</a> updates when they do, so that link always shows current numbers.</p>`
+    : `<p style="font-size:13px;color:#6b7280;">P.S. Prices in your results update when providers change theirs — the link always shows current numbers.</p>`;
+  const body = `
 <p>The number one reason people stall on GLP-1s is the price they think they'll pay — usually the brand-name pharmacy price, which often lists well over $1,000 a month without insurance coverage.</p>
 <p>That's not the price you were matched with. Telehealth providers prescribing compounded GLP-1 medications work differently: one monthly subscription that covers the medication, the provider visits, and ongoing support. Your match, ${p.providerName}, starts at <strong>${p.priceFrom}/month</strong> — no insurance involved at all.</p>
 <p>Worth knowing as you compare: compounded medications are not FDA-approved finished drug products; they're prepared by licensed pharmacies to a provider's prescription. Your provider walks through this during intake.</p>
-<p><a href="${p.resultsUrl}" class="cta">See my plan's pricing →</a></p>
-<p style="font-size:13px;color:#6b7280;">P.S. Prices in your results update when providers change theirs — the link always shows current numbers.</p>
-`, p, preheader),
-    };
-  }
+${cta}
+${ps}
+`;
   return {
-    subject: "What GLP-1s actually cost (less than you think)",
+    subject: variant === "B" ? "Brand-name vs. telehealth pricing, side by side" : "What GLP-1s actually cost (less than you think)",
     preheader,
-    html: layout(`
-<p>The number one reason people stall on GLP-1s is the price they think they'll pay — usually the brand-name pharmacy price, which often lists well over $1,000 a month without insurance coverage.</p>
-<p>That's not the price you were matched with. Telehealth providers prescribing compounded GLP-1 medications work differently: one monthly subscription that covers the medication, the provider visits, and ongoing support. Your match, ${p.providerName}, starts at <strong>${p.priceFrom}/month</strong> — no insurance involved at all.</p>
-<p>Worth knowing as you compare: compounded medications are not FDA-approved finished drug products; they're prepared by licensed pharmacies to a provider's prescription. Your provider walks through this during intake.</p>
-<p><a href="${p.resultsUrl}" class="cta">See my plan's pricing →</a></p>
-<p style="font-size:13px;color:#6b7280;">P.S. Prices in your results update when providers change theirs — the link always shows current numbers.</p>
-`, p, preheader),
+    html: layout(body, p, preheader),
   };
 }
 
@@ -257,31 +284,19 @@ export function email3(p: EmailPersonalization, variant: "A" | "B"): { subject: 
 // ─────────────────────────────────────────────
 export function email4(p: EmailPersonalization, variant: "A" | "B"): { subject: string; preheader: string; html: string } {
   const preheader = "Three steps, no waiting rooms.";
-  if (variant === "B") {
-    return {
-      subject: "From intake to first shipment: the timeline",
-      preheader,
-      html: layout(`
+  const cta = primaryCta(p, "email_process", "Start my 10-minute intake →", "Start my 10-minute intake →", p.goUrl);
+  const body = `
 <p>If you've never used a telehealth provider, the process is the unknown that stalls people. Here's exactly what happens with ${p.providerName}:</p>
 <p><strong>1.</strong> You complete a ~10-minute online intake — health history, goals, current medications.</p>
 <p><strong>2.</strong> A licensed provider reviews it, typically within 24–48 hours. Prescriptions are only issued when the provider decides treatment is medically appropriate — nothing is automatic.</p>
 <p><strong>3.</strong> If approved, medication ships to your door, usually within about ${p.shipDays} days, with provider messaging available as you go.</p>
-<p><a href="${p.goUrl}" class="cta">Start my 10-minute intake →</a></p>
+${cta}
 <p>No waiting rooms, no insurance paperwork, cancel anytime.</p>
-`, p, preheader),
-    };
-  }
+`;
   return {
-    subject: "What happens after you sign up (step by step)",
+    subject: variant === "B" ? "From intake to first shipment: the timeline" : "What happens after you sign up (step by step)",
     preheader,
-    html: layout(`
-<p>If you've never used a telehealth provider, the process is the unknown that stalls people. Here's exactly what happens with ${p.providerName}:</p>
-<p><strong>1.</strong> You complete a ~10-minute online intake — health history, goals, current medications.</p>
-<p><strong>2.</strong> A licensed provider reviews it, typically within 24–48 hours. Prescriptions are only issued when the provider decides treatment is medically appropriate — nothing is automatic.</p>
-<p><strong>3.</strong> If approved, medication ships to your door, usually within about ${p.shipDays} days, with provider messaging available as you go.</p>
-<p><a href="${p.goUrl}" class="cta">Start my 10-minute intake →</a></p>
-<p>No waiting rooms, no insurance paperwork, cancel anytime.</p>
-`, p, preheader),
+    html: layout(body, p, preheader),
   };
 }
 
@@ -324,29 +339,18 @@ export function email6(p: EmailPersonalization, variant: "A" | "B"): { subject: 
   const promoBlock = p.promoCode
     ? `<p>Through our partnership, code <strong>${p.promoCode}</strong> applies at signup.</p>`
     : "";
-  if (variant === "B") {
-    return {
-      subject: "Most people who match start within two weeks",
-      preheader,
-      html: layout(`
+  const cta = primaryCta(p, "email_closer", `Claim my match at ${p.providerName} →`, `Claim my match at ${p.providerName} →`, p.goUrl);
+  const body = `
 <p>Two weeks ago you asked us which GLP-1 provider fits you. The answer hasn't changed: <strong>${p.providerName}</strong>, from ${p.priceFrom}/month${compatClause(p, ", ", " with your profile")}.</p>
 ${promoBlock}
 <p>This is the last email in this series — we don't believe in drip campaigns that never end. Your results stay saved at your link, and we'll only reach out monthly with pricing changes and research updates.</p>
-<p><a href="${p.goUrl}" class="cta">Claim my match at ${p.providerName} →</a></p>
+${cta}
 <p>Deciding it's not for you is also a fine outcome — that's what an honest match service looks like.</p>
-`, p, preheader),
-    };
-  }
+`;
   return {
-    subject: "Your match, one more time",
+    subject: variant === "B" ? "Most people who match start within two weeks" : "Your match, one more time",
     preheader,
-    html: layout(`
-<p>Two weeks ago you asked us which GLP-1 provider fits you. The answer hasn't changed: <strong>${p.providerName}</strong>, from ${p.priceFrom}/month${compatClause(p, ", ", " with your profile")}.</p>
-${promoBlock}
-<p>This is the last email in this series — we don't believe in drip campaigns that never end. Your results stay saved at your link, and we'll only reach out monthly with pricing changes and research updates.</p>
-<p><a href="${p.goUrl}" class="cta">Claim my match at ${p.providerName} →</a></p>
-<p>Deciding it's not for you is also a fine outcome — that's what an honest match service looks like.</p>
-`, p, preheader),
+    html: layout(body, p, preheader),
   };
 }
 
@@ -355,31 +359,19 @@ ${promoBlock}
 // ─────────────────────────────────────────────
 export function emailNudge(p: EmailPersonalization, variant: "A" | "B"): { subject: string; preheader: string; html: string } {
   const preheader = "Cost, commitment, and what if it's not for you.";
-  if (variant === "B") {
-    return {
-      subject: "The three questions people ask before starting",
-      preheader,
-      html: layout(`
+  const cta = primaryCta(p, "email_nudge", "Pick up where I left off →", "Pick up where I left off →", p.goUrl);
+  const body = `
 <p>You took a look at ${p.providerName} a few days ago — which usually means you're weighing it. The three questions people are weighing at this exact point:</p>
 <p><strong>"Can I afford it monthly?"</strong> Plans start at ${p.priceFrom}/month, all-in — medication, provider visits, support. No insurance, no surprise line items.</p>
 <p><strong>"Am I locked in?"</strong> You can cancel your subscription.</p>
 <p><strong>"What if the provider says no?"</strong> Then you don't pay for treatment. Prescriptions only happen when a licensed provider decides it's appropriate.</p>
-<p><a href="${p.goUrl}" class="cta">Pick up where I left off →</a></p>
+${cta}
 <p style="font-size:13px;color:#6b7280;margin-top:4px;">Tip: the intake takes about 10 minutes — most people find it easiest from a laptop or their phone's regular browser.</p>
-`, p, preheader),
-    };
-  }
+`;
   return {
-    subject: `Still weighing ${p.providerName}?`,
+    subject: variant === "B" ? "The three questions people ask before starting" : `Still weighing ${p.providerName}?`,
     preheader,
-    html: layout(`
-<p>You took a look at ${p.providerName} a few days ago — which usually means you're weighing it. The three questions people are weighing at this exact point:</p>
-<p><strong>"Can I afford it monthly?"</strong> Plans start at ${p.priceFrom}/month, all-in — medication, provider visits, support. No insurance, no surprise line items.</p>
-<p><strong>"Am I locked in?"</strong> You can cancel your subscription.</p>
-<p><strong>"What if the provider says no?"</strong> Then you don't pay for treatment. Prescriptions only happen when a licensed provider decides it's appropriate.</p>
-<p><a href="${p.goUrl}" class="cta">Pick up where I left off →</a></p>
-<p style="font-size:13px;color:#6b7280;margin-top:4px;">Tip: the intake takes about 10 minutes — most people find it easiest from a laptop or their phone's regular browser.</p>
-`, p, preheader),
+    html: layout(body, p, preheader),
   };
 }
 

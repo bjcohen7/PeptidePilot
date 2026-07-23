@@ -6,6 +6,7 @@ import { notInternalEmailSql } from "../lib/internalEmails";
 import { sql } from "drizzle-orm";
 import { getResend, getEmailFrom } from "../email/resend";
 import { getEmailTemplate, isPostConversionTemplate, type EmailPersonalization } from "../email/templates";
+import { buildPersonalization } from "../email/worker";
 import { ENV } from "../_core/env";
 
 export const emailRouter = router({
@@ -348,13 +349,25 @@ export const emailRouter = router({
     }),
 
   /**
-   * Admin: Send test email (email 0 + email 6) to a specific address.
+   * Admin: Send test email to a specific address.
    * Does NOT enqueue — sends directly via Resend.
+   * Pass leadId to render from that lead's REAL personalization (identical to
+   * what the cron worker sends — same guarded goDeepUrl); otherwise a fake
+   * personalization is used, whose goDeepUrl is built under the SAME
+   * active-provider guard as production so admin previews match.
    */
   sendTestEmail: adminProcedure
     .input(z.object({
       toEmail: z.string().email(),
-      emailSlug: z.enum(["email_0_instant", "email_6_closer"]),
+      emailSlug: z.enum([
+        "email_0_instant",
+        "email_2_cost",
+        "email_4_process",
+        "email_6_closer",
+        "nudge_still_deciding",
+      ]),
+      variant: z.enum(["A", "B"]).default("A"),
+      leadId: z.string().min(8).max(64).optional(),
     }))
     .mutation(async ({ input }) => {
       const resend = getResend();
@@ -363,28 +376,48 @@ export const emailRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
-      // Use a fake lead for test rendering — we'll use a test personalization
-      const p: EmailPersonalization = {
-        leadId: "test-lead",
-        publicId: "test-public-id",
-        providerName: "Gala Health",
-        matchScore: 92,
-        priceFrom: "$129",
-        shipDays: 4,
-        answerEcho: "Based on your goals and budget, this is the best fit.",
-        whyRow1: "Best price-to-care ratio for your budget",
-        whyRow2: "Available in your state with fast shipping",
-        whyRow3: "Includes unlimited follow-up visits",
-        resultsUrl: `${ENV.appBaseUrl}/results/test-public-id`,
-        goUrl: `${ENV.appBaseUrl}/results/test-public-id`,
-        alt1Name: "Sprout",
-        alt1Differentiator: "No long-term contracts, free shipping",
-        alt2Name: "Direct Meds",
-        alt2Differentiator: "Board-certified MD oversight",
-        promoCode: null,
-        complianceNote: "Compounded medications are not FDA-approved finished drug products.",
-        mailingAddress: process.env.EMAIL_PHYSICAL_ADDRESS || "1234 Health Way, Suite 100, Austin, TX 78701",
-      };
+      let p: EmailPersonalization | null;
+      if (input.leadId) {
+        if (!/^[A-Za-z0-9_-]{1,64}$/.test(input.leadId)) throw new Error("Bad leadId");
+        const [leadRows] = await db.execute(sql.raw(
+          "SELECT id, `publicId`, `topPeptideMatch` FROM leads WHERE id = '" + input.leadId + "' LIMIT 1"
+        ));
+        const arr = Array.isArray(leadRows) ? (Array.isArray(leadRows[0]) ? leadRows[0] : leadRows) : [];
+        const lead = arr[0] as any;
+        if (!lead) throw new Error("Lead not found");
+        p = await buildPersonalization(db, lead.id, lead.publicId, lead.topPeptideMatch);
+        if (!p) throw new Error("Could not build personalization for lead");
+      } else {
+        // Same guard as the worker: deep-link only when the slug is an ACTIVE
+        // provider row (here the canonical test provider, gala).
+        const [provRows] = await db.execute(sql.raw(
+          "SELECT `slug` FROM providers WHERE slug = 'gala' AND active = 1 LIMIT 1"
+        ));
+        const provArr = Array.isArray(provRows) ? (Array.isArray(provRows[0]) ? provRows[0] : provRows) : [];
+        const galaActive = Boolean((provArr[0] as any)?.slug);
+        p = {
+          leadId: "test-lead",
+          publicId: "test-public-id",
+          providerName: "Gala Health",
+          matchScore: 92,
+          priceFrom: "$129",
+          shipDays: 4,
+          answerEcho: "Based on your goals and budget, this is the best fit.",
+          whyRow1: "Best price-to-care ratio for your budget",
+          whyRow2: "Available in your state with fast shipping",
+          whyRow3: "Includes unlimited follow-up visits",
+          resultsUrl: `${ENV.appBaseUrl}/results/test-public-id`,
+          goUrl: `${ENV.appBaseUrl}/results/test-public-id`,
+          goDeepUrl: galaActive ? `${ENV.appBaseUrl}/go/gala/test-public-id` : null,
+          alt1Name: "Sprout",
+          alt1Differentiator: "No long-term contracts, free shipping",
+          alt2Name: "Direct Meds",
+          alt2Differentiator: "Board-certified MD oversight",
+          promoCode: null,
+          complianceNote: "Compounded medications are not FDA-approved finished drug products.",
+          mailingAddress: process.env.EMAIL_PHYSICAL_ADDRESS || "1234 Health Way, Suite 100, Austin, TX 78701",
+        };
+      }
 
       const templateFn = getEmailTemplate(input.emailSlug);
       if (!templateFn) throw new Error(`Unknown email slug: ${input.emailSlug}`);
@@ -393,7 +426,7 @@ export const emailRouter = router({
       if (isPostConversionTemplate(input.emailSlug)) {
         result = (templateFn as any)(p);
       } else {
-        result = (templateFn as any)(p, "A");
+        result = (templateFn as any)(p, input.variant);
       }
 
       const sendResult = await resend.emails.send({

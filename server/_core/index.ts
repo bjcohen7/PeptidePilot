@@ -361,17 +361,121 @@ async function startServer() {
     }
   });
 
-  // Affiliate go-link: logs click then redirects
+  // Affiliate go-link: logs click then redirects.
+  //
+  // EMAIL-SURFACE HOP PAGE (scanner-prefetch mitigation, 2026-07-23): links in
+  // emails (?surface=email) do NOT get the instant 302. Inbox security scanners
+  // prefetch every URL in an email; an instant log+302 would record phantom
+  // clicks (and fire phantom affiliate exits). Instead the first request serves
+  // a minimal hop page that:
+  //   • logs NOTHING and redirects NOTHING without JS execution or a human tap
+  //     (HARD RULE — no meta-refresh: a meaningful share of scanners follow
+  //     meta-refresh, which would reintroduce the phantom clicks);
+  //   • JS path: fires the Meta pixel ProviderHandoff custom event
+  //     (fire-and-forget, never blocks) then re-requests this route with
+  //     &confirm=1 → the classic log+302 (imperceptible for humans);
+  //   • no-JS path: a VISIBLE "Continue to {Provider} →" plain <a> to the same
+  //     confirm URL.
+  // funnel/bridge/library surfaces are untouched: instant 302 as always.
   app.get("/go/:provider/:publicId", async (req, res) => {
     const { provider, publicId } = req.params;
     const position = (req.query.position as string) || "hero";
     // /go/ always redirects to a GLP-1 provider; surface says where the click
-    // came from (results page = 'funnel', bridge page = 'bridge'). Default funnel.
+    // came from (results page = 'funnel', bridge page = 'bridge', email CTA =
+    // 'email'). Default funnel.
     const surface = (req.query.surface as string) || "funnel";
     if (!provider || !publicId) {
       res.status(400).send("Missing provider or publicId");
       return;
     }
+
+    if (surface === "email" && req.query.confirm !== "1") {
+      // Params get embedded in HTML/JS — charset-guard them hard before use.
+      const SAFE = /^[A-Za-z0-9_-]{1,64}$/;
+      if (!SAFE.test(provider) || !SAFE.test(publicId)) {
+        res.status(400).send("Bad link");
+        return;
+      }
+      const safePosition = SAFE.test(position) && position.length <= 16 ? position : "email";
+      try {
+        const db = await getDb();
+        const pRows = db
+          ? await db.select().from(providers).where(eq(providers.slug, provider)).limit(1)
+          : [];
+        const p = pRows[0];
+        if (!p) {
+          // Unknown provider in an emailed link — send the human to their saved
+          // results instead of a dead-end. No click row (nothing monetizable).
+          res.redirect(302, `/results/${publicId}`);
+          return;
+        }
+        const providerName = p.displayName.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const confirmUrl = `/go/${provider}/${publicId}?position=${safePosition}&surface=email&confirm=1`;
+        // The hop page is also the email-path pixel fix: it is our page and runs
+        // JS, so the ProviderHandoff custom event (same genericized scheme as
+        // results/bridge — NO drug terms) fires here before the redirect
+        // completes. Fire-and-forget: navigation happens on pixel-script
+        // load/error (+150ms for the beacon to leave, which uses sendBeacon/img
+        // and survives unload) with a 1500ms hard cap — a slow or blocked CDN
+        // can never hold the redirect.
+        const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Continuing to ${providerName}</title>
+<style>
+  body{margin:0;background:#f8f9fa;color:#1a1a2e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;}
+  .card{background:#fff;border:1px solid #e9ecef;border-radius:12px;max-width:420px;margin:16px;padding:32px;text-align:center;}
+  .logo{font-size:18px;font-weight:700;letter-spacing:-0.02em;margin-bottom:20px;}
+  h1{font-size:20px;font-weight:600;margin:0 0 8px;}
+  p{font-size:14px;line-height:1.5;color:#4a4a6a;margin:0 0 16px;}
+  .btn{display:inline-block;padding:14px 28px;background:#0d9488;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;}
+  .ftc{font-size:12px;color:#6b7280;margin:20px 0 0;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">PeptidePilot</div>
+  <h1>Taking you to ${providerName}&hellip;</h1>
+  <p>One moment &mdash; or continue directly:</p>
+  <p style="margin-bottom:0;"><a class="btn" href="${confirmUrl}" rel="sponsored noopener">Continue to ${providerName} &rarr;</a></p>
+  <p class="ftc">We may earn a commission from the providers we recommend.</p>
+</div>
+<script>
+(function(){
+  var CONFIRM=${JSON.stringify(confirmUrl)};
+  var done=false;
+  function go(){if(done)return;done=true;window.location.replace(CONFIRM);}
+  try{
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init','${ENV.metaPixelId}');
+    fbq('trackCustom','ProviderHandoff',{source:'email',position:${JSON.stringify(safePosition)},content_category:'weight-management'});
+    var s=document.querySelector('script[src*="fbevents"]');
+    if(s){s.addEventListener('load',function(){setTimeout(go,150);});s.addEventListener('error',go);}
+  }catch(e){}
+  setTimeout(go,1500);
+})();
+</script>
+</body>
+</html>`;
+        res
+          .status(200)
+          .set({ "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store, max-age=0", "X-Robots-Tag": "noindex" })
+          .send(html);
+        return;
+      } catch (err: any) {
+        // Hop-page failure must never strand a human — full driver error, then
+        // fall through to the classic log+302 path below.
+        console.error(
+          "[GoLink] hop page failed:",
+          err?.code, err?.errno, err?.sqlState, err?.sqlMessage,
+          err?.cause?.code, err?.cause?.sqlMessage, err?.cause?.message,
+        );
+      }
+    }
+
     try {
       const db = await getDb();
       if (db) {
