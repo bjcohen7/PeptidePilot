@@ -74,18 +74,20 @@ function mount() {
       </QueryClientProvider>
     </trpc.Provider>
   );
-  // LCP round 4: fbevents.js loads AFTER hydration + idle so the pixel's
-  // main-thread cost never lands in the tap-critical window. The fbq stub
-  // (installed by initMetaPixel above) queues every event fired before the
-  // script arrives — nothing is lost, it flushes on load. 4s cap so events
-  // still transmit promptly even on a busy main thread.
-  const loadPixel = () => loadMetaPixelScript();
-  if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(loadPixel, { timeout: 4000 });
-  } else {
-    setTimeout(loadPixel, 2500);
-  }
 }
+
+// LCP round 4 (hardened in v3 follow-up): fbevents.js loads after idle so its
+// main-thread cost stays off the tap-critical window — but scheduled from BOOT,
+// not from mount, and raced with a hard setTimeout. Under heavy CPU contention
+// mount can be late (route preload + vendor exec); tying the pixel to mount let
+// Manus observe an 18.9s first request. The fbq stub queues every event fired
+// before the script arrives, so nothing is lost either way; loadMetaPixelScript
+// is idempotent, so the rIC + timeout double-fire is safe. PageView now lands
+// within a few seconds even on a busy page.
+if ("requestIdleCallback" in window) {
+  window.requestIdleCallback(() => loadMetaPixelScript(), { timeout: 3000 });
+}
+setTimeout(() => loadMetaPixelScript(), 3500);
 
 const routePreload = preloadForPath(window.location.pathname);
 if (routePreload) {
