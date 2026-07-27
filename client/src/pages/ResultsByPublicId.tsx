@@ -3,7 +3,6 @@ import { useLocation, useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { getVisitorSessionId } from "@/components/SessionTracker";
 import { trackMetaCustomEvent, trackMetaEvent, createMetaEventId, applyMetaAdvancedMatching, getMetaBrowserIdentifiers } from "@/lib/metaPixel";
-import { identifyLogRocketUser } from "@/lib/logrocket";
 import { LeadCaptureGate, ResultsDisplay } from "@/pages/Results";
 import VerdictResults from "@/pages/VerdictResults";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -63,11 +62,6 @@ export default function ResultsByPublicId() {
           content_category: isGlp1Lead ? "weight-management" : "quiz-results",
           content_ids: data?.results?.[0]?.peptideId ? ["match-primary"] : undefined,
         }, pendingEventIds?.viewContent);
-        void identifyLogRocketUser(submittedEmail, {
-          email: submittedEmail,
-          leadId: data?.leadId ?? "",
-          topMatch: data?.results?.[0]?.peptideId ?? null,
-        });
       }
     },
     onError: () => {

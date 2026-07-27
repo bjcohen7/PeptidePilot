@@ -58,7 +58,6 @@ export default function Processing() {
       trackMetaCustomEvent("ProcessingComplete", { leadId: data.leadId, publicId: data.publicId });
     },
     onError: () => {
-      setMutationFailed(true);
       setFailsafe(true);
     },
   });

@@ -46,6 +46,14 @@ export function createMetaEventId(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
 }
 
+/**
+ * LCP round 4 — polite pixel loading. initMetaPixel() installs ONLY the
+ * standard fbq queue stub (synchronously, at boot) and queues fbq("init"),
+ * so every fbq() call made before fbevents.js arrives is queued and flushed
+ * when it loads — zero events lost. loadMetaPixelScript() injects the actual
+ * fbevents.js and is called by main.tsx AFTER hydration + idle, keeping the
+ * pixel's main-thread cost off the tap-critical window.
+ */
 export function initMetaPixel() {
   if (!canUseDom()) return;
   if (import.meta.env.DEV) return;
@@ -54,32 +62,20 @@ export function initMetaPixel() {
 
   try {
     if (!getFbq()) {
-      ((f: Window, b: Document, e: string, v: string, n?: Window["fbq"], t?: HTMLScriptElement, s?: HTMLCollectionOf<Element>) => {
-        if (typeof f.fbq === "function") return;
-        n = function (...args: unknown[]) {
-          if (typeof n?.callMethod === "function") {
-            n.callMethod(...args);
-            return;
-          }
-
-          n?.queue?.push(args);
-        } as Window["fbq"];
-
-        if (!n) return;
-
-        if (!f._fbq) f._fbq = n;
-        n.push = n;
-        n.loaded = true;
-        n.version = "2.0";
-        n.queue = [];
-        t = b.createElement(e) as HTMLScriptElement;
-        t.async = true;
-        t.src = v;
-        s = b.getElementsByTagName(e);
-        const firstScript = s.item(0);
-        firstScript?.parentNode?.insertBefore(t, firstScript);
-        f.fbq = n;
-      })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+      const f = window;
+      const n = function (...args: unknown[]) {
+        if (typeof (n as Window["fbq"])?.callMethod === "function") {
+          (n as any).callMethod(...args);
+          return;
+        }
+        (n as any)?.queue?.push(args);
+      } as Window["fbq"];
+      if (!f._fbq) f._fbq = n;
+      (n as any).push = n;
+      (n as any).loaded = true;
+      (n as any).version = "2.0";
+      (n as any).queue = [];
+      f.fbq = n;
     }
 
     const fbq = getFbq();
@@ -89,6 +85,25 @@ export function initMetaPixel() {
     initialized = true;
   } catch (error) {
     console.error("[Meta Pixel] Failed to initialize", error);
+  }
+}
+
+let scriptLoaded = false;
+
+/** Inject fbevents.js — call after hydration/idle; queued events flush on load. */
+export function loadMetaPixelScript() {
+  if (!canUseDom()) return;
+  if (import.meta.env.DEV) return;
+  if (scriptLoaded) return;
+  scriptLoaded = true;
+  try {
+    const t = document.createElement("script");
+    t.async = true;
+    t.src = "https://connect.facebook.net/en_US/fbevents.js";
+    const first = document.getElementsByTagName("script").item(0);
+    first?.parentNode?.insertBefore(t, first);
+  } catch (error) {
+    console.error("[Meta Pixel] Failed to load fbevents.js", error);
   }
 }
 

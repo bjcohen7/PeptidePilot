@@ -7,7 +7,7 @@ import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
-import { initMetaPixel } from "./lib/metaPixel";
+import { initMetaPixel, loadMetaPixelScript } from "./lib/metaPixel";
 import { preloadForPath } from "./lib/lazyRoutes";
 
 const queryClient = new QueryClient();
@@ -74,6 +74,17 @@ function mount() {
       </QueryClientProvider>
     </trpc.Provider>
   );
+  // LCP round 4: fbevents.js loads AFTER hydration + idle so the pixel's
+  // main-thread cost never lands in the tap-critical window. The fbq stub
+  // (installed by initMetaPixel above) queues every event fired before the
+  // script arrives — nothing is lost, it flushes on load. 4s cap so events
+  // still transmit promptly even on a busy main thread.
+  const loadPixel = () => loadMetaPixelScript();
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(loadPixel, { timeout: 4000 });
+  } else {
+    setTimeout(loadPixel, 2500);
+  }
 }
 
 const routePreload = preloadForPath(window.location.pathname);

@@ -72,6 +72,14 @@ const ROUTE_CHUNK_PREFIX: Record<string, string> = {
   "/peptides-for-weight-loss": "Match",
 };
 
+// Pre-hydration tap buffer for /start Q1 (LCP round 4). Buttons are visible from
+// first paint but React isn't mounted yet — without this, early taps feel dead.
+// The inline script (<1KB, zero deps) captures pre-hydration taps on the Q1
+// option buttons: pressed visual state immediately + the answer stashed in
+// sessionStorage. Start.tsx reads the stash on mount and advances to Q2 as if
+// the tap just landed. window.__ppHyd (set by Start on mount) disables it.
+const START_TAP_BUFFER = `<script>(function(){document.addEventListener("click",function(e){if(window.__ppHyd)return;var b=e.target&&e.target.closest?e.target.closest("main button"):null;if(!b)return;var t=(b.textContent||"").replace(/\\s+/g," ").trim();if(!t)return;try{sessionStorage.setItem("pp_prehyd_q1",t)}catch(x){}try{b.style.borderColor="#047857";b.style.boxShadow="0 0 0 2px rgba(4,120,87,.25)"}catch(x){}},true)})();</script>`;
+
 function routeChunkPreload(routePath: string, assetFiles: string[]): string {
   const prefix = ROUTE_CHUNK_PREFIX[routePath];
   if (!prefix) return "";
@@ -95,10 +103,13 @@ async function main() {
     let withHead = injectHead(template, head);
     const preload = routeChunkPreload(route.path, assetFiles);
     if (preload) withHead = withHead.replace("</head>", `    ${preload}\n  </head>`);
-    const page = withHead.replace(
+    let page = withHead.replace(
       '<div id="root"></div>',
       `<div id="root" data-prerendered="true">${body}</div>`,
     );
+    if (route.path === "/start") {
+      page = page.replace("</body>", `${START_TAP_BUFFER}\n  </body>`);
+    }
     await writeRouteHtml(route.path, page);
   }
 

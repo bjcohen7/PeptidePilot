@@ -100,6 +100,29 @@ export default function Start() {
     }
     // Fresh visit always starts at Q1 (no hero, no scroll).
     if (typeof window !== "undefined") window.scrollTo(0, 0);
+
+    // Pre-hydration tap buffer (LCP round 4): the prerendered page's inline
+    // script stashes a Q1 tap made before React mounted. Consume it here —
+    // record + pixel + advance to Q2, exactly as if the tap landed live.
+    if (typeof window !== "undefined") {
+      (window as any).__ppHyd = true; // disable the inline buffer
+      try {
+        const stashed = window.sessionStorage.getItem("pp_prehyd_q1");
+        if (stashed) {
+          window.sessionStorage.removeItem("pp_prehyd_q1");
+          const match = QUESTIONS[0].options.find(
+            (o) => o.replace(/\s+/g, " ").trim() === stashed,
+          );
+          if (match) {
+            recordAnswer(sid || "anon", 1, match);
+            try {
+              trackMetaCustomEvent("BridgeQ1", { answer: match });
+            } catch { /* no-op */ }
+            setStep(1);
+          }
+        }
+      } catch { /* no-op */ }
+    }
   }, []);
 
   const answer = (q: number, value: string) => {

@@ -30,7 +30,6 @@ import { GLP1_PROVIDERS, type GLP1Provider } from "../../../shared/providerData"
 import PeptidePilotLogo from "@/components/PeptidePilotLogo";
 import { GLP1PromoBox } from "@/components/GLP1PromoBox";
 import { getVisitorSessionId } from "@/components/SessionTracker";
-import { identifyLogRocketUser } from "@/lib/logrocket";
 import {
   applyMetaAdvancedMatching,
   createMetaEventId,
@@ -576,17 +575,6 @@ export default function Results() {
         content_category: isGlp1Lead ? "weight-management" : "quiz-results",
         content_ids: data.returningResults[0]?.peptideId ? ["match-primary"] : undefined,
       }, pendingMetaEventIds?.viewContent);
-      if (submittedEmail) {
-        void identifyLogRocketUser(submittedEmail, {
-          email: submittedEmail,
-          leadId: data.leadId,
-          topMatch: data.returningResults[0]?.peptideId ?? null,
-          budget: BUDGET_OPTIONS[state.answers[QUIZ_INDEX.BUDGET] ?? -1] ?? null,
-          ageRange: AGE_RANGE_OPTIONS[state.answers[QUIZ_INDEX.AGE_RANGE] ?? -1] ?? null,
-          primaryGoal:
-            PRIMARY_GOAL_OPTIONS[state.answers[QUIZ_INDEX.PRIMARY_GOAL] ?? -1] ?? null,
-        });
-      }
       if (data.returningToken) {
         try {
           seedReturningSession({
