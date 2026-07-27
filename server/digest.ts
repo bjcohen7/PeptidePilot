@@ -58,6 +58,11 @@ type WindowStats = {
   emailsClicked: number;
   sales: number;
   salesCents: number;
+  startN: number;
+  startQ1: number;
+  startHandoffs: number;
+  startWvN: number;
+  startWvQ1: number;
 };
 
 async function collect(start: Date, end: Date): Promise<WindowStats | null> {
@@ -96,6 +101,18 @@ async function collect(start: Date, end: Date): Promise<WindowStats | null> {
     `SELECT COUNT(*) n, COALESCE(SUM(amount_cents),0) cents FROM conversions
      WHERE occurred_at >= ${A} AND occurred_at < ${B}`,
   );
+  // /start funnel health (added 2026-07-27 while the LCP-fix verdict is open;
+  // toggle off with DIGEST_START_LINE=off once called).
+  const st = await one(
+    `SELECT COUNT(*) n,
+       COALESCE(SUM(bridge_q1 IS NOT NULL),0) q1,
+       COALESCE(SUM(EXISTS(SELECT 1 FROM provider_click_logs p WHERE p.public_id=vs.id AND p.position='home_direct_brdg')),0) ho,
+       COALESCE(SUM(userAgent REGEXP 'FBAN|FBAV|Instagram'),0) wvn,
+       COALESCE(SUM((userAgent REGEXP 'FBAN|FBAV|Instagram') AND bridge_q1 IS NOT NULL),0) wvq1
+     FROM visitor_sessions vs
+     WHERE landingPath LIKE '/start%' AND id NOT LIKE 'test-%'
+       AND firstSeenAt >= ${A} AND firstSeenAt < ${B}`,
+  );
 
   return {
     adClicks: Number(ads?.n ?? 0),
@@ -108,6 +125,11 @@ async function collect(start: Date, end: Date): Promise<WindowStats | null> {
     emailsClicked: Number(em?.clicked ?? 0),
     sales: Number(sa?.n ?? 0),
     salesCents: Number(sa?.cents ?? 0),
+    startN: Number(st?.n ?? 0),
+    startQ1: Number(st?.q1 ?? 0),
+    startHandoffs: Number(st?.ho ?? 0),
+    startWvN: Number(st?.wvn ?? 0),
+    startWvQ1: Number(st?.wvq1 ?? 0),
   };
 }
 
@@ -129,10 +151,19 @@ function fmtDay(d: Date): string {
   return d.toLocaleDateString("en-US", { timeZone: TZ, month: "short", day: "numeric" });
 }
 
+// LCP fix deployed 2026-07-27 — day tag shown while the /start line is active
+// so the digest sequence reads cleanly in scrollback ("post-fix day 1, 2, …").
+const LCP_FIX_DATE_UTC = Date.UTC(2026, 6, 27);
+function postFixTag(now: Date): string {
+  if ((process.env.DIGEST_START_LINE ?? "on").toLowerCase() === "off") return "";
+  const day = Math.floor((now.getTime() - LCP_FIX_DATE_UTC) / (24 * 3600 * 1000)) + 1;
+  return day >= 1 && day <= 30 ? ` (post-fix day ${day})` : "";
+}
+
 function periodLabel(period: DigestPeriod, now: Date, start: Date): string {
   if (period === "t") {
     const time = now.toLocaleTimeString("en-US", { timeZone: TZ, hour: "numeric", minute: "2-digit" }).toLowerCase().replace(" ", "");
-    return `Today so far (as of ${time})`;
+    return `Today so far (as of ${time})${postFixTag(now)}`;
   }
   const sameMonth =
     start.toLocaleDateString("en-US", { timeZone: TZ, month: "short" }) ===
@@ -177,6 +208,17 @@ export async function buildDigest(period: DigestPeriod = "t", labelOverride?: st
     lines.push(`\u{1F4B8} Spent: n/a`);
   }
   lines.push(`\u{1F309} Sent to providers: ${stats.handoffs} people`);
+  // /start Q1-start health line — active while the LCP-fix verdict is open.
+  // Permanent-optional: set DIGEST_START_LINE=off to drop it once called.
+  if ((process.env.DIGEST_START_LINE ?? "on").toLowerCase() !== "off") {
+    const n = stats.startN;
+    const q1Pct = n ? Math.round((stats.startQ1 / n) * 100) : 0;
+    const hoPct = n ? Math.round((stats.startHandoffs / n) * 100) : 0;
+    const wv = stats.startWvN
+      ? ` (webview ${Math.round((stats.startWvQ1 / stats.startWvN) * 100)}% of ${stats.startWvN})`
+      : "";
+    lines.push(`\u{1F6AA} /start: Q1-starts ${q1Pct}% (of ${n}) · handoffs ${hoPct}%${wv}`);
+  }
   lines.push(
     period === "t"
       ? `\u{1F4E5} New leads: ${stats.newLeads} (list now ${listTotal.toLocaleString("en-US")})`
