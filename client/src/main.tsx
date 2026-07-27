@@ -8,6 +8,7 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 import { initMetaPixel } from "./lib/metaPixel";
+import { preloadForPath } from "./lib/lazyRoutes";
 
 const queryClient = new QueryClient();
 
@@ -58,10 +59,31 @@ const trpcClient = trpc.createClient({
 
 initMetaPixel();
 
-createRoot(document.getElementById("root")!).render(
-  <trpc.Provider client={trpcClient} queryClient={queryClient}>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </trpc.Provider>
-);
+// LCP round 3: on the prerendered public landing routes (/, /start, /quiz,
+// /match), await the active route's chunk BEFORE mounting React. The first
+// render then finds the route component already resolved and never suspends —
+// the prerendered hero is replaced by identical content in one commit instead
+// of being wiped into the Suspense fallback while the chunk resolves. Capped
+// at 3s so a stalled chunk can never block interactivity; on timeout we mount
+// anyway and accept the old fallback behavior.
+function mount() {
+  createRoot(document.getElementById("root")!).render(
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </trpc.Provider>
+  );
+}
+
+const routePreload = preloadForPath(window.location.pathname);
+if (routePreload) {
+  Promise.race([
+    routePreload,
+    new Promise((resolve) => setTimeout(resolve, 3000)),
+  ])
+    .catch(() => {})
+    .then(mount);
+} else {
+  mount();
+}

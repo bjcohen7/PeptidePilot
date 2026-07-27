@@ -15,13 +15,13 @@ import { ExperimentProvider } from "./contexts/ExperimentContext";
 import { QuizProvider } from "./contexts/QuizContext";
 
 // Pages
-const Home = lazy(() => import("./pages/Home"));
-const Start = lazy(() => import("./pages/Start"));
-const QuizFlow = lazy(() => import("./pages/QuizFlow"));
+// Public landing routes come from lazyRoutes (LCP round 3): main.tsx preloads
+// the active one BEFORE mounting so the prerendered DOM is never wiped into a
+// Suspense fallback on boot. All other routes keep standard lazy().
+import { HomeRoute as Home, StartRoute as Start, QuizFlowRoute as QuizFlow, MatchRoute as Match } from "./lib/lazyRoutes";
 const Processing = lazy(() => import("./pages/Processing"));
 const Results = lazy(() => import("./pages/Results"));
 const ResultsByPublicId = lazy(() => import("./pages/ResultsByPublicId"));
-const Match = lazy(() => import("./pages/Match"));
 const About = lazy(() => import("./pages/About"));
 const Blog = lazy(() => import("./pages/Blog"));
 const PrivacyPolicy = lazy(() =>
