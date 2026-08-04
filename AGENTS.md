@@ -48,3 +48,7 @@
 # Analytics bot filtering (2026-08-04)
 
 - Server-side UA filter on `/api/analytics/session-start|page-view|click|funnel-event` (BOT_UA_RE in `server/_core/index.ts`): HeadlessChrome/puppeteer/playwright/selenium/lighthouse/bot/spider/crawl requests get 204-accepted but NOT recorded. `/go` click logging is deliberately unfiltered (sentinel probes + Everflow reconciliation). Client-side: `loadMetaPixelScript` refuses to load fbevents under `navigator.webdriver` or a HeadlessChrome UA — headless captures fire zero pixel events. Analytics before 2026-08-05 may contain headless pollution (2026-08-04: 81 of 194 sessions were capture probes); the clean baseline starts 2026-08-05.
+
+# Concurrent-session safety (2026-08-04 incident)
+
+- Two agent sessions mutated prod simultaneously: one swept the other's ACTIVE sentinels mid-probe, changed the gala template between its two 302 checks, and `git add -A` swept the other's temp scripts into an auto-deploying commit. Rules: (1) sentinel ids/emails are **session-scoped** — `test-<short-session-tag>-…`, and cleanup deletes ONLY your own tag, never bare `test-%`; (2) never `git add -A` in this repo — stage files by name (main auto-deploys); (3) before a prod sweep or provider-row change, check for another session's fresh `test-` rows (created_at within the hour) and leave them.
