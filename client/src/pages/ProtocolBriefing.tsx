@@ -291,38 +291,38 @@ export default function ProtocolBriefing({
       name: "GLP-1 therapy",
       sub: "semaglutide · tirzepatide",
       rows: [
-        ["Does", "Regulates appetite and slows gastric emptying so the deficit is sustainable instead of white-knuckled. The most clinically validated tool in this plan."],
-        ["Chosen by", "Your prescriber — drug and dose are theirs to call, titrated upward over months."],
+        ["Does", "Regulates appetite and slows gastric emptying. The deficit stops being a willpower problem."],
+        ["Chosen by", "Your prescriber. Drug and dose are theirs to call."],
       ] as const,
-      flag: "Rushing titration is the most common source of side effects. Let the schedule be boring.",
+      flag: "Side effects cluster around dose jumps. Let the schedule be boring.",
     },
     {
       role: "The muscle signal",
       name: "Resistance training",
       sub: "3× / week, progressive",
       rows: [
-        ["Does", "Tells your body to keep muscle while weight drops. Without it, a meaningful share of scale loss comes from lean mass."],
-        ["Minimum", "Three sessions a week — even 20 minutes counts, as long as the load progresses."],
+        ["Does", "The signal to keep muscle while weight drops."],
+        ["Minimum", "3× a week. Twenty minutes counts if the load progresses."],
       ] as const,
-      flag: "This is the piece most people skip — it is what separates the two paths above.",
+      flag: "The piece most people skip. It separates the two paths above.",
     },
     {
       role: "The raw material",
       name: "Protein + sleep",
       sub: "~0.7 g/lb · 7+ hours",
       rows: [
-        ["Does", "Protein gives retained muscle its raw material; sleep drives the recovery hormones that make training stick."],
-        ["Watch", "Appetite suppression makes under-eating protein easy — track it for the first month."],
+        ["Does", "Protein feeds the muscle you keep. Sleep makes the training stick."],
+        ["Watch", "Suppressed appetite under-eats protein without noticing. Track it the first month."],
       ] as const,
       flag: null,
     },
   ];
 
   const mistakes = [
-    { b: "Treating the scale as the scoreboard", s: "If waist is dropping and the scale isn't, the protocol is working. If the scale is dropping and your lifts are falling, it isn't.", fix: "FIX → waist + strength are the scoreboard. Table below." },
-    { b: "Skipping the training because you're not hungry", s: "Appetite suppression makes it easy to under-eat and under-train. The muscle you lose this way is the hardest thing to get back.", fix: "FIX → 3×/week minimum; 20-minute sessions count." },
-    { b: "Rushing the dose", s: "Titration schedules exist because side effects cluster around dose jumps.", fix: "FIX → your prescriber drives. No self-adjusting." },
-    { b: "Quitting in month four", s: "The cost and the plateau usually hit together. A plan you can afford for twelve months beats a sprint you abandon.", fix: "FIX → pick the plan you can afford for 12 months, not 3." },
+    { b: "Treating the scale as the scoreboard", s: "Waist dropping, scale flat: it's working. Scale dropping, lifts falling: it isn't.", fix: "FIX → waist + strength are the scoreboard. Table below." },
+    { b: "Skipping the training because you're not hungry", s: "Easy to under-eat and under-train when you're never hungry. That muscle is the hardest thing to get back.", fix: "FIX → 3×/week minimum; 20-minute sessions count." },
+    { b: "Rushing the dose", s: "Side effects cluster around dose jumps.", fix: "FIX → your prescriber drives. No self-adjusting." },
+    { b: "Quitting in month four", s: "The cost and the plateau hit together. Twelve affordable months beat three you abandon.", fix: "FIX → pick the plan you can afford for 12 months, not 3." },
   ];
 
   const metrics: Array<{ m: string; cad: string; tells: string; primary?: boolean }> = [
@@ -354,7 +354,7 @@ export default function ProtocolBriefing({
           <span className="hero-tag">Analysis complete · weight-loss protocol</span>
           <h1>You don't have a weight problem. You have a ratio problem.</h1>
           <p className="lede">
-            Losing weight is the easy half. Losing the <em>right</em> weight — fat, not muscle — is the half that decides whether you like the result in twelve months. Here's your read, your plan, and the places most people blow it.
+            Losing weight is the easy half. Losing the <em>right</em> weight — fat, not muscle — decides how this looks in twelve months. Your read, your plan, the traps.
           </p>
         </section>
 
@@ -384,7 +384,7 @@ export default function ProtocolBriefing({
           <p className="eyebrow">02 · The finding</p>
           <h2>Two ways to lose the same weight</h2>
           <p>
-            Across the body-composition arms of the major GLP-1 trials, roughly <strong>a quarter to 40% of weight lost on medication alone comes from lean mass</strong> (Wilding 2021 — STEP 1; Jastreboff 2022 — SURMOUNT-1 sub-studies). Same scale number, very different body — unless the deficit is aimed at fat and the muscle is defended.
+            In the major GLP-1 trials, <strong>25–40% of weight lost on medication alone came from lean mass</strong> (Wilding 2021 — STEP 1; Jastreboff 2022 — SURMOUNT-1 sub-studies). Same scale number. Very different body.
           </p>
           <div className={`chart${chartShown ? " is-shown" : ""}`}>
             <div className="path">
@@ -393,7 +393,7 @@ export default function ProtocolBriefing({
                 <div className="seg seg-fat" style={{ ["--w" as string]: "62%" }}>fat</div>
                 <div className="seg seg-lean" style={{ ["--w" as string]: "38%" }}>up to 40% muscle</div>
               </div>
-              <p className="path-note">Lighter, but weaker — and a slower metabolism to maintain it with.</p>
+              <p className="path-note">Lighter, but weaker. Slower metabolism.</p>
             </div>
             <div className="path">
               <div className="path-head"><b style={{ color: "var(--lean)" }}>Protected path</b></div>
@@ -401,13 +401,13 @@ export default function ProtocolBriefing({
                 <div className="seg seg-fat" style={{ ["--w" as string]: "88%" }}>fat — deficit aimed here</div>
                 <div className="seg seg-lean" style={{ ["--w" as string]: "12%" }}>defended</div>
               </div>
-              <p className="path-note">Medication + training + protein. The loss comes overwhelmingly from fat; strength holds.</p>
+              <p className="path-note">Loss comes overwhelmingly from fat. Strength holds.</p>
             </div>
             <div className="chart-key">
               <span><i className="swatch" style={{ background: "var(--fat)" }} /> fat lost</span>
               <span><i className="swatch" style={{ background: "var(--lean)" }} /> lean mass lost</span>
             </div>
-            <p className="fine">Illustrative split — the medication drives the loss; training and protein decide the ratio. The only measured figure is the cited 25–40% lean-mass share on medication alone.</p>
+            <p className="fine">Illustrative split. Training and protein decide the ratio; the measured figure is the cited 25–40% lean-mass share on medication alone.</p>
           </div>
           <p className="pull">The scale can't tell you which of these you became. That's why the scale is not your primary metric.</p>
         </section>
@@ -418,9 +418,9 @@ export default function ProtocolBriefing({
           <h2>Twelve months, three phases</h2>
           <div className="phases">
             {[
-              { n: "PH 1", when: "Weeks 1–8 · Foundation", d: "Establish the deficit without losing ground. Medication titrates up; training starts light; protein target locks in.", e: traj.p1 },
-              { n: "PH 2", when: "Weeks 9–28 · Recomposition", d: "The second lever changes the scoreboard: progressive training while the medication holds appetite down. Visible change outpaces scale change.", e: traj.p2 },
-              { n: "PH 3", when: "Weeks 29–52 · Consolidation", d: "Land it and keep it. Maintenance dose and habits get defined with your clinician — this phase decides whether month 13 looks like month 12.", e: traj.p3 },
+              { n: "PH 1", when: "Weeks 1–8 · Foundation", d: "Medication titrates up. Training starts light. Protein locks in.", e: traj.p1 },
+              { n: "PH 2", when: "Weeks 9–28 · Recomposition", d: "Progressive training while the medication holds appetite down. Visible change outpaces scale change.", e: traj.p2 },
+              { n: "PH 3", when: "Weeks 29–52 · Consolidation", d: "Maintenance dose and habits get set with your clinician. This phase decides whether month 13 looks like month 12.", e: traj.p3 },
             ].map((p) => (
               <div className="phase" key={p.n}>
                 <div className="phase-n num">{p.n}</div>
@@ -531,7 +531,7 @@ export default function ProtocolBriefing({
                   </a>
                 )}
                 <p className="fine" style={{ textAlign: "center", maxWidth: "none" }}>
-                  Licensed US clinicians review every intake — you qualify with them, not with us.
+                  Licensed US clinicians review every intake. You qualify with them, not with us.
                 </p>
               </div>
 
