@@ -208,9 +208,11 @@ export async function buildDigest(period: DigestPeriod = "t", labelOverride?: st
     lines.push(`\u{1F4B8} Spent: n/a`);
   }
   lines.push(`\u{1F309} Sent to providers: ${stats.handoffs} people`);
-  // /start Q1-start health line — active while the LCP-fix verdict is open.
-  // Permanent-optional: set DIGEST_START_LINE=off to drop it once called.
-  if ((process.env.DIGEST_START_LINE ?? "on").toLowerCase() !== "off") {
+  // /start Q1-start health line — permanent-optional (DIGEST_START_LINE=off to
+  // drop). Auto-hidden when N=0: as of 2026-08-04 paid traffic consolidated on
+  // /quiz → briefing and /start is dormant-not-dead, so a zero-traffic line is
+  // noise — but the line resurrects itself the day /start sees sessions again.
+  if ((process.env.DIGEST_START_LINE ?? "on").toLowerCase() !== "off" && stats.startN > 0) {
     const n = stats.startN;
     const q1Pct = n ? Math.round((stats.startQ1 / n) * 100) : 0;
     const hoPct = n ? Math.round((stats.startHandoffs / n) * 100) : 0;

@@ -411,3 +411,11 @@ Manus's third-party audit confirmed round 3 (no blank flash, /start CLS 0.00, pa
 **First name (same-day follow-up):** required "First name" field at the email-capture gate → `leads.first_name` (nullable for historical) → "Prepared for {name}" on the briefing. Email greeting merge drafted but NOT shipped — pending Ben's copy sign-off.
 
 **Evidence:** prod sentinel walk (submitQuiz with firstName + BMI inputs → briefing rendered "Prepared for Testwin", 240 lb/5'10"/BMI 34.4, phases 10–14/24–34 lb, real 75% match → `/go` click row `gala · results_sp · funnel · glp1_provider`), cleanup 1 lead/1 click/7 queue/2 sessions → all 0. Promo section screenshotted with local-only test config (prod DB not touched — `promo_code` also feeds live email templates), hidden when unset. Classic flip verified via `?rmode=classic`. `results_sp` clicks are now measurable against the classic baseline.
+
+---
+
+## 2026-08-04 — Strategy: all paid traffic consolidates on /quiz → briefing; /start dormant
+
+**Operator decision (Ben), reversing the Jul 30 all-in-on-/start call now that the briefing page exists:** all paid traffic points at the 22-question **/quiz** path feeding the **protocol-briefing results page**. **/start goes dormant-not-dead** — deployed, functional, zero code changes (the standing pattern: same as the quiz-mode revert of Jul 18). The digest's 🚪 /start Q1-line now auto-hides when N=0 (not removed — it resurrects itself the day /start sees traffic again; `DIGEST_START_LINE=off` still force-drops it).
+
+**The decisive metric going forward:** quiz completion → briefing render → `results_sp`/`results_sb` click-through → Gala funnel depth per Everflow, measured against the bridge era's **44%-handoff baseline**. The briefing page carries its own click positions, so the comparison needs no instrumentation changes — it accumulates from today's deploy forward.
