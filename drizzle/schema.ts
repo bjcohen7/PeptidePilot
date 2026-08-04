@@ -22,6 +22,7 @@ export const leads = mysqlTable("leads", {
   id: varchar("id", { length: 36 }).primaryKey(), // internal nanoid
   publicId: varchar("publicId", { length: 36 }).notNull().unique(), // URL-safe public id
   email: varchar("email", { length: 320 }).notNull(),
+  firstName: varchar("first_name", { length: 64 }), // nullable — historical leads have none
   sessionId: varchar("sessionId", { length: 64 }),
   returningToken: varchar("returningToken", { length: 128 }),
   tokenExpiresAt: timestamp("tokenExpiresAt"),

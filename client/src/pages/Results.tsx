@@ -62,17 +62,24 @@ export function LeadCaptureGate({
   isLoading,
   previewMatches,
 }: {
-  onReveal: (email: string, consent: boolean) => void;
+  onReveal: (email: string, consent: boolean, firstName: string) => void;
   isLoading: boolean;
   previewMatches: ReturningMatchSummary[];
 }) {
+  const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [nameError, setNameError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError("");
+    setNameError("");
+    if (!firstName.trim()) {
+      setNameError("Please enter your first name.");
+      return;
+    }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setEmailError("Please enter a valid email address.");
@@ -82,7 +89,7 @@ export function LeadCaptureGate({
       toast.error("Please check the consent box to continue.");
       return;
     }
-    onReveal(email, consent);
+    onReveal(email, consent, firstName.trim());
   };
 
   const topThree = previewMatches.slice(0, 3);
@@ -195,6 +202,29 @@ export function LeadCaptureGate({
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Input
+                type="text"
+                autoComplete="given-name"
+                placeholder="First name"
+                value={firstName}
+                onChange={(e) => {
+                  setFirstName(e.target.value);
+                  setNameError("");
+                }}
+                className="rounded-xl text-base border-0"
+                style={{
+                  height: "52px",
+                  background: "rgba(255,255,255,0.08)",
+                  color: "white",
+                  outline: "1px solid rgba(255,255,255,0.15)",
+                }}
+                required
+              />
+              {nameError && (
+                <p className="text-red-400 text-xs mt-1.5">{nameError}</p>
+              )}
+            </div>
             <div>
               <Input
                 type="email"
@@ -636,7 +666,7 @@ export default function Results() {
     setShowRecovery(true);
   }, [hasFreshQuizState, navigate, sessionStatus, storedPublicId]);
 
-  const handleReveal = (email: string, consent: boolean) => {
+  const handleReveal = (email: string, consent: boolean, firstName: string) => {
     const eventIds = {
       lead: createMetaEventId("lead"),
       completeRegistration: createMetaEventId("complete_registration"),
@@ -647,6 +677,7 @@ export default function Results() {
     setPendingMetaEventIds(eventIds);
     submitQuiz.mutate({
       email,
+      firstName: firstName || undefined,
       consentGiven: consent,
       answers: state.answers.map((a) => a ?? -1),
       sessionId: getVisitorSessionId(),

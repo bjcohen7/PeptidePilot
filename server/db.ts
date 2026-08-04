@@ -415,6 +415,8 @@ export async function ensureAffiliateWorkspaceSchema() {
         await db.execute(sql.raw("ALTER TABLE `leads` ADD COLUMN `experiment_variant` varchar(16)"));
       }
 
+      // First name from the email-capture step (2026-08-04) — nullable for historical leads.
+      await addColumnIfMissing(db, "leads", "first_name", "`first_name` varchar(64)");
       // Raw BMI-calculator inputs (2026-07-23) — nullable, skip = NULL.
       await addColumnIfMissing(db, "leads", "height_in", "`height_in` int");
       await addColumnIfMissing(db, "leads", "weight_lbs", "`weight_lbs` int");

@@ -5,6 +5,7 @@ import { getVisitorSessionId } from "@/components/SessionTracker";
 import { trackMetaCustomEvent, trackMetaEvent, createMetaEventId, applyMetaAdvancedMatching, getMetaBrowserIdentifiers } from "@/lib/metaPixel";
 import { LeadCaptureGate, ResultsDisplay } from "@/pages/Results";
 import VerdictResults from "@/pages/VerdictResults";
+import ProtocolBriefing from "@/pages/ProtocolBriefing";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 function sendFunnelEvent(event: string, data?: Record<string, unknown>) {
@@ -84,7 +85,7 @@ export default function ResultsByPublicId() {
     }
   }, [data?.results, publicId]);
 
-  const handleEmailReveal = (email: string, consent: boolean) => {
+  const handleEmailReveal = (email: string, consent: boolean, firstName: string) => {
     if (!data?.leadId) return;
 
     const eventIds = {
@@ -98,6 +99,7 @@ export default function ResultsByPublicId() {
     attachEmail.mutate({
       leadId: data.leadId,
       email,
+      firstName: firstName || undefined,
       consentGiven: consent,
       meta: {
         leadEventId: eventIds.lead,
@@ -143,6 +145,36 @@ export default function ResultsByPublicId() {
   const showGate = !hasRealEmail && !emailAttached;
 
   if (!showGate && data.results && data.results.length > 0) {
+    // RESULTS_PAGE_MODE flag (server env, default 'briefing'), with a ?rmode=
+    // query override for side-by-side testing on this noindex page. Briefing
+    // requires providerMatches — older leads without them fall through to the
+    // pre-existing experiences unchanged.
+    const rmodeOverride = new URLSearchParams(window.location.search).get("rmode");
+    const mode = rmodeOverride === "classic" || rmodeOverride === "briefing"
+      ? rmodeOverride
+      : data.resultsPageMode ?? "briefing";
+    // The briefing is weight-loss framed end to end — rendering it for a lead
+    // whose goal/top match isn't weight management would misstate their answers.
+    // Those leads keep the pre-existing experiences.
+    const wlRelevant =
+      data.topPeptideMatch === "semaglutide" ||
+      data.topPeptideMatch === "tirzepatide" ||
+      data.leadQuizData?.primaryGoalIdx === 1;
+    if (mode === "briefing" && wlRelevant && data.providerMatches && data.providerMatches.length > 0) {
+      return (
+        <ProtocolBriefing
+          publicId={data.publicId}
+          providerMatches={data.providerMatches}
+          providerDetails={data.providerDetails}
+          heightIn={data.heightIn}
+          weightLbs={data.weightLbs}
+          firstName={data.firstName}
+          promoTerms={data.promoTerms}
+          leadQuizData={data.leadQuizData}
+          resultsUrl={`${window.location.origin}/results/${data.publicId}`}
+        />
+      );
+    }
     const isVerdict = data.experimentVariant === "verdict";
     if (isVerdict && data.providerMatches && data.providerMatches.length > 0) {
       return (

@@ -58,6 +58,7 @@ async function insertLead(
       id,
       publicId,
       email,
+      first_name,
       ageRange,
       primaryGoal,
       budget,
@@ -78,6 +79,7 @@ async function insertLead(
       ${values.id},
       ${publicId},
       ${values.email},
+      ${values.firstName ?? null},
       ${values.ageRange},
       ${values.primaryGoal},
       ${values.budget},
@@ -228,6 +230,9 @@ export const quizRouter = router({
           consentGiven: leads.consentGiven,
           providerMatches: leads.providerMatches,
           experimentVariant: leads.experimentVariant,
+          heightIn: leads.heightIn,
+          weightLbs: leads.weightLbs,
+          firstName: leads.firstName,
         })
         .from(leads)
         .where(eq(leads.publicId, input.publicId))
@@ -320,6 +325,19 @@ export const quizRouter = router({
         providerDetails: providerDetails ?? [],
         experimentVariant: lead.experimentVariant ?? null,
         emailDelivered,
+        // Protocol-briefing page (RESULTS_PAGE_MODE): 'briefing' (default) renders the
+        // structured protocol page; 'classic' keeps the prior results experience.
+        resultsPageMode:
+          (process.env.RESULTS_PAGE_MODE || "briefing").toLowerCase() === "classic"
+            ? ("classic" as const)
+            : ("briefing" as const),
+        // Promo terms line for the config-gated promo section. Section renders ONLY
+        // when the matched provider's promo_code (providers table) is set; this env
+        // adds the human terms sentence. Both unset = section fully hidden.
+        promoTerms: process.env.GALA_PROMO_TERMS ?? null,
+        heightIn: lead.heightIn ?? null,
+        weightLbs: lead.weightLbs ?? null,
+        firstName: lead.firstName ?? null,
         leadQuizData: {
           primaryGoal: goalIdx >= 0 && goalIdx < PRIMARY_GOAL_OPTIONS.length
             ? PRIMARY_GOAL_OPTIONS[goalIdx]
@@ -331,6 +349,10 @@ export const quizRouter = router({
             : insuranceIdx === 1 ? "medicare"
             : insuranceIdx === 2 ? "uninsured"
             : null,
+          // q5 BMI answer index (post-2026-07-23 semantics: 0=skip, 1=<27, 2=27-30, 3=30+).
+          bmiIdx: rawAnswers[QUIZ_INDEX.GLP1_BMI] ?? -1,
+          // Raw q0 index — idx 1 = weight-loss intent; gates the WL-framed briefing page.
+          primaryGoalIdx: goalIdx,
         },
       };
     }),
@@ -355,6 +377,7 @@ export const quizRouter = router({
     .input(
       z.object({
         email: z.string().email().optional().nullable(),
+        firstName: z.string().trim().min(1).max(64).optional().nullable(),
         consentGiven: z.boolean().optional().default(false),
         answers: z.array(z.union([z.number().int(), z.array(z.number().int())])),
         sessionId: z.string().min(8).max(64).optional().nullable(),
@@ -443,6 +466,7 @@ export const quizRouter = router({
             id: leadId,
             publicId,
             email: leadEmail,
+            firstName: hasProvidedEmail ? input.firstName?.trim() || undefined : undefined,
             ageRange,
             primaryGoal,
             budget,
@@ -608,6 +632,7 @@ export const quizRouter = router({
       z.object({
         leadId: z.string().min(8).max(64),
         email: z.string().email(),
+        firstName: z.string().trim().min(1).max(64).optional().nullable(),
         consentGiven: z.boolean(),
         meta: z
           .object({
@@ -658,7 +683,11 @@ export const quizRouter = router({
         return { status: "skipped" as const };
       }
 
-      await db.update(leads).set({ email: normalizedEmail, consentGiven }).where(eq(leads.id, leadId));
+      await db.update(leads).set({
+        email: normalizedEmail,
+        consentGiven,
+        ...(input.firstName?.trim() ? { firstName: input.firstName.trim() } : {}),
+      }).where(eq(leads.id, leadId));
 
       const answers = Array.isArray(lead.rawQuizData)
         ? lead.rawQuizData.map((value: unknown) => (typeof value === "number" ? value : -1))
