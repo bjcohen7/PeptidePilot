@@ -134,6 +134,12 @@ body:has(.pbx) { background:#f9f9f7; }
 /* metrics table */
 .pbx .table-scroll { overflow-x:auto; }
 .pbx table { border-collapse:collapse; width:100%; min-width:30rem; }
+@media (max-width:480px) {
+  .pbx table { min-width:0; }
+  .pbx th, .pbx td { padding:.55rem .5rem; font-size:.8125rem; }
+  .pbx td.n { font-size:.71875rem; }
+  .pbx .pill { display:block; width:max-content; margin:.25rem 0 0; }
+}
 .pbx th, .pbx td { text-align:left; padding:.9375rem 1.125rem; border-bottom:1px solid #eee; font-size:1rem; }
 .pbx th { font-family:var(--mono); font-size:.6875rem; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); font-weight:400; background:none; }
 .pbx td { background:var(--card); }

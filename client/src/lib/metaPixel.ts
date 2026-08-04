@@ -94,6 +94,9 @@ let scriptLoaded = false;
 export function loadMetaPixelScript() {
   if (!canUseDom()) return;
   if (import.meta.env.DEV) return;
+  // Automation guard (2026-08-04): headless captures/bots must not fire real
+  // pixel events. The fbq stub still queues silently; the script never loads.
+  if (navigator.webdriver || /HeadlessChrome/i.test(navigator.userAgent)) return;
   if (scriptLoaded) return;
   scriptLoaded = true;
   try {

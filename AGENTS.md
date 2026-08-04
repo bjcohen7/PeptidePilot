@@ -39,3 +39,12 @@
 - Phase expectation lines are labeled "Typical range (clinical trials):" and computed from the lead's real weight against STEP/SURMOUNT trajectories (4–6% by wk 8, 10–14% by wk 28, 13–20% at 12 mo (sema 52-wk avg ~13–14%; tirz ~20%)). Don't inflate the bands past the literature.
 - `leads.first_name` (nullable) is captured at the email gate (required field) and surfaces as "Prepared for {name}" on the briefing. Email greeting merges are NOT wired — pending copy sign-off.
 - **`/results/*` is noindex at the ORIGIN header level** (`X-Robots-Tag: noindex, nofollow`, set in `server/_core/vite.ts` fall-through) — the shared SPA shell's meta is `index,follow`, so the header is what crawlers must see pre-JS; results pages render lead first name + body stats. Don't remove the header, don't bake noindex into the shared shell (it would de-index every shell-served route), and keep results-URL og tags generic.
+
+# Known-benign flags (stop re-reporting these)
+
+- **`position` is OUR query param, not the provider's.** `/go/:provider/:publicId?position=…` — `position` (≤16 chars, varchar(16)) is consumed by OUR click logging before the 302 and never forwarded to the provider. Audits keep flagging it as leaking funnel data to Gala; it doesn't — the outbound URL carries only the provider's own params + `sub1={publicId}-gala`.
+- **`_ef_transaction_id=` empty is normal.** Gala's Everflow links ship with the param intentionally blank — Everflow fills it server-side at click time on their end. An empty value in our stored templates/302s is NOT a broken integration. (AM confirmation queued; if they ever ask us to populate it client-side, that's a deliberate change, not a fix.)
+
+# Analytics bot filtering (2026-08-04)
+
+- Server-side UA filter on `/api/analytics/session-start|page-view|click|funnel-event` (BOT_UA_RE in `server/_core/index.ts`): HeadlessChrome/puppeteer/playwright/selenium/lighthouse/bot/spider/crawl requests get 204-accepted but NOT recorded. `/go` click logging is deliberately unfiltered (sentinel probes + Everflow reconciliation). Client-side: `loadMetaPixelScript` refuses to load fbevents under `navigator.webdriver` or a HeadlessChrome UA — headless captures fire zero pixel events. Analytics before 2026-08-05 may contain headless pollution (2026-08-04: 81 of 194 sessions were capture probes); the clean baseline starts 2026-08-05.

@@ -419,3 +419,13 @@ Manus's third-party audit confirmed round 3 (no blank flash, /start CLS 0.00, pa
 **Operator decision (Ben), reversing the Jul 30 all-in-on-/start call now that the briefing page exists:** all paid traffic points at the 22-question **/quiz** path feeding the **protocol-briefing results page**. **/start goes dormant-not-dead** — deployed, functional, zero code changes (the standing pattern: same as the quiz-mode revert of Jul 18). The digest's 🚪 /start Q1-line now auto-hides when N=0 (not removed — it resurrects itself the day /start sees traffic again; `DIGEST_START_LINE=off` still force-drops it).
 
 **The decisive metric going forward:** quiz completion → briefing render → `results_sp`/`results_sb` click-through → Gala funnel depth per Everflow, measured against the bridge era's **44%-handoff baseline**. The briefing page carries its own click positions, so the comparison needs no instrumentation changes — it accumulates from today's deploy forward.
+
+---
+
+## 2026-08-04 (late) — Manus audit fixes: Gala v2 on the results path, bot filtering, cleanups
+
+1. **Results-path Gala landing changed 2026-08-04 (evening ET): funnel-depth comparisons split here.** The providers-table gala template (used by /go/:provider/:publicId — results + email surfaces) still pointed at the v1 landing (`lp/glp1?a=price…`); the Jul-20 v2 switch had only updated the bridge's DIRECT_DESTINATIONS. Now both serve v2 (`funnel/start?a=price&…&src=lp-glp1-top5-mirror-c4e9&sub1={publicId}-gala`, confirmed with Ian). Any Everflow funnel-depth comparison across this date is comparing different Gala landings.
+2. **Analytics bot filter shipped** (see AGENTS.md): 2026-08-04 had 81 of 194 sessions (42%) from our own headless capture probes; server UA filter + client pixel guard mean the results_sp/results_sb CTR baseline formally starts CLEAN 2026-08-05. Pixel-side events already fired today cannot be retracted — treat today's pixel volume as inflated.
+3. **Review sentinel deleted** (lead 1szpyTXjEXUj9i9Igz6R_ "Marcus" + 4 other test- stragglers: 5 leads / 8 clicks / 35 queue rows / 6 sessions → 0). Its email_0 had been attempted and BOUNCED at Resend (test-sidebyside-shot@); bounce suppression auto-cancelled the remaining 6 sends — no deliveries occurred. Today's digest lead/handoff counts include the day's sentinels created before cleanup.
+4. **Bare /results kept (not 301'd):** it serves the session-based results recovery flow (Processing failure fallback + returning-user recovery form) — X-Robots-Tag noindex already covers the exact path. Redirecting would break recovery.
+5. Mobile metrics table compacted at ≤480px (min-width dropped, tighter cells, pill wraps) — verified at 375px.

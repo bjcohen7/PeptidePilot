@@ -225,7 +225,17 @@ async function startServer() {
   });
   // Body parser is applied per-route below so it does not interfere with
   // tRPC v11's raw body consumption via createBody() in incomingMessageToRequest.
+  // Automation/bot UA filter for analytics writes (2026-08-04): headless
+  // captures and crawlers were polluting sessions/funnel events. Filtered
+  // requests return 204 (accepted, not recorded) so clients never retry.
+  // /go click logging is deliberately NOT filtered — sentinel probes rely on
+  // it and monetizable-click rows are reconciled against Everflow anyway.
+  const BOT_UA_RE = /HeadlessChrome|puppeteer|playwright|selenium|phantomjs|lighthouse|slurp|bot\b|spider|crawl/i;
+  const isBotRequest = (r: { headers: Record<string, unknown> }) =>
+    BOT_UA_RE.test(String(r.headers["user-agent"] ?? ""));
+
   app.post("/api/analytics/session-start", express.json({ limit: "1mb" }), async (req, res) => {
+    if (isBotRequest(req)) { res.status(204).end(); return; }
     try {
       await startVisitorSession({
         sessionId: String(req.body?.sessionId ?? ""),
@@ -245,6 +255,7 @@ async function startServer() {
     }
   });
   app.post("/api/analytics/page-view", express.json({ limit: "1mb" }), async (req, res) => {
+    if (isBotRequest(req)) { res.status(204).end(); return; }
     try {
       await recordPageView({
         sessionId: String(req.body?.sessionId ?? ""),
@@ -259,6 +270,7 @@ async function startServer() {
     }
   });
   app.post("/api/analytics/click", express.json({ limit: "1mb" }), async (req, res) => {
+    if (isBotRequest(req)) { res.status(204).end(); return; }
     try {
       await recordClickEvent({
         sessionId: String(req.body?.sessionId ?? ""),
@@ -631,6 +643,7 @@ async function startServer() {
   });
 
   app.post("/api/analytics/funnel-event", express.json({ limit: "1mb" }), async (req, res) => {
+    if (isBotRequest(req)) { res.status(204).end(); return; }
     try {
       await recordFunnelEvent({
         sessionId: String(req.body?.sessionId ?? ""),
