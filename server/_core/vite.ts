@@ -133,6 +133,11 @@ export function serveStatic(app: Express) {
     // mount) — use req.originalUrl to recover the real request path.
     const rawPath = (req.originalUrl || req.url || "/").split("?")[0];
     const normalizedPath = rawPath.length > 1 ? rawPath.replace(/\/+$/, "") : rawPath;
+    // Lead results pages carry personal data (name, body stats). The SPA shell's
+    // meta is generic, so the noindex must ride a header the crawler sees pre-JS.
+    if (normalizedPath === "/results" || normalizedPath.startsWith("/results/")) {
+      res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    }
     const prerenderedFile =
       normalizedPath === "/"
         ? path.resolve(distPath, "index.html")
