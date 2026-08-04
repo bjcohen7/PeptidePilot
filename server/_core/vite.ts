@@ -60,9 +60,17 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use((req, _res, next) => {
+  app.use((req, res, next) => {
     const [pathname, search = ""] = req.url.split("?");
     const normalizedPath = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+
+    // Lead results pages carry personal data — noindex must ride EVERY /results
+    // response pre-JS. Set here (ahead of express.static) because bare /results
+    // is prerendered and static serving bypasses the SPA fall-through where the
+    // header was originally set (which still covers /results/:publicId).
+    if (normalizedPath === "/results" || normalizedPath.startsWith("/results/")) {
+      res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    }
 
     if (
       normalizedPath !== "/" &&
