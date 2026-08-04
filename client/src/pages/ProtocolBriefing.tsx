@@ -36,6 +36,8 @@ type ProviderDetail = {
 // Partner mock's stylesheet, scoped under .pbx (values verbatim; only the
 // scoping prefix and the removal of page-global body/html rules are ours).
 const PBX_CSS = `
+body:has(.pbx) { background:#F1F4F2; }
+@media (prefers-color-scheme: dark) { body:has(.pbx) { background:#0A1012; } }
 .pbx {
   --bg:#F1F4F2; --bg-raised:#FFFFFF; --bg-sunk:#E5EBE7;
   --ink:#0B1315; --ink-2:#485854; --ink-3:#7A8985;
@@ -79,25 +81,25 @@ const PBX_CSS = `
 .pbx .small { font-size:.875rem; line-height:1.55; color:var(--ink-2); }
 .pbx .fine { font-size:.75rem; line-height:1.5; color:var(--ink-3); max-width:var(--measure); }
 .pbx .num { font-variant-numeric:tabular-nums; }
-.pbx section { display:flex; flex-direction:column; gap:1.25rem; padding:3.25rem 0; border-top:1px solid var(--rule); }
+.pbx section { display:flex; flex-direction:column; gap:1.5rem; padding:4.25rem 0; border-top:1px solid var(--rule); }
 .pbx section > .eyebrow { margin-bottom:-.5rem; }
 .pbx .stack-sm { display:flex; flex-direction:column; gap:.625rem; }
-.pbx .stack-md { display:flex; flex-direction:column; gap:1rem; }
+.pbx .stack-md { display:flex; flex-direction:column; gap:1.25rem; }
 .pbx .masthead { display:flex; align-items:baseline; justify-content:space-between; gap:1rem; padding:1.25rem 0 1rem; font-family:var(--mono); font-size:.6875rem; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); border-bottom:1px solid var(--rule); }
 .pbx .masthead b { color:var(--ink); font-weight:600; letter-spacing:.12em; }
-.pbx .hero { padding-top:2.5rem; border-top:none; }
+.pbx .hero { padding-top:3.25rem; border-top:none; }
 .pbx .hero-tag { display:inline-flex; align-items:center; gap:.5rem; align-self:flex-start; font-family:var(--mono); font-size:.6875rem; letter-spacing:.12em; text-transform:uppercase; color:var(--lean); background:var(--lean-tint); border:1px solid color-mix(in srgb, var(--lean) 30%, transparent); border-radius:2px; padding:.3rem .55rem; }
 .pbx .readout { display:grid; grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr)); gap:1px; background:var(--rule); border:1px solid var(--rule); border-radius:3px; overflow:hidden; }
-.pbx .readout > div { background:var(--bg-raised); padding:.875rem .9rem 1rem; display:flex; flex-direction:column; gap:.2rem; }
+.pbx .readout > div { background:var(--bg-raised); padding:1rem 1rem 1.125rem; display:flex; flex-direction:column; gap:.2rem; }
 .pbx .readout dt { font-family:var(--mono); font-size:.625rem; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); }
 .pbx .readout dd { margin:0; font-family:var(--serif); font-size:1.5rem; line-height:1.1; font-variant-numeric:tabular-nums; }
 .pbx .readout dd span { font-family:var(--sans); font-size:.8125rem; color:var(--ink-2); letter-spacing:0; }
 .pbx .readout dd.txt { font-family:var(--sans); font-size:.9rem; line-height:1.35; padding-top:.15rem; }
-.pbx .chart { background:var(--bg-raised); border:1px solid var(--rule); border-radius:3px; padding:1.5rem 1.25rem 1.25rem; display:flex; flex-direction:column; gap:1.5rem; box-shadow:var(--shadow); }
+.pbx .chart { background:var(--bg-raised); border:1px solid var(--rule); border-radius:3px; padding:1.875rem 1.5rem 1.5rem; display:flex; flex-direction:column; gap:1.75rem; box-shadow:var(--shadow); }
 .pbx .path { display:flex; flex-direction:column; gap:.5rem; }
 .pbx .path-head { display:flex; align-items:baseline; justify-content:space-between; gap:.75rem; }
 .pbx .path-head b { font-family:var(--mono); font-size:.6875rem; letter-spacing:.12em; text-transform:uppercase; font-weight:600; }
-.pbx .bar { display:flex; height:2.5rem; border-radius:2px; overflow:hidden; background:var(--bg-sunk); }
+.pbx .bar { display:flex; height:2rem; border-radius:2px; overflow:hidden; background:var(--bg-sunk); }
 .pbx .seg { display:flex; align-items:center; padding-left:.6rem; font-family:var(--mono); font-size:.625rem; letter-spacing:.08em; text-transform:uppercase; color:#fff; white-space:nowrap; overflow:hidden; width:0; transition:width 900ms cubic-bezier(.22,.7,.3,1); }
 .pbx .is-shown .seg { width:var(--w); }
 .pbx .seg-lean { background:var(--lean); }
@@ -108,13 +110,13 @@ const PBX_CSS = `
 .pbx .swatch { width:.7rem; height:.7rem; border-radius:1px; }
 .pbx .pull { font-family:var(--serif); font-size:clamp(1.35rem,4.4vw,1.75rem); line-height:1.25; letter-spacing:-.012em; padding-left:1.1rem; border-left:2px solid var(--lean); max-width:34rem; }
 .pbx .phases { display:flex; flex-direction:column; gap:1px; background:var(--rule); border:1px solid var(--rule); border-radius:3px; overflow:hidden; }
-.pbx .phase { background:var(--bg-raised); padding:1.25rem; display:grid; grid-template-columns:2.75rem 1fr; gap:0 1rem; align-items:start; }
+.pbx .phase { background:var(--bg-raised); padding:1.5rem; display:grid; grid-template-columns:2.75rem 1fr; gap:0 1rem; align-items:start; }
 .pbx .phase-n { font-family:var(--mono); font-size:.625rem; letter-spacing:.1em; color:var(--ink-3); line-height:1.6; padding-top:.15rem; }
 .pbx .phase-body { display:flex; flex-direction:column; gap:.5rem; min-width:0; }
 .pbx .phase-when { font-family:var(--mono); font-size:.625rem; letter-spacing:.12em; text-transform:uppercase; color:var(--lean); }
 .pbx .phase-target { font-family:var(--mono); font-size:.6875rem; color:var(--ink-2); background:var(--bg-sunk); border-radius:2px; padding:.45rem .6rem; align-self:flex-start; max-width:100%; }
 @media (max-width:26rem) { .pbx .phase { grid-template-columns:1fr; gap:.5rem; } }
-.pbx .agent { background:var(--bg-raised); border:1px solid var(--rule); border-radius:3px; padding:1.25rem; display:flex; flex-direction:column; gap:.75rem; }
+.pbx .agent { background:var(--bg-raised); border:1px solid var(--rule); border-radius:3px; padding:1.5rem; display:flex; flex-direction:column; gap:.75rem; }
 .pbx .agent-head { display:flex; flex-direction:column; gap:.3rem; }
 .pbx .agent-role { font-family:var(--mono); font-size:.625rem; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); }
 .pbx .agent h3 span { font-family:var(--mono); font-size:.75rem; font-weight:500; color:var(--ink-2); letter-spacing:0; }
@@ -126,20 +128,20 @@ const PBX_CSS = `
 .pbx .flag { display:flex; gap:.6rem; font-size:.8125rem; line-height:1.5; color:var(--ink-2); background:var(--signal-tint); border-left:2px solid var(--signal); border-radius:0 2px 2px 0; padding:.7rem .8rem; }
 .pbx .flag b { font-family:var(--mono); font-size:.625rem; letter-spacing:.1em; text-transform:uppercase; color:var(--signal); flex-shrink:0; padding-top:.18rem; }
 .pbx .mistakes { display:flex; flex-direction:column; gap:1px; background:var(--rule); border:1px solid var(--rule); border-radius:3px; overflow:hidden; }
-.pbx .mistake { background:var(--bg-raised); padding:1.05rem 1.25rem; display:flex; flex-direction:column; gap:.3rem; }
+.pbx .mistake { background:var(--bg-raised); padding:1.3rem 1.5rem; display:flex; flex-direction:column; gap:.3rem; }
 .pbx .mistake b { font-size:.9375rem; font-weight:640; }
 .pbx .mistake span { font-size:.875rem; line-height:1.5; color:var(--ink-2); }
 .pbx .mistake .fix { font-family:var(--mono); font-size:.6875rem; line-height:1.5; color:var(--lean); margin-top:.15rem; }
 .pbx .table-scroll { overflow-x:auto; border:1px solid var(--rule); border-radius:3px; }
 .pbx table { border-collapse:collapse; width:100%; min-width:30rem; background:var(--bg-raised); }
-.pbx th, .pbx td { text-align:left; padding:.7rem .9rem; border-bottom:1px solid var(--rule-soft); font-size:.875rem; }
+.pbx th, .pbx td { text-align:left; padding:.8rem 1rem; border-bottom:1px solid var(--rule-soft); font-size:.875rem; }
 .pbx th { font-family:var(--mono); font-size:.625rem; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); font-weight:500; background:var(--bg-sunk); border-bottom:1px solid var(--rule); }
 .pbx tr:last-child td { border-bottom:none; }
 .pbx td:first-child { font-weight:600; }
 .pbx td.n { font-family:var(--mono); font-variant-numeric:tabular-nums; color:var(--ink-2); }
 .pbx .primary-row td { background:var(--lean-tint); }
 .pbx .primary-row td:first-child::after { content:"PRIMARY"; font-family:var(--mono); font-size:.5625rem; letter-spacing:.1em; color:var(--lean); margin-left:.5rem; vertical-align:.1em; }
-.pbx .step { background:var(--bg-raised); border:1px solid var(--rule); border-radius:3px; padding:1.5rem 1.25rem; display:flex; flex-direction:column; gap:.875rem; }
+.pbx .step { background:var(--bg-raised); border:1px solid var(--rule); border-radius:3px; padding:1.75rem 1.5rem; display:flex; flex-direction:column; gap:.875rem; }
 .pbx .step-1 { border-color:var(--lean); box-shadow:var(--shadow); }
 .pbx .step-label { display:flex; align-items:baseline; gap:.6rem; font-family:var(--mono); font-size:.625rem; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); }
 .pbx .step-label b { color:var(--lean); font-weight:600; }
