@@ -30,3 +30,11 @@
 
 - `https://www.peptidepilot.me` sits behind Cloudflare's cache. After any deploy that changes HTML, verify prod **without** cache-busters — a plain `curl https://www.peptidepilot.me/` (no `?cb=...`) — and **purge the Cloudflare cache if stale**. Cache-busted curls hit the origin and do NOT prove what users see.
 - Origin cache policy (set in `server/_core/vite.ts`): prerendered/SPA-shell **HTML** is served `Cache-Control: public, max-age=0, must-revalidate` (revalidate every request so a deploy is never masked); **hashed static assets** (`/assets/*.[hash].js|css`) are `max-age=31536000, immutable`. Do not make HTML long-cacheable.
+
+# Results page modes (2026-08-04)
+
+- `/results/:publicId` renders the **protocol-briefing** page (`ProtocolBriefing.tsx`) by default; `RESULTS_PAGE_MODE=classic` (Railway env) restores the prior experiences. `?rmode=briefing|classic` overrides per-request for testing (noindex page). The briefing only renders for **weight-management-relevant** leads (topPeptideMatch semaglutide/tirzepatide OR primary-goal idx 1) with providerMatches — everyone else keeps classic/verdict; the page's WL framing must never be shown to a non-WL lead.
+- **Briefing promo section is config-gated:** renders ONLY when the matched provider's `providers.promo_code` is set (plus optional `GALA_PROMO_TERMS` env for the terms sentence). Never hardcode a promo code — un-issued codes (the partner mock's PILOT30) are fabrications. NOTE: `promo_code` is ALSO consumed by email templates (`templates.ts` promoBlock) — setting it in the DB goes live on both surfaces at once.
+- **Stale-price whyMatch rows:** `whyMatch` text is persisted at submit time and can embed the provider price as of THEN. The briefing filters out any row whose `$N` figures contradict the live `price_from_cents` — keep that invariant if whyMatch rendering is added elsewhere.
+- Phase expectation lines are labeled "Typical range (clinical trials):" and computed from the lead's real weight against STEP/SURMOUNT trajectories (4–6% by wk 8, 10–14% by wk 28, 15–20% at 12 mo). Don't inflate the bands past the literature.
+- `leads.first_name` (nullable) is captured at the email gate (required field) and surfaces as "Prepared for {name}" on the briefing. Email greeting merges are NOT wired — pending copy sign-off.
