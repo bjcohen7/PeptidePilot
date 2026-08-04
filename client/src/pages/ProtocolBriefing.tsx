@@ -40,7 +40,7 @@ body:has(.pbx) { background:#f9f9f7; }
   --bg:#f9f9f7; --card:#ffffff; --mint:#edf3f0; --mint-line:#dbe7e1;
   --ink:#0b0b0b; --body:#333333; --muted:#666666; --soft:#555555;
   --line:#e0e0dc; --line-soft:#ececea; --card-line:#e8e8e4;
-  --teal:#5b9e8f; --rust:#c06a45; --code-bg:#f0f0ec; --dark:#2a2a2a;
+  --teal:#5b9e8f; --rust:#c06a45; --code-bg:#f0f0ec; --dark:#2a2a2a; --cta-green:#0F7466;
   --serif:Georgia,"Freight Text Pro","Iowan Old Style",serif;
   --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
   --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
@@ -150,8 +150,8 @@ body:has(.pbx) { background:#f9f9f7; }
 .pbx .price-line { display:flex; align-items:baseline; justify-content:space-between; gap:.75rem; flex-wrap:wrap; padding:.75rem 0; border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft); }
 .pbx .price-line .amt { font-family:var(--serif); font-size:1.875rem; line-height:1; color:var(--ink); font-variant-numeric:tabular-nums; }
 .pbx .price-line .amt sub { font-family:var(--sans); font-size:.8125rem; color:var(--muted); vertical-align:baseline; }
-.pbx .cta { display:block; text-align:center; text-decoration:none; background:var(--dark); color:#fff; font-family:var(--sans); font-weight:500; font-size:1rem; padding:.9375rem 1.75rem; border-radius:7px; margin-top:1rem; transition:filter 140ms ease, transform 80ms ease; }
-.pbx .cta:hover { filter:brightness(1.25); }
+.pbx .cta { display:block; text-align:center; text-decoration:none; background:var(--cta-green); color:#fff; font-family:var(--sans); font-weight:500; font-size:1rem; padding:.9375rem 1.75rem; border-radius:7px; margin-top:1rem; transition:filter 140ms ease, transform 80ms ease; }
+.pbx .cta:hover { filter:brightness(1.1); }
 .pbx .cta:active { transform:scale(.995); }
 .pbx .code-chip { display:flex; align-items:center; justify-content:space-between; gap:.75rem; background:var(--code-bg); border:1px dashed var(--line); border-radius:6px; padding:.8rem .9rem; font-family:var(--mono); }
 .pbx .code-chip .val { font-size:1.0625rem; font-weight:700; letter-spacing:.06em; color:var(--ink); }
