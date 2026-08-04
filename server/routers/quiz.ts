@@ -247,9 +247,9 @@ export const quizRouter = router({
       let emailDelivered = false;
       let suppressed = false;
       try {
-        const [extraRows] = await db.execute(sql.raw(
-          `SELECT email_delivered, suppressed FROM leads WHERE publicId = '${input.publicId}' LIMIT 1`
-        ));
+        const [extraRows] = await db.execute(
+          sql`SELECT email_delivered, suppressed FROM leads WHERE publicId = ${input.publicId} LIMIT 1`
+        );
         const extra = (Array.isArray(extraRows) ? (Array.isArray(extraRows[0]) ? extraRows[0] : extraRows) : [])[0] as any;
         if (extra) {
           emailDelivered = extra.email_delivered === 1 || extra.email_delivered === true;

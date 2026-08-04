@@ -76,12 +76,13 @@ export default function ProtocolBriefing({
   const price = detail?.priceFromCents ? Math.round(detail.priceFromCents / 100) : null;
 
   // whyMatch rows are persisted at submit time and can embed the provider price
-  // as it was THEN. Never show a row whose $ figure contradicts today's price —
-  // drop it rather than showing two prices on one page.
+  // as it was THEN. Never show a row whose price contradicts today's — drop it
+  // rather than showing two prices on one page. Only "$N/mo"-shaped tokens are
+  // price mentions; bare "$N" figures are the lead's own budget band, not prices.
   const whyRows = (top?.whyMatch ?? []).filter((w) => {
-    const dollars = w.match(/\$(\d+)/g);
-    if (!dollars || price == null) return true;
-    return dollars.every((d) => d === `$${price}`);
+    const priceTokens = w.match(/\$(\d+)\s*\/\s*mo/g);
+    if (!priceTokens || price == null) return true;
+    return priceTokens.every((t) => parseInt(t.slice(1), 10) === price);
   });
 
   // Real body metrics only when the lead gave them (BMI calculator). Never invent.
@@ -116,8 +117,8 @@ export default function ProtocolBriefing({
       p1: pct(4, 6),
       p2: pct(10, 14, " from start"),
       p3: weightLbs
-        ? `${Math.round(weightLbs * 0.8)}–${Math.round(weightLbs * 0.85)} lb landing weight (15–20% total)`
-        : "15–20% total body-weight reduction",
+        ? `${Math.round(weightLbs * 0.8)}–${Math.round(weightLbs * 0.87)} lb landing weight (13–20% total)`
+        : "13–20% total body-weight reduction",
     };
   }, [weightLbs]);
 
