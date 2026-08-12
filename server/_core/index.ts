@@ -47,11 +47,12 @@ const DIRECT_DESTINATIONS: Record<string, { suffix: string; label: string; url: 
   gala: {
     suffix: "gdirect",
     label: "Gala direct",
-    // Gala-v2 landing (src=lp-glp1-top5-mirror-c4e9) — same Everflow account/param as the
-    // v1 leg (sub1, -gdirect suffix). The bridge (/start) hands off here provider-anonymously.
+    // Gala LP landing (lp/glp1) per Ian 2026-08-12: bridge users click through the
+    // LP instead of dropping straight into Gala's quiz (funnel/start). Same Everflow
+    // account/param (sub1, -gdirect suffix). Provider-anonymous handoff unchanged.
     url: (subid) =>
-      "https://galaglp1.com/funnel/start?a=price&_ef_transaction_id=&oid=1&affid=13" +
-      "&src=lp-glp1-top5-mirror-c4e9&sub1=" + encodeURIComponent(subid),
+      "https://galaglp1.com/lp/glp1?a=price&_ef_transaction_id=&oid=1&affid=13" +
+      "&sub1=" + encodeURIComponent(subid),
   },
   direct_med: {
     suffix: "dmdirect",
