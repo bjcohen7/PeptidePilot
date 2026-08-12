@@ -429,3 +429,9 @@ Manus's third-party audit confirmed round 3 (no blank flash, /start CLS 0.00, pa
 3. **Review sentinel deleted** (lead 1szpyTXjEXUj9i9Igz6R_ "Marcus" + 4 other test- stragglers: 5 leads / 8 clicks / 35 queue rows / 6 sessions → 0). Its email_0 had been attempted and BOUNCED at Resend (test-sidebyside-shot@); bounce suppression auto-cancelled the remaining 6 sends — no deliveries occurred. Today's digest lead/handoff counts include the day's sentinels created before cleanup.
 4. **Bare /results kept (not 301'd):** it serves the session-based results recovery flow (Processing failure fallback + returning-user recovery form) — X-Robots-Tag noindex already covers the exact path. Redirecting would break recovery.
 5. Mobile metrics table compacted at ≤480px (min-width dropped, tighter cells, pill wraps) — verified at 375px.
+
+---
+
+## 2026-08-12 — Bridge Gala destination → LP per Ian
+
+Per Ian (Aug 12): the /start bridge's post-quiz handoff now routes through the Gala LP (`lp/glp1?a=price&_ef_transaction_id=&oid=1&affid=13`) instead of dropping straight into their quiz (`funnel/start`). `sub1={session}-gdirect` intact — Everflow keys unchanged. Verified live: `/go-direct/gala` 302 → `lp/glp1…&sub1={sid}-gdirect`. NOTE the intentional asymmetry as of today: bridge → LP; results/email path (providers-table template) → `funnel/start` (unchanged from 2026-08-04). `-gdirect` funnel-depth comparisons split here. /start is dormant, so this takes effect whenever ads point back at the bridge.
